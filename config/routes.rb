@@ -1,16 +1,62 @@
 Rails.application.routes.draw do
+  # ============================================================
+  # Authentification Devise — gère inscription, connexion, etc.
+  # ============================================================
   devise_for :users
+
+  # ============================================================
+  # Page d'accueil publique (landing page)
+  # ============================================================
   root to: "pages#home"
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # ============================================================
+  # Dashboard principal — page d'accueil après connexion
+  # ============================================================
+  get "/dashboard",   to: "dashboard#index",     as: :dashboard
+
+  # ============================================================
+  # Enfants — CRUD complet pour gérer les profils enfants
+  # ============================================================
+  resources :children
+
+  # ============================================================
+  # Histoires — création, lecture, suppression + actions spéciales
+  # ============================================================
+  resources :stories, only: [:index, :show, :new, :create, :destroy] do
+    member do
+      # POST /stories/:id/choose — soumettre un choix interactif
+      post :choose
+
+      # GET /stories/:id/status — polling du statut de génération (retourne JSON)
+      get :status
+    end
+  end
+
+  # ============================================================
+  # Dashboard parental — statistiques de lecture des enfants
+  # ============================================================
+  get "/parental",    to: "parental#index",      as: :parental
+
+  # ============================================================
+  # Salle des trophées — badges et XP de l'utilisateur
+  # ============================================================
+  get "/trophees",    to: "trophy_room#index",   as: :trophy_room
+
+  # ============================================================
+  # Webhooks Stripe — reçoit les événements de paiement
+  # ============================================================
+  namespace :webhooks do
+    post "stripe", to: "stripe#create"
+  end
+
+  # ============================================================
+  # Abonnements — page de tarification et gestion Stripe
+  # ============================================================
+  get "/abonnement",  to: "subscriptions#index", as: :subscription
+  post "/abonnement/checkout", to: "subscriptions#checkout", as: :subscription_checkout
+
+  # ============================================================
+  # Health check — vérifie que l'application fonctionne
+  # ============================================================
   get "up" => "rails/health#show", as: :rails_health_check
-
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
-  # root "posts#index"
 end

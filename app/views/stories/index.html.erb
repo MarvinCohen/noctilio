@@ -1,0 +1,74 @@
+<%# ============================================================ %>
+<%# Bibliothèque personnelle — toutes les histoires de l'utilisateur %>
+<%# ============================================================ %>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="fw-bold">Mes histoires</h1>
+      <p class="text-muted"><%= @stories.count %> histoire<%= "s" if @stories.count > 1 %> dans ta bibliothèque</p>
+    </div>
+    <%= link_to "✨ Nouvelle histoire", new_story_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if @stories.any? %>
+    <div class="row g-4">
+      <% @stories.each do |story| %>
+        <div class="col-md-6 col-lg-4">
+          <div class="card border-0 shadow-sm h-100">
+
+            <%# Image de couverture de la carte %>
+            <% if story.cover_image.attached? %>
+              <%= link_to story_path(story) do %>
+                <%= image_tag story.cover_image, class: "card-img-top", style: "height: 180px; object-fit: cover;", alt: story.title %>
+              <% end %>
+            <% else %>
+              <%= link_to story_path(story) do %>
+                <div class="d-flex align-items-center justify-content-center bg-light rounded-top"
+                     style="height: 180px;">
+                  <span style="font-size: 4rem;"><%= story.world_emoji %></span>
+                </div>
+              <% end %>
+            <% end %>
+
+            <div class="card-body p-3">
+              <%# Badges univers et interactif %>
+              <div class="d-flex gap-1 mb-2">
+                <span class="badge bg-light text-dark"><%= story.world_emoji %> <%= story.world_label %></span>
+                <% if story.interactive? %>
+                  <span class="badge bg-primary">🎮 Interactif</span>
+                <% end %>
+              </div>
+
+              <h3 class="h6 fw-bold mb-1">
+                <%= link_to story.title || "Histoire sans titre", story_path(story), class: "text-decoration-none text-dark" %>
+              </h3>
+
+              <p class="small text-muted mb-2">
+                Pour <%= story.child.name %> • <%= story.created_at.strftime("%d/%m/%Y") %>
+              </p>
+            </div>
+
+            <div class="card-footer bg-transparent border-0 p-3 pt-0 d-flex gap-2">
+              <%= link_to "Lire", story_path(story), class: "btn btn-sm btn-primary" %>
+              <%= button_to "Supprimer", story_path(story), method: :delete,
+                    class: "btn btn-sm btn-outline-danger",
+                    data: { turbo_confirm: "Supprimer cette histoire définitivement ?" } %>
+            </div>
+
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+  <% else %>
+    <%# État vide — aucune histoire %>
+    <div class="text-center py-6">
+      <div class="mb-3" style="font-size: 5rem;">📚</div>
+      <h2 class="h4 fw-bold mb-3">Ta bibliothèque est vide</h2>
+      <p class="text-muted mb-4">Génère ta première histoire magique en quelques secondes !</p>
+      <%= link_to "✨ Créer une histoire", new_story_path, class: "btn btn-primary btn-lg" %>
+    </div>
+  <% end %>
+
+</div>

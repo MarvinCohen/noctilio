@@ -47,6 +47,13 @@ gem "font-awesome-sass", "~> 6.1"
 gem "simple_form", github: "heartcombo/simple_form"
 gem "sassc-rails"
 
+# Intelligence artificielle — génération d'histoires et d'images
+gem "ruby-openai", "~> 7.0"
+
+# Abonnements Stripe — gère les paiements et plans premium
+gem "pay", "~> 7.0"
+gem "stripe", "~> 12.0"
+
 group :development, :test do
   gem "dotenv-rails"
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

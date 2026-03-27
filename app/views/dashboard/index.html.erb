@@ -1,0 +1,129 @@
+<%# ============================================================ %>
+<%# Dashboard principal — page d'accueil après connexion %>
+<%# ============================================================ %>
+
+<div class="container py-4">
+
+  <%# En-tête de bienvenue %>
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="fw-bold">Bonsoir, <%= current_user.first_name %> 👋</h1>
+      <p class="text-muted">Quelle magie allez-vous créer ce soir ?</p>
+    </div>
+    <div class="col-auto d-flex align-items-center">
+      <%= link_to "✨ Nouvelle histoire", new_story_path, class: "btn btn-primary" %>
+    </div>
+  </div>
+
+  <%# Alerte si histoires en cours de génération %>
+  <% if @pending_stories.any? %>
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+      <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+      <div>
+        <%= pluralize(@pending_stories.count, "histoire est", "histoires sont") %> en cours de création...
+        <%= link_to "Voir", story_path(@pending_stories.first), class: "alert-link" %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Alerte limite gratuite %>
+  <% unless current_user.premium? %>
+    <div class="alert alert-warning" role="alert">
+      📖 Plan gratuit : <%= @stories_this_month %>/3 histoires créées ce mois-ci.
+      <% if @stories_this_month >= 3 %>
+        <%= link_to "Passer en Premium", subscription_path, class: "alert-link" %> pour des histoires illimitées !
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="row g-4">
+
+    <%# Colonne principale — histoires récentes %>
+    <div class="col-lg-8">
+
+      <%# Section "Continuer à lire" %>
+      <% if @recent_stories.any? %>
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2 class="h5 fw-bold mb-0">Mes histoires récentes</h2>
+              <%= link_to "Voir tout", stories_path, class: "btn btn-sm btn-outline-secondary" %>
+            </div>
+
+            <% @recent_stories.each do |story| %>
+              <div class="d-flex align-items-center p-3 rounded-3 bg-light mb-2">
+                <%# Emoji de l'univers %>
+                <div class="me-3 fs-3"><%= story.world_emoji %></div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold"><%= story.title || "Histoire sans titre" %></div>
+                  <small class="text-muted">
+                    Pour <%= story.child.name %> • <%= story.world_label %> •
+                    <%= story.created_at.strftime("%d/%m/%Y") %>
+                  </small>
+                </div>
+                <%= link_to "Lire", story_path(story), class: "btn btn-sm btn-outline-primary" %>
+              </div>
+            <% end %>
+
+          </div>
+        </div>
+      <% end %>
+
+      <%# Message si aucune histoire %>
+      <% if @recent_stories.empty? && @pending_stories.empty? %>
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-5 text-center">
+            <div class="mb-3" style="font-size: 4rem;">📖</div>
+            <h3 class="h5 fw-bold">Aucune histoire pour l'instant</h3>
+            <p class="text-muted mb-4">Créez votre première histoire magique en quelques secondes !</p>
+            <%= link_to "✨ Créer ma première histoire", new_story_path, class: "btn btn-primary" %>
+          </div>
+        </div>
+      <% end %>
+
+    </div>
+
+    <%# Colonne droite — profils enfants + accès rapides %>
+    <div class="col-lg-4">
+
+      <%# Profils enfants %>
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 fw-bold mb-0">Mes héros</h2>
+            <%= link_to "+ Ajouter", new_child_path, class: "btn btn-sm btn-outline-primary" %>
+          </div>
+
+          <% if @children.any? %>
+            <% @children.each do |child| %>
+              <div class="d-flex align-items-center mb-2 p-2 rounded bg-light">
+                <div class="me-2 fs-4">🧒</div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold"><%= child.name %></div>
+                  <small class="text-muted"><%= child.age %> ans</small>
+                </div>
+                <%= link_to "✨", new_story_path(child_id: child.id), class: "btn btn-sm btn-outline-primary", title: "Créer une histoire pour #{child.name}" %>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-muted text-center py-3">
+              <%= link_to "Créer le premier profil", new_child_path %>
+            </p>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Accès rapides %>
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="h5 fw-bold mb-3">Accès rapides</h2>
+          <div class="d-grid gap-2">
+            <%= link_to "🏆 Salle des trophées", trophy_room_path, class: "btn btn-outline-secondary text-start" %>
+            <%= link_to "👨‍👩‍👧 Tableau de bord parental", parental_path, class: "btn btn-outline-secondary text-start" %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

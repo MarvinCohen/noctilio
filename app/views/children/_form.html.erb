@@ -1,0 +1,125 @@
+<%# ============================================================ %>
+<%# Formulaire partagé pour créer et modifier un profil enfant %>
+<%# Utilisé par new.html.erb et edit.html.erb %>
+<%# ============================================================ %>
+
+<%= simple_form_for child, url: child.new_record? ? children_path : child_path(child) do |f| %>
+  <%= f.error_notification %>
+
+  <%# Informations de base %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 fw-bold mb-4">👤 Informations de base</h2>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.input :name,
+                label: "Prénom du héros",
+                placeholder: "Ex: Léo, Emma...",
+                input_html: { class: "form-control" } %>
+        </div>
+        <div class="col-md-3">
+          <%= f.input :age,
+                label: "Âge",
+                as: :integer,
+                input_html: { class: "form-control", min: 1, max: 15 } %>
+        </div>
+        <div class="col-md-3">
+          <%= f.input :gender,
+                label: "Genre",
+                as: :select,
+                collection: [["Garçon", "boy"], ["Fille", "girl"]],
+                include_blank: "Choisir...",
+                input_html: { class: "form-select" } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Apparence %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 fw-bold mb-4">🎨 Apparence (optionnel)</h2>
+      <p class="text-muted small mb-3">Ces détails permettent à l'IA de décrire le héros dans l'histoire.</p>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <%= f.input :hair_color,
+                label: "Couleur de cheveux",
+                placeholder: "Ex: châtain, blond...",
+                input_html: { class: "form-control" } %>
+        </div>
+        <div class="col-md-4">
+          <%= f.input :eye_color,
+                label: "Couleur des yeux",
+                placeholder: "Ex: bleus, verts...",
+                input_html: { class: "form-control" } %>
+        </div>
+        <div class="col-md-4">
+          <%= f.input :skin_tone,
+                label: "Teinte de peau",
+                placeholder: "Ex: claire, dorée...",
+                input_html: { class: "form-control" } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Personnalité %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 fw-bold mb-3">⭐ Personnalité</h2>
+
+      <%# Traits de personnalité (checkboxes) %>
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Traits de caractère</label>
+        <div class="d-flex flex-wrap gap-2">
+          <% %w[Courageux Curieux Timide Drôle Généreux Créatif Aventurier Doux].each do |trait| %>
+            <label class="badge-check btn btn-sm btn-outline-secondary">
+              <input type="checkbox"
+                     name="child[personality_traits][]"
+                     value="<%= trait %>"
+                     class="d-none"
+                     <%= child.personality_traits&.include?(trait) ? "checked" : "" %>>
+              <%= trait %>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Centres d'intérêt %>
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Centres d'intérêt</label>
+        <div class="d-flex flex-wrap gap-2">
+          <% [["🚀 Espace", "espace"], ["🦕 Dinos", "dinosaures"], ["⚽ Sport", "sport"],
+              ["🎨 Dessin", "dessin"], ["🐾 Animaux", "animaux"], ["🔬 Science", "science"],
+              ["🎵 Musique", "musique"], ["📚 Livres", "livres"]].each do |label, value| %>
+            <label class="badge-check btn btn-sm btn-outline-secondary">
+              <input type="checkbox"
+                     name="child[hobbies][]"
+                     value="<%= value %>"
+                     class="d-none"
+                     <%= child.hobbies&.include?(value) ? "checked" : "" %>>
+              <%= label %>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Description libre %>
+      <%= f.input :child_description,
+            label: "Description supplémentaire (optionnel)",
+            as: :text,
+            placeholder: "Ex: il adore les dinosaures et rêve d'être astronaute...",
+            input_html: { class: "form-control", rows: 3 } %>
+    </div>
+  </div>
+
+  <%# Boutons d'action %>
+  <div class="d-flex gap-3">
+    <%= f.submit child.new_record? ? "Créer le profil" : "Mettre à jour",
+          class: "btn btn-primary px-4" %>
+    <%= link_to "Annuler", children_path, class: "btn btn-outline-secondary" %>
+  </div>
+
+<% end %>

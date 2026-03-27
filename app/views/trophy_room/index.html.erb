@@ -1,0 +1,105 @@
+<%# ============================================================ %>
+<%# Salle des Trophées — badges, XP et galerie d'illustrations %>
+<%# ============================================================ %>
+
+<div class="container py-4">
+
+  <%# En-tête avec niveau et XP %>
+  <div class="card border-0 shadow-sm mb-5 p-4">
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <div class="text-center">
+          <span style="font-size: 3rem;">🏆</span>
+          <div class="fw-bold text-primary">Niveau <%= @level %></div>
+        </div>
+      </div>
+      <div class="col">
+        <h1 class="fw-bold mb-1">Salle des Trophées</h1>
+        <p class="text-muted mb-2"><%= @xp_points %> XP accumulés</p>
+        <%# Barre de progression vers le prochain niveau %>
+        <div class="progress" style="height: 10px;">
+          <div class="progress-bar bg-primary" style="width: <%= @level_progress %>%"
+               title="<%= @level_progress %>% vers le niveau suivant"></div>
+        </div>
+        <small class="text-muted"><%= @level_progress %>% vers le niveau <%= @level + 1 %></small>
+      </div>
+      <div class="col-auto text-end">
+        <span class="badge bg-warning text-dark fs-6 px-3 py-2">⭐ <%= @xp_points %> XP</span>
+      </div>
+    </div>
+  </div>
+
+  <%# Badges %>
+  <div class="mb-5">
+    <h2 class="h4 fw-bold mb-4">Badges Magiques</h2>
+    <div class="row g-3">
+      <% @all_badges.each do |badge| %>
+        <% earned = @earned_badge_ids.include?(badge.id) %>
+        <div class="col-6 col-md-3">
+          <div class="card border-0 h-100 text-center p-3 <%= earned ? 'shadow-sm' : 'bg-light opacity-50' %>">
+            <%# Emoji du badge — grisé si non encore obtenu %>
+            <div class="mb-2" style="font-size: 2.5rem;">
+              <%= badge.icon %>
+            </div>
+            <div class="fw-bold small"><%= badge.name %></div>
+            <div class="text-muted" style="font-size: 0.75rem;"><%= badge.description %></div>
+            <% if earned %>
+              <% user_badge = @earned_user_badges.find { |ub| ub.badge_id == badge.id } %>
+              <div class="mt-2">
+                <span class="badge bg-success">✓ Obtenu</span>
+                <div class="text-muted" style="font-size: 0.7rem;">
+                  le <%= user_badge.earned_at.strftime("%d/%m/%Y") %>
+                </div>
+              </div>
+            <% else %>
+              <div class="mt-2">
+                <span class="badge bg-secondary">À débloquer</span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Message si aucun badge défini %>
+      <% if @all_badges.empty? %>
+        <div class="col-12 text-center py-4 text-muted">
+          Les badges seront bientôt disponibles !
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Galerie des illustrations générées %>
+  <% if @illustrated_stories.any? %>
+    <div class="mb-5">
+      <h2 class="h4 fw-bold mb-4">Galerie de Rêves</h2>
+      <p class="text-muted mb-4">Les illustrations générées pour tes histoires</p>
+      <div class="row g-3">
+        <% @illustrated_stories.each do |story| %>
+          <div class="col-6 col-md-4">
+            <%= link_to story_path(story), class: "text-decoration-none" do %>
+              <div class="card border-0 shadow-sm overflow-hidden">
+                <% if story.cover_image.attached? %>
+                  <%= image_tag story.cover_image,
+                        class: "w-100",
+                        style: "height: 180px; object-fit: cover;",
+                        alt: story.title %>
+                <% elsif story.cover_image_url.present? %>
+                  <%= image_tag story.cover_image_url,
+                        class: "w-100",
+                        style: "height: 180px; object-fit: cover;",
+                        alt: story.title %>
+                <% end %>
+                <div class="card-body p-2">
+                  <div class="small fw-semibold text-dark text-truncate"><%= story.title %></div>
+                  <div class="text-muted" style="font-size: 0.75rem;">Pour <%= story.child.name %></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+</div>

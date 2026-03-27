@@ -1,0 +1,159 @@
+<%# ============================================================ %>
+<%# Page de lecture d'une histoire %>
+<%# Gère 3 états : en attente / en génération / terminée %>
+<%# ============================================================ %>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <%# ================================================ %>
+      <%# CAS 1 : Histoire en cours de génération %>
+      <%# Stimulus controller poll le statut toutes les 2 secondes %>
+      <%# ================================================ %>
+      <% if @story.pending? || @story.generating? %>
+        <div class="text-center py-6"
+             data-controller="story-status"
+             data-story-status-url-value="<%= status_story_path(@story) %>"
+             data-story-status-redirect-value="<%= story_path(@story) %>">
+
+          <div class="mb-4" style="font-size: 5rem;">🌙</div>
+
+          <h1 class="h3 fw-bold mb-3">La magie opère...</h1>
+          <p class="text-muted mb-4">
+            Votre histoire est en cours de création.<br>
+            Cela prend généralement 15 à 30 secondes.
+          </p>
+
+          <%# Barre de progression animée %>
+          <div class="progress mx-auto mb-4" style="max-width: 400px; height: 8px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                 style="width: 100%"></div>
+          </div>
+
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Génération en cours...</span>
+          </div>
+
+          <p class="text-muted mt-3 small">
+            Status : <%= @story.status %>
+          </p>
+        </div>
+
+      <%# ================================================ %>
+      <%# CAS 2 : Génération échouée %>
+      <%# ================================================ %>
+      <% elsif @story.failed? %>
+        <div class="text-center py-6">
+          <div class="mb-4" style="font-size: 4rem;">😔</div>
+          <h1 class="h3 fw-bold mb-3">Oups, une erreur s'est produite</h1>
+          <p class="text-muted mb-4">La génération de l'histoire a échoué. Veuillez réessayer.</p>
+          <%= link_to "Réessayer", new_story_path, class: "btn btn-primary me-2" %>
+          <%= link_to "Mes histoires", stories_path, class: "btn btn-outline-secondary" %>
+        </div>
+
+      <%# ================================================ %>
+      <%# CAS 3 : Histoire terminée — affichage de la lecture %>
+      <%# ================================================ %>
+      <% else %>
+
+        <%# Image de couverture %>
+        <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
+          <div class="story-cover mb-4 rounded-3 overflow-hidden" style="max-height: 400px;">
+            <% if @story.cover_image.attached? %>
+              <%= image_tag @story.cover_image, class: "w-100 object-fit-cover", alt: @story.title %>
+            <% else %>
+              <%= image_tag @story.cover_image_url, class: "w-100 object-fit-cover", alt: @story.title %>
+            <% end %>
+          </div>
+        <% else %>
+          <%# Placeholder si pas d'image %>
+          <div class="story-cover-placeholder bg-light rounded-3 mb-4 d-flex align-items-center justify-content-center"
+               style="height: 200px;">
+            <span style="font-size: 5rem;"><%= @story.world_emoji %></span>
+          </div>
+        <% end %>
+
+        <%# Métadonnées de l'histoire %>
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <%= link_to stories_path, class: "text-muted text-decoration-none" do %>
+            ← Mes histoires
+          <% end %>
+          <span class="badge bg-light text-dark"><%= @story.world_emoji %> <%= @story.world_label %></span>
+          <span class="badge bg-light text-dark">Pour <%= @story.child.name %></span>
+        </div>
+
+        <%# Titre de l'histoire %>
+        <h1 class="fw-bold display-6 mb-4"><%= @story.title || "Mon histoire magique" %></h1>
+
+        <%# Contenu de l'histoire %>
+        <div class="story-content mb-5">
+          <%# simple_format transforme les sauts de ligne en <p> %>
+          <%# On masque le bloc [CHOIX] du texte brut s'il existe %>
+          <%= simple_format(@story.content&.gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")&.strip) %>
+        </div>
+
+        <%# ================================================ %>
+        <%# Mode interactif — affiche le choix si disponible %>
+        <%# ================================================ %>
+        <% if @story.interactive? && @pending_choice %>
+          <div class="interactive-choice card border-primary border-2 shadow-sm mb-5"
+               data-controller="story-choice">
+            <div class="card-body p-4">
+              <div class="text-center mb-4">
+                <span style="font-size: 2.5rem;">🤔</span>
+                <h3 class="h5 fw-bold mt-2">À toi de décider !</h3>
+                <p class="text-muted"><%= @pending_choice.question %></p>
+              </div>
+
+              <div class="row g-3">
+                <%# Option A %>
+                <div class="col-md-6">
+                  <%= button_to choose_story_path(@story),
+                        params: { chosen_option: "a" },
+                        class: "btn btn-outline-primary w-100 p-4 h-100" do %>
+                    <div class="fw-bold mb-1">Option A</div>
+                    <div class="small"><%= @pending_choice.option_a %></div>
+                  <% end %>
+                </div>
+
+                <%# Option B %>
+                <div class="col-md-6">
+                  <%= button_to choose_story_path(@story),
+                        params: { chosen_option: "b" },
+                        class: "btn btn-outline-primary w-100 p-4 h-100" do %>
+                    <div class="fw-bold mb-1">Option B</div>
+                    <div class="small"><%= @pending_choice.option_b %></div>
+                  <% end %>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        <%# Si les choix ont tous été faits — affiche la suite %>
+        <% elsif @story.interactive? && @story.story_choices.resolved.any? %>
+          <div class="story-continuation mb-5">
+            <% @story.story_choices.resolved.ordered.each do |choice| %>
+              <div class="choice-result p-3 bg-primary bg-opacity-10 rounded-3 mb-3">
+                <div class="small text-muted mb-1">✅ <%= choice.question %></div>
+                <div class="fw-semibold">→ <%= choice.chosen_text %></div>
+              </div>
+              <% if choice.context_chosen.present? %>
+                <%= simple_format(choice.context_chosen) %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+
+        <%# Boutons de navigation %>
+        <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
+          <%= link_to "✨ Nouvelle histoire", new_story_path, class: "btn btn-primary" %>
+          <%= link_to "📚 Mes histoires", stories_path, class: "btn btn-outline-secondary" %>
+          <%= link_to "🏆 Trophées", trophy_room_path, class: "btn btn-outline-secondary" %>
+        </div>
+
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,176 @@
+<%# ============================================================ %>
+<%# Formulaire de création d'une nouvelle histoire %>
+<%# Stimulus controller "story-creation" gère les étapes et le preview %>
+<%# ============================================================ %>
+
+<div class="container py-4" data-controller="story-creation">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <%# En-tête %>
+      <div class="mb-4">
+        <p class="text-muted text-uppercase letter-spacing mb-1">✨ Nouvelle histoire</p>
+        <h1 class="fw-bold display-6">Crée ton histoire magique</h1>
+      </div>
+
+      <%# Formulaire de création %>
+      <%= simple_form_for @story, url: stories_path do |f| %>
+        <%# Affichage des erreurs de validation %>
+        <%= f.error_notification %>
+
+        <%# ================================================ %>
+        <%# ÉTAPE 1 — Choix de l'enfant %>
+        <%# ================================================ %>
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-3">👤 Pour quel héros ?</h2>
+
+            <% if @children.any? %>
+              <div class="row g-2">
+                <% @children.each do |child| %>
+                  <div class="col-sm-6">
+                    <%# Bouton radio stylisé pour chaque enfant %>
+                    <label class="child-selector w-100 p-3 rounded-3 border d-flex align-items-center gap-3"
+                           style="cursor: pointer;">
+                      <%= f.radio_button :child_id, child.id, class: "form-check-input me-1" %>
+                      <div>
+                        <div class="fw-semibold"><%= child.name %></div>
+                        <small class="text-muted"><%= child.age %> ans • <%= child.gender == "boy" ? "Garçon" : "Fille" %></small>
+                      </div>
+                    </label>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div class="mt-2">
+              <%= link_to "+ Nouveau profil", new_child_path, class: "btn btn-sm btn-outline-secondary" %>
+            </div>
+          </div>
+        </div>
+
+        <%# ================================================ %>
+        <%# ÉTAPE 2 — Choix de l'univers %>
+        <%# ================================================ %>
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-3">🌍 Choisis un univers</h2>
+            <div class="row g-2">
+              <% [
+                { value: "space",      emoji: "🚀", label: "Espace" },
+                { value: "dinos",      emoji: "🦕", label: "Dinosaures" },
+                { value: "princesses", emoji: "👸", label: "Princesses" },
+                { value: "pirates",    emoji: "🏴‍☠️", label: "Pirates" },
+                { value: "animals",    emoji: "🦁", label: "Animaux" }
+              ].each do |world| %>
+                <div class="col-4 col-sm-2">
+                  <label class="world-selector text-center w-100 p-3 rounded-3 border"
+                         style="cursor: pointer;">
+                    <%= f.radio_button :world_theme, world[:value], class: "d-none world-radio" %>
+                    <div style="font-size: 2rem;"><%= world[:emoji] %></div>
+                    <div class="small fw-semibold mt-1"><%= world[:label] %></div>
+                  </label>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <%# ================================================ %>
+        <%# ÉTAPE 3 — Paramètres de l'histoire %>
+        <%# ================================================ %>
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-4">⚙️ Paramètres de l'histoire</h2>
+
+            <%# Valeur éducative %>
+            <div class="mb-4">
+              <label class="form-label fw-semibold">💫 Valeur à transmettre</label>
+              <div class="d-flex flex-wrap gap-2">
+                <% [
+                  { value: "courage",    label: "Courage" },
+                  { value: "sharing",    label: "Partage" },
+                  { value: "kindness",   label: "Gentillesse" },
+                  { value: "confidence", label: "Confiance" }
+                ].each do |val| %>
+                  <label class="badge-selector btn btn-sm btn-outline-primary">
+                    <%= f.radio_button :educational_value, val[:value], class: "d-none" %>
+                    <%= val[:label] %>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <%# Niveau de lecture %>
+            <div class="mb-4">
+              <label class="form-label fw-semibold">📚 Niveau de lecture</label>
+              <div class="d-flex gap-3">
+                <label class="d-flex align-items-center gap-2">
+                  <%= f.radio_button :reading_level, "beginner", checked: true %>
+                  <span>Débutant (3-6 ans)</span>
+                </label>
+                <label class="d-flex align-items-center gap-2">
+                  <%= f.radio_button :reading_level, "intermediate" %>
+                  <span>Intermédiaire (7-12 ans)</span>
+                </label>
+              </div>
+            </div>
+
+            <%# Durée %>
+            <div class="mb-4">
+              <label class="form-label fw-semibold">⏱️ Durée de l'histoire</label>
+              <div class="d-flex gap-3">
+                <% [[5, "5 min ⚡"], [10, "10 min 📖"], [15, "15 min 🌟"]].each do |mins, label| %>
+                  <label class="d-flex align-items-center gap-2">
+                    <%= f.radio_button :duration_minutes, mins, checked: mins == 5 %>
+                    <span><%= label %></span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <%# Thème personnalisé libre %>
+            <div class="mb-4">
+              <%= f.label :custom_theme, "🎯 Thème spécial (optionnel)", class: "form-label fw-semibold" %>
+              <%= f.text_area :custom_theme,
+                    rows: 2,
+                    class: "form-control",
+                    placeholder: "Ex: une histoire sur le premier jour d'école, un dragon qui a peur du feu..." %>
+            </div>
+
+            <%# Mode interactif (Premium uniquement) %>
+            <div class="mb-2">
+              <div class="form-check form-switch">
+                <% if current_user.premium? %>
+                  <%= f.check_box :interactive, class: "form-check-input", id: "interactive-toggle" %>
+                  <label class="form-check-label fw-semibold" for="interactive-toggle">
+                    🎮 Activer le mode interactif
+                    <small class="text-muted d-block">L'enfant fait des choix qui changent l'histoire</small>
+                  </label>
+                <% else %>
+                  <%# Désactivé pour les utilisateurs gratuits %>
+                  <input class="form-check-input" type="checkbox" disabled>
+                  <label class="form-check-label text-muted">
+                    🎮 Mode interactif
+                    <span class="badge bg-warning text-dark ms-2">Premium</span>
+                    <small class="d-block">
+                      <%= link_to "Passer en Premium", subscription_path %> pour débloquer les histoires interactives
+                    </small>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <%# Bouton de génération %>
+        <div class="d-grid">
+          <%= f.submit "✨ Générer l'histoire magique", class: "btn btn-primary btn-lg py-3" %>
+        </div>
+
+      <% end %>
+
+    </div>
+  </div>
+</div>

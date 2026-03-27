@@ -1,2 +1,164 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<%# ============================================================ %>
+<%# Landing page publique de Noctilio %>
+<%# Visible par tous (connectés ou non) %>
+<%# ============================================================ %>
+
+<%# Hero Section — accroche principale %>
+<section class="hero-section">
+  <div class="container py-5">
+    <div class="row align-items-center min-vh-75">
+      <div class="col-lg-6">
+        <p class="hero-tagline text-uppercase letter-spacing-wide mb-2">✨ Des histoires uniques, chaque soir</p>
+        <h1 class="display-3 fw-bold hero-title mb-4">
+          Explore,<br>Imagine,<br><span class="text-primary">Partage.</span>
+        </h1>
+        <p class="lead text-muted mb-5">
+          Noctilio crée des histoires magiques et personnalisées pour ton enfant,
+          générées par l'IA en quelques secondes. Chaque nuit devient une nouvelle aventure.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <% if user_signed_in? %>
+            <%# Si déjà connecté, on redirige vers le dashboard %>
+            <%= link_to "Créer une histoire ✨", new_story_path, class: "btn btn-primary btn-lg px-4" %>
+          <% else %>
+            <%= link_to "Commencer gratuitement", new_user_registration_path, class: "btn btn-primary btn-lg px-4" %>
+            <%= link_to "Se connecter", new_user_session_path, class: "btn btn-outline-secondary btn-lg px-4" %>
+          <% end %>
+        </div>
+      </div>
+      <div class="col-lg-6 d-none d-lg-block text-center">
+        <%# Illustration emoji en attendant l'image réelle %>
+        <div class="hero-illustration">
+          <span style="font-size: 10rem;">🌙</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# Section fonctionnalités — les 3 avantages clés %>
+<section class="features-section bg-light py-6">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-5">Comment ça marche ?</h2>
+    <div class="row g-4">
+
+      <%# Fonctionnalité 1 : Personnalisation %>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 text-center p-4">
+          <div class="feature-icon mb-3">
+            <span style="font-size: 3rem;">👤</span>
+          </div>
+          <h3 class="h5 fw-bold">Personnalisé pour ton enfant</h3>
+          <p class="text-muted">
+            Entre le prénom, l'âge et la personnalité de ton enfant.
+            L'IA crée une histoire où il est le héros !
+          </p>
+        </div>
+      </div>
+
+      <%# Fonctionnalité 2 : Génération IA %>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 text-center p-4">
+          <div class="feature-icon mb-3">
+            <span style="font-size: 3rem;">🤖</span>
+          </div>
+          <h3 class="h5 fw-bold">Généré par l'IA en secondes</h3>
+          <p class="text-muted">
+            Choisis l'univers (espace, dinosaures, pirates...) et la valeur à transmettre.
+            L'histoire et l'illustration sont créées automatiquement.
+          </p>
+        </div>
+      </div>
+
+      <%# Fonctionnalité 3 : Interactivité %>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 text-center p-4">
+          <div class="feature-icon mb-3">
+            <span style="font-size: 3rem;">🎯</span>
+          </div>
+          <h3 class="h5 fw-bold">Histoires interactives</h3>
+          <p class="text-muted">
+            Active le mode aventure pour que ton enfant fasse des choix
+            qui changent la suite de l'histoire !
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<%# Section univers disponibles %>
+<section class="worlds-section py-6">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-5">Des univers magiques à explorer</h2>
+    <div class="row g-3 justify-content-center">
+      <% [
+        { emoji: "🚀", label: "Espace" },
+        { emoji: "🦕", label: "Dinosaures" },
+        { emoji: "👸", label: "Princesses" },
+        { emoji: "🏴‍☠️", label: "Pirates" },
+        { emoji: "🦁", label: "Animaux" }
+      ].each do |world| %>
+        <div class="col-6 col-md-2 text-center">
+          <div class="world-card p-3 rounded-3 bg-light">
+            <div style="font-size: 2.5rem;"><%=  world[:emoji] %></div>
+            <div class="fw-semibold mt-1"><%= world[:label] %></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# Section tarification %>
+<section class="pricing-section bg-light py-6">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-2">Commencez gratuitement</h2>
+    <p class="text-center text-muted mb-5">Passez en Premium quand vous voulez</p>
+    <div class="row g-4 justify-content-center">
+
+      <%# Plan gratuit %>
+      <div class="col-md-5">
+        <div class="card border-0 shadow-sm h-100 p-4">
+          <h3 class="h5 fw-bold">Gratuit</h3>
+          <div class="display-5 fw-bold my-3">0€</div>
+          <ul class="list-unstyled text-muted">
+            <li class="mb-2">✅ 3 histoires par mois</li>
+            <li class="mb-2">✅ Tous les univers</li>
+            <li class="mb-2">✅ Illustrations IA</li>
+            <li class="mb-2">❌ Histoires interactives</li>
+            <li class="mb-2">❌ Histoires illimitées</li>
+          </ul>
+          <%= link_to "Commencer", new_user_registration_path, class: "btn btn-outline-primary w-100 mt-3" %>
+        </div>
+      </div>
+
+      <%# Plan Premium %>
+      <div class="col-md-5">
+        <div class="card border-0 shadow-lg h-100 p-4 position-relative premium-card">
+          <span class="badge bg-primary position-absolute top-0 end-0 m-3">Populaire</span>
+          <h3 class="h5 fw-bold">Premium</h3>
+          <div class="display-5 fw-bold my-3">9,99€<span class="fs-6 text-muted">/mois</span></div>
+          <ul class="list-unstyled text-muted">
+            <li class="mb-2">✅ Histoires illimitées</li>
+            <li class="mb-2">✅ Tous les univers</li>
+            <li class="mb-2">✅ Illustrations IA</li>
+            <li class="mb-2">✅ Histoires interactives</li>
+            <li class="mb-2">✅ Dashboard parental avancé</li>
+          </ul>
+          <%= link_to "Commencer Premium", new_user_registration_path, class: "btn btn-primary w-100 mt-3" %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<%# CTA final %>
+<section class="cta-section py-6 text-center">
+  <div class="container">
+    <h2 class="fw-bold display-6 mb-4">Prêt pour la première aventure ?</h2>
+    <%= link_to "Créer ma première histoire ✨", new_user_registration_path, class: "btn btn-primary btn-lg px-5 py-3" %>
+  </div>
+</section>

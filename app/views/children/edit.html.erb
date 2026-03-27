@@ -1,0 +1,11 @@
+<%# Page de modification d'un profil enfant %>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="mb-4">
+        <h1 class="fw-bold">Modifier le profil de <%= @child.name %></h1>
+      </div>
+      <%= render "form", child: @child %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,114 @@
+<%# ============================================================ %>
+<%# Dashboard parental — statistiques et suivi de lecture %>
+<%# ============================================================ %>
+
+<div class="container py-4">
+  <div class="mb-4">
+    <h1 class="fw-bold">Tableau de Bord Parental</h1>
+    <p class="text-muted">Suivi des lectures et de l'activité de vos enfants</p>
+  </div>
+
+  <%# Statistiques globales %>
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-4 text-center">
+        <div class="display-4 fw-bold text-primary"><%= @total_reading_minutes %></div>
+        <div class="text-muted">minutes de lecture totales</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-4 text-center">
+        <div class="display-4 fw-bold text-primary">
+          <%= current_user.stories.completed.count %>
+        </div>
+        <div class="text-muted">histoires créées</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-4 text-center">
+        <div class="display-4 fw-bold text-primary"><%= @children.count %></div>
+        <div class="text-muted">profils enfants</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <%# Colonne gauche — profils enfants %>
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 fw-bold mb-0">Mes Héros</h2>
+          <%= link_to "+ Ajouter", new_child_path, class: "btn btn-sm btn-outline-primary" %>
+        </div>
+
+        <% if @children.any? %>
+          <% @children.each do |child| %>
+            <div class="d-flex align-items-center p-3 rounded-3 bg-light mb-2">
+              <div class="me-3 fs-3"><%= child.gender == "girl" ? "👧" : "🧒" %></div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold"><%= child.name %></div>
+                <small class="text-muted">
+                  <%= child.age %> ans •
+                  <%= child.stories.completed.count %> histoire<%= "s" if child.stories.completed.count != 1 %>
+                </small>
+              </div>
+              <%= link_to "Voir", child_path(child), class: "btn btn-sm btn-outline-secondary" %>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted text-center py-3">
+            <%= link_to "Créer le premier profil", new_child_path %>
+          </p>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Colonne droite — thèmes favoris + abonnement %>
+    <div class="col-lg-6">
+
+      <%# Thèmes favoris %>
+      <% if @favorite_themes.any? %>
+        <div class="card border-0 shadow-sm p-4 mb-4">
+          <h2 class="h5 fw-bold mb-3">Univers Favoris</h2>
+          <% @favorite_themes.each do |theme, count| %>
+            <% emoji = { "space" => "🚀", "dinos" => "🦕", "princesses" => "👸",
+                         "pirates" => "🏴‍☠️", "animals" => "🦁" }.fetch(theme, "✨") %>
+            <div class="d-flex align-items-center mb-2">
+              <span class="me-2 fs-5"><%= emoji %></span>
+              <div class="flex-grow-1">
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar bg-primary" style="width: <%= [count * 20, 100].min %>%"></div>
+                </div>
+              </div>
+              <span class="ms-2 small text-muted"><%= count %></span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Statut abonnement %>
+      <div class="card border-0 shadow-sm p-4">
+        <h2 class="h5 fw-bold mb-3">Mon Abonnement</h2>
+        <% if current_user.premium? %>
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-primary px-3 py-2">✨ Premium</span>
+            <span class="text-muted">Histoires illimitées</span>
+          </div>
+        <% else %>
+          <div class="mb-3">
+            <span class="badge bg-secondary px-3 py-2">Gratuit</span>
+            <p class="text-muted mt-2 mb-1">
+              <%= @stories_this_month %>/3 histoires ce mois-ci
+            </p>
+            <div class="progress mb-3" style="height: 6px;">
+              <div class="progress-bar" style="width: <%= (@stories_this_month / 3.0 * 100).round %>%"></div>
+            </div>
+            <%= link_to "Passer en Premium →", subscription_path, class: "btn btn-primary btn-sm" %>
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+  </div>
+</div>
