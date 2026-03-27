@@ -2,7 +2,11 @@ Rails.application.routes.draw do
   # ============================================================
   # Authentification Devise — gère inscription, connexion, etc.
   # ============================================================
-  devise_for :users
+  # controllers: indique à Devise d'utiliser notre controller personnalisé
+  # pour les inscriptions (qui autorise first_name et last_name)
+  devise_for :users, controllers: {
+    registrations: "users/registrations"
+  }
 
   # ============================================================
   # Page d'accueil publique (landing page)

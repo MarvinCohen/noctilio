@@ -1,0 +1,29 @@
+<%# Page abonnement — version temporaire en attendant Stripe %>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+      <span style="font-size: 4rem;">💳</span>
+      <h1 class="fw-bold mt-3 mb-3">Abonnement Premium</h1>
+      <p class="lead text-muted mb-5">
+        Le paiement sera disponible prochainement.<br>
+        Pour l'instant, profitez de l'application gratuitement !
+      </p>
+
+      <div class="card border-0 shadow-sm p-5 mb-4">
+        <h2 class="h4 fw-bold mb-4">Ce qui vous attend en Premium</h2>
+        <ul class="list-unstyled text-start mx-auto" style="max-width: 350px;">
+          <li class="mb-3">✅ Histoires <strong>illimitées</strong></li>
+          <li class="mb-3">✅ Mode interactif (choix qui changent l'histoire)</li>
+          <li class="mb-3">✅ Dashboard parental avancé</li>
+          <li class="mb-3">✅ Accès prioritaire aux nouveaux univers</li>
+        </ul>
+        <p class="text-muted">À partir de <strong>9,99€/mois</strong></p>
+        <button class="btn btn-primary btn-lg px-5 mt-2" disabled>
+          Bientôt disponible
+        </button>
+      </div>
+
+      <%= link_to "← Retour au dashboard", dashboard_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+</div>

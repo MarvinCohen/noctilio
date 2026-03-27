@@ -1,20 +1,57 @@
-<h2>Log in</h2>
+<%# ============================================================ %>
+<%# Page de connexion Noctilio %>
+<%# ============================================================ %>
 
-<%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-  <div class="form-inputs">
-    <%= f.input :email,
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+
+      <%# En-tête %>
+      <div class="text-center mb-4">
+        <span style="font-size: 3rem;">🌙</span>
+        <h1 class="fw-bold mt-2">Bon retour !</h1>
+        <p class="text-muted">Connectez-vous pour retrouver vos histoires</p>
+      </div>
+
+      <div class="card border-0 shadow-sm p-4">
+        <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+
+          <%# Email %>
+          <%= f.input :email,
+                label: "Adresse e-mail",
                 required: false,
                 autofocus: true,
+                placeholder: "votre@email.com",
                 input_html: { autocomplete: "email" } %>
-    <%= f.input :password,
+
+          <%# Mot de passe %>
+          <%= f.input :password,
+                label: "Mot de passe",
                 required: false,
                 input_html: { autocomplete: "current-password" } %>
-    <%= f.input :remember_me, as: :boolean if devise_mapping.rememberable? %>
-  </div>
 
-  <div class="form-actions">
-    <%= f.button :submit, "Log in" %>
-  </div>
-<% end %>
+          <%# Se souvenir de moi %>
+          <%= f.input :remember_me, as: :boolean, label: "Se souvenir de moi" if devise_mapping.rememberable? %>
 
-<%= render "devise/shared/links" %>
+          <%# Bouton de connexion %>
+          <div class="d-grid mt-3">
+            <%= f.button :submit, "Se connecter", class: "btn btn-primary btn-lg" %>
+          </div>
+
+        <% end %>
+
+        <%# Lien mot de passe oublié %>
+        <div class="text-center mt-3">
+          <%= link_to "Mot de passe oublié ?", new_user_password_path, class: "text-muted small" %>
+        </div>
+      </div>
+
+      <%# Lien vers l'inscription %>
+      <div class="text-center mt-3 text-muted">
+        Pas encore de compte ?
+        <%= link_to "Créer un compte gratuitement", new_user_registration_path %>
+      </div>
+
+    </div>
+  </div>
+</div>

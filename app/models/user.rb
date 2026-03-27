@@ -37,9 +37,10 @@ class User < ApplicationRecord
   # ============================================================
 
   # Retourne true si l'utilisateur a un abonnement premium actif
-  # Utilise la méthode subscribed? fournie par le gem Pay
+  # Pour l'instant retourne false (Stripe sera configuré plus tard)
+  # Quand Stripe sera activé, remplacer par : subscribed?
   def premium?
-    subscribed?
+    false
   end
 
   # Compte les histoires créées ce mois-ci (tous enfants confondus)

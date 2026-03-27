@@ -1,25 +1,74 @@
-<h2>Sign up</h2>
+<%# ============================================================ %>
+<%# Page d'inscription Noctilio %>
+<%# Ajout des champs prénom et nom par rapport au template Devise de base %>
+<%# ============================================================ %>
 
-<%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= f.error_notification %>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
 
-  <div class="form-inputs">
-    <%= f.input :email,
+      <%# En-tête %>
+      <div class="text-center mb-4">
+        <span style="font-size: 3rem;">🌙</span>
+        <h1 class="fw-bold mt-2">Créer un compte</h1>
+        <p class="text-muted">Rejoignez Noctilio et commencez à créer des histoires magiques</p>
+      </div>
+
+      <div class="card border-0 shadow-sm p-4">
+        <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+          <%= f.error_notification %>
+
+          <%# Prénom et nom sur la même ligne %>
+          <div class="row g-3 mb-1">
+            <div class="col-6">
+              <%= f.input :first_name,
+                    label: "Prénom",
+                    placeholder: "Ex: Marie",
+                    autofocus: true,
+                    input_html: { autocomplete: "given-name" } %>
+            </div>
+            <div class="col-6">
+              <%= f.input :last_name,
+                    label: "Nom",
+                    placeholder: "Ex: Dupont",
+                    input_html: { autocomplete: "family-name" } %>
+            </div>
+          </div>
+
+          <%# Email %>
+          <%= f.input :email,
+                label: "Adresse e-mail",
                 required: true,
-                autofocus: true,
-                input_html: { autocomplete: "email" }%>
-    <%= f.input :password,
+                placeholder: "votre@email.com",
+                input_html: { autocomplete: "email" } %>
+
+          <%# Mot de passe %>
+          <%= f.input :password,
+                label: "Mot de passe",
                 required: true,
-                hint: ("#{@minimum_password_length} characters minimum" if @minimum_password_length),
+                hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
                 input_html: { autocomplete: "new-password" } %>
-    <%= f.input :password_confirmation,
+
+          <%# Confirmation du mot de passe %>
+          <%= f.input :password_confirmation,
+                label: "Confirmer le mot de passe",
                 required: true,
                 input_html: { autocomplete: "new-password" } %>
-  </div>
 
-  <div class="form-actions">
-    <%= f.button :submit, "Sign up" %>
-  </div>
-<% end %>
+          <%# Bouton d'inscription %>
+          <div class="d-grid mt-3">
+            <%= f.button :submit, "Créer mon compte ✨", class: "btn btn-primary btn-lg" %>
+          </div>
 
-<%= render "devise/shared/links" %>
+        <% end %>
+      </div>
+
+      <%# Lien vers la connexion %>
+      <div class="text-center mt-3 text-muted">
+        Déjà un compte ?
+        <%= link_to "Se connecter", new_user_session_path %>
+      </div>
+
+    </div>
+  </div>
+</div>

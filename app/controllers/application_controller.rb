@@ -5,24 +5,23 @@ class ApplicationController < ActionController::Base
   # ============================================================
   before_action :authenticate_user!
 
-  # Protection CSRF (Cross-Site Request Forgery) — Rails l'active par défaut
-  # Elle vérifie que les formulaires viennent bien de notre site
+  # ============================================================
+  # Redirection après connexion Devise
+  # ============================================================
+  # Par défaut Devise redirige vers root_path après connexion.
+  # On surcharge cette méthode pour rediriger vers le dashboard.
+  def after_sign_in_path_for(resource)
+    dashboard_path
+  end
 
   private
 
-  # Vérifie que l'utilisateur a un abonnement premium actif
-  # À utiliser avec before_action dans les controllers qui ont du contenu premium
-  def require_premium!
-    return if current_user.premium?
-
-    redirect_to subscription_path, alert: "Cette fonctionnalité est réservée aux membres Premium. Découvrez nos offres !"
-  end
-
   # Vérifie que l'utilisateur peut encore créer des histoires ce mois-ci
-  # Gratuit : 3 histoires max / mois — Premium : illimité
+  # Gratuit : 3 histoires max / mois — Pour l'instant tout le monde peut créer
+  # (Stripe sera configuré plus tard)
   def check_story_limit!
     return if current_user.can_create_story?
 
-    redirect_to subscription_path, alert: "Vous avez atteint votre limite de 3 histoires gratuites ce mois-ci. Passez en Premium pour des histoires illimitées !"
+    redirect_to stories_path, alert: "Vous avez atteint votre limite de 3 histoires gratuites ce mois-ci."
   end
 end
