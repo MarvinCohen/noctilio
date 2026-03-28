@@ -24,8 +24,9 @@ class ImageGeneratorService
   POLLINATIONS_BASE_URL = "https://image.pollinations.ai/prompt"
 
   # Modèle Pollinations utilisé
-  # "flux" : modèle FLUX, excellente qualité pour les illustrations
-  POLLINATIONS_MODEL = "flux"
+  # "flux-schnell" : variante rapide de FLUX (~5s vs 30s pour "flux")
+  # Qualité suffisante pour les illustrations enfants, bien plus réactive
+  POLLINATIONS_MODEL = "flux-schnell"
 
   # Style visuel cohérent pour toutes les illustrations de l'app
   # Ce texte est ajouté à chaque prompt pour garantir un rendu cohérent
@@ -76,10 +77,11 @@ class ImageGeneratorService
     encoded_prompt = URI.encode_uri_component(prompt)
 
     # Construction de l'URL avec les paramètres
-    # nologo=true : retire le watermark Pollinations
-    # enhance=true : améliore automatiquement le prompt pour de meilleurs résultats
+    # nologo=true  : retire le watermark Pollinations
+    # enhance=false : désactivé — ajoute du temps de traitement côté Pollinations
+    # 768x512 : format paysage, idéal pour une illustration de livre + plus rapide à générer
     image_url = "#{POLLINATIONS_BASE_URL}/#{encoded_prompt}" \
-                "?width=1024&height=1024&model=#{POLLINATIONS_MODEL}&nologo=true&enhance=true"
+                "?width=768&height=512&model=#{POLLINATIONS_MODEL}&nologo=true&enhance=false"
 
     # Sauvegarde de l'URL directement en base — Pollinations bloque les requêtes serveur (401)
     # On NE télécharge PAS l'image côté serveur : le navigateur l'affichera directement via <img src="...">
@@ -125,26 +127,45 @@ class ImageGeneratorService
   # ============================================================
   # Construction du prompt image
   # ============================================================
-  # Le prompt est en anglais car Pollinations et DALL-E fonctionnent
-  # mieux avec des prompts anglais pour le style illustration
+  # Le prompt utilise le titre de l'histoire ET un moment clé extrait du texte
+  # pour générer une illustration personnalisée, pas générique.
+  # En anglais car Pollinations fonctionne mieux en anglais.
   def build_image_prompt
-    scene = world_scene_description
+    # Extrait une scène dramatique du milieu de l'histoire (souvent le climax)
+    key_moment = extract_key_moment
 
-    # Prompt combinant style visuel + scène + personnage
-    "#{VISUAL_STYLE}. Scene: #{scene} with a child named #{@child.name}, " \
-    "#{@child.age} years old, adventurous and curious. " \
-    "Positive, magical, child-friendly image."
+    # Combine : style visuel + titre de l'histoire + scène clé + personnage
+    prompt = "#{VISUAL_STYLE}. "
+    prompt += "Illustration for a children's story titled '#{@story.title}'. " if @story.title.present?
+    prompt += "Key scene: #{key_moment}. " if key_moment.present?
+    prompt += "Main character: a child named #{@child.name}, #{@child.age} years old. "
+    prompt += "Positive, magical, child-friendly image."
+    prompt
   end
 
-  # Description de scène adaptée à chaque univers
-  def world_scene_description
-    {
-      "space"      => "a child in a space suit floating among colorful stars and planets",
-      "dinos"      => "a child exploring a prehistoric forest with friendly dinosaurs",
-      "princesses" => "a child in a magical castle surrounded by fairy lights and flowers",
-      "pirates"    => "a child captain on a pirate ship sailing a turquoise sea",
-      "animals"    => "a child in an enchanted forest surrounded by smiling colorful animals"
-    }.fetch(@story.world_theme, "a child in a colorful magical world")
+  # Extrait un moment clé de l'histoire pour personnaliser l'illustration
+  # On prend un paragraphe vers les 2/3 du texte (souvent le moment dramatique)
+  def extract_key_moment
+    return "" if @story.content.blank?
+
+    # Nettoie le contenu : retire le bloc [CHOIX] et les lignes de titre markdown
+    # NOTE : on utilise [#]{1,3} au lieu de #{1,3} pour éviter l'interpolation Ruby
+    # (#{ est interprété comme début d'interpolation de chaîne, ce qui causerait une SyntaxError)
+    clean = @story.content
+                  .gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")
+                  .gsub(/^[#]{1,3} .+$/, "")   # Retire les titres ## / # / ###
+                  .strip
+
+    # Récupère tous les paragraphes non vides
+    paragraphs = clean.split(/\n\n+/).map(&:strip).reject(&:empty?)
+    return "" if paragraphs.empty?
+
+    # Prend le paragraphe situé aux 2/3 du texte (zone climax habituelle)
+    climax_index = (paragraphs.length * 2 / 3).clamp(0, paragraphs.length - 1)
+    moment = paragraphs[climax_index].gsub(/\n/, " ").strip
+
+    # Limite à 200 caractères pour ne pas dépasser la longueur d'URL acceptable
+    moment.length > 200 ? moment[0..200].rstrip + "..." : moment
   end
 
   # ============================================================

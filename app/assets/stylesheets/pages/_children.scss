@@ -1,0 +1,31 @@
+// ============================================================
+// Formulaire profil enfant — traits et centres d'intérêt
+// ============================================================
+// Les checkboxes sont cachées (d-none), le label joue le rôle de bouton.
+// :has(input:checked) détecte quand la checkbox est cochée pour
+// changer l'apparence du label → fond violet + texte blanc.
+// ============================================================
+
+// Label-bouton pour les traits de caractère et centres d'intérêt
+// Au repos : outline gris (style Bootstrap btn-outline-secondary)
+// Sélectionné : fond violet + texte blanc — clairement visible
+.badge-check {
+  cursor: pointer;
+  user-select: none;              // Empêche la sélection de texte au clic
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+  // Quand la checkbox cachée à l'intérieur est cochée :
+  // Le label prend les couleurs "actif" — violet plein
+  &:has(input:checked) {
+    background-color: $purple;    // Fond violet de marque
+    color: $white;                // Texte blanc pour le contraste
+    border-color: $purple;        // Bordure assortie
+  }
+
+  // Survol : légère indication que le bouton est cliquable
+  &:hover:not(:has(input:checked)) {
+    background-color: $purple-light; // Fond violet clair au survol
+    border-color: $purple;
+    color: $purple;
+  }
+}
