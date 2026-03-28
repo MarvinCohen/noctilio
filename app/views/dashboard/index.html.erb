@@ -1,129 +1,222 @@
 <%# ============================================================ %>
 <%# Dashboard principal — page d'accueil après connexion %>
+<%# Design fidèle au Figma : hero card + mes histoires + trophées %>
 <%# ============================================================ %>
 
-<div class="container py-4">
+<div class="dashboard-page">
 
-  <%# En-tête de bienvenue %>
-  <div class="row mb-4">
-    <div class="col">
-      <h1 class="fw-bold">Bonsoir, <%= current_user.first_name %> 👋</h1>
-      <p class="text-muted">Quelle magie allez-vous créer ce soir ?</p>
+  <%# ---------------------------------------------------------------- %>
+  <%# Alerte si des histoires sont en cours de génération %>
+  <%# ---------------------------------------------------------------- %>
+  <% if @pending_stories.any? %>
+    <div class="dashboard-alert">
+      <%# Spinner animé pour indiquer que quelque chose se passe %>
+      <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+      <%= pluralize(@pending_stories.count, "histoire est", "histoires sont") %> en cours de création...
+      <%= link_to "Voir →", story_path(@pending_stories.first), class: "dashboard-alert-link" %>
     </div>
-    <div class="col-auto d-flex align-items-center">
-      <%= link_to "✨ Nouvelle histoire", new_story_path, class: "btn btn-primary" %>
+  <% end %>
+
+  <%# ---------------------------------------------------------------- %>
+  <%# HERO CARD — Accroche principale avec CTA %>
+  <%# Fond violet clair, message inspirant, bouton d'action %>
+  <%# ---------------------------------------------------------------- %>
+  <div class="dashboard-hero">
+    <div class="dashboard-hero-content">
+      <%# Sous-titre discret au-dessus du titre principal %>
+      <p class="dashboard-hero-eyebrow">Ce soir, l'aventure commence</p>
+
+      <%# Titre principal avec mot "créer" mis en évidence %>
+      <h1 class="dashboard-hero-title">
+        Quelle magie allez-vous<br>
+        <span class="dashboard-hero-highlight">créer</span> ce soir ?
+      </h1>
+
+      <%# Description courte %>
+      <p class="dashboard-hero-desc">
+        Transformez vos rêves en aventures illustrées grâce à notre créateur d'histoires IA.
+      </p>
+
+      <%# Bouton CTA — crée une histoire %>
+      <%= link_to new_story_path, class: "dashboard-hero-btn" do %>
+        <span>✦</span> Créer mon histoire
+      <% end %>
+
+      <%# Limite gratuite (discrète, seulement si non premium) %>
+      <% unless current_user.premium? %>
+        <p class="dashboard-hero-limit">
+          <%= @stories_this_month %>/3 histoires ce mois ·
+          <%= link_to "Passer en Premium", subscription_path, class: "dashboard-hero-limit-link" %>
+        </p>
+      <% end %>
+    </div>
+
+    <%# Décoration droite de la hero card — illustration ou emoji animé %>
+    <div class="dashboard-hero-deco">
+      <div class="dashboard-hero-deco-inner">
+        🌙
+      </div>
     </div>
   </div>
 
-  <%# Alerte si histoires en cours de génération %>
-  <% if @pending_stories.any? %>
-    <div class="alert alert-info d-flex align-items-center" role="alert">
-      <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+  <%# ---------------------------------------------------------------- %>
+  <%# MES HISTOIRES — Section avec les histoires récentes %>
+  <%# ---------------------------------------------------------------- %>
+  <div class="dashboard-section">
+
+    <%# En-tête de section avec lien "Voir tout" %>
+    <div class="dashboard-section-header">
       <div>
-        <%= pluralize(@pending_stories.count, "histoire est", "histoires sont") %> en cours de création...
-        <%= link_to "Voir", story_path(@pending_stories.first), class: "alert-link" %>
+        <h2 class="dashboard-section-title">Mes histoires</h2>
+        <p class="dashboard-section-sub">Vos dernières aventures créées</p>
       </div>
+      <%= link_to "Voir tout →", stories_path, class: "dashboard-section-link" %>
     </div>
-  <% end %>
 
-  <%# Alerte limite gratuite %>
-  <% unless current_user.premium? %>
-    <div class="alert alert-warning" role="alert">
-      📖 Plan gratuit : <%= @stories_this_month %>/3 histoires créées ce mois-ci.
-      <% if @stories_this_month >= 3 %>
-        <%= link_to "Passer en Premium", subscription_path, class: "alert-link" %> pour des histoires illimitées !
-      <% end %>
-    </div>
-  <% end %>
+    <% if @recent_stories.any? %>
+      <%# Grille de cartes d'histoires %>
+      <div class="dashboard-stories-grid">
 
-  <div class="row g-4">
+        <% @recent_stories.each do |story| %>
+          <%# Carte d'histoire — image + titre + enfant + bouton %>
+          <div class="dashboard-story-card">
 
-    <%# Colonne principale — histoires récentes %>
-    <div class="col-lg-8">
-
-      <%# Section "Continuer à lire" %>
-      <% if @recent_stories.any? %>
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h2 class="h5 fw-bold mb-0">Mes histoires récentes</h2>
-              <%= link_to "Voir tout", stories_path, class: "btn btn-sm btn-outline-secondary" %>
+            <%# Vignette image de l'histoire (ou emoji de l'univers si pas d'image) %>
+            <div class="dashboard-story-thumb">
+              <% if story.cover_image_url.present? %>
+                <%# Image générée par Pollinations — chargée directement par le navigateur %>
+                <%= image_tag story.cover_image_url,
+                      alt: "Couverture de #{story.title}",
+                      loading: "lazy",
+                      onerror: "this.style.display='none'; this.nextElementSibling.style.display='flex'" %>
+                <%# Fallback emoji si l'image échoue à charger %>
+                <div class="dashboard-story-thumb-fallback" style="display:none">
+                  <%= story.world_emoji %>
+                </div>
+              <% else %>
+                <%# Pas d'image — affiche l'emoji de l'univers %>
+                <div class="dashboard-story-thumb-fallback"><%= story.world_emoji %></div>
+              <% end %>
             </div>
 
-            <% @recent_stories.each do |story| %>
-              <div class="d-flex align-items-center p-3 rounded-3 bg-light mb-2">
-                <%# Emoji de l'univers %>
-                <div class="me-3 fs-3"><%= story.world_emoji %></div>
-                <div class="flex-grow-1">
-                  <div class="fw-semibold"><%= story.title || "Histoire sans titre" %></div>
-                  <small class="text-muted">
-                    Pour <%= story.child.name %> • <%= story.world_label %> •
-                    <%= story.created_at.strftime("%d/%m/%Y") %>
-                  </small>
-                </div>
-                <%= link_to "Lire", story_path(story), class: "btn btn-sm btn-outline-primary" %>
-              </div>
+            <%# Infos de la carte %>
+            <div class="dashboard-story-info">
+              <%# Titre de l'histoire (ou placeholder si pas encore généré) %>
+              <p class="dashboard-story-title"><%= story.title || "Histoire sans titre" %></p>
+
+              <%# Métadonnées : enfant + durée %>
+              <p class="dashboard-story-meta">
+                Pour <%= story.child.name %> · <%= story.duration_minutes %> min
+              </p>
+            </div>
+
+            <%# Bouton "Reprendre la lecture" %>
+            <%= link_to story_path(story), class: "dashboard-story-btn" do %>
+              Reprendre la lecture
             <% end %>
 
           </div>
-        </div>
-      <% end %>
+        <% end %>
 
-      <%# Message si aucune histoire %>
-      <% if @recent_stories.empty? && @pending_stories.empty? %>
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-body p-5 text-center">
-            <div class="mb-3" style="font-size: 4rem;">📖</div>
-            <h3 class="h5 fw-bold">Aucune histoire pour l'instant</h3>
-            <p class="text-muted mb-4">Créez votre première histoire magique en quelques secondes !</p>
-            <%= link_to "✨ Créer ma première histoire", new_story_path, class: "btn btn-primary" %>
-          </div>
-        </div>
-      <% end %>
-
-    </div>
-
-    <%# Colonne droite — profils enfants + accès rapides %>
-    <div class="col-lg-4">
-
-      <%# Profils enfants %>
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 fw-bold mb-0">Mes héros</h2>
-            <%= link_to "+ Ajouter", new_child_path, class: "btn btn-sm btn-outline-primary" %>
-          </div>
-
-          <% if @children.any? %>
-            <% @children.each do |child| %>
-              <div class="d-flex align-items-center mb-2 p-2 rounded bg-light">
-                <div class="me-2 fs-4">🧒</div>
-                <div class="flex-grow-1">
-                  <div class="fw-semibold"><%= child.name %></div>
-                  <small class="text-muted"><%= child.age %> ans</small>
-                </div>
-                <%= link_to "✨", new_story_path(child_id: child.id), class: "btn btn-sm btn-outline-primary", title: "Créer une histoire pour #{child.name}" %>
-              </div>
-            <% end %>
-          <% else %>
-            <p class="text-muted text-center py-3">
-              <%= link_to "Créer le premier profil", new_child_path %>
-            </p>
+        <%# Carte "+ Créer une nouvelle histoire" toujours à la fin de la grille %>
+        <div class="dashboard-story-card dashboard-story-card--new">
+          <%= link_to new_story_path, class: "dashboard-story-new-link" do %>
+            <div class="dashboard-story-new-icon">+</div>
+            <p class="dashboard-story-new-label">Nouvelle histoire</p>
           <% end %>
         </div>
+
       </div>
 
-      <%# Accès rapides %>
-      <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
-          <h2 class="h5 fw-bold mb-3">Accès rapides</h2>
-          <div class="d-grid gap-2">
-            <%= link_to "🏆 Salle des trophées", trophy_room_path, class: "btn btn-outline-secondary text-start" %>
-            <%= link_to "👨‍👩‍👧 Tableau de bord parental", parental_path, class: "btn btn-outline-secondary text-start" %>
-          </div>
-        </div>
+    <% else %>
+      <%# État vide — première visite ou aucune histoire terminée %>
+      <div class="dashboard-empty">
+        <div class="dashboard-empty-icon">📖</div>
+        <h3 class="dashboard-empty-title">Aucune histoire pour l'instant</h3>
+        <p class="dashboard-empty-desc">Créez votre première histoire magique en quelques secondes !</p>
+        <%= link_to "✦ Créer ma première histoire", new_story_path, class: "dashboard-hero-btn d-inline-flex" %>
       </div>
+    <% end %>
+
+  </div>
+
+  <%# ---------------------------------------------------------------- %>
+  <%# TROPHY ROOM — Aperçu des badges et XP %>
+  <%# ---------------------------------------------------------------- %>
+  <div class="dashboard-section">
+
+    <%# En-tête avec total XP %>
+    <div class="dashboard-section-header">
+      <div>
+        <h2 class="dashboard-section-title">Salle des trophées</h2>
+        <p class="dashboard-section-sub">Vos accomplissements magiques</p>
+      </div>
+      <div class="dashboard-xp-badge">
+        ⭐ <%= current_user.xp_points %> XP
+      </div>
+    </div>
+
+    <%# Grille de badges %>
+    <% earned_badges = current_user.badges %>
+    <div class="dashboard-badges-grid">
+
+      <%# On affiche les badges gagnés + des slots vides pour les non gagnés %>
+      <% [
+        { key: "first_story",  emoji: "🔭", label: "Explorateur" },
+        { key: "night_owl",    emoji: "🌙", label: "Noctambule" },
+        { key: "five_stories", emoji: "📚", label: "Lecteur" },
+        { key: "ten_stories",  emoji: "🏆", label: "Héros" },
+        { key: "kind_heart",   emoji: "💜", label: "Cœur tendre" }
+      ].each do |badge_def| %>
+        <% earned = earned_badges.any? { |b| b.condition_key == badge_def[:key] } %>
+        <%# Classe "locked" si le badge n'est pas encore gagné %>
+        <div class="dashboard-badge-item <%= earned ? 'earned' : 'locked' %>">
+          <div class="dashboard-badge-icon"><%= badge_def[:emoji] %></div>
+          <span class="dashboard-badge-label"><%= badge_def[:label] %></span>
+        </div>
+      <% end %>
 
     </div>
+
+    <%# Lien vers la salle des trophées complète %>
+    <div class="text-center mt-3">
+      <%= link_to "Voir tous les trophées →", trophy_room_path, class: "dashboard-section-link" %>
+    </div>
+
   </div>
+
+  <%# ---------------------------------------------------------------- %>
+  <%# MES HÉROS — Profils enfants avec raccourci création %>
+  <%# ---------------------------------------------------------------- %>
+  <% if @children.any? %>
+    <div class="dashboard-section">
+      <div class="dashboard-section-header">
+        <div>
+          <h2 class="dashboard-section-title">Mes héros</h2>
+          <p class="dashboard-section-sub">Les personnages principaux de vos histoires</p>
+        </div>
+        <%= link_to "+ Ajouter", new_child_path, class: "dashboard-section-link" %>
+      </div>
+
+      <div class="dashboard-children-grid">
+        <% @children.each do |child| %>
+          <div class="dashboard-child-card">
+            <%# Avatar avec initiale du prénom %>
+            <div class="dashboard-child-avatar"><%= child.name[0].upcase %></div>
+            <div class="dashboard-child-info">
+              <span class="dashboard-child-name"><%= child.name %></span>
+              <span class="dashboard-child-age"><%= child.age %> ans</span>
+            </div>
+            <%# Raccourci pour créer une histoire directement pour cet enfant %>
+            <%= link_to new_story_path(child_id: child.id),
+                  class: "dashboard-child-btn",
+                  title: "Créer une histoire pour #{child.name}" do %>
+              ✦
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
 </div>

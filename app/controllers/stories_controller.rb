@@ -91,15 +91,29 @@ class StoriesController < ApplicationController
     # Lance le job pour générer la suite de l'histoire
     GenerateStoryContinuationJob.perform_later(@story.id, pending_choice.id)
 
-    redirect_to story_path(@story), notice: "Excellent choix ! La suite de l'aventure se prépare... ✨"
+    # Répond en JSON (requête AJAX depuis story_choice_controller.js)
+    # ou en HTML (fallback si JavaScript désactivé)
+    respond_to do |format|
+      format.json { render json: { success: true } }
+      format.html { redirect_to story_path(@story), notice: "Excellent choix ! La suite de l'aventure se prépare... ✨" }
+    end
   end
 
   # GET /stories/:id/status — retourne le statut JSON (pour polling Stimulus)
   def status
+    # Récupère la continuation interactive si disponible (mode interactif terminé)
+    # Utilisé par story_choice_controller.js pour mettre à jour le texte sans recharger
+    continuation = nil
+    if @story.completed? && @story.interactive?
+      resolved = @story.story_choices.where.not(chosen_option: nil).order(:step_number).last
+      continuation = resolved&.context_chosen
+    end
+
     render json: {
-      status: @story.status,
-      completed: @story.completed?,
-      title: @story.title,
+      status:       @story.status,
+      completed:    @story.completed?,
+      title:        @story.title,
+      continuation: continuation,   # Texte de la suite après le choix interactif
       redirect_url: story_path(@story)
     }
   end

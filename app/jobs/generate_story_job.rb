@@ -53,15 +53,12 @@ class GenerateStoryJob < ApplicationJob
       create_story_choice_from_content(story, content)
     end
 
-    # 6. Générer l'image de couverture via DALL-E
-    image_result = ImageGeneratorService.new(story).call
+    # 6. Sauvegarder l'URL Pollinations — INSTANTANÉ (construction d'URL + écriture DB, zéro HTTP)
+    # On le fait ici, avant completed, pour que l'URL soit présente dès que l'histoire est lisible.
+    # Le navigateur chargera l'image depuis Pollinations de façon asynchrone (skeleton → image).
+    ImageGeneratorService.new(story).call
 
-    unless image_result[:success]
-      # L'image est optionnelle — on continue même si elle échoue
-      Rails.logger.warn("GenerateStoryJob — échec image pour story ##{story_id} : #{image_result[:error]}")
-    end
-
-    # 7. Marquer l'histoire comme terminée
+    # 7. Marquer l'histoire comme terminée — l'URL d'image est déjà sauvegardée
     story.update!(status: :completed)
 
     # 8. Vérifier si l'utilisateur mérite de nouveaux badges

@@ -1,148 +1,580 @@
 // ============================================================
-// Styles du dashboard — Noctilio Design System
-// Le dashboard est l'espace principal de l'utilisateur connecté.
-// Il affiche les histoires générées, les enfants, les statistiques.
-// Design sobre et chaleureux, conforme au Figma.
+// Dashboard — styles du tableau de bord utilisateur connecté
+// Fidèle au design Figma : hero card, grille d'histoires, badges
 // ============================================================
 
 // ============================================================
-// Section de titre du dashboard
+// Page wrapper — padding global du contenu
 // ============================================================
 
-// Titre de section (ex: "Mes histoires", "Mes enfants")
-// Police UI bold pour hiérarchiser visuellement les blocs
-.dashboard-section-title {
-  font-family: $headers-font;   // Plus Jakarta Sans — police d'interface
-  font-weight: 700;             // Gras pour hiérarchiser
-  color: $text-dark;            // Texte quasi-noir pour la lisibilité
-  margin-bottom: 1rem;          // Espace sous le titre avant les cartes
+// Conteneur principal du dashboard — tout le contenu est dans ce div
+.dashboard-page {
+  padding: 28px 32px;          // Espace intérieur confortable
+  display: flex;
+  flex-direction: column;
+  gap: 28px;                   // Espace vertical entre chaque grande section
 }
 
 // ============================================================
-// Cartes du dashboard
+// Alerte "histoires en cours de génération"
 // ============================================================
 
-// Carte standard — utilisée pour afficher une histoire, un enfant, etc.
-// Fond $cream-dark pour se distinguer du body sans trop contraster
-.dashboard-card {
-  background-color: $cream-dark;     // Fond crème foncé — légèrement plus sombre que le body
-  border: 1px solid $gray-border;    // Bordure discrète pour délimiter la carte
-  border-radius: 1rem;               // Coins arrondis généreux, style Figma
-  padding: 1.5rem;                   // Espace intérieur confortable
-  transition: box-shadow 0.2s ease, transform 0.15s ease; // Animation au survol
+// Bandeau d'information discret — apparaît seulement si job en cours
+.dashboard-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: $purple-light;   // Fond violet clair — cohérent avec la marque
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: $purple;
+  font-weight: 500;
 
-  // Survol : légère élévation pour indiquer l'interactivité
-  &:hover {
-    box-shadow: 0 4px 16px rgba($text-dark, 0.08); // Ombre très douce
-    transform: translateY(-2px);                   // Micro-lift subtil
-  }
-
-  // Titre à l'intérieur d'une carte
-  .dashboard-card__title {
-    font-family: $headers-font;
+  // Lien "Voir →" à l'intérieur de l'alerte
+  .dashboard-alert-link {
+    color: $purple;
     font-weight: 700;
-    color: $text-dark;
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-  }
+    text-decoration: none;
+    margin-left: auto;         // Pousse le lien à droite
 
-  // Description ou texte secondaire à l'intérieur d'une carte
-  .dashboard-card__meta {
-    color: $text-medium;    // Gris moyen — information secondaire
-    font-size: 0.875rem;    // Légèrement plus petit que le body
-    font-weight: 500;
+    &:hover { text-decoration: underline; }
   }
 }
 
 // ============================================================
-// Boutons du dashboard
+// HERO CARD — grande carte d'accroche en haut du dashboard
 // ============================================================
 
-// Bouton CTA principal — action principale de la page
-// Ex: "Créer une histoire", "Ajouter un enfant"
-.btn-cta-primary {
-  background-color: $purple;    // Violet de marque — attire l'attention
-  color: $white;                // Texte blanc pour le contraste
-  border: none;                 // Pas de bordure — fond plein suffisant
-  font-weight: 700;             // Texte gras pour l'impact
-  border-radius: $border-radius; // Coins arrondis standard
-  padding: 0.75rem 1.5rem;      // Espacement généreux pour un bouton confortable
-  transition: background-color 0.2s ease, transform 0.1s ease;
+// La hero card occupe toute la largeur — fond violet clair arrondi
+.dashboard-hero {
+  background: linear-gradient(135deg, $purple-light 0%, lighten($purple-light, 6%) 100%);
+  border-radius: 20px;         // Grands coins arrondis comme dans le Figma
+  padding: 36px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;            // Empêche la déco de déborder des coins arrondis
 
-  // Survol : violet plus foncé pour indiquer l'interactivité
+  // Contenu texte + bouton — occupe 60% de la largeur
+  .dashboard-hero-content {
+    flex: 1;
+    max-width: 60%;
+  }
+}
+
+// Sous-titre au-dessus du titre principal — petit et discret
+.dashboard-hero-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $purple;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;      // Espacement des lettres pour le style "label"
+  margin-bottom: 10px;
+}
+
+// Titre principal — grand et gras
+.dashboard-hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: $text-dark;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+// Mot mis en évidence dans le titre (ex: "créer")
+// Couleur violet pour attirer l'attention sur le verbe d'action
+.dashboard-hero-highlight {
+  color: $purple;
+  font-style: italic;
+}
+
+// Description courte sous le titre
+.dashboard-hero-desc {
+  font-size: 0.9rem;
+  color: $text-medium;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+// Bouton CTA principal — violet plein avec icône étoile
+.dashboard-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $purple;
+  color: $white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+
   &:hover {
-    background-color: darken($purple, 8%); // Assombrit le violet de 8%
+    opacity: 0.9;
     color: $white;
-    transform: translateY(-1px); // Micro-lift au survol
-  }
-
-  // Clic : retour à la position normale (feedback de pression)
-  &:active {
-    transform: translateY(0);
-    background-color: darken($purple, 14%);
-  }
-
-  // Focus : anneau violet pour l'accessibilité clavier
-  &:focus {
-    box-shadow: 0 0 0 0.25rem rgba($purple, 0.3);
-    color: $white;
+    text-decoration: none;
+    transform: translateY(-1px);
   }
 }
 
-// Bouton accent — action secondaire importante mais non primaire
-// Ex: "Voir l'aperçu", "Rejouer l'histoire"
-// Fond jaune doux (non agressif), texte foncé pour le contraste
-.btn-cta-accent {
-  background-color: $yellow-accent; // Jaune doux — distinct mais non agressif
-  color: $yellow-dark;              // Texte doré foncé — contraste WCAG suffisant
+// Mention de la limite gratuite — discrète sous le bouton
+.dashboard-hero-limit {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: $text-medium;
+  margin-bottom: 0;
+}
+
+.dashboard-hero-limit-link {
+  color: $purple;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+// Décoration droite de la hero card — illustration ou emoji
+.dashboard-hero-deco {
+  flex-shrink: 0;
+
+  // Cercle avec emoji — fond blanc semi-transparent
+  .dashboard-hero-deco-inner {
+    width: 120px;
+    height: 120px;
+    background: rgba($white, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    // Légère animation de flottement pour rendre la carte vivante
+    animation: float 4s ease-in-out infinite;
+  }
+}
+
+// Animation flottement doux pour la décoration
+@keyframes float {
+  0%, 100% { transform: translateY(0);    }
+  50%       { transform: translateY(-8px); }
+}
+
+// ============================================================
+// Sections génériques (Mes histoires, Trophées, Mes héros)
+// ============================================================
+
+// Wrapper de section — fond blanc, coins arrondis, ombre légère
+.dashboard-section {
+  background: $white;
+  border-radius: 16px;
+  border: 1px solid $gray-border;
+  padding: 24px;
+}
+
+// En-tête de section — titre + lien "Voir tout" en ligne
+.dashboard-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+// Titre de section
+.dashboard-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 2px;
+}
+
+// Sous-titre de section — description discrète
+.dashboard-section-sub {
+  font-size: 0.78rem;
+  color: $text-light;
+  margin-bottom: 0;
+}
+
+// Lien "Voir tout →" à droite du titre
+.dashboard-section-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $purple;
+  text-decoration: none;
+  white-space: nowrap;
+  margin-top: 2px;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ============================================================
+// Grille de cartes d'histoires
+// ============================================================
+
+// Grille responsive — 2 colonnes sur desktop, 1 sur mobile
+.dashboard-stories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+// Carte d'histoire individuelle
+.dashboard-story-card {
+  background: $cream;           // Fond crème pour se distinguer du fond blanc de la section
+  border: 1px solid $gray-border;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba($text-dark, 0.07);
+    transform: translateY(-2px);
+  }
+}
+
+// Vignette image — format carré
+.dashboard-story-thumb {
+  width: 100%;
+  aspect-ratio: 4/3;           // Ratio paysage adapté aux illustrations
+  border-radius: 8px;
+  overflow: hidden;
+  background: $purple-light;   // Fond violet clair si l'image charge lentement
+  position: relative;
+
+  // Image de couverture générée par Pollinations
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  // Fallback emoji si pas d'image ou erreur de chargement
+  .dashboard-story-thumb-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    background: $purple-light;
+  }
+}
+
+// Titre de l'histoire dans la carte
+.dashboard-story-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 0;
+  // Tronque le titre sur 2 lignes maximum
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Infos de la carte (enfant + durée)
+.dashboard-story-info {
+  flex: 1;
+}
+
+// Métadonnées discrètes (Pour X · Y min)
+.dashboard-story-meta {
+  font-size: 0.72rem;
+  color: $text-light;
+  margin-bottom: 0;
+}
+
+// Bouton "Reprendre la lecture" en bas de la carte
+.dashboard-story-btn {
+  display: block;
+  text-align: center;
+  padding: 7px 10px;
+  background: $white;
+  border: 1px solid $gray-border;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $text-dark;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: $purple;
+    color: $white;
+    border-color: $purple;
+    text-decoration: none;
+  }
+}
+
+// Carte spéciale "+ Nouvelle histoire" — style pointillé invitant
+.dashboard-story-card--new {
+  border: 2px dashed $gray-border; // Pointillés pour différencier
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $purple;
+    background: $purple-light;
+
+    .dashboard-story-new-icon { color: $purple; }
+    .dashboard-story-new-label { color: $purple; }
+  }
+
+  // Lien qui occupe toute la carte
+  .dashboard-story-new-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    padding: 20px;
+  }
+}
+
+// Grand "+" dans la carte nouvelle histoire
+.dashboard-story-new-icon {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: $text-light;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+// Label sous le "+"
+.dashboard-story-new-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $text-light;
+  transition: color 0.15s ease;
+}
+
+// ============================================================
+// État vide (aucune histoire)
+// ============================================================
+
+// Centre le contenu vide dans la section
+.dashboard-empty {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.dashboard-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.dashboard-empty-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 8px;
+}
+
+.dashboard-empty-desc {
+  font-size: 0.875rem;
+  color: $text-medium;
+  margin-bottom: 20px;
+}
+
+// ============================================================
+// Badge XP dans le header de la section trophées
+// ============================================================
+
+// Pastille jaune avec le total XP
+.dashboard-xp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: $yellow-accent;
+  color: $yellow-dark;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+// ============================================================
+// Grille de badges / trophées
+// ============================================================
+
+// 5 badges en ligne, espacés régulièrement
+.dashboard-badges-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+// Un badge individuel
+.dashboard-badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 68px;
+
+  // Badge gagné — normal, couleurs vives
+  &.earned {
+    .dashboard-badge-icon {
+      background: $purple-light;
+      border: 2px solid $purple;
+    }
+    .dashboard-badge-label { color: $text-dark; }
+  }
+
+  // Badge non gagné — grisé et verrouillé visuellement
+  &.locked {
+    opacity: 0.4;               // Transparence pour indiquer "pas encore gagné"
+    filter: grayscale(1);       // Désature les couleurs
+  }
+}
+
+// Cercle contenant l'emoji du badge
+.dashboard-badge-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: $cream-dark;
+  border: 2px solid $gray-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+// Label sous l'icône du badge
+.dashboard-badge-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: $text-medium;
+  text-align: center;
+  line-height: 1.2;
+}
+
+// ============================================================
+// Grille des profils enfants
+// ============================================================
+
+// Ligne horizontale de cartes enfants
+.dashboard-children-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Carte enfant — ligne avec avatar + infos + bouton
+.dashboard-child-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: $cream;
+  border-radius: 10px;
+  border: 1px solid $gray-border;
+}
+
+// Avatar initiale de l'enfant
+.dashboard-child-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: $purple-light;
+  color: $purple;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+// Bloc nom + âge
+.dashboard-child-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-child-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.dashboard-child-age {
+  font-size: 0.72rem;
+  color: $text-light;
+}
+
+// Bouton étoile pour créer une histoire pour cet enfant
+.dashboard-child-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $white;
+  border: 1px solid $gray-border;
+  border-radius: 8px;
+  color: $purple;
+  font-size: 0.9rem;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: $purple;
+    color: $white;
+    border-color: $purple;
+    text-decoration: none;
+  }
+}
+
+// ============================================================
+// Boutons génériques réutilisables du dashboard
+// (conservés de l'ancienne version pour compatibilité)
+// ============================================================
+
+.btn-cta-primary {
+  background-color: $purple;
+  color: $white;
   border: none;
   font-weight: 700;
   border-radius: $border-radius;
   padding: 0.75rem 1.5rem;
   transition: background-color 0.2s ease, transform 0.1s ease;
 
-  // Survol : jaune légèrement assombri
   &:hover {
-    background-color: darken($yellow-accent, 6%);
-    color: $yellow-dark;
+    background-color: darken($purple, 8%);
+    color: $white;
     transform: translateY(-1px);
   }
 
-  // Clic
-  &:active {
-    transform: translateY(0);
-    background-color: darken($yellow-accent, 10%);
-  }
-
-  // Focus accessibilité
-  &:focus {
-    box-shadow: 0 0 0 0.25rem rgba($yellow-accent, 0.5);
-    color: $yellow-dark;
-  }
+  &:active  { transform: translateY(0); background-color: darken($purple, 14%); }
+  &:focus   { box-shadow: 0 0 0 0.25rem rgba($purple, 0.3); color: $white; }
 }
 
-// ============================================================
-// En-tête du dashboard
-// ============================================================
+.btn-cta-accent {
+  background-color: $yellow-accent;
+  color: $yellow-dark;
+  border: none;
+  font-weight: 700;
+  border-radius: $border-radius;
+  padding: 0.75rem 1.5rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 
-// Zone de bienvenue en haut du dashboard
-// Message d'accueil personnalisé avec le prénom de l'utilisateur
-.dashboard-header {
-  padding: 2rem 0 1.5rem;
-
-  // Titre de bienvenue — très bold, grande taille
-  .dashboard-header__title {
-    font-family: $headers-font;
-    font-weight: 800;        // Ultra-bold pour l'accueil
-    color: $text-dark;
-    font-size: 1.75rem;
-  }
-
-  // Sous-titre ou description courte
-  .dashboard-header__subtitle {
-    color: $text-medium;
-    font-weight: 400;
-    font-size: 1rem;
-    margin-top: 0.25rem;
-  }
+  &:hover   { background-color: darken($yellow-accent, 6%); color: $yellow-dark; transform: translateY(-1px); }
+  &:active  { transform: translateY(0); background-color: darken($yellow-accent, 10%); }
+  &:focus   { box-shadow: 0 0 0 0.25rem rgba($yellow-accent, 0.5); color: $yellow-dark; }
 }

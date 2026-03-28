@@ -23,9 +23,23 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body><%= render "shared/navbar" %>
-<%= render "shared/flashes" %>
-
-    <%= yield %>
+  <body>
+    <% if user_signed_in? %>
+      <%# --- Layout avec sidebar (utilisateurs connectés) --- %>
+      <%# Structure deux colonnes : sidebar fixe à gauche + contenu principal scrollable %>
+      <div class="app-layout">
+        <%= render "shared/sidebar" %>
+        <main class="app-main">
+          <%= render "shared/flashes" %>
+          <%= yield %>
+        </main>
+      </div>
+    <% else %>
+      <%# --- Layout classique avec navbar (visiteurs non connectés) --- %>
+      <%# La navbar s'affiche en haut, le contenu prend toute la largeur %>
+      <%= render "shared/navbar" %>
+      <%= render "shared/flashes" %>
+      <%= yield %>
+    <% end %>
   </body>
 </html>

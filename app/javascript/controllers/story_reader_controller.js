@@ -28,13 +28,15 @@ export default class extends Controller {
     this.playing = false
 
     // Pré-charge les voix dès que possible
-    // getVoices() est asynchrone au premier appel — le navigateur déclenche "voiceschanged"
-    // quand la liste est prête. On écoute cet événement pour mettre les voix en cache.
     this.voices = []
     this.loadVoices()
-
-    // Sur certains navigateurs (Chrome), les voix arrivent en différé via cet événement
     window.speechSynthesis.addEventListener("voiceschanged", () => this.loadVoices())
+
+    // Écoute l'événement déclenché par story_choice_controller quand la continuation
+    // interactive est prête — reprend automatiquement la lecture sur le nouveau texte
+    // IMPORTANT : (event) doit être passé pour que resumeAfterContinuation reçoive le texte
+    this.onContinuationReady = (event) => this.resumeAfterContinuation(event)
+    document.addEventListener("story:continuation-ready", this.onContinuationReady)
   }
 
   // Charge et met en cache la liste des voix disponibles
@@ -135,6 +137,49 @@ export default class extends Controller {
     this.updateButtons(false)
   }
 
+  // ============================================================
+  // resumeAfterContinuation — lit UNIQUEMENT la continuation
+  // ============================================================
+  // Appelé via l'événement "story:continuation-ready".
+  // event.detail.text contient le texte brut markdown de la continuation.
+  // On le nettoie des symboles markdown avant de le lire.
+  resumeAfterContinuation(event) {
+    const rawText = event?.detail?.text
+    if (!rawText) return
+
+    // Nettoie le texte markdown pour que la voix ne lise pas "## " ou "**"
+    const cleanText = rawText
+      .replace(/^#{1,3} /gm, "")   // Retire les # en début de ligne (titres)
+      .replace(/\*\*/g, "")         // Retire les **gras**
+      .replace(/\*/g, "")           // Retire les *italique*
+      .trim()
+
+    if (!cleanText) return
+
+    setTimeout(() => {
+      // Annule toute lecture en cours (l'histoire principale)
+      window.speechSynthesis.cancel()
+
+      // Crée un utterance avec UNIQUEMENT le texte de la continuation
+      // → la lecture reprend juste après le choix, pas depuis le début
+      const utterance = new SpeechSynthesisUtterance(cleanText)
+      utterance.lang   = "fr-FR"
+      utterance.rate   = 0.88
+      utterance.pitch  = 1.05
+      utterance.volume = 1.0
+
+      const bestVoice = this.selectBestFrenchVoice()
+      if (bestVoice) utterance.voice = bestVoice
+
+      utterance.onend   = () => this.updateButtons(false)
+      utterance.onerror = () => this.updateButtons(false)
+
+      window.speechSynthesis.speak(utterance)
+      this.utterance = utterance
+      this.updateButtons(true)
+    }, 400) // Petit délai pour laisser le DOM se stabiliser
+  }
+
   // disconnect() est appelé automatiquement par Stimulus quand on quitte la page
   // Garantit que la lecture s'arrête si l'utilisateur navigue vers une autre page
   disconnect() {
@@ -142,6 +187,8 @@ export default class extends Controller {
       window.speechSynthesis.cancel()
       window.speechSynthesis.removeEventListener("voiceschanged", () => this.loadVoices())
     }
+    // Retire le listener pour éviter les memory leaks
+    document.removeEventListener("story:continuation-ready", this.onContinuationReady)
   }
 
   // Met à jour l'état des boutons selon si une lecture est en cours ou non

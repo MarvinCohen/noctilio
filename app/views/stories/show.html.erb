@@ -57,23 +57,6 @@
       <%# ================================================ %>
       <% else %>
 
-        <%# Image de couverture %>
-        <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
-          <div class="story-cover mb-4 rounded-3 overflow-hidden" style="max-height: 400px;">
-            <% if @story.cover_image.attached? %>
-              <%= image_tag @story.cover_image, class: "w-100 object-fit-cover", alt: @story.title %>
-            <% else %>
-              <%= image_tag @story.cover_image_url, class: "w-100 object-fit-cover", alt: @story.title %>
-            <% end %>
-          </div>
-        <% else %>
-          <%# Placeholder si pas d'image %>
-          <div class="story-cover-placeholder bg-light rounded-3 mb-4 d-flex align-items-center justify-content-center"
-               style="height: 200px;">
-            <span style="font-size: 5rem;"><%= @story.world_emoji %></span>
-          </div>
-        <% end %>
-
         <%# Métadonnées de l'histoire %>
         <div class="d-flex align-items-center gap-3 mb-3">
           <%= link_to stories_path, class: "text-muted text-decoration-none" do %>
@@ -116,10 +99,26 @@
           </div>
 
           <%# Contenu de l'histoire — data-story-reader-target="text" permet au controller de le lire %>
+          <%# render_story_markdown convertit ## et **bold** en vrai HTML (sans symboles parasites) %>
+          <%# Le TTS lit innerText, donc il ne verra que le texte propre sans les balises %>
           <div class="story-content" data-story-reader-target="text">
-            <%# simple_format transforme les sauts de ligne en <p> %>
-            <%# On masque le bloc [CHOIX] du texte brut s'il existe %>
-            <%= simple_format(@story.content&.gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")&.strip) %>
+            <%= render_story_markdown(@story.content) %>
+
+            <%# Si un choix interactif est en attente, on insère le texte du choix ICI %>
+            <%# pour que la voix le lise naturellement dans la continuité de l'histoire %>
+            <% if @story.interactive? && @pending_choice %>
+              <div class="story-choice-voice-text">
+                <p class="story-paragraph">
+                  À toi de décider ! <%= @pending_choice.question %>
+                </p>
+                <p class="story-paragraph">
+                  Option A : <%= @pending_choice.option_a %>
+                </p>
+                <p class="story-paragraph">
+                  Option B : <%= @pending_choice.option_b %>
+                </p>
+              </div>
+            <% end %>
           </div>
         </div>
 
@@ -127,8 +126,11 @@
         <%# Mode interactif — affiche le choix si disponible %>
         <%# ================================================ %>
         <% if @story.interactive? && @pending_choice %>
+          <%# data-controller="story-choice" : gère le choix sans rechargement de page %>
+          <%# data-story-choice-status-url-value : URL de polling pour détecter la fin de génération %>
           <div class="interactive-choice card border-primary border-2 shadow-sm mb-5"
-               data-controller="story-choice">
+               data-controller="story-choice"
+               data-story-choice-status-url-value="<%= status_story_path(@story) %>">
             <div class="card-body p-4">
               <div class="text-center mb-4">
                 <span style="font-size: 2.5rem;">🤔</span>
@@ -137,23 +139,27 @@
               </div>
 
               <div class="row g-3">
-                <%# Option A %>
+                <%# Option A — formulaire intercepté par story-choice#submit (pas de rechargement) %>
                 <div class="col-md-6">
-                  <%= button_to choose_story_path(@story),
-                        params: { chosen_option: "a" },
-                        class: "btn btn-outline-primary w-100 p-4 h-100" do %>
-                    <div class="fw-bold mb-1">Option A</div>
-                    <div class="small"><%= @pending_choice.option_a %></div>
+                  <%= form_tag choose_story_path(@story), method: :post,
+                        data: { action: "submit->story-choice#submit" } do %>
+                    <input type="hidden" name="chosen_option" value="a">
+                    <button type="submit" class="btn btn-outline-primary w-100 p-4">
+                      <div class="fw-bold mb-1">Option A</div>
+                      <div class="small"><%= @pending_choice.option_a %></div>
+                    </button>
                   <% end %>
                 </div>
 
-                <%# Option B %>
+                <%# Option B — même principe %>
                 <div class="col-md-6">
-                  <%= button_to choose_story_path(@story),
-                        params: { chosen_option: "b" },
-                        class: "btn btn-outline-primary w-100 p-4 h-100" do %>
-                    <div class="fw-bold mb-1">Option B</div>
-                    <div class="small"><%= @pending_choice.option_b %></div>
+                  <%= form_tag choose_story_path(@story), method: :post,
+                        data: { action: "submit->story-choice#submit" } do %>
+                    <input type="hidden" name="chosen_option" value="b">
+                    <button type="submit" class="btn btn-outline-primary w-100 p-4">
+                      <div class="fw-bold mb-1">Option B</div>
+                      <div class="small"><%= @pending_choice.option_b %></div>
+                    </button>
                   <% end %>
                 </div>
               </div>
@@ -175,6 +181,37 @@
             <% end %>
           </div>
         <% end %>
+
+        <%# ================================================ %>
+        <%# ILLUSTRATION DE FIN — image du moment clé de l'histoire %>
+        <%# Placée à la fin pour ne pas spoiler et avoir un effet "récompense" %>
+        <%# ================================================ %>
+        <%# Section illustration — toujours affichée pour une histoire terminée %>
+        <%# Le skeleton est visible en attendant que Pollinations génère et charge l'image %>
+        <div class="story-illustration-section">
+          <div class="story-illustration-label">✦ L'illustration de ton aventure</div>
+
+          <div class="story-illustration-wrapper" id="story-illustration">
+
+            <%# Skeleton — visible par défaut, masqué quand l'image est chargée %>
+            <div class="story-illustration-skeleton" id="story-illustration-skeleton">
+              <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
+              <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
+            </div>
+
+            <%# Image — n'existe que si l'URL est sauvegardée en base %>
+            <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
+              <% image_src = @story.cover_image.attached? ? url_for(@story.cover_image) : @story.cover_image_url %>
+              <%= image_tag image_src,
+                    alt:     "Illustration de #{@story.title}",
+                    class:   "story-illustration-img",
+                    style:   "display:none",
+                    onload:  "this.style.display='block'; document.getElementById('story-illustration-skeleton').style.display='none';",
+                    onerror: "document.getElementById('story-illustration-skeleton').innerHTML='<p style=\"color:#777;font-size:0.8rem;\">Illustration non disponible</p>';" %>
+            <% end %>
+
+          </div>
+        </div>
 
         <%# Boutons de navigation %>
         <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">

@@ -59,3 +59,112 @@
     border-color: $purple;      // Bordure assortie au fond
   }
 }
+
+// ============================================================
+// Styles de la page de lecture d'histoire
+// ============================================================
+
+// Titres de chapitres générés par render_story_markdown (## Chapitre X)
+.story-chapter {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid $gray-border; // Ligne sous le titre de chapitre
+}
+
+// Paragraphes de l'histoire — espacement confortable pour la lecture
+.story-paragraph {
+  line-height: 1.85;          // Interligne généreux pour faciliter la lecture
+  margin-bottom: 1.1rem;
+  color: $text-dark;
+}
+
+// ============================================================
+// Illustration de fin d'histoire
+// ============================================================
+
+// Section complète — espace au-dessus pour séparer du texte
+.story-illustration-section {
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+// Label discret au-dessus de l'image
+.story-illustration-label {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $text-light;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+// Wrapper — position relative pour superposer le skeleton et l'image
+.story-illustration-wrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: $purple-light;   // Fond violet clair visible pendant le chargement
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Skeleton de chargement — affiché en attendant l'image Pollinations
+// Pollinations peut prendre 10-30s pour générer l'image
+.story-illustration-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  // Animation de pulsation pour indiquer que ça charge
+  animation: skeleton-pulse 2s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1;   }
+}
+
+.story-illustration-skeleton-icon {
+  font-size: 3.5rem;
+}
+
+.story-illustration-skeleton-text {
+  font-size: 0.8rem;
+  color: $purple;
+  font-weight: 600;
+  margin: 0;
+}
+
+// Image finale — prend toute la largeur une fois chargée
+.story-illustration-img {
+  width: 100%;
+  max-height: 480px;
+  object-fit: cover;
+  border-radius: 16px;
+  // Apparition en fondu pour une transition douce
+  animation: image-fade-in 0.6s ease-in;
+}
+
+@keyframes image-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// Séparateur entre l'histoire principale et la continuation interactive
+// Inséré par story_choice_controller.js après le choix
+.story-continuation-divider {
+  text-align: center;
+  color: $text-light;
+  font-size: 1.1rem;
+  letter-spacing: 0.5em;
+  margin: 2rem 0;
+  opacity: 0.6;
+}
