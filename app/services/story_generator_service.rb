@@ -1,18 +1,26 @@
 class StoryGeneratorService
   # ============================================================
-  # Service de génération d'histoires via OpenAI GPT
+  # Service de génération d'histoires via Groq (Llama 3.3)
   # ============================================================
   # Responsabilité unique : prendre une Story en base de données
-  # et générer son contenu via l'API OpenAI.
+  # et générer son contenu via l'API Groq.
+  #
+  # Groq est un service gratuit qui expose une API compatible OpenAI.
+  # On utilise donc le gem ruby-openai en pointant vers l'endpoint Groq.
   #
   # Utilisation :
   #   service = StoryGeneratorService.new(story)
   #   result = service.call
   #   # result = { success: true, content: "Il était une fois..." }
 
-  # Modèle OpenAI utilisé pour la génération de texte
-  # GPT-5.2 est le modèle le plus récent et le plus performant (2026)
-  MODEL = "gpt-4o"
+  # Modèle Groq utilisé pour la génération de texte
+  # llama-3.3-70b-versatile : modèle Llama 3.3 70B, excellent pour les histoires
+  # Gratuit sur Groq (rate limit généreux pour le développement)
+  MODEL = "llama-3.3-70b-versatile"
+
+  # URL de base de l'API Groq — compatible avec le format OpenAI
+  # Le gem ruby-openai accepte un uri_base custom pour pointer vers d'autres fournisseurs
+  GROQ_API_BASE = "https://api.groq.com/openai/v1"
 
   def initialize(story)
     # On stocke l'histoire pour y accéder dans toutes les méthodes
@@ -21,8 +29,13 @@ class StoryGeneratorService
     # On récupère l'enfant pour personnaliser l'histoire
     @child = story.child
 
-    # Initialisation du client OpenAI avec la clé API stockée dans .env
-    @client = OpenAI::Client.new(access_token: ENV.fetch("OPENAI_API_KEY"))
+    # Initialisation du client avec l'API Groq
+    # uri_base : redirige les appels vers Groq au lieu d'OpenAI
+    # access_token : clé API Groq stockée dans .env (GROQ_API_KEY)
+    @client = OpenAI::Client.new(
+      access_token: ENV.fetch("GROQ_API_KEY"),
+      uri_base: GROQ_API_BASE
+    )
   end
 
   # Génère l'histoire complète et retourne le contenu texte

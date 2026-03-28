@@ -1,0 +1,61 @@
+// ============================================================
+// Styles du formulaire de création d'histoire
+// Gère le retour visuel des cartes de sélection (univers, enfant, valeur)
+// Utilise le sélecteur CSS :has() pour détecter si le radio caché est coché
+//
+// MISE À JOUR : migration $blue → $purple (design system Noctilio)
+// ============================================================
+
+// Carte de sélection d'univers — met en valeur la carte sélectionnée
+// L'utilisateur choisit l'univers de l'histoire en cliquant sur une carte
+.world-selector {
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+  cursor: pointer; // Indique que la carte est cliquable
+
+  // État sélectionné : bordure violette + fond légèrement coloré + légère mise en avant
+  // :has(input:checked) détecte si le radio button caché à l'intérieur est coché
+  &:has(input:checked) {
+    border-color: $purple !important;          // Bordure violette forte pour marquer la sélection
+    background-color: rgba($purple, 0.08);     // Fond violet très transparent (8% opacité)
+    transform: scale(1.04);                    // Légère mise en avant visuelle
+  }
+
+  // Survol : indication que la carte est interactive
+  &:hover {
+    border-color: $gray-border; // Bordure grise plus visible au survol
+  }
+}
+
+// Carte de sélection d'enfant — même principe que world-selector
+// L'utilisateur choisit pour quel enfant générer l'histoire
+.child-selector {
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  cursor: pointer;
+
+  // État sélectionné : bordure violette + fond doux violet
+  &:has(input:checked) {
+    border-color: $purple !important;          // Violet de marque
+    background-color: rgba($purple, 0.05);     // Fond très subtil (5% opacité)
+  }
+
+  // Survol : légère indication visuelle
+  &:hover {
+    border-color: $gray-border;
+  }
+}
+
+// Badge de sélection de valeur éducative (bouton pill)
+// L'utilisateur choisit une ou plusieurs valeurs à transmettre dans l'histoire
+// Quand sélectionné : passe de "outline" à "plein" avec le violet principal
+.badge-selector {
+  transition: all 0.15s ease;
+  cursor: pointer;
+
+  // État sélectionné : fond violet + texte blanc
+  // Effet de "bouton activé" pour un feedback visuel clair
+  &:has(input:checked) {
+    background-color: $purple;  // Violet plein pour indiquer la sélection
+    color: white;               // Texte blanc pour le contraste sur fond violet
+    border-color: $purple;      // Bordure assortie au fond
+  }
+}

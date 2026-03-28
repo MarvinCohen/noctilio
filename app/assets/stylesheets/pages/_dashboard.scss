@@ -1,0 +1,148 @@
+// ============================================================
+// Styles du dashboard — Noctilio Design System
+// Le dashboard est l'espace principal de l'utilisateur connecté.
+// Il affiche les histoires générées, les enfants, les statistiques.
+// Design sobre et chaleureux, conforme au Figma.
+// ============================================================
+
+// ============================================================
+// Section de titre du dashboard
+// ============================================================
+
+// Titre de section (ex: "Mes histoires", "Mes enfants")
+// Police UI bold pour hiérarchiser visuellement les blocs
+.dashboard-section-title {
+  font-family: $headers-font;   // Plus Jakarta Sans — police d'interface
+  font-weight: 700;             // Gras pour hiérarchiser
+  color: $text-dark;            // Texte quasi-noir pour la lisibilité
+  margin-bottom: 1rem;          // Espace sous le titre avant les cartes
+}
+
+// ============================================================
+// Cartes du dashboard
+// ============================================================
+
+// Carte standard — utilisée pour afficher une histoire, un enfant, etc.
+// Fond $cream-dark pour se distinguer du body sans trop contraster
+.dashboard-card {
+  background-color: $cream-dark;     // Fond crème foncé — légèrement plus sombre que le body
+  border: 1px solid $gray-border;    // Bordure discrète pour délimiter la carte
+  border-radius: 1rem;               // Coins arrondis généreux, style Figma
+  padding: 1.5rem;                   // Espace intérieur confortable
+  transition: box-shadow 0.2s ease, transform 0.15s ease; // Animation au survol
+
+  // Survol : légère élévation pour indiquer l'interactivité
+  &:hover {
+    box-shadow: 0 4px 16px rgba($text-dark, 0.08); // Ombre très douce
+    transform: translateY(-2px);                   // Micro-lift subtil
+  }
+
+  // Titre à l'intérieur d'une carte
+  .dashboard-card__title {
+    font-family: $headers-font;
+    font-weight: 700;
+    color: $text-dark;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  // Description ou texte secondaire à l'intérieur d'une carte
+  .dashboard-card__meta {
+    color: $text-medium;    // Gris moyen — information secondaire
+    font-size: 0.875rem;    // Légèrement plus petit que le body
+    font-weight: 500;
+  }
+}
+
+// ============================================================
+// Boutons du dashboard
+// ============================================================
+
+// Bouton CTA principal — action principale de la page
+// Ex: "Créer une histoire", "Ajouter un enfant"
+.btn-cta-primary {
+  background-color: $purple;    // Violet de marque — attire l'attention
+  color: $white;                // Texte blanc pour le contraste
+  border: none;                 // Pas de bordure — fond plein suffisant
+  font-weight: 700;             // Texte gras pour l'impact
+  border-radius: $border-radius; // Coins arrondis standard
+  padding: 0.75rem 1.5rem;      // Espacement généreux pour un bouton confortable
+  transition: background-color 0.2s ease, transform 0.1s ease;
+
+  // Survol : violet plus foncé pour indiquer l'interactivité
+  &:hover {
+    background-color: darken($purple, 8%); // Assombrit le violet de 8%
+    color: $white;
+    transform: translateY(-1px); // Micro-lift au survol
+  }
+
+  // Clic : retour à la position normale (feedback de pression)
+  &:active {
+    transform: translateY(0);
+    background-color: darken($purple, 14%);
+  }
+
+  // Focus : anneau violet pour l'accessibilité clavier
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba($purple, 0.3);
+    color: $white;
+  }
+}
+
+// Bouton accent — action secondaire importante mais non primaire
+// Ex: "Voir l'aperçu", "Rejouer l'histoire"
+// Fond jaune doux (non agressif), texte foncé pour le contraste
+.btn-cta-accent {
+  background-color: $yellow-accent; // Jaune doux — distinct mais non agressif
+  color: $yellow-dark;              // Texte doré foncé — contraste WCAG suffisant
+  border: none;
+  font-weight: 700;
+  border-radius: $border-radius;
+  padding: 0.75rem 1.5rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+
+  // Survol : jaune légèrement assombri
+  &:hover {
+    background-color: darken($yellow-accent, 6%);
+    color: $yellow-dark;
+    transform: translateY(-1px);
+  }
+
+  // Clic
+  &:active {
+    transform: translateY(0);
+    background-color: darken($yellow-accent, 10%);
+  }
+
+  // Focus accessibilité
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba($yellow-accent, 0.5);
+    color: $yellow-dark;
+  }
+}
+
+// ============================================================
+// En-tête du dashboard
+// ============================================================
+
+// Zone de bienvenue en haut du dashboard
+// Message d'accueil personnalisé avec le prénom de l'utilisateur
+.dashboard-header {
+  padding: 2rem 0 1.5rem;
+
+  // Titre de bienvenue — très bold, grande taille
+  .dashboard-header__title {
+    font-family: $headers-font;
+    font-weight: 800;        // Ultra-bold pour l'accueil
+    color: $text-dark;
+    font-size: 1.75rem;
+  }
+
+  // Sous-titre ou description courte
+  .dashboard-header__subtitle {
+    color: $text-medium;
+    font-weight: 400;
+    font-size: 1rem;
+    margin-top: 0.25rem;
+  }
+}

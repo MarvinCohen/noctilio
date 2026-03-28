@@ -1,16 +1,24 @@
-// Import Google fonts
-@import url('https://fonts.googleapis.com/css?family=Nunito:400,700|Work+Sans:400,700&display=swap');
+// ============================================================
+// Définition des polices du projet Noctilio
+// Source : Google Fonts
+// - Plus Jakarta Sans : police principale pour toute l'interface
+// - Noto Serif : police dédiée au contenu des histoires (lecture)
+// ============================================================
 
-// Define fonts for body and headers
-$body-font: "Work Sans", "Helvetica", "sans-serif";
-$headers-font: "Nunito", "Helvetica", "sans-serif";
+// Import Google Fonts — chargement des deux familles
+// Plus Jakarta Sans : poids 400 (normal), 500, 600, 700, 800, 900 (ultra-bold pour les titres)
+// Noto Serif : poids 400 (normal) et 700 (gras), en romain et italique
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
-// To use a font file (.woff) uncomment following lines
-// @font-face {
-//   font-family: "Font Name";
-//   src: font-url('FontFile.eot');
-//   src: font-url('FontFile.eot?#iefix') format('embedded-opentype'),
-//        font-url('FontFile.woff') format('woff'),
-//        font-url('FontFile.ttf') format('truetype')
-// }
-// $my-font: "Font Name";
+// ============================================================
+// Variables de polices — utilisées dans _bootstrap_variables.scss
+// ============================================================
+
+// Police principale de l'interface (labels, boutons, navigation, titres UI)
+$body-font: "Plus Jakarta Sans", "Helvetica", sans-serif;
+
+// Police des titres — même que body pour cohérence visuelle Figma
+$headers-font: "Plus Jakarta Sans", "Helvetica", sans-serif;
+
+// Police des histoires — police serif pour un rendu "livre" confortable à la lecture
+$story-font: "Noto Serif", Georgia, serif;

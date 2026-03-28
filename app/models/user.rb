@@ -37,9 +37,12 @@ class User < ApplicationRecord
   # ============================================================
 
   # Retourne true si l'utilisateur a un abonnement premium actif
-  # Pour l'instant retourne false (Stripe sera configuré plus tard)
-  # Quand Stripe sera activé, remplacer par : subscribed?
+  # Quand Stripe sera activé, remplacer le corps par : subscribed?
   def premium?
+    # En développement : l'email admin est toujours premium pour pouvoir tester
+    # sans être bloqué par la limite de 3 histoires/mois
+    return true if Rails.env.development? && email == "marvincohen95@gmail.com"
+
     false
   end
 

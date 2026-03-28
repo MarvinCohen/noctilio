@@ -1,1 +1,114 @@
-// Specific CSS for your home-page
+// ============================================================
+// Styles de la page d'accueil (landing page) — Noctilio
+// La home est la première page vue par un visiteur non connecté.
+// Elle présente le produit avec un hero fort et une typographie impactante.
+// Design sobre et chaleureux, fond beige, typographie très bold.
+// ============================================================
+
+// ============================================================
+// Section hero — bloc principal d'accroche
+// ============================================================
+
+// Conteneur du hero — fond beige identique au body pour une continuité naturelle
+// Le hero occupe toute la hauteur visible de l'écran (100vh)
+.hero {
+  background-color: $cream;      // Fond beige chaud — continuité avec le body
+  min-height: 100vh;             // Pleine hauteur d'écran pour l'impact visuel
+  display: flex;
+  align-items: center;           // Centre verticalement le contenu du hero
+  padding: 5rem 0;               // Espacement vertical généreux
+
+  // ---- Titre principal (h1) ----
+  // Le plus grand élément textuel de toute l'application
+  // Taille desktop : 72px — bold extrême pour l'impact de marque
+  .hero__title {
+    font-family: $headers-font;  // Plus Jakarta Sans
+    font-weight: 800;            // Ultra-bold pour l'accroche
+    font-size: 4.5rem;           // 72px — très grand pour desktop
+    line-height: 1.1;            // Interligne serré pour les grands titres
+    color: $text-dark;           // Texte quasi-noir
+
+    // Responsive — tablet : on réduit à 48px
+    @media (max-width: 768px) {
+      font-size: 3rem;           // 48px sur mobile/tablette
+    }
+
+    // Responsive — petit mobile
+    @media (max-width: 480px) {
+      font-size: 2.25rem;        // 36px sur très petit écran
+    }
+  }
+
+  // ---- Sous-titre / accroche ----
+  // Texte d'explication en dessous du titre principal
+  .hero__subtitle {
+    font-family: $body-font;
+    font-weight: 500;            // Medium — lisible sans surcharger le titre
+    font-size: 1.25rem;          // Un peu plus grand que le body standard
+    color: $text-medium;         // Gris moyen — secondaire par rapport au titre
+    margin-top: 1.5rem;
+    max-width: 560px;            // Largeur max pour la lisibilité (environ 75 caractères)
+    line-height: 1.6;            // Interligne confortable pour la lecture
+  }
+
+  // ---- Actions (boutons CTA) ----
+  // Zone des boutons d'appel à l'action du hero
+  .hero__actions {
+    margin-top: 2.5rem;          // Espace au-dessus des boutons
+    display: flex;
+    gap: 1rem;                   // Espace entre les boutons
+    flex-wrap: wrap;             // Retour à la ligne sur mobile
+  }
+}
+
+// ============================================================
+// Section features — présentation des points forts
+// ============================================================
+
+// Section de fonctionnalités avec fond légèrement plus sombre que le body
+.features-section {
+  background-color: $cream-dark; // Crème foncé — différenciation subtile de section
+  padding: 5rem 0;
+
+  // Titre de la section features
+  .features-section__title {
+    font-family: $headers-font;
+    font-weight: 800;
+    font-size: 2.5rem;
+    color: $text-dark;
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+}
+
+// Carte de fonctionnalité individuelle
+// Utilisée pour présenter chaque avantage du produit
+.feature-card {
+  background-color: $white;         // Blanc pur pour contraster avec le fond crème
+  border: 1px solid $gray-border;   // Bordure discrète
+  border-radius: 1rem;              // Coins arrondis généreux
+  padding: 2rem;
+  text-align: center;
+  transition: box-shadow 0.2s ease;
+
+  // Survol : légère ombre pour l'effet de profondeur
+  &:hover {
+    box-shadow: 0 8px 24px rgba($text-dark, 0.07);
+  }
+
+  // Titre de la feature card
+  .feature-card__title {
+    font-family: $headers-font;
+    font-weight: 700;
+    color: $text-dark;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  // Description de la feature card
+  .feature-card__description {
+    color: $text-medium;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+}

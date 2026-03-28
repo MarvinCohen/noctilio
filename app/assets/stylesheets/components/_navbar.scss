@@ -1,12 +1,59 @@
+// ============================================================
+// Styles de la barre de navigation — Noctilio Design System
+// Design sobre et clair : fond beige chaud, pas d'ombre agressive
+// La navbar doit s'intégrer naturellement au fond du body
+// ============================================================
+
+// Conteneur principal de la navbar
+// Fond beige identique au body pour une continuité visuelle douce
+// Bordure bottom discrète pour séparer la nav du contenu sans agression
 .navbar-lewagon {
-  justify-content: space-between;
-  background: white;
-}
+  justify-content: space-between;   // Brand à gauche, liens à droite
+  background-color: $cream;         // Fond beige chaud (même que body bg)
+  border-bottom: 1px solid $gray-border; // Séparateur discret et élégant
+  // Pas de box-shadow pour éviter l'effet "flottant" trop agressif
 
-.navbar-lewagon .navbar-collapse {
-  flex-grow: 0;
-}
+  // ---- Brand / Logo ----
+  // Le nom de l'application — mis en valeur par un poids très fort
+  .navbar-brand {
+    font-weight: 800;               // Ultra-bold pour l'impact de marque
+    color: $text-dark;              // Texte quasi-noir, lisible et sobre
+    font-size: 1.2rem;
 
-.navbar-lewagon .navbar-brand img {
-  width: 40px;
+    // L'image du logo (si présente) reste petite et proportionnelle
+    img {
+      width: 40px;
+    }
+
+    // Hover du brand : virer le soulignement Bootstrap par défaut
+    &:hover {
+      color: $text-dark;
+    }
+  }
+
+  // ---- Liens de navigation ----
+  // Couleur neutre au repos, violet au survol/actif
+  .navbar-nav .nav-link {
+    color: $text-medium;            // Gris moyen : visible mais pas dominant
+    font-weight: 600;               // Semi-bold pour la lisibilité à petite taille
+    transition: color 0.15s ease;   // Transition douce au survol
+
+    // État survol : passe au violet de marque
+    &:hover {
+      color: $purple;
+    }
+
+    // État actif (page courante) : violet, plus fort
+    &.active,
+    &:focus {
+      color: $purple;
+      font-weight: 700;             // Un peu plus gras pour indiquer la page active
+    }
+  }
+
+  // ---- Collapse (liens regroupés) ----
+  // On empêche le collapse de prendre toute la largeur disponible
+  .navbar-collapse {
+    flex-grow: 0;
+  }
 }

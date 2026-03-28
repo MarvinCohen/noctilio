@@ -86,11 +86,41 @@
         <%# Titre de l'histoire %>
         <h1 class="fw-bold display-6 mb-4"><%= @story.title || "Mon histoire magique" %></h1>
 
-        <%# Contenu de l'histoire %>
-        <div class="story-content mb-5">
-          <%# simple_format transforme les sauts de ligne en <p> %>
-          <%# On masque le bloc [CHOIX] du texte brut s'il existe %>
-          <%= simple_format(@story.content&.gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")&.strip) %>
+        <%# Contrôles de lecture vocale — Web Speech API %>
+        <%# data-controller connecte le Stimulus controller story-reader %>
+        <div data-controller="story-reader" class="mb-5">
+          <%# Boutons de contrôle de lecture %>
+          <div class="reader-controls d-flex align-items-center gap-2 mb-3">
+            <span class="text-muted small fw-semibold">🎙️ Lecture vocale :</span>
+
+            <%# Bouton Play — visible quand la lecture est arrêtée %>
+            <button data-story-reader-target="playBtn"
+                    data-action="click->story-reader#play"
+                    class="btn btn-sm btn-outline-primary">
+              ▶ Écouter
+            </button>
+
+            <%# Bouton Pause — masqué par défaut, affiché quand la lecture est en cours %>
+            <button data-story-reader-target="pauseBtn"
+                    data-action="click->story-reader#pause"
+                    class="btn btn-sm btn-outline-secondary d-none">
+              ⏸ Pause
+            </button>
+
+            <%# Bouton Stop — arrête complètement la lecture %>
+            <button data-story-reader-target="stopBtn"
+                    data-action="click->story-reader#stop"
+                    class="btn btn-sm btn-outline-danger">
+              ⏹ Arrêter
+            </button>
+          </div>
+
+          <%# Contenu de l'histoire — data-story-reader-target="text" permet au controller de le lire %>
+          <div class="story-content" data-story-reader-target="text">
+            <%# simple_format transforme les sauts de ligne en <p> %>
+            <%# On masque le bloc [CHOIX] du texte brut s'il existe %>
+            <%= simple_format(@story.content&.gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")&.strip) %>
+          </div>
         </div>
 
         <%# ================================================ %>
@@ -151,6 +181,18 @@
           <%= link_to "✨ Nouvelle histoire", new_story_path, class: "btn btn-primary" %>
           <%= link_to "📚 Mes histoires", stories_path, class: "btn btn-outline-secondary" %>
           <%= link_to "🏆 Trophées", trophy_room_path, class: "btn btn-outline-secondary" %>
+
+          <%# Bouton sauvegarder — affiché seulement si l'histoire n'est pas encore sauvegardée %>
+          <%# saved? utilise la méthode générée automatiquement par Rails pour le boolean saved %>
+          <% if @story.saved? %>
+            <%# Badge désactivé si déjà sauvegardée — évite les doubles sauvegardes %>
+            <span class="btn btn-success disabled">✅ Sauvegardée</span>
+          <% else %>
+            <%# button_to génère un formulaire POST — nécessaire car c'est une action qui modifie les données %>
+            <%= button_to "💾 Sauvegarder", save_story_story_path(@story),
+                  method: :post,
+                  class: "btn btn-warning fw-bold" %>
+          <% end %>
         </div>
 
       <% end %>

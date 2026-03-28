@@ -1,2 +1,5 @@
 // Import page-specific CSS files here.
-@import "home";
+// Chaque page a son propre fichier SCSS importé ici.
+@import "home";       // Styles de la landing page / page d'accueil
+@import "stories";    // Styles du formulaire de création d'histoires
+@import "dashboard";  // Styles du dashboard utilisateur connecté

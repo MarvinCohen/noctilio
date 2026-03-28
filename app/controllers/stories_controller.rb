@@ -4,15 +4,17 @@ class StoriesController < ApplicationController
   # ============================================================
 
   # Charge l'histoire avant ces actions
-  before_action :set_story, only: [:show, :destroy, :choose, :status]
+  # save_story est inclus pour récupérer @story via set_story avant de la sauvegarder
+  before_action :set_story, only: [:show, :destroy, :choose, :status, :save_story]
 
   # Vérifie la limite d'histoires AVANT de créer (gratuit : 3/mois max)
   before_action :check_story_limit!, only: [:new, :create]
 
   # GET /stories — bibliothèque personnelle de l'utilisateur
   def index
-    # Toutes les histoires terminées, triées par date (plus récente en premier)
-    @stories = current_user.stories.completed_recent
+    # N'affiche que les histoires terminées ET sauvegardées par l'utilisateur
+    # Une histoire doit être explicitement sauvegardée pour apparaître ici
+    @stories = current_user.stories.completed_recent.saved_stories
   end
 
   # GET /stories/:id — lecture de l'histoire
@@ -26,7 +28,9 @@ class StoriesController < ApplicationController
 
   # GET /stories/new — formulaire de création
   def new
-    @story    = Story.new
+    # Pré-sélectionne des valeurs par défaut pour éviter les erreurs de validation
+    # si l'utilisateur soumet sans avoir cliqué sur chaque option
+    @story    = Story.new(world_theme: "space", educational_value: "courage")
     @children = current_user.children.ordered
 
     # Si l'utilisateur n'a pas encore créé de profil enfant, on le redirige
@@ -98,6 +102,15 @@ class StoriesController < ApplicationController
       title: @story.title,
       redirect_url: story_path(@story)
     }
+  end
+
+  # POST /stories/:id/save — sauvegarde l'histoire dans la bibliothèque de l'utilisateur
+  # Marque saved: true pour que l'histoire apparaisse dans l'index (bibliothèque)
+  def save_story
+    # Met à jour le flag saved en base — update! lève une exception si ça échoue
+    @story.update!(saved: true)
+    # Redirige vers la page de l'histoire avec un message de confirmation
+    redirect_to story_path(@story), notice: "Histoire sauvegardée dans ta bibliothèque ! 📚"
   end
 
   # DELETE /stories/:id — supprime l'histoire

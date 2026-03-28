@@ -1,28 +1,94 @@
-// This is where you override default Bootstrap variables
-// 1. Find all Bootstrap variables that you can override at the end of each component's documentation under the `Sass variables` anchor
-// e.g. here are the ones you can override for the navbar https://getbootstrap.com/docs/5.3/components/navbar/#sass-variables
-// 2. These variables are defined with default value (see https://robots.thoughtbot.com/sass-default)
-// 3. You can override them below!
+// ============================================================
+// Overrides des variables Bootstrap 5 — Noctilio Design System
+// Principe : on remplace les valeurs Bootstrap par défaut avec
+// nos design tokens définis dans _colors.scss et _fonts.scss.
+// Ces variables DOIVENT être déclarées avant l'import de Bootstrap.
+// ============================================================
 
-// General style
+// --- Typographie ---
+// Remplace la police système Bootstrap par notre police UI
 $font-family-sans-serif: $body-font;
-$headings-font-family:   $headers-font;
-$body-bg:                $light-gray;
-$font-size-base:         1rem;
 
-// Colors
-$body-color: $gray;
-$primary:    $blue;
-$success:    $green;
-$info:       $yellow;
-$danger:     $red;
-$warning:    $orange;
+// Remplace la police des titres h1→h6 par notre police d'interface
+$headings-font-family: $headers-font;
 
-// Buttons & inputs' radius
-$border-radius-sm:            .0625rem;
-$border-radius:               .125rem;
-$border-radius-lg:            .25rem;
-$border-radius-xl:            .5rem;
-$border-radius-xxl:           1rem;
+// Taille de base des textes (Bootstrap default = 1rem = 16px)
+$font-size-base: 1rem;
 
-// Override other variables below!
+// ============================================================
+// Couleurs Bootstrap — mappées sur nos design tokens
+// ============================================================
+
+// Couleur du texte principal du body
+$body-color: $text-dark;
+
+// Couleur de fond du body — remplace le $light-gray par notre beige chaud
+$body-bg: $cream;
+
+// Couleur primaire (boutons .btn-primary, .text-primary, etc.)
+$primary: $purple;
+
+// Couleur secondaire (boutons .btn-secondary, badges, etc.)
+$secondary: $text-medium;
+
+// Couleur succès — alertes vertes, boutons de confirmation
+$success: $green;
+
+// Couleur danger — erreurs, boutons destructifs
+$danger: $red;
+
+// Couleur de bordure par défaut (inputs, cartes, dividers)
+$border-color: $gray-border;
+
+// ============================================================
+// Border-radius — style "doux" conforme au Figma
+// Plus arrondis que les Bootstrap defaults pour un rendu moderne
+// ============================================================
+
+// Très petit (ex: badge pill interne)
+$border-radius-sm:  .375rem;  // 6px
+
+// Standard (boutons, inputs, éléments courants)
+$border-radius:     .5rem;    // 8px
+
+// Large (cartes, modals, panneaux)
+$border-radius-lg:  .75rem;   // 12px
+
+// Extra large (sections, hero blocks)
+$border-radius-xl:  1rem;     // 16px
+
+// XXL (blocs visuels forts, overlays)
+$border-radius-xxl: 1.5rem;   // 24px
+
+// ============================================================
+// Cards Bootstrap — remplacent les valeurs par défaut
+// ============================================================
+
+// Rayon des coins des cartes — doux, conforme au Figma
+$card-border-radius:  1rem;
+
+// Fond des cartes — crème foncé légèrement distinct du body
+$card-bg:             $cream-dark;
+
+// Bordure des cartes — gris doux, non agressif
+$card-border-color:   $gray-border;
+
+// ============================================================
+// Inputs & Forms
+// ============================================================
+
+// Fond des champs de saisie — blanc pur pour contraster avec le fond crème du body
+$input-bg:                  $white;
+
+// Bordure des inputs au repos
+$input-border-color:        $gray-border;
+
+// Bordure des inputs au focus — violet pour indiquer l'interaction
+$input-focus-border-color:  $purple;
+
+// ============================================================
+// Boutons
+// ============================================================
+
+// Poids de la police dans les boutons — gras pour la lisibilité et l'impact
+$btn-font-weight: 700;

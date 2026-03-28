@@ -43,6 +43,10 @@ class Story < ApplicationRecord
   # Histoires complétées et triées par date
   scope :completed_recent, -> { completed.recent }
 
+  # Histoires sauvegardées par l'utilisateur dans sa bibliothèque
+  # Utilisé dans StoriesController#index pour n'afficher que les histoires gardées
+  scope :saved_stories, -> { where(saved: true) }
+
   # ============================================================
   # Méthodes métier
   # ============================================================

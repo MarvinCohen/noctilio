@@ -33,6 +33,9 @@ Rails.application.routes.draw do
 
       # GET /stories/:id/status — polling du statut de génération (retourne JSON)
       get :status
+
+      # POST /stories/:id/save_story — sauvegarder l'histoire dans la bibliothèque
+      post :save_story
     end
   end
 

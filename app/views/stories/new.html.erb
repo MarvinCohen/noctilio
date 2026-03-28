@@ -3,7 +3,10 @@
 <%# Stimulus controller "story-creation" gère les étapes et le preview %>
 <%# ============================================================ %>
 
-<div class="container py-4" data-controller="story-creation">
+<%# data-action="change->story-creation#onRadioChange" : écoute tous les radio buttons en bubbling %>
+<div class="container py-4"
+     data-controller="story-creation"
+     data-action="change->story-creation#onRadioChange">
   <div class="row justify-content-center">
     <div class="col-lg-8">
 

@@ -1,118 +1,173 @@
 class ImageGeneratorService
   # ============================================================
-  # Service de génération d'images via OpenAI DALL-E
+  # Service de génération d'images — Pollinations.ai (gratuit)
   # ============================================================
   # Génère une illustration style livre d'enfants pour une histoire.
-  # L'image est générée via DALL-E 3, puis téléchargée immédiatement
-  # car l'URL expire après 1 heure.
+  #
+  # Stratégie :
+  #   1. Pollinations.ai en priorité — 100% gratuit, zéro clé API
+  #      Il suffit d'appeler une URL avec le prompt encodé.
+  #   2. DALL-E (OpenAI) en fallback — si OPENAI_API_KEY est configurée
+  #
+  # Pollinations.ai : https://pollinations.ai
+  # Format URL : https://image.pollinations.ai/prompt/{prompt_encodé}?width=1024&height=1024&model=flux
   #
   # Utilisation :
   #   service = ImageGeneratorService.new(story)
   #   result = service.call
-  #   # result = { success: true, url: "https://...", local_path: nil }
+  #   # result = { success: true } ou { success: false, error: "..." }
 
-  # Modèle DALL-E utilisé pour la génération d'images
-  # dall-e-3 offre la meilleure qualité pour les illustrations enfants
-  IMAGE_MODEL = "dall-e-3"
+  require "open-uri"
+  require "uri"
+
+  # URL de base de Pollinations.ai — pas besoin de clé API
+  POLLINATIONS_BASE_URL = "https://image.pollinations.ai/prompt"
+
+  # Modèle Pollinations utilisé
+  # "flux" : modèle FLUX, excellente qualité pour les illustrations
+  POLLINATIONS_MODEL = "flux"
 
   # Style visuel cohérent pour toutes les illustrations de l'app
-  VISUAL_STYLE = "illustration style livre d'enfants, aquarelle douce, couleurs pastel, " \
-                 "trait dessiné à la main, ambiance chaleureuse et féérique, fond simple"
+  # Ce texte est ajouté à chaque prompt pour garantir un rendu cohérent
+  VISUAL_STYLE = "children book illustration, soft watercolor, pastel colors, " \
+                 "hand-drawn style, warm and magical atmosphere, simple background, " \
+                 "cute and friendly, safe for kids"
 
   def initialize(story)
     @story = story
     @child = story.child
-
-    # Initialisation du client OpenAI
-    @client = OpenAI::Client.new(access_token: ENV.fetch("OPENAI_API_KEY"))
   end
 
-  # Génère l'image et la télécharge dans ActiveStorage
+  # Génère l'image et l'attache à l'histoire via ActiveStorage
   # Retourne { success: true/false, error: "..." }
   def call
-    # 1. Construire le prompt pour l'image
+    # Construction du prompt en anglais (Pollinations fonctionne mieux en anglais)
     prompt = build_image_prompt
 
-    # 2. Appeler l'API DALL-E
-    response = @client.images.generate(
-      parameters: {
-        prompt: prompt,
-        model: IMAGE_MODEL,
-        size: "1024x1024",      # Format carré pour les cartes d'histoires
-        quality: "standard",    # Standard = moins cher, suffisant pour MVP
-        style: "natural",       # "natural" est mieux pour le style illustration
-        n: 1                    # DALL-E 3 ne supporte qu'une image à la fois
-      }
-    )
+    # Sauvegarde du prompt utilisé (utile pour débuguer ou régénérer)
+    @story.update_column(:image_prompt, prompt)
 
-    # 3. Récupérer l'URL de l'image générée
-    image_url = response.dig("data", 0, "url")
-    revised_prompt = response.dig("data", 0, "revised_prompt")
+    # Tentative 1 : Pollinations.ai (gratuit, prioritaire)
+    result = generate_with_pollinations(prompt)
+    return result if result[:success]
 
-    unless image_url
-      return { success: false, error: "DALL-E n'a pas retourné d'URL" }
+    # Tentative 2 : DALL-E (fallback si clé OpenAI présente)
+    # Permet de passer à OpenAI plus tard sans changer de code
+    if ENV["OPENAI_API_KEY"].present?
+      Rails.logger.info("ImageGeneratorService — Pollinations a échoué, tentative DALL-E")
+      return generate_with_dalle(prompt)
     end
 
-    # 4. Sauvegarder le prompt utilisé (pour régénérer si besoin)
-    @story.update_column(:image_prompt, revised_prompt || prompt)
-    @story.update_column(:cover_image_url, image_url)
-
-    # 5. Télécharger et attacher l'image à ActiveStorage
-    # IMPORTANT : l'URL expire après 1 heure — on télécharge tout de suite
-    attach_image_from_url(image_url)
-
-    { success: true, url: image_url }
-  rescue OpenAI::Error => e
-    { success: false, error: "Erreur DALL-E : #{e.message}" }
-  rescue StandardError => e
-    { success: false, error: "Erreur inattendue : #{e.message}" }
+    # Les deux ont échoué — l'histoire sera créée sans image
+    Rails.logger.warn("ImageGeneratorService — aucune image générée pour story ##{@story.id}")
+    { success: false, error: result[:error] }
   end
 
   private
 
-  # Construit le prompt pour l'illustration
-  # On utilise les informations de l'histoire pour créer une image cohérente
-  def build_image_prompt
-    world_label = @story.world_label
-    child_name  = @child.name
+  # ============================================================
+  # Génération via Pollinations.ai (gratuit)
+  # ============================================================
+  # Pollinations expose une API HTTP simple :
+  # GET https://image.pollinations.ai/prompt/{prompt}?width=1024&height=1024&model=flux
+  # La réponse est directement le fichier image (JPEG)
+  def generate_with_pollinations(prompt)
+    # Encode le prompt pour une URL valide (espaces → %20, etc.)
+    encoded_prompt = URI.encode_uri_component(prompt)
 
-    # Description visuelle de base selon l'univers
-    scene_description = world_scene_description
+    # Construction de l'URL avec les paramètres
+    # nologo=true : retire le watermark Pollinations
+    # enhance=true : améliore automatiquement le prompt pour de meilleurs résultats
+    image_url = "#{POLLINATIONS_BASE_URL}/#{encoded_prompt}" \
+                "?width=1024&height=1024&model=#{POLLINATIONS_MODEL}&nologo=true&enhance=true"
 
-    # Prompt final combinant style, scène et personnage
-    "#{VISUAL_STYLE}. Scène : #{scene_description} avec #{child_name}, " \
-    "un enfant de #{@child.age} ans plein d'aventure. " \
-    "Univers : #{world_label}. " \
-    "Image positive, magique et adaptée aux enfants en bas âge."
+    # Sauvegarde de l'URL directement en base — Pollinations bloque les requêtes serveur (401)
+    # On NE télécharge PAS l'image côté serveur : le navigateur l'affichera directement via <img src="...">
+    # L'URL Pollinations est permanente et ne s'expire pas (contrairement à DALL-E)
+    @story.update_column(:cover_image_url, image_url)
+
+    Rails.logger.info("ImageGeneratorService — URL Pollinations sauvegardée pour story ##{@story.id}")
+    { success: true, url: image_url }
+  rescue StandardError => e
+    Rails.logger.error("ImageGeneratorService — échec Pollinations : #{e.message}")
+    { success: false, error: "Erreur Pollinations : #{e.message}" }
   end
 
-  # Retourne une description de scène selon l'univers de l'histoire
+  # ============================================================
+  # Génération via DALL-E 3 (OpenAI — payant, fallback)
+  # ============================================================
+  # Utilisé seulement si OPENAI_API_KEY est configurée dans .env
+  def generate_with_dalle(prompt)
+    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+
+    response = client.images.generate(
+      parameters: {
+        prompt: prompt,
+        model: "dall-e-3",
+        size: "1024x1024",
+        quality: "standard",
+        style: "natural",
+        n: 1
+      }
+    )
+
+    image_url = response.dig("data", 0, "url")
+    return { success: false, error: "DALL-E n'a pas retourné d'URL" } unless image_url
+
+    @story.update_column(:cover_image_url, image_url)
+    attach_image_from_url(image_url, "png")
+
+    { success: true, url: image_url }
+  rescue StandardError => e
+    { success: false, error: "Erreur DALL-E : #{e.message}" }
+  end
+
+  # ============================================================
+  # Construction du prompt image
+  # ============================================================
+  # Le prompt est en anglais car Pollinations et DALL-E fonctionnent
+  # mieux avec des prompts anglais pour le style illustration
+  def build_image_prompt
+    scene = world_scene_description
+
+    # Prompt combinant style visuel + scène + personnage
+    "#{VISUAL_STYLE}. Scene: #{scene} with a child named #{@child.name}, " \
+    "#{@child.age} years old, adventurous and curious. " \
+    "Positive, magical, child-friendly image."
+  end
+
+  # Description de scène adaptée à chaque univers
   def world_scene_description
     {
-      "space"      => "Un enfant en combinaison spatiale flottant parmi les étoiles et les planètes colorées",
-      "dinos"      => "Un enfant explorant une forêt préhistorique avec des dinosaures amicaux",
-      "princesses" => "Un enfant dans un château magique entouré de lumières féeriques",
-      "pirates"    => "Un enfant capitaine sur un navire pirate voguant sur une mer turquoise",
-      "animals"    => "Un enfant dans une forêt enchantée entouré d'animaux souriants et colorés"
-    }.fetch(@story.world_theme, "Un enfant dans un monde magique et coloré")
+      "space"      => "a child in a space suit floating among colorful stars and planets",
+      "dinos"      => "a child exploring a prehistoric forest with friendly dinosaurs",
+      "princesses" => "a child in a magical castle surrounded by fairy lights and flowers",
+      "pirates"    => "a child captain on a pirate ship sailing a turquoise sea",
+      "animals"    => "a child in an enchanted forest surrounded by smiling colorful animals"
+    }.fetch(@story.world_theme, "a child in a colorful magical world")
   end
 
-  # Télécharge l'image depuis l'URL OpenAI et l'attache à ActiveStorage
-  # C'est crucial de le faire immédiatement car l'URL expire après 1h
-  def attach_image_from_url(url)
-    require "open-uri"
+  # ============================================================
+  # Téléchargement et attachement à ActiveStorage
+  # ============================================================
+  # Télécharge l'image depuis une URL distante et l'attache à l'histoire.
+  # content_type : "jpg" pour Pollinations, "png" pour DALL-E
+  def attach_image_from_url(url, extension = "jpg")
+    # Ouvre l'URL avec un timeout pour éviter de bloquer le job trop longtemps
+    downloaded_file = URI.open(url, read_timeout: 60, open_timeout: 30)
 
-    # Ouvre l'URL distante (téléchargement)
-    downloaded_file = URI.open(url, read_timeout: 30)
+    content_type = extension == "png" ? "image/png" : "image/jpeg"
 
-    # Attache le fichier téléchargé à l'histoire via ActiveStorage
+    # Attache l'image téléchargée à l'histoire via ActiveStorage
     @story.cover_image.attach(
       io: downloaded_file,
-      filename: "histoire_#{@story.id}_couverture.png",
-      content_type: "image/png"
+      filename: "histoire_#{@story.id}_couverture.#{extension}",
+      content_type: content_type
     )
   rescue StandardError => e
     # Si le téléchargement échoue, on garde l'URL comme fallback
-    Rails.logger.error("ImageGeneratorService — échec du téléchargement : #{e.message}")
+    # L'histoire s'affichera quand même, avec l'URL directe comme src
+    Rails.logger.error("ImageGeneratorService — échec téléchargement : #{e.message}")
+    raise  # On re-raise pour que generate_with_pollinations capture l'erreur
   end
 end

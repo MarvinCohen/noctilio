@@ -36,10 +36,13 @@ class ParentalController < ApplicationController
     start_date = days.days.ago.beginning_of_day
 
     # Groupe les histoires par jour et compte
+    # IMPORTANT : on qualifie "created_at" avec "stories." pour éviter l'ambiguïté
+    # PostgreSQL ne sait pas choisir entre stories.created_at et children.created_at
+    # car current_user.stories fait une jointure INNER JOIN avec la table children
     current_user.stories
-                .where(created_at: start_date..)
-                .group("DATE(created_at)")
-                .order("DATE(created_at)")
+                .where(stories: { created_at: start_date.. })
+                .group("DATE(stories.created_at)")
+                .order("DATE(stories.created_at)")
                 .count
   end
 end

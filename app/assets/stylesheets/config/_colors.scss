@@ -1,10 +1,55 @@
-// Define variables for your color scheme
+// ============================================================
+// Design tokens couleurs — Noctilio Design System (Figma)
+// Toutes les couleurs du projet sont centralisées ici.
+// RÈGLE : ne jamais utiliser un code hex directement dans le CSS,
+// toujours passer par ces variables.
+// ============================================================
 
-// For example:
+// --- Couleur principale ---
+// Violet profond — couleur de marque, boutons primaires, liens actifs
+$purple: #5543CF;
+
+// --- Fonds (du plus clair au plus foncé) ---
+// Fond principal du body — beige chaud très doux
+$cream: #F8F6F2;
+
+// Fond des cartes et panneaux — légèrement plus foncé que le body
+$cream-dark: #F2F1EC;
+
+// Fond des bordures, éléments désactivés, séparateurs
+$gray-border: #E4E2DE;
+
+// --- Textes (du plus foncé au plus léger) ---
+// Texte principal — presque noir, mais pas pur noir pour éviter l'agressivité visuelle
+$text-dark: #2E2F2D;
+
+// Texte secondaire — labels, meta-données, descriptions courtes
+$text-medium: #5B5C59;
+
+// Texte léger — placeholders, mentions discrètes, muted
+$text-light: #777774;
+
+// --- Accent jaune (CTA secondaire) ---
+// Fond du bouton accent — jaune doux (type "highlight")
+$yellow-accent: #FFEAA7;
+
+// Texte sur fond jaune — foncé pour garantir le contraste
+$yellow-dark: #645621;
+
+// --- Violet clair (états interactifs) ---
+// Fond des éléments sélectionnés ou survolés (hover, selected state)
+$purple-light: #D1CCFF;
+
+// --- Blanc pur ---
+// Utilisé pour les inputs, les surfaces de premier plan
+$white: #FFFFFF;
+
+// ============================================================
+// Couleurs systèmes — gardées pour Bootstrap (alertes, badges)
+// ============================================================
+
+// Rouge : erreurs, validations négatives, danger
 $red: #FD1015;
-$blue: #0D6EFD;
-$yellow: #FFC65A;
-$orange: #E67E22;
+
+// Vert : succès, confirmations, validations positives
 $green: #1EDD88;
-$gray: #0E0000;
-$light-gray: #F4F4F4;
