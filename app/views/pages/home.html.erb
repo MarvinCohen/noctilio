@@ -604,7 +604,8 @@
     try {
       // POST vers /waitlist avec le token CSRF Rails
       // waitlist_path est sérialisé en JSON pour éviter les injections XSS
-      const response = await fetch(<%= waitlist_path.to_json %>, {
+      // raw() empêche ERB d'échapper les guillemets en &quot; dans le script
+      const response = await fetch(<%= raw(waitlist_path.to_json) %>, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
