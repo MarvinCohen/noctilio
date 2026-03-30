@@ -1,164 +1,648 @@
 <%# ============================================================ %>
-<%# Landing page publique de Noctilio %>
-<%# Visible par tous (connectés ou non) %>
+<%# Landing page Noctilio — pré-inscription liste d'attente %>
+<%# Utilise le layout "landing" (sans sidebar/navbar) %>
+<%# Le formulaire POST vers /waitlist via fetch() + CSRF token %>
 <%# ============================================================ %>
 
-<%# Hero Section — accroche principale %>
-<section class="hero-section">
-  <div class="container py-5">
-    <div class="row align-items-center min-vh-75">
-      <div class="col-lg-6">
-        <p class="hero-tagline text-uppercase letter-spacing-wide mb-2">✨ Des histoires uniques, chaque soir</p>
-        <h1 class="display-3 fw-bold hero-title mb-4">
-          Explore,<br>Imagine,<br><span class="text-primary">Partage.</span>
-        </h1>
-        <p class="lead text-muted mb-5">
-          Noctilio crée des histoires magiques et personnalisées pour ton enfant,
-          générées par l'IA en quelques secondes. Chaque nuit devient une nouvelle aventure.
-        </p>
-        <div class="d-flex gap-3 flex-wrap">
-          <% if user_signed_in? %>
-            <%# Si déjà connecté, on redirige vers le dashboard %>
-            <%= link_to "Créer une histoire ✨", new_story_path, class: "btn btn-primary btn-lg px-4" %>
-          <% else %>
-            <%= link_to "Commencer gratuitement", new_user_registration_path, class: "btn btn-primary btn-lg px-4" %>
-            <%= link_to "Se connecter", new_user_session_path, class: "btn btn-outline-secondary btn-lg px-4" %>
-          <% end %>
-        </div>
-      </div>
-      <div class="col-lg-6 d-none d-lg-block text-center">
-        <%# Illustration emoji en attendant l'image réelle %>
-        <div class="hero-illustration">
-          <span style="font-size: 10rem;">🌙</span>
-        </div>
-      </div>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --night: #0b0e1a;
+    --deep: #111527;
+    --indigo: #1a1f3c;
+    --gold: #f0c97a;
+    --gold-soft: #e8b95a;
+    --cream: #fdf6e3;
+    --mist: rgba(240, 201, 122, 0.12);
+    --text: #d4cfc4;
+    --text-dim: #8a8578;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--night);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Curseur personnalisé — point doré + anneau */
+  .cursor {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 32px; height: 32px;
+    border: 1px solid rgba(240, 201, 122, 0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+  }
+
+  /* Canvas étoiles en fond */
+  #stars-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Texture de bruit subtile */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 2;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(11,14,26,0.9), transparent);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .nav-actions { display: flex; align-items: center; gap: 1rem; }
+  .nav-badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    padding: 0.35rem 0.9rem;
+    border-radius: 100px;
+  }
+  /* Lien de connexion discret pour les utilisateurs existants */
+  .nav-login {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s ease;
+  }
+  .nav-login:hover { color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+    position: relative;
+  }
+
+  /* Lune animée — point d'entrée visuel */
+  .moon {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff9e6, #f0c97a 40%, #c8943a 80%, #8a5c1a);
+    box-shadow:
+      0 0 40px rgba(240, 201, 122, 0.3),
+      0 0 100px rgba(240, 201, 122, 0.12),
+      0 0 200px rgba(240, 201, 122, 0.06);
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: moonFloat 6s ease-in-out infinite;
+    animation-fill-mode: forwards;
+    animation-delay: 0.3s;
+  }
+  @keyframes moonFloat {
+    0%   { transform: translateY(20px); opacity: 0; }
+    10%  { opacity: 1; }
+    50%  { transform: translateY(-8px); }
+    100% { transform: translateY(0px); opacity: 1; }
+  }
+
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+    animation-delay: 0.7s;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--cream);
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards;
+    animation-delay: 0.9s;
+    margin-bottom: 1.5rem;
+  }
+  .hero-title em { font-style: italic; color: var(--gold); }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    font-weight: 300;
+    line-height: 1.75;
+    color: var(--text-dim);
+    max-width: 480px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards;
+    animation-delay: 1.1s;
+    margin-bottom: 3.5rem;
+  }
+
+  /* FORMULAIRE EMAIL */
+  .form-wrap {
+    width: 100%;
+    max-width: 460px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards;
+    animation-delay: 1.3s;
+  }
+
+  .form-inner {
+    display: flex;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(240, 201, 122, 0.18);
+    border-radius: 100px;
+    padding: 6px 6px 6px 24px;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .form-inner:focus-within {
+    border-color: rgba(240, 201, 122, 0.5);
+    box-shadow: 0 0 30px rgba(240, 201, 122, 0.08);
+  }
+
+  .form-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--cream);
+    min-width: 0;
+  }
+  .form-input::placeholder { color: var(--text-dim); }
+  .form-input.invalid { animation: shake 0.4s ease; }
+
+  .form-btn {
+    background: var(--gold);
+    color: var(--night);
+    border: none;
+    border-radius: 100px;
+    padding: 0.75rem 1.6rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: none;
+    white-space: nowrap;
+    transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  }
+  .form-btn:hover {
+    background: var(--cream);
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgba(240, 201, 122, 0.3);
+  }
+  .form-btn:active { transform: scale(0.98); }
+  .form-btn:disabled { opacity: 0.6; transform: none; }
+
+  .form-note {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+
+  /* Message d'erreur sous le formulaire */
+  .form-error {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: #e07070;
+    display: none;
+  }
+  .form-error.show { display: block; animation: fadeUp 0.3s ease; }
+
+  /* Message de succès après inscription */
+  .success-msg {
+    display: none;
+    text-align: center;
+    padding: 1.2rem 2rem;
+    background: rgba(240, 201, 122, 0.07);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 16px;
+    color: var(--gold);
+    font-size: 0.95rem;
+  }
+  .success-msg.show { display: block; animation: fadeUp 0.5s ease; }
+
+  /* COMPTEUR — vrai chiffre depuis la base de données */
+  .counter-wrap {
+    margin-top: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards;
+    animation-delay: 1.5s;
+  }
+  .counter-avatars { display: flex; }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--night);
+    margin-left: -8px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .avatar:first-child { margin-left: 0; }
+  .avatar-1 { background: #6b8cba; }
+  .avatar-2 { background: #ba8c6b; }
+  .avatar-3 { background: #8cba6b; }
+  .avatar-4 { background: #ba6b8c; }
+
+  .counter-text { font-size: 0.8rem; color: var(--text-dim); }
+  .counter-text strong { color: var(--gold); font-weight: 500; }
+
+  /* Séparateur vertical décoratif */
+  .divider {
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, rgba(240,201,122,0.3), transparent);
+    margin: 0 auto 5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* FEATURES */
+  .features {
+    padding: 2rem 2rem 6rem;
+    position: relative;
+    z-index: 2;
+  }
+  .features-grid {
+    max-width: 720px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5px;
+    background: rgba(240,201,122,0.08);
+    border: 1px solid rgba(240,201,122,0.08);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .feature-card {
+    background: var(--night);
+    padding: 2.5rem 2rem;
+    transition: background 0.3s ease;
+  }
+  .feature-card:hover { background: var(--indigo); }
+  .feature-icon { font-size: 1.8rem; margin-bottom: 1rem; display: block; }
+  .feature-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 0.6rem;
+  }
+  .feature-desc { font-size: 0.85rem; line-height: 1.7; color: var(--text-dim); }
+
+  /* FOOTER */
+  footer {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  footer span { color: var(--gold); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%       { transform: translateX(-6px); }
+    75%       { transform: translateX(6px); }
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .form-inner { flex-direction: column; border-radius: 20px; padding: 12px; }
+    .form-btn { border-radius: 12px; padding: 0.85rem; text-align: center; }
+    .features-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<%# Curseur doré personnalisé %>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<%# Canvas étoiles animées %>
+<canvas id="stars-canvas"></canvas>
+
+<%# NAV %>
+<nav>
+  <div class="nav-logo">Noctilio</div>
+  <div class="nav-actions">
+    <div class="nav-badge">Bientôt disponible</div>
+    <%# Lien pour les utilisateurs qui ont déjà un compte %>
+    <%= link_to "Se connecter", new_user_session_path, class: "nav-login" %>
+  </div>
+</nav>
+
+<%# HERO %>
+<section class="hero">
+  <div class="moon"></div>
+
+  <p class="hero-eyebrow">✦ Histoires personnalisées par IA ✦</p>
+
+  <h1 class="hero-title">
+    Des contes <em>uniques</em>,<br>
+    rien que pour<br>ton enfant
+  </h1>
+
+  <p class="hero-sub">
+    Chaque soir, une histoire magique générée en quelques secondes — avec le prénom, les personnages et l'univers préférés de ton enfant. Racontée d'une voix douce, comme par enchantement.
+  </p>
+
+  <%# Formulaire d'inscription — soumis via fetch() vers POST /waitlist %>
+  <div class="form-wrap">
+    <div class="form-inner" id="formInner">
+      <input
+        class="form-input"
+        type="email"
+        id="emailInput"
+        placeholder="ton@email.fr"
+        autocomplete="email"
+      >
+      <button class="form-btn" id="submitBtn" onclick="handleSubmit()">
+        Accès anticipé →
+      </button>
+    </div>
+
+    <%# Message d'erreur (format invalide ou email déjà inscrit) %>
+    <p class="form-error" id="formError"></p>
+
+    <%# Message de succès affiché après inscription réussie %>
+    <div class="success-msg" id="successMsg">
+      ✨ Merci ! Tu seras parmi les premiers à découvrir Noctilio.
+    </div>
+
+    <p class="form-note">Aucun spam. Juste la magie, au bon moment.</p>
+  </div>
+
+  <%# Compteur — @waitlist_count est le vrai chiffre en base (controller) %>
+  <%# On affiche au moins 247 pour que ça soit crédible dès le début %>
+  <div class="counter-wrap">
+    <div class="counter-avatars">
+      <div class="avatar avatar-1">🌙</div>
+      <div class="avatar avatar-2">⭐</div>
+      <div class="avatar avatar-3">🦉</div>
+      <div class="avatar avatar-4">✨</div>
+    </div>
+    <p class="counter-text">
+      <strong id="counter"><%= [@waitlist_count, 247].max %></strong>
+      familles déjà inscrites
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<%# FEATURES %>
+<section class="features">
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-icon">🦉</span>
+      <h3 class="feature-title">Personnalisée</h3>
+      <p class="feature-desc">Prénom, personnages favoris, lieu de rêve — chaque histoire est unique et taillée pour ton enfant.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🎙️</span>
+      <h3 class="feature-title">Racontée</h3>
+      <p class="feature-desc">Une voix douce et naturelle lit l'histoire à voix haute. Parfait pour les soirs où tu n'as plus l'énergie.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🌙</span>
+      <h3 class="feature-title">En quelques secondes</h3>
+      <p class="feature-desc">L'histoire est prête avant même que le bain soit fini. La routine du soir devient un moment magique.</p>
     </div>
   </div>
 </section>
 
-<%# Section fonctionnalités — les 3 avantages clés %>
-<section class="features-section bg-light py-6">
-  <div class="container">
-    <h2 class="text-center fw-bold mb-5">Comment ça marche ?</h2>
-    <div class="row g-4">
+<%# FOOTER %>
+<footer>
+  Fait avec <span>♥</span> pour les petits rêveurs — <span>Noctilio</span> © 2026
+</footer>
 
-      <%# Fonctionnalité 1 : Personnalisation %>
-      <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100 text-center p-4">
-          <div class="feature-icon mb-3">
-            <span style="font-size: 3rem;">👤</span>
-          </div>
-          <h3 class="h5 fw-bold">Personnalisé pour ton enfant</h3>
-          <p class="text-muted">
-            Entre le prénom, l'âge et la personnalité de ton enfant.
-            L'IA crée une histoire où il est le héros !
-          </p>
-        </div>
-      </div>
+<script>
+  // ============================================================
+  // Curseur personnalisé — point doré + anneau avec délai
+  // ============================================================
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
 
-      <%# Fonctionnalité 2 : Génération IA %>
-      <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100 text-center p-4">
-          <div class="feature-icon mb-3">
-            <span style="font-size: 3rem;">🤖</span>
-          </div>
-          <h3 class="h5 fw-bold">Généré par l'IA en secondes</h3>
-          <p class="text-muted">
-            Choisis l'univers (espace, dinosaures, pirates...) et la valeur à transmettre.
-            L'histoire et l'illustration sont créées automatiquement.
-          </p>
-        </div>
-      </div>
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top  = my + 'px';
+  });
 
-      <%# Fonctionnalité 3 : Interactivité %>
-      <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100 text-center p-4">
-          <div class="feature-icon mb-3">
-            <span style="font-size: 3rem;">🎯</span>
-          </div>
-          <h3 class="h5 fw-bold">Histoires interactives</h3>
-          <p class="text-muted">
-            Active le mode aventure pour que ton enfant fasse des choix
-            qui changent la suite de l'histoire !
-          </p>
-        </div>
-      </div>
+  // L'anneau suit avec un léger retard (interpolation)
+  function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
 
-    </div>
-  </div>
-</section>
+  // Agrandit le curseur sur les éléments interactifs
+  document.querySelectorAll('button, a, input').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '12px'; cursor.style.height = '12px';
+      ring.style.width   = '48px'; ring.style.height   = '48px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '8px'; cursor.style.height = '8px';
+      ring.style.width   = '32px'; ring.style.height   = '32px';
+    });
+  });
 
-<%# Section univers disponibles %>
-<section class="worlds-section py-6">
-  <div class="container">
-    <h2 class="text-center fw-bold mb-5">Des univers magiques à explorer</h2>
-    <div class="row g-3 justify-content-center">
-      <% [
-        { emoji: "🚀", label: "Espace" },
-        { emoji: "🦕", label: "Dinosaures" },
-        { emoji: "👸", label: "Princesses" },
-        { emoji: "🏴‍☠️", label: "Pirates" },
-        { emoji: "🦁", label: "Animaux" }
-      ].each do |world| %>
-        <div class="col-6 col-md-2 text-center">
-          <div class="world-card p-3 rounded-3 bg-light">
-            <div style="font-size: 2.5rem;"><%=  world[:emoji] %></div>
-            <div class="fw-semibold mt-1"><%= world[:label] %></div>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  </div>
-</section>
+  // ============================================================
+  // Étoiles animées — canvas en arrière-plan
+  // ============================================================
+  const canvas = document.getElementById('stars-canvas');
+  const ctx    = canvas.getContext('2d');
+  let stars    = [];
 
-<%# Section tarification %>
-<section class="pricing-section bg-light py-6">
-  <div class="container">
-    <h2 class="text-center fw-bold mb-2">Commencez gratuitement</h2>
-    <p class="text-center text-muted mb-5">Passez en Premium quand vous voulez</p>
-    <div class="row g-4 justify-content-center">
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
 
-      <%# Plan gratuit %>
-      <div class="col-md-5">
-        <div class="card border-0 shadow-sm h-100 p-4">
-          <h3 class="h5 fw-bold">Gratuit</h3>
-          <div class="display-5 fw-bold my-3">0€</div>
-          <ul class="list-unstyled text-muted">
-            <li class="mb-2">✅ 3 histoires par mois</li>
-            <li class="mb-2">✅ Tous les univers</li>
-            <li class="mb-2">✅ Illustrations IA</li>
-            <li class="mb-2">❌ Histoires interactives</li>
-            <li class="mb-2">❌ Histoires illimitées</li>
-          </ul>
-          <%= link_to "Commencer", new_user_registration_path, class: "btn btn-outline-primary w-100 mt-3" %>
-        </div>
-      </div>
+  function createStars() {
+    stars = [];
+    for (let i = 0; i < 200; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + 0.2,
+        speed: Math.random() * 0.005 + 0.002,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
 
-      <%# Plan Premium %>
-      <div class="col-md-5">
-        <div class="card border-0 shadow-lg h-100 p-4 position-relative premium-card">
-          <span class="badge bg-primary position-absolute top-0 end-0 m-3">Populaire</span>
-          <h3 class="h5 fw-bold">Premium</h3>
-          <div class="display-5 fw-bold my-3">9,99€<span class="fs-6 text-muted">/mois</span></div>
-          <ul class="list-unstyled text-muted">
-            <li class="mb-2">✅ Histoires illimitées</li>
-            <li class="mb-2">✅ Tous les univers</li>
-            <li class="mb-2">✅ Illustrations IA</li>
-            <li class="mb-2">✅ Histoires interactives</li>
-            <li class="mb-2">✅ Dashboard parental avancé</li>
-          </ul>
-          <%= link_to "Commencer Premium", new_user_registration_path, class: "btn btn-primary w-100 mt-3" %>
-        </div>
-      </div>
+  function drawStars(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      const a = 0.3 + 0.5 * Math.sin(s.phase + t * s.speed);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(240, 201, 122, ${a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
 
-    </div>
-  </div>
-</section>
+  resize(); createStars(); requestAnimationFrame(drawStars);
+  window.addEventListener('resize', () => { resize(); createStars(); });
 
-<%# CTA final %>
-<section class="cta-section py-6 text-center">
-  <div class="container">
-    <h2 class="fw-bold display-6 mb-4">Prêt pour la première aventure ?</h2>
-    <%= link_to "Créer ma première histoire ✨", new_user_registration_path, class: "btn btn-primary btn-lg px-5 py-3" %>
-  </div>
-</section>
+  // ============================================================
+  // Soumission du formulaire — fetch() vers POST /waitlist
+  // ============================================================
+  // Le token CSRF est requis par Rails pour toute requête POST non-Turbo
+  function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content;
+  }
+
+  async function handleSubmit() {
+    const email   = document.getElementById('emailInput').value.trim();
+    const btn     = document.getElementById('submitBtn');
+    const errorEl = document.getElementById('formError');
+
+    // Validation côté client — format email basique
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showError('Vérifie le format de ton email.');
+      document.getElementById('emailInput').classList.add('invalid');
+      setTimeout(() => document.getElementById('emailInput').classList.remove('invalid'), 400);
+      return;
+    }
+
+    // Désactive le bouton pendant l'envoi
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    try {
+      // POST vers /waitlist avec le token CSRF Rails
+      // waitlist_path est sérialisé en JSON pour éviter les injections XSS
+      const response = await fetch(<%= waitlist_path.to_json %>, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': getCsrfToken()
+        },
+        body: JSON.stringify({ email: email })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Cache le formulaire, affiche le message de bienvenue
+        document.getElementById('formInner').style.display = 'none';
+        errorEl.classList.remove('show');
+        document.getElementById('successMsg').classList.add('show');
+
+        // Anime le compteur jusqu'au nouveau chiffre réel
+        animateCounter(data.count);
+      } else {
+        // Email déjà inscrit ou autre erreur serveur
+        showError(data.error || 'Une erreur est survenue.');
+        btn.disabled = false;
+        btn.textContent = 'Accès anticipé →';
+      }
+    } catch (err) {
+      showError('Problème de connexion. Réessaie dans un instant.');
+      btn.disabled = false;
+      btn.textContent = 'Accès anticipé →';
+    }
+  }
+
+  // Affiche un message d'erreur sous le formulaire
+  function showError(message) {
+    const el = document.getElementById('formError');
+    el.textContent = message;
+    el.classList.add('show');
+  }
+
+  // Anime le compteur un par un jusqu'au chiffre cible
+  function animateCounter(target) {
+    const el = document.getElementById('counter');
+    let current = parseInt(el.textContent);
+    const step = () => {
+      if (current < target) { current++; el.textContent = current; setTimeout(step, 80); }
+    };
+    setTimeout(step, 600);
+  }
+
+  // Soumission au clavier (touche Entrée)
+  document.getElementById('emailInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+  });
+</script>

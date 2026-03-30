@@ -3,6 +3,9 @@
 <%# Design fidèle au Figma : hero card + mes histoires + trophées %>
 <%# ============================================================ %>
 
+<%# full_bleed : le dashboard gère son propre fond (pas de carte blanche du layout) %>
+<% content_for :full_bleed, true %>
+
 <div class="dashboard-page">
 
   <%# ---------------------------------------------------------------- %>
@@ -51,11 +54,11 @@
       <% end %>
     </div>
 
-    <%# Décoration droite de la hero card — illustration ou emoji animé %>
+    <%# Décoration droite de la hero card — illustration de landing %>
     <div class="dashboard-hero-deco">
-      <div class="dashboard-hero-deco-inner">
-        🌙
-      </div>
+      <%= image_tag "hero-illustration.png",
+            alt: "Illustration Noctilio",
+            class: "dashboard-hero-illustration" %>
     </div>
   </div>
 

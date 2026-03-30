@@ -1,47 +1,68 @@
 // ============================================================
-// Design tokens couleurs — Noctilio Design System (Figma)
-// Toutes les couleurs du projet sont centralisées ici.
+// Design tokens couleurs — Noctilio Design System v2
+// Palette inspirée de l'illustration : chouette magique, ciel nocturne,
+// lanternes dorées, livre lumineux.
 // RÈGLE : ne jamais utiliser un code hex directement dans le CSS,
 // toujours passer par ces variables.
 // ============================================================
 
-// --- Couleur principale ---
-// Violet profond — couleur de marque, boutons primaires, liens actifs
-$purple: #5543CF;
+// --- Couleur principale — Bleu nuit profond ---
+// Remplace l'ancien violet — tiré du ciel nocturne de l'illustration
+$navy: #1C2B6A;
+
+// Version très sombre — fond de la sidebar (ciel nocturne)
+$navy-dark: #0D1538;
+
+// Version medium — survol sur fond sombre
+$navy-mid: #2A3F8F;
+
+// Version claire — fond des états sélectionnés, hover sur fond clair
+$navy-light: #E8ECFF;
+
+// --- Doré — accent chaud, CTA, éléments actifs ---
+// Tiré des lanternes et du titre "Noctilio" dans l'illustration
+$gold: #E8A838;
+
+// Fond très clair doré — pour les badges, highlights
+$gold-light: #FFF6E0;
+
+// Texte sur fond doré — foncé pour garantir le contraste
+$gold-dark: #7A5200;
+
+// --- Bleu électrique — accent secondaire (lueur de la chouette) ---
+// Pour les éléments magiques, effets spéciaux, liens actifs
+$blue-glow: #3D7FE8;
 
 // --- Fonds (du plus clair au plus foncé) ---
-// Fond principal du body — beige chaud très doux
-$cream: #F8F6F2;
+// Fond principal du body — blanc cassé légèrement bleu (lumière de lune)
+$cream: #F5F6FC;
 
-// Fond des cartes et panneaux — légèrement plus foncé que le body
-$cream-dark: #F2F1EC;
+// Fond des cartes — légèrement plus foncé que le body
+$cream-dark: #ECEEF8;
 
-// Fond des bordures, éléments désactivés, séparateurs
-$gray-border: #E4E2DE;
+// Fond des bordures, séparateurs
+$gray-border: #DDE0EE;
 
 // --- Textes (du plus foncé au plus léger) ---
-// Texte principal — presque noir, mais pas pur noir pour éviter l'agressivité visuelle
-$text-dark: #2E2F2D;
+// Texte principal — bleu nuit très foncé (plus doux que le noir pur)
+$text-dark: #1A1F3A;
 
-// Texte secondaire — labels, meta-données, descriptions courtes
-$text-medium: #5B5C59;
+// Texte secondaire — bleu-gris moyen
+$text-medium: #4A5275;
 
-// Texte léger — placeholders, mentions discrètes, muted
-$text-light: #777774;
+// Texte léger — placeholders, mentions discrètes
+$text-light: #8B91B0;
 
-// --- Accent jaune (CTA secondaire) ---
-// Fond du bouton accent — jaune doux (type "highlight")
-$yellow-accent: #FFEAA7;
+// --- Compatibilité — anciens noms conservés pour éviter les cassures ---
+// Ces variables font référence aux nouvelles pour simplifier la migration
+$purple:       $navy;        // Remplacé par le bleu nuit
+$purple-light: $navy-light;  // Remplacé par le bleu nuit clair
 
-// Texte sur fond jaune — foncé pour garantir le contraste
-$yellow-dark: #645621;
-
-// --- Violet clair (états interactifs) ---
-// Fond des éléments sélectionnés ou survolés (hover, selected state)
-$purple-light: #D1CCFF;
+// --- Accent jaune → doré ---
+$yellow-accent: $gold-light;
+$yellow-dark:   $gold-dark;
 
 // --- Blanc pur ---
-// Utilisé pour les inputs, les surfaces de premier plan
 $white: #FFFFFF;
 
 // ============================================================

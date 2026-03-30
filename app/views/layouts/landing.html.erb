@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title><%= content_for(:title) || "Noctilio — Des histoires magiques pour ton enfant" %></title>
+
+    <%# Polices Google — design élégant de la landing page %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+    <%# CSRF meta tags — nécessaires pour les requêtes fetch() vers l'API Rails %>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%# Icône de l'app %>
+    <link rel="icon" href="/icon.png" type="image/png">
+
+    <%= yield :head %>
+  </head>
+  <body>
+    <%# Pas de sidebar, pas de navbar — la landing page est totalement autonome %>
+    <%= yield %>
+  </body>
+</html>
