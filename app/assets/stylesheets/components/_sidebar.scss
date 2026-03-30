@@ -1,43 +1,61 @@
 // ============================================================
 // Sidebar — navigation verticale gauche (utilisateurs connectés)
+// Thème : ciel nocturne sombre (bleu nuit profond) avec accents dorés
 // ============================================================
 // Structure générale :
 //   .app-layout    → wrapper flex qui divise l'écran en sidebar + main
-//   .app-sidebar   → colonne gauche fixe (220px)
+//   .app-sidebar   → colonne gauche fixe (220px), fond sombre
 //   .app-main      → colonne droite scrollable (tout le reste)
 
 // --- Layout global deux colonnes ---
-// On utilise flexbox : sidebar à gauche en position fixe, main prend le reste
 .app-layout {
   display: flex;
-  min-height: 100vh; // Occupe toute la hauteur de l'écran
+  min-height: 100vh;
 }
 
 // --- Colonne principale (contenu de la page) ---
-// margin-left = largeur de la sidebar pour éviter que le contenu passe dessous
+// Fond sombre nocturne — cohérent avec la sidebar et le hero du dashboard
+// Les pages "contenu" (formulaires, lecture) flottent dessus via .page-card
 .app-main {
-  flex: 1;                      // Prend tout l'espace restant
-  margin-left: 220px;           // Décale le contenu de la largeur de la sidebar
+  flex: 1;
+  margin-left: 220px;
   min-height: 100vh;
-  background: $cream;           // Fond beige cohérent avec le design system
-  padding: 0;                   // Le padding est géré par chaque page
+  background: $navy-dark;       // Fond ciel nocturne — même teinte que la sidebar
+  padding: 0;
 }
 
 // ============================================================
-// Sidebar elle-même
+// Carte de page — enveloppe les pages de contenu (hors dashboard)
+// ============================================================
+// Crée l'effet "livre ouvert sur fond de nuit" :
+// le fond sombre de app-main est visible autour de la carte blanche.
+// Utilisée pour : lecture d'histoire, formulaires, profil enfant, etc.
+.page-card {
+  background: $white;
+  border-radius: 20px;          // Grands coins arrondis — carte posée sur la nuit
+  margin: 24px;                 // Espace autour pour voir le fond sombre
+  padding: 8px 0;               // Les pages gardent leur padding interne (container py-4)
+  min-height: calc(100vh - 48px); // Remplit presque toute la hauteur
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); // Ombre forte — card flottante
+}
+
+// ============================================================
+// Sidebar — fond ciel nocturne
 // ============================================================
 .app-sidebar {
-  position: fixed;              // Reste en place quand on scrolle le contenu
+  position: fixed;
   top: 0;
   left: 0;
   width: 220px;
-  height: 100vh;                // Prend toute la hauteur de la fenêtre
-  background: $white;           // Fond blanc pour contraster avec le cream du main
-  border-right: 1px solid $gray-border; // Séparateur subtil
+  height: 100vh;
+  // Dégradé vertical du bleu nuit foncé vers le bleu nuit moyen —
+  // rappelle la profondeur du ciel de l'illustration
+  background: linear-gradient(180deg, $navy-dark 0%, darken($navy, 10%) 100%);
+  border-right: 1px solid rgba($gold, 0.15); // Filet doré subtil à droite
   display: flex;
-  flex-direction: column;       // Logo en haut, nav au milieu, footer en bas
-  overflow: hidden;             // Evite le débordement
-  z-index: 100;                 // Passe au-dessus du contenu en cas de superposition
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 100;
 }
 
 // ============================================================
@@ -45,53 +63,52 @@
 // ============================================================
 .sidebar-brand {
   padding: 20px 16px 16px;
-  border-bottom: 1px solid $gray-border; // Séparateur entre logo et nav
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08); // Séparateur discret
 
-  // Le lien autour du logo — supprime la décoration de lien
   .sidebar-logo-link {
     display: flex;
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    color: $text-dark;
+    color: $white;
 
     &:hover {
       text-decoration: none;
-      color: $text-dark;
+      color: $white;
     }
   }
 
-  // Icône lune dans un cercle légèrement violet
+  // Icône dans un carré arrondi — fond légèrement plus clair que le fond sombre
   .sidebar-logo-icon {
     font-size: 1.4rem;
     width: 36px;
     height: 36px;
-    background: $purple-light;  // Fond violet clair autour de l'emoji
+    background: rgba($gold, 0.15);  // Halo doré autour de l'icône
+    border: 1px solid rgba($gold, 0.3);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;             // Ne rétrécit pas quand la sidebar est compressée
+    flex-shrink: 0;
   }
 
-  // Bloc texte à droite de l'icône
   .sidebar-logo-text {
     display: flex;
     flex-direction: column;
     line-height: 1.2;
   }
 
-  // Nom de l'app — gras et foncé
+  // Nom de l'app — blanc pur, gras
   .sidebar-logo-name {
     font-weight: 700;
     font-size: 0.95rem;
-    color: $text-dark;
+    color: $white;
   }
 
-  // Sous-titre (ex: "3 histoires ce mois") — discret
+  // Sous-titre — doré discret
   .sidebar-logo-sub {
     font-size: 0.7rem;
-    color: $text-light;
+    color: rgba($gold, 0.7);
   }
 }
 
@@ -99,28 +116,27 @@
 // Navigation
 // ============================================================
 .sidebar-nav {
-  flex: 1;                      // Prend tout l'espace entre logo et footer
+  flex: 1;
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 2px;                     // Petit espace entre les items
-  overflow-y: auto;             // Scroll si beaucoup d'items
+  gap: 2px;
+  overflow-y: auto;
 }
 
-// Un item de navigation (lien)
+// Un item de navigation
 .sidebar-nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 8px;           // Coins arrondis comme dans le Figma
+  border-radius: 8px;
   text-decoration: none;
-  color: $text-medium;          // Couleur par défaut : gris moyen
+  color: rgba($white, 0.65);      // Texte blanc semi-transparent (non actif)
   font-size: 0.875rem;
   font-weight: 500;
   transition: background 0.15s ease, color 0.15s ease;
 
-  // Icône SVG à gauche
   .sidebar-nav-icon {
     width: 20px;
     height: 20px;
@@ -130,21 +146,23 @@
     flex-shrink: 0;
   }
 
-  // État hover — fond cream-dark et texte plus foncé
+  // Survol — fond légèrement éclairé, texte blanc opaque
   &:hover {
-    background: $cream-dark;
-    color: $text-dark;
+    background: rgba($white, 0.08);
+    color: $white;
     text-decoration: none;
   }
 
-  // État actif (page courante) — fond violet clair, texte violet
+  // État actif — fond doré translucide, texte doré brillant
+  // Rappelle la lueur des lanternes de l'illustration
   &.active {
-    background: $purple-light;
-    color: $purple;
+    background: rgba($gold, 0.15);
+    color: $gold;
     font-weight: 600;
+    border: 1px solid rgba($gold, 0.25);
 
     .sidebar-nav-icon svg {
-      stroke: $purple; // L'icône prend aussi la couleur violet
+      stroke: $gold;              // L'icône active prend la couleur dorée
     }
   }
 }
@@ -154,47 +172,48 @@
 // ============================================================
 .sidebar-footer {
   padding: 12px 10px;
-  border-top: 1px solid $gray-border; // Séparateur entre nav et footer
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-// Badge "Premium" si l'utilisateur est abonné
+// Badge "Premium" — doré sur fond doré translucide
 .sidebar-premium-badge {
   font-size: 0.72rem;
   font-weight: 600;
-  color: $purple;
-  background: $purple-light;
+  color: $gold;
+  background: rgba($gold, 0.15);
+  border: 1px solid rgba($gold, 0.3);
   border-radius: 20px;
   padding: 3px 10px;
   text-align: center;
 }
 
-// Bouton CTA "Créer une histoire" en bas de sidebar
-// Style plein violet comme dans le Figma
+// Bouton CTA "Créer une histoire" — doré plein (couleur principale des CTA)
 .sidebar-cta-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 9px 12px;
-  background: $purple;
-  color: $white;
+  background: $gold;              // Fond doré — CTA principal
+  color: $navy-dark;              // Texte sombre sur fond doré (contraste élevé)
   border-radius: 8px;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.1s ease;
 
   &:hover {
     opacity: 0.9;
-    color: $white;
+    color: $navy-dark;
     text-decoration: none;
+    transform: translateY(-1px);
   }
 }
 
-// Bloc utilisateur en bas (avatar + nom + XP + déconnexion)
+// Bloc utilisateur (avatar + nom + XP + déconnexion)
 .sidebar-user {
   display: flex;
   align-items: center;
@@ -202,13 +221,14 @@
   padding: 6px 4px;
 }
 
-// Avatar avec initiales — cercle violet clair
+// Avatar avec initiales — halo doré discret
 .sidebar-user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: $purple-light;
-  color: $purple;
+  background: rgba($gold, 0.2);
+  border: 1px solid rgba($gold, 0.4);
+  color: $gold;
   font-size: 0.7rem;
   font-weight: 700;
   display: flex;
@@ -224,28 +244,28 @@
   display: flex;
   flex-direction: column;
   line-height: 1.2;
-  min-width: 0;                 // Permet la troncature du texte long
+  min-width: 0;
 }
 
-// Prénom de l'utilisateur
+// Prénom de l'utilisateur — blanc
 .sidebar-user-name {
   font-size: 0.8rem;
   font-weight: 600;
-  color: $text-dark;
+  color: $white;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;      // "..." si le prénom est trop long
+  text-overflow: ellipsis;
 }
 
-// Score XP — discret en dessous du prénom
+// Score XP — doré discret
 .sidebar-user-xp {
   font-size: 0.68rem;
-  color: $text-light;
+  color: rgba($gold, 0.7);
 }
 
-// Bouton déconnexion — icône discrète à droite
+// Bouton déconnexion — icône discrète
 .sidebar-logout-btn {
-  color: $text-light;
+  color: rgba($white, 0.4);
   display: flex;
   align-items: center;
   padding: 4px;
@@ -254,22 +274,14 @@
   flex-shrink: 0;
 
   &:hover {
-    color: $red; // Rouge au survol pour signaler l'action destructive
+    color: #FF6B6B; // Rouge-corail au survol pour signaler l'action destructive
   }
 }
 
 // ============================================================
 // Responsive — sur mobile la sidebar disparaît
-// (on garde la navbar Bootstrap pour le mobile, à améliorer plus tard)
 // ============================================================
 @media (max-width: 768px) {
-  // La sidebar est cachée sur mobile
-  .app-sidebar {
-    display: none;
-  }
-
-  // Le contenu reprend toute la largeur
-  .app-main {
-    margin-left: 0;
-  }
+  .app-sidebar { display: none; }
+  .app-main    { margin-left: 0; }
 }

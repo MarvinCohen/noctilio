@@ -31,7 +31,16 @@
         <%= render "shared/sidebar" %>
         <main class="app-main">
           <%= render "shared/flashes" %>
-          <%= yield %>
+          <%# content_for(:full_bleed) permet aux pages de prendre tout l'espace sans la carte blanche %>
+          <%# Utilisé par le dashboard qui gère son propre fond sombre %>
+          <%# Les autres pages (lecture, formulaires) sont enveloppées dans une carte blanche flottante %>
+          <% if content_for?(:full_bleed) %>
+            <%= yield %>
+          <% else %>
+            <div class="page-card">
+              <%= yield %>
+            </div>
+          <% end %>
         </main>
       </div>
     <% else %>

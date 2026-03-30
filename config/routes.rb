@@ -14,6 +14,12 @@ Rails.application.routes.draw do
   root to: "pages#home"
 
   # ============================================================
+  # Liste d'attente — reçoit les emails de la landing page
+  # ============================================================
+  # POST /waitlist : sauvegarde un email en base et retourne JSON
+  post "/waitlist", to: "waitlist#create", as: :waitlist
+
+  # ============================================================
   # Dashboard principal — page d'accueil après connexion
   # ============================================================
   get "/dashboard",   to: "dashboard#index",     as: :dashboard
