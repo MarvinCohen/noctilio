@@ -25,3 +25,8 @@ local:
 #   service: Mirror
 #   primary: local
 #   mirrors: [ amazon, google, microsoft ]
+
+# Cloudinary — stockage cloud utilisé en production (Heroku)
+# La variable CLOUDINARY_URL est injectée automatiquement par l'add-on Heroku
+cloudinary:
+  service: Cloudinary
