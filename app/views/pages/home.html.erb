@@ -452,7 +452,8 @@
         placeholder="ton@email.fr"
         autocomplete="email"
       >
-      <button class="form-btn" id="submitBtn" onclick="handleSubmit()">
+      <%# onclick retiré — l'événement est branché via addEventListener dans le script (scoping JS) %>
+      <button class="form-btn" id="submitBtn">
         Accès anticipé →
       </button>
     </div>
@@ -724,6 +725,10 @@
     };
     setTimeout(step, 600);
   }
+
+  // Soumission au clic sur le bouton — branché ici car handleSubmit() est dans cette closure
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) submitBtn.addEventListener('click', handleSubmit);
 
   // Soumission au clavier (touche Entrée)
   const emailInput = document.getElementById('emailInput');
