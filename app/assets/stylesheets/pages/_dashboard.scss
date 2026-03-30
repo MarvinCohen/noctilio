@@ -25,18 +25,17 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: $purple-light;   // Fond violet clair — cohérent avec la marque
+  background: $navy-light;     // Fond bleu nuit clair
   border-radius: 10px;
   font-size: 0.875rem;
-  color: $purple;
+  color: $navy;
   font-weight: 500;
 
-  // Lien "Voir →" à l'intérieur de l'alerte
   .dashboard-alert-link {
-    color: $purple;
+    color: $navy;
     font-weight: 700;
     text-decoration: none;
-    margin-left: auto;         // Pousse le lien à droite
+    margin-left: auto;
 
     &:hover { text-decoration: underline; }
   }
@@ -46,91 +45,106 @@
 // HERO CARD — grande carte d'accroche en haut du dashboard
 // ============================================================
 
-// La hero card occupe toute la largeur — fond violet clair arrondi
+// La hero card — fond ciel nocturne profond avec lueurs dorées
+// Reprend l'ambiance de l'illustration : nuit magique, lanternes, chouette
 .dashboard-hero {
-  background: linear-gradient(135deg, $purple-light 0%, lighten($purple-light, 6%) 100%);
-  border-radius: 20px;         // Grands coins arrondis comme dans le Figma
+  background: linear-gradient(135deg, $navy-dark 0%, $navy 60%, darken($navy-mid, 5%) 100%);
+  border-radius: 20px;
   padding: 36px 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
   position: relative;
-  overflow: hidden;            // Empêche la déco de déborder des coins arrondis
+  overflow: hidden;
 
-  // Contenu texte + bouton — occupe 60% de la largeur
+  // Halo doré très subtil en haut à gauche — effet lanterne
+  &::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    left: -60px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba($gold, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  // Contenu texte + bouton
   .dashboard-hero-content {
     flex: 1;
     max-width: 60%;
+    position: relative; // Passe au-dessus du pseudo-élément halo
   }
 }
 
-// Sous-titre au-dessus du titre principal — petit et discret
+// Sous-titre — doré sur fond sombre
 .dashboard-hero-eyebrow {
   font-size: 0.78rem;
   font-weight: 600;
-  color: $purple;
+  color: $gold;                 // Doré comme les lanternes de l'illustration
   text-transform: uppercase;
-  letter-spacing: 0.08em;      // Espacement des lettres pour le style "label"
+  letter-spacing: 0.08em;
   margin-bottom: 10px;
 }
 
-// Titre principal — grand et gras
+// Titre principal — blanc sur fond sombre
 .dashboard-hero-title {
   font-size: 2rem;
   font-weight: 800;
-  color: $text-dark;
+  color: $white;                // Blanc pur — contraste maximal sur fond nuit
   line-height: 1.2;
   margin-bottom: 12px;
 }
 
-// Mot mis en évidence dans le titre (ex: "créer")
-// Couleur violet pour attirer l'attention sur le verbe d'action
+// Mot mis en évidence — doré brillant comme le titre "Noctilio" dans l'image
 .dashboard-hero-highlight {
-  color: $purple;
+  color: $gold;
   font-style: italic;
 }
 
 // Description courte sous le titre
 .dashboard-hero-desc {
   font-size: 0.9rem;
-  color: $text-medium;
+  color: rgba($white, 0.65);   // Blanc semi-transparent pour rester lisible
   margin-bottom: 24px;
   line-height: 1.6;
 }
 
-// Bouton CTA principal — violet plein avec icône étoile
+// Bouton CTA principal — doré plein sur fond sombre
+// Le doré ressort très fort sur le bleu nuit
 .dashboard-hero-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: $purple;
-  color: $white;
+  background: $gold;
+  color: $navy-dark;            // Texte sombre sur fond doré (contraste élevé)
   padding: 12px 24px;
   border-radius: 10px;
   font-weight: 700;
   font-size: 0.9rem;
   text-decoration: none;
   transition: opacity 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 4px 20px rgba($gold, 0.35); // Halo doré sous le bouton
 
   &:hover {
     opacity: 0.9;
-    color: $white;
+    color: $navy-dark;
     text-decoration: none;
     transform: translateY(-1px);
   }
 }
 
-// Mention de la limite gratuite — discrète sous le bouton
+// Mention de la limite gratuite — discrète sur fond sombre
 .dashboard-hero-limit {
   margin-top: 12px;
   font-size: 0.75rem;
-  color: $text-medium;
+  color: rgba($white, 0.45);
   margin-bottom: 0;
 }
 
 .dashboard-hero-limit-link {
-  color: $purple;
+  color: $gold;
   font-weight: 600;
   text-decoration: none;
 
@@ -140,20 +154,18 @@
 // Décoration droite de la hero card — illustration ou emoji
 .dashboard-hero-deco {
   flex-shrink: 0;
+  // Le wrapper n'a plus de fond circulaire — l'image remplace l'emoji
+}
 
-  // Cercle avec emoji — fond blanc semi-transparent
-  .dashboard-hero-deco-inner {
-    width: 120px;
-    height: 120px;
-    background: rgba($white, 0.5);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-    // Légère animation de flottement pour rendre la carte vivante
-    animation: float 4s ease-in-out infinite;
-  }
+// Image d'illustration dans le hero — reprend l'image de la landing page
+.dashboard-hero-illustration {
+  height: 260px;       // Hauteur fixe pour s'intégrer dans la card
+  width: auto;         // Largeur automatique pour garder les proportions
+  object-fit: contain;
+  // Légère animation de flottement pour garder la carte vivante
+  animation: float 4s ease-in-out infinite;
+  // Ombre douce pour détacher l'image du fond coloré
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12));
 }
 
 // Animation flottement doux pour la décoration
@@ -166,11 +178,12 @@
 // Sections génériques (Mes histoires, Trophées, Mes héros)
 // ============================================================
 
-// Wrapper de section — fond blanc, coins arrondis, ombre légère
+// Wrapper de section — verre nocturne sur fond sombre
+// Semi-transparent pour laisser transparaître légèrement le fond navy-dark
 .dashboard-section {
-  background: $white;
+  background: rgba(255, 255, 255, 0.05);  // Verre très légèrement clair
   border-radius: 16px;
-  border: 1px solid $gray-border;
+  border: 1px solid rgba(255, 255, 255, 0.1); // Bordure subtile lumineuse
   padding: 24px;
 }
 
@@ -182,26 +195,26 @@
   margin-bottom: 20px;
 }
 
-// Titre de section
+// Titre de section — blanc sur fond sombre
 .dashboard-section-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: $text-dark;
+  color: $white;
   margin-bottom: 2px;
 }
 
-// Sous-titre de section — description discrète
+// Sous-titre de section — blanc semi-transparent
 .dashboard-section-sub {
   font-size: 0.78rem;
-  color: $text-light;
+  color: rgba($white, 0.45);
   margin-bottom: 0;
 }
 
-// Lien "Voir tout →" à droite du titre
+// Lien "Voir tout →" à droite du titre — bleu nuit
 .dashboard-section-link {
   font-size: 0.8rem;
   font-weight: 600;
-  color: $purple;
+  color: $navy;
   text-decoration: none;
   white-space: nowrap;
   margin-top: 2px;
@@ -220,19 +233,20 @@
   gap: 12px;
 }
 
-// Carte d'histoire individuelle
+// Carte d'histoire individuelle — fond légèrement plus clair que la section
 .dashboard-story-card {
-  background: $cream;           // Fond crème pour se distinguer du fond blanc de la section
-  border: 1px solid $gray-border;
+  background: rgba(255, 255, 255, 0.08);  // Légèrement plus visible que la section
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  transition: box-shadow 0.15s ease, transform 0.1s ease, background 0.15s ease;
 
   &:hover {
-    box-shadow: 0 4px 12px rgba($text-dark, 0.07);
+    background: rgba(255, 255, 255, 0.13);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
   }
 }
@@ -243,7 +257,7 @@
   aspect-ratio: 4/3;           // Ratio paysage adapté aux illustrations
   border-radius: 8px;
   overflow: hidden;
-  background: $purple-light;   // Fond violet clair si l'image charge lentement
+  background: rgba(255, 255, 255, 0.06);  // Fond sombre pendant le chargement
   position: relative;
 
   // Image de couverture générée par Pollinations
@@ -261,60 +275,58 @@
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
-    background: $purple-light;
+    background: rgba(255, 255, 255, 0.07);  // Fond sombre pour l'emoji
   }
 }
 
-// Titre de l'histoire dans la carte
+// Titre de l'histoire — blanc sur fond sombre
 .dashboard-story-title {
   font-size: 0.82rem;
   font-weight: 700;
-  color: $text-dark;
+  color: $white;
   margin-bottom: 0;
-  // Tronque le titre sur 2 lignes maximum
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-// Infos de la carte (enfant + durée)
 .dashboard-story-info {
   flex: 1;
 }
 
-// Métadonnées discrètes (Pour X · Y min)
+// Métadonnées — blanc semi-transparent
 .dashboard-story-meta {
   font-size: 0.72rem;
-  color: $text-light;
+  color: rgba($white, 0.45);
   margin-bottom: 0;
 }
 
-// Bouton "Reprendre la lecture" en bas de la carte
+// Bouton "Reprendre la lecture" — semi-transparent sur fond sombre
 .dashboard-story-btn {
   display: block;
   text-align: center;
   padding: 7px 10px;
-  background: $white;
-  border: 1px solid $gray-border;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: $text-dark;
+  color: rgba($white, 0.8);
   text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: $purple;
-    color: $white;
-    border-color: $purple;
+    background: $gold;
+    color: $navy-dark;           // Texte sombre sur fond doré
+    border-color: $gold;
     text-decoration: none;
   }
 }
 
-// Carte spéciale "+ Nouvelle histoire" — style pointillé invitant
+// Carte spéciale "+ Nouvelle histoire" — pointillés discrets sur fond sombre
 .dashboard-story-card--new {
-  border: 2px dashed $gray-border; // Pointillés pour différencier
+  border: 2px dashed rgba(255, 255, 255, 0.2);
   background: transparent;
   align-items: center;
   justify-content: center;
@@ -322,11 +334,11 @@
   cursor: pointer;
 
   &:hover {
-    border-color: $purple;
-    background: $purple-light;
+    border-color: $gold;
+    background: rgba($gold, 0.08);
 
-    .dashboard-story-new-icon { color: $purple; }
-    .dashboard-story-new-label { color: $purple; }
+    .dashboard-story-new-icon { color: $gold; }
+    .dashboard-story-new-label { color: $gold; }
   }
 
   // Lien qui occupe toute la carte
@@ -347,7 +359,7 @@
 .dashboard-story-new-icon {
   font-size: 1.8rem;
   font-weight: 300;
-  color: $text-light;
+  color: rgba($white, 0.35);
   line-height: 1;
   transition: color 0.15s ease;
 }
@@ -356,7 +368,7 @@
 .dashboard-story-new-label {
   font-size: 0.78rem;
   font-weight: 600;
-  color: $text-light;
+  color: rgba($white, 0.35);
   transition: color 0.15s ease;
 }
 
@@ -378,13 +390,13 @@
 .dashboard-empty-title {
   font-size: 1rem;
   font-weight: 700;
-  color: $text-dark;
+  color: $white;
   margin-bottom: 8px;
 }
 
 .dashboard-empty-desc {
   font-size: 0.875rem;
-  color: $text-medium;
+  color: rgba($white, 0.5);
   margin-bottom: 20px;
 }
 
@@ -392,13 +404,14 @@
 // Badge XP dans le header de la section trophées
 // ============================================================
 
-// Pastille jaune avec le total XP
+// Pastille dorée avec le total XP
 .dashboard-xp-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: $yellow-accent;
-  color: $yellow-dark;
+  background: rgba($gold, 0.2);
+  color: $gold;
+  border: 1px solid rgba($gold, 0.35);
   font-size: 0.78rem;
   font-weight: 700;
   padding: 5px 12px;
@@ -424,19 +437,20 @@
   gap: 6px;
   width: 68px;
 
-  // Badge gagné — normal, couleurs vives
+  // Badge gagné — halo doré
   &.earned {
     .dashboard-badge-icon {
-      background: $purple-light;
-      border: 2px solid $purple;
+      background: rgba($gold, 0.15);
+      border: 2px solid rgba($gold, 0.5);
+      box-shadow: 0 0 12px rgba($gold, 0.2);  // Lueur dorée
     }
-    .dashboard-badge-label { color: $text-dark; }
+    .dashboard-badge-label { color: rgba($white, 0.85); }
   }
 
   // Badge non gagné — grisé et verrouillé visuellement
   &.locked {
-    opacity: 0.4;               // Transparence pour indiquer "pas encore gagné"
-    filter: grayscale(1);       // Désature les couleurs
+    opacity: 0.3;
+    filter: grayscale(1);
   }
 }
 
@@ -445,8 +459,8 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: $cream-dark;
-  border: 2px solid $gray-border;
+  background: rgba(255, 255, 255, 0.07);
+  border: 2px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -457,7 +471,7 @@
 .dashboard-badge-label {
   font-size: 0.65rem;
   font-weight: 600;
-  color: $text-medium;
+  color: rgba($white, 0.4);
   text-align: center;
   line-height: 1.2;
 }
@@ -473,24 +487,25 @@
   gap: 8px;
 }
 
-// Carte enfant — ligne avec avatar + infos + bouton
+// Carte enfant — ligne avec avatar + infos + bouton, sur fond sombre
 .dashboard-child-card {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: $cream;
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 10px;
-  border: 1px solid $gray-border;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-// Avatar initiale de l'enfant
+// Avatar initiale de l'enfant — halo doré
 .dashboard-child-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: $purple-light;
-  color: $purple;
+  background: rgba($gold, 0.2);
+  border: 1px solid rgba($gold, 0.35);
+  color: $gold;
   font-size: 0.9rem;
   font-weight: 700;
   display: flex;
@@ -499,7 +514,6 @@
   flex-shrink: 0;
 }
 
-// Bloc nom + âge
 .dashboard-child-info {
   flex: 1;
   display: flex;
@@ -509,12 +523,12 @@
 .dashboard-child-name {
   font-size: 0.85rem;
   font-weight: 600;
-  color: $text-dark;
+  color: $white;
 }
 
 .dashboard-child-age {
   font-size: 0.72rem;
-  color: $text-light;
+  color: rgba($white, 0.45);
 }
 
 // Bouton étoile pour créer une histoire pour cet enfant
@@ -524,19 +538,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $white;
-  border: 1px solid $gray-border;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  color: $purple;
+  color: rgba($white, 0.7);
   font-size: 0.9rem;
   text-decoration: none;
   flex-shrink: 0;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: $purple;
-    color: $white;
-    border-color: $purple;
+    background: $gold;
+    color: $navy-dark;
+    border-color: $gold;
     text-decoration: none;
   }
 }

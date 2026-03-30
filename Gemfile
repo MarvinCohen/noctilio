@@ -1,5 +1,8 @@
 source "https://rubygems.org"
 
+# Version Ruby explicite — nécessaire pour Heroku
+ruby "3.3.5"
+
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.2"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
@@ -49,6 +52,11 @@ gem "sassc-rails"
 
 # Intelligence artificielle — génération d'histoires et d'images
 gem "ruby-openai", "~> 7.0"
+
+# Stockage cloud des images générées (ActiveStorage)
+# Nécessaire sur Heroku car le filesystem est éphémère
+gem "cloudinary", "~> 1.29"
+gem "activestorage-cloudinary-service"
 
 # Abonnements Stripe — gère les paiements et plans premium
 gem "pay", "~> 7.0"

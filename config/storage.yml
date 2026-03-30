@@ -6,6 +6,11 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
+# Cloudinary — stockage cloud utilisé en production (Heroku)
+# La variable CLOUDINARY_URL est injectée automatiquement par l'add-on Heroku
+cloudinary:
+  service: Cloudinary
+
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
 # amazon:
 #   service: S3
