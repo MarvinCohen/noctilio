@@ -59,7 +59,10 @@
     top: 0; left: 0;
     width: 100%; height: 100%;
     pointer-events: none;
-    z-index: 0;
+    /* z-index: 3 — au-dessus des sections de contenu (z-index: 2)
+       mais en dessous de la nav (z-index: 100) et du curseur (z-index: 9999)
+       pointer-events: none garantit que les clics passent à travers */
+    z-index: 3;
   }
 
   /* Texture de bruit subtile */
