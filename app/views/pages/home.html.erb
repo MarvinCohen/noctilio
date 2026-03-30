@@ -400,8 +400,6 @@
   <div class="nav-logo">Noctilio</div>
   <div class="nav-actions">
     <div class="nav-badge">Bientôt disponible</div>
-    <%# Lien pour les utilisateurs qui ont déjà un compte %>
-    <%= link_to "Se connecter", new_user_session_path, class: "nav-login" %>
   </div>
 </nav>
 
@@ -490,8 +488,7 @@
   Fait avec <span>♥</span> pour les petits rêveurs — <span>Noctilio</span> © 2026
 </footer>
 
-<%# Le nonce CSP est requis en production pour autoriser les scripts inline %>
-<script nonce="<%= content_security_policy_nonce %>">
+<script>
   // ============================================================
   // Curseur personnalisé — point doré + anneau avec délai
   // ============================================================
