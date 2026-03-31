@@ -567,7 +567,18 @@
     trailCanvas.height = window.innerHeight;
   }
   resizeTrail();
-  window.addEventListener('resize', resizeTrail);
+  // Même logique : on ignore les resize causés par le chrome mobile (hauteur seule)
+  let lastTrailWidth = window.innerWidth;
+  let resizeTrailTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTrailTimer);
+    resizeTrailTimer = setTimeout(() => {
+      if (Math.abs(window.innerWidth - lastTrailWidth) > 10) {
+        lastTrailWidth = window.innerWidth;
+        resizeTrail();
+      }
+    }, 250);
+  });
 
   // Tableau des particules du sillage — chaque entrée = une position passée du curseur
   let trailParticles = [];
@@ -645,7 +656,23 @@
   }
 
   resize(); createStars(); requestAnimationFrame(drawStars);
-  window.addEventListener('resize', () => { resize(); createStars(); });
+
+  // Sur mobile, le resize se déclenche quand la barre d'adresse se cache pendant le scroll
+  // On ignore les changements de hauteur seuls (typique du chrome mobile)
+  // et on débounce pour ne pas recréer les étoiles à chaque pixel de scroll
+  let lastStarWidth = window.innerWidth;
+  let resizeStarsTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeStarsTimer);
+    resizeStarsTimer = setTimeout(() => {
+      // Ne recrée les étoiles que si la LARGEUR a changé (vrai resize ou rotation)
+      if (Math.abs(window.innerWidth - lastStarWidth) > 10) {
+        lastStarWidth = window.innerWidth;
+        resize();
+        createStars();
+      }
+    }, 250);
+  });
 
   // ============================================================
   // Soumission du formulaire — fetch() vers POST /waitlist
