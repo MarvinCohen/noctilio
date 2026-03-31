@@ -29,8 +29,7 @@ class StoriesController < ApplicationController
   # GET /stories/new — formulaire de création
   def new
     # Pré-sélectionne des valeurs par défaut pour éviter les erreurs de validation
-    # si l'utilisateur soumet sans avoir cliqué sur chaque option
-    @story    = Story.new(world_theme: "space", educational_value: "courage")
+    @story    = Story.new(educational_value: "courage")
     @children = current_user.children.ordered
 
     # Si l'utilisateur n'a pas encore créé de profil enfant, on le redirige
@@ -41,9 +40,33 @@ class StoriesController < ApplicationController
 
   # POST /stories — crée l'histoire et lance la génération en arrière-plan
   def create
-    # On trouve l'enfant concerné (doit appartenir à l'utilisateur)
-    child = current_user.children.find(story_params[:child_id])
-    @story = child.stories.build(story_params)
+    # Récupère les IDs d'enfants sélectionnés (peut en avoir plusieurs)
+    # Le premier ID devient l'enfant principal (child_id), les autres sont extra_child_ids
+    selected_ids = Array(params[:story][:child_ids]).reject(&:blank?).map(&:to_i)
+
+    if selected_ids.empty?
+      @children = current_user.children.ordered
+      @story    = Story.new(story_params.except(:child_ids))
+      @story.errors.add(:child_id, "Sélectionne au moins un enfant")
+      render :new, status: :unprocessable_entity
+      return
+    end
+
+    # Le premier enfant sélectionné est le héros principal
+    primary_child_id = selected_ids.first
+    extra_ids        = selected_ids[1..]   # Les autres enfants (peut être vide)
+
+    # On vérifie que tous les enfants appartiennent bien à l'utilisateur connecté
+    child = current_user.children.find(primary_child_id)
+
+    # Construit l'histoire avec le premier enfant comme propriétaire
+    permitted = story_params.except(:child_ids)
+    @story = child.stories.build(permitted)
+
+    # Associe les enfants supplémentaires
+    @story.extra_child_ids = current_user.children
+                                         .where(id: extra_ids)
+                                         .pluck(:id)
 
     if @story.save
       # Lance le job de génération en arrière-plan via Solid Queue
@@ -144,6 +167,8 @@ class StoriesController < ApplicationController
   end
 
   # Paramètres autorisés pour la création d'une histoire
+  # child_ids: [] = tableau d'IDs (sélection multiple d'enfants)
+  # extra_child_ids: [] = géré manuellement dans create, pas directement via permit
   def story_params
     params.require(:story).permit(
       :child_id,
@@ -152,7 +177,8 @@ class StoriesController < ApplicationController
       :reading_level,
       :duration_minutes,
       :custom_theme,
-      :interactive
+      :interactive,
+      child_ids: []     # Tableau d'IDs pour la sélection multiple d'enfants
     )
   end
 end

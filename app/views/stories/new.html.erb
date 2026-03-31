@@ -22,20 +22,25 @@
         <%= f.error_notification %>
 
         <%# ================================================ %>
-        <%# ÉTAPE 1 — Choix de l'enfant %>
+        <%# ÉTAPE 1 — Choix des héros (sélection multiple) %>
         <%# ================================================ %>
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">👤 Pour quel héros ?</h2>
+            <h2 class="h5 fw-bold mb-1">👤 Qui sont les héros ?</h2>
+            <p class="text-muted small mb-3">Tu peux sélectionner plusieurs enfants — ils seront tous intégrés dans l'histoire.</p>
 
             <% if @children.any? %>
               <div class="row g-2">
                 <% @children.each do |child| %>
                   <div class="col-sm-6">
-                    <%# Bouton radio stylisé pour chaque enfant %>
+                    <%# Checkbox stylisée pour chaque enfant %>
+                    <%# story[child_ids][] envoie un tableau d'IDs au controller %>
                     <label class="child-selector w-100 p-3 rounded-3 border d-flex align-items-center gap-3"
                            style="cursor: pointer;">
-                      <%= f.radio_button :child_id, child.id, class: "form-check-input me-1" %>
+                      <input type="checkbox"
+                             name="story[child_ids][]"
+                             value="<%= child.id %>"
+                             class="form-check-input me-1">
                       <div>
                         <div class="fw-semibold"><%= child.name %></div>
                         <small class="text-muted"><%= child.age %> ans • <%= child.gender == "boy" ? "Garçon" : "Fille" %></small>
@@ -53,27 +58,38 @@
         </div>
 
         <%# ================================================ %>
-        <%# ÉTAPE 2 — Choix de l'univers %>
+        <%# ÉTAPE 2 — Description libre (remplace le choix d'univers) %>
         <%# ================================================ %>
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">🌍 Choisis un univers</h2>
-            <div class="row g-2">
+            <h2 class="h5 fw-bold mb-1">💬 Qu'est-ce qu'il/elle veut vivre aujourd'hui ?</h2>
+            <p class="text-muted small mb-3">
+              Décris librement l'aventure souhaitée — un rêve, un endroit magique, un super-pouvoir, une mission...
+            </p>
+
+            <%# Textarea principal — description libre du parent %>
+            <%= f.text_area :custom_theme,
+                  rows: 4,
+                  class: "form-control",
+                  placeholder: "Ex : Elle veut être une exploratrice qui découvre une île secrète avec des animaux parlants... Elle adore les dauphins et les arcs-en-ciel !" %>
+
+            <%# Exemples d'inspiration cliquables — insèrent le texte dans le textarea %>
+            <div class="mt-2 d-flex flex-wrap gap-2">
+              <span class="text-muted small me-1 align-self-center">Inspiration :</span>
               <% [
-                { value: "space",      emoji: "🚀", label: "Espace" },
-                { value: "dinos",      emoji: "🦕", label: "Dinosaures" },
-                { value: "princesses", emoji: "👸", label: "Princesses" },
-                { value: "pirates",    emoji: "🏴‍☠️", label: "Pirates" },
-                { value: "animals",    emoji: "🦁", label: "Animaux" }
-              ].each do |world| %>
-                <div class="col-4 col-sm-2">
-                  <label class="world-selector text-center w-100 p-3 rounded-3 border"
-                         style="cursor: pointer;">
-                    <%= f.radio_button :world_theme, world[:value], class: "d-none world-radio" %>
-                    <div style="font-size: 2rem;"><%= world[:emoji] %></div>
-                    <div class="small fw-semibold mt-1"><%= world[:label] %></div>
-                  </label>
-                </div>
+                "🚀 Astronaute qui découvre une planète habitée par des robots gentils",
+                "🦄 Princesse qui part à l'aventure avec sa licorne magique",
+                "🦕 Voyage dans le temps chez les dinosaures",
+                "🏴‍☠️ Pirate qui cherche un trésor caché sous la mer",
+                "🌳 Gardien de la forêt qui sauve les animaux"
+              ].each do |idea| %>
+                <%# data-idea stocke le texte — onclick le récupère sans problème de quotes %>
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        onclick="document.getElementById('story_custom_theme').value = this.dataset.idea"
+                        data-idea="<%= idea %>">
+                  <%= idea %>
+                </button>
               <% end %>
             </div>
           </div>
@@ -130,15 +146,6 @@
                   </label>
                 <% end %>
               </div>
-            </div>
-
-            <%# Thème personnalisé libre %>
-            <div class="mb-4">
-              <%= f.label :custom_theme, "🎯 Thème spécial (optionnel)", class: "form-label fw-semibold" %>
-              <%= f.text_area :custom_theme,
-                    rows: 2,
-                    class: "form-control",
-                    placeholder: "Ex: une histoire sur le premier jour d'école, un dragon qui a peur du feu..." %>
             </div>
 
             <%# Mode interactif (Premium uniquement) %>

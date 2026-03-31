@@ -111,35 +111,49 @@ class StoryGeneratorService
   # Prompt système — définit le personnage que joue l'IA
   def system_prompt
     <<~PROMPT
-      Tu es un conteur d'histoires pour enfants, expert en récits magiques, éducatifs et adaptés à l'âge.
-      Tu écris des histoires en français, avec un vocabulaire adapté à l'enfant.
-      Tes histoires sont captivantes, bienveillantes et transmettent toujours une valeur positive.
-      Tu utilises des descriptions colorées et des dialogues pour rendre l'histoire vivante.
-      Tu n'utilises jamais de violence, de peur intense ou de contenu inapproprié.
+      Tu es un maître conteur d'histoires épiques pour enfants, dans le style des grands films d'aventure.
+      Tu écris en français, avec un style vivant, immersif et plein d'action.
+
+      Règles absolues :
+      - Les enfants NE "partent pas à l'aventure" — ils SONT directement les héros dès la première phrase.
+        Exemple : "Isaac brandit son sabre de samouraï" (pas "Isaac rêvait d'être samouraï").
+      - Chaque scène est cinématographique : on voit, on entend, on ressent.
+      - Les dialogues sont percutants et révèlent le caractère des personnages.
+      - Le rythme est dynamique : action, tension, rebondissement, résolution.
+      - Les caractéristiques physiques des enfants (lunettes, couleur des yeux, etc.) apparaissent dans l'histoire.
+      - L'histoire transmet une valeur positive sans jamais être moralisatrice.
+      - Pas de violence graphique, mais les combats, défis et dangers sont permis et excitants.
     PROMPT
   end
 
   # Prompt utilisateur — la demande précise avec tous les paramètres de l'histoire
   def user_prompt
     # Récupération des paramètres de l'histoire
-    world_label    = @story.world_label
     value_label    = educational_value_label
     level_label    = @story.reading_level == "intermediate" ? "intermédiaire" : "débutant"
     duration_label = "#{@story.duration_minutes} minutes de lecture"
 
     prompt = <<~PROMPT
-      Écris une histoire pour un enfant avec ces paramètres :
+      Écris une histoire épique avec ces paramètres :
 
-      👤 Personnage principal : #{@child.avatar_description}
-      🌍 Univers : #{world_label}
+      ⚔️  Héros principal : #{@child.avatar_description}
       💫 Valeur à transmettre : #{value_label}
       📚 Niveau de lecture : #{level_label}
       ⏱️  Durée : #{duration_label} (environ #{@story.duration_minutes * 200} mots)
     PROMPT
 
-    # Ajoute le thème personnalisé si défini par le parent
+    # Si des enfants supplémentaires sont présents, ils sont CO-HÉROS (pas personnages secondaires)
+    extra = @story.extra_children.to_a
+    if extra.any?
+      descriptions = extra.map { |c| c.avatar_description }.join(" ; ")
+      prompt += "\n⚔️  Co-héros (aussi importants que le héros principal) : #{descriptions}"
+      prompt += "\n→ Tous les héros apparaissent DÈS LA PREMIÈRE SCÈNE et agissent ensemble."
+    end
+
+    # La description libre est le cœur de l'aventure — les enfants sont DIRECTEMENT dans ce rôle
     if @story.custom_theme.present?
-      prompt += "\n🎯 Thème supplémentaire souhaité par le parent : #{@story.custom_theme}"
+      prompt += "\n🌟 L'aventure : #{@story.custom_theme}"
+      prompt += "\n→ Les héros SONT déjà dans cette situation dès la première ligne — pas d'introduction."
     end
 
     # Instructions de format
@@ -152,18 +166,23 @@ class StoryGeneratorService
       - Termine par une belle morale ou leçon douce
     FORMAT
 
-    # Mode interactif : demande de préparer un choix
+    # Mode interactif : nombre de choix selon la durée de l'histoire
+    # 5 min → 1 choix, 10 min → 2 choix, 15 min → 3 choix
     if @story.interactive?
+      nb_choices = interactive_choices_count
+      chapters   = nb_choices + 1   # Ex: 3 choix = 4 chapitres
+
       prompt += <<~INTERACTIVE
 
-        IMPORTANT — Mode interactif :
-        À la fin du 2ème chapitre, insère exactement ce format :
+        IMPORTANT — Mode interactif (#{nb_choices} choix) :
+        L'histoire comporte #{chapters} chapitres.
+        #{nb_choices == 1 ? "À la fin du chapitre 2" : "À la fin de chaque chapitre sauf le dernier"}, insère un bloc de choix avec exactement ce format :
         [CHOIX]
-        Question : (une question courte et claire pour l'enfant)
-        Option A : (première possibilité)
-        Option B : (deuxième possibilité)
+        Question : (une question courte et excitante pour l'enfant)
+        Option A : (première possibilité d'action)
+        Option B : (deuxième possibilité d'action)
         [FIN CHOIX]
-        Ne continue PAS l'histoire après le choix — la suite sera générée après la décision.
+        → Ne continue PAS l'histoire après un [FIN CHOIX] — arrête-toi là, la suite sera générée après la décision de l'enfant.
       INTERACTIVE
     end
 
@@ -211,9 +230,15 @@ class StoryGeneratorService
   end
 
   # Calcule le nombre de tokens selon la durée souhaitée
-  # Règle approximative : 200 mots × durée + marge pour les titres
+  # 200 mots/min × durée × ~1.5 tokens/mot (français) + marge titres/choix
+  # Pas de plafond arbitraire — Groq supporte jusqu'à 8000 tokens
   def tokens_for_duration
-    base = @story.duration_minutes.to_i * 300
-    [base, 3000].min   # Maximum 3000 tokens par histoire
+    { 5 => 2000, 10 => 3500, 15 => 5500 }.fetch(@story.duration_minutes.to_i, 2000)
+  end
+
+  # Retourne le nombre de choix interactifs selon la durée
+  # 5 min → 1 choix, 10 min → 2 choix, 15 min → 3 choix
+  def interactive_choices_count
+    { 5 => 1, 10 => 2, 15 => 3 }.fetch(@story.duration_minutes.to_i, 1)
   end
 end

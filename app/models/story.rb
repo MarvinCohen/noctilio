@@ -25,7 +25,7 @@ class Story < ApplicationRecord
   # ============================================================
   # Validations
   # ============================================================
-  validates :world_theme,  presence: true
+  # world_theme est optionnel — la description libre du parent remplace l'univers prédéfini
   validates :child_id,     presence: true
   validates :status,       presence: true
   validates :duration_minutes, inclusion: { in: [5, 10, 15] }, allow_nil: true
@@ -52,7 +52,7 @@ class Story < ApplicationRecord
   # ============================================================
 
   # Retourne l'emoji correspondant à l'univers de l'histoire
-  # Utilisé dans les vues pour illustrer les cartes d'histoires
+  # Retourne ✨ si pas d'univers prédéfini (mode description libre)
   def world_emoji
     {
       "space"      => "🚀",
@@ -60,10 +60,11 @@ class Story < ApplicationRecord
       "princesses" => "👸",
       "pirates"    => "🏴‍☠️",
       "animals"    => "🦁"
-    }.fetch(world_theme, "✨")
+    }.fetch(world_theme.to_s, "✨")
   end
 
   # Retourne le libellé français de l'univers
+  # Si pas d'univers prédéfini, retourne un extrait de la description libre
   def world_label
     {
       "space"      => "Espace",
@@ -71,7 +72,19 @@ class Story < ApplicationRecord
       "princesses" => "Princesses",
       "pirates"    => "Pirates",
       "animals"    => "Animaux"
-    }.fetch(world_theme, world_theme)
+    }.fetch(world_theme.to_s, custom_theme.presence || "Histoire personnalisée")
+  end
+
+  # Retourne les enfants supplémentaires associés à cette histoire
+  # extra_child_ids est un tableau d'IDs PostgreSQL stocké en base
+  def extra_children
+    return Child.none if extra_child_ids.blank?
+    Child.where(id: extra_child_ids)
+  end
+
+  # Retourne tous les enfants de l'histoire (principal + supplémentaires)
+  def all_children
+    [child] + extra_children.to_a
   end
 
   # Retourne le prochain choix interactif non encore effectué

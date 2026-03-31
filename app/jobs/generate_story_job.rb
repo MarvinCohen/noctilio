@@ -87,7 +87,8 @@ class GenerateStoryJob < ApplicationJob
     first_line.gsub(/^[#*\s]+/, "").gsub(/[*#]+$/, "").strip
   end
 
-  # Parse le bloc [CHOIX] dans le texte généré par le GPT
+  # Parse TOUS les blocs [CHOIX] dans le texte généré
+  # Le nombre de blocs dépend de la durée : 5min→1, 10min→2, 15min→3
   # Format attendu :
   #   [CHOIX]
   #   Question : ...
@@ -95,27 +96,31 @@ class GenerateStoryJob < ApplicationJob
   #   Option B : ...
   #   [FIN CHOIX]
   def create_story_choice_from_content(story, content)
-    # Expression régulière pour trouver le bloc de choix
-    match = content.match(/\[CHOIX\](.*?)\[FIN CHOIX\]/m)
-    return unless match
+    # scan retourne toutes les occurrences du pattern (pas seulement la première)
+    blocks = content.scan(/\[CHOIX\](.*?)\[FIN CHOIX\]/m)
+    return if blocks.empty?
 
-    choice_block = match[1]
+    # Crée un StoryChoice pour chaque bloc trouvé
+    # step_number indique l'ordre : 1er choix = étape 1, 2ème = étape 2, etc.
+    blocks.each_with_index do |captures, index|
+      choice_block = captures.first
 
-    # Extraire chaque élément du choix avec des regex
-    question = choice_block.match(/Question\s*:\s*(.+)/i)&.captures&.first&.strip
-    option_a = choice_block.match(/Option A\s*:\s*(.+)/i)&.captures&.first&.strip
-    option_b = choice_block.match(/Option B\s*:\s*(.+)/i)&.captures&.first&.strip
+      question = choice_block.match(/Question\s*:\s*(.+)/i)&.captures&.first&.strip
+      option_a = choice_block.match(/Option A\s*:\s*(.+)/i)&.captures&.first&.strip
+      option_b = choice_block.match(/Option B\s*:\s*(.+)/i)&.captures&.first&.strip
 
-    # Ne créer le choix que si tous les éléments sont présents
-    if question && option_a && option_b
+      next unless question && option_a && option_b
+
       story.story_choices.create!(
-        step_number: 1,
+        step_number: index + 1,   # 1-indexé
         question: question,
         option_a: option_a,
         option_b: option_b
       )
+
+      Rails.logger.info("GenerateStoryJob — choix interactif #{index + 1} créé pour story ##{story.id}")
     end
   rescue StandardError => e
-    Rails.logger.error("GenerateStoryJob — échec création choix interactif : #{e.message}")
+    Rails.logger.error("GenerateStoryJob — échec création choix interactifs : #{e.message}")
   end
 end

@@ -1,16 +1,16 @@
 class ImageGeneratorService
   # ============================================================
-  # Service de génération d'images — Pollinations.ai (gratuit)
+  # Service de génération d'images
   # ============================================================
   # Génère une illustration style livre d'enfants pour une histoire.
   #
-  # Stratégie :
-  #   1. Pollinations.ai en priorité — 100% gratuit, zéro clé API
-  #      Il suffit d'appeler une URL avec le prompt encodé.
-  #   2. DALL-E (OpenAI) en fallback — si OPENAI_API_KEY est configurée
-  #
-  # Pollinations.ai : https://pollinations.ai
-  # Format URL : https://image.pollinations.ai/prompt/{prompt_encodé}?width=1024&height=1024&model=flux
+  # Stratégie (ordre de priorité) :
+  #   1. fal.ai (FLUX.1 Dev) — si FAL_API_KEY configurée
+  #      Meilleure qualité, ~0,025$/image, images permanentes sur CDN
+  #   2. DALL-E 3 (OpenAI) — si OPENAI_API_KEY configurée
+  #      Bonne qualité, ~0,04$/image
+  #   3. Pollinations.ai — gratuit, dernier recours
+  #      Qualité variable, URL externe (pas de téléchargement)
   #
   # Utilisation :
   #   service = ImageGeneratorService.new(story)
@@ -19,17 +19,26 @@ class ImageGeneratorService
 
   require "open-uri"
   require "uri"
+  require "net/http"
+  require "json"
 
-  # URL de base de Pollinations.ai — pas besoin de clé API
+  # ----------------------------------------------------------------
+  # fal.ai — endpoint synchrone FLUX.1 Dev
+  # Documentation : https://fal.ai/models/fal-ai/flux/dev
+  # Retourne directement l'image dans la réponse (pas de polling)
+  # ----------------------------------------------------------------
+  FAL_API_URL = "https://fal.run/fal-ai/flux/dev"
+
+  # ----------------------------------------------------------------
+  # Pollinations.ai — fallback gratuit
+  # ----------------------------------------------------------------
   POLLINATIONS_BASE_URL = "https://image.pollinations.ai/prompt"
+  POLLINATIONS_MODEL    = "flux-schnell"
 
-  # Modèle Pollinations utilisé
-  # "flux-schnell" : variante rapide de FLUX (~5s vs 30s pour "flux")
-  # Qualité suffisante pour les illustrations enfants, bien plus réactive
-  POLLINATIONS_MODEL = "flux-schnell"
-
+  # ----------------------------------------------------------------
   # Style visuel cohérent pour toutes les illustrations de l'app
-  # Ce texte est ajouté à chaque prompt pour garantir un rendu cohérent
+  # Ce texte est ajouté à chaque prompt pour garantir un rendu uniforme
+  # ----------------------------------------------------------------
   VISUAL_STYLE = "children book illustration, soft watercolor, pastel colors, " \
                  "hand-drawn style, warm and magical atmosphere, simple background, " \
                  "cute and friendly, safe for kids"
@@ -42,24 +51,36 @@ class ImageGeneratorService
   # Génère l'image et l'attache à l'histoire via ActiveStorage
   # Retourne { success: true/false, error: "..." }
   def call
-    # Construction du prompt en anglais (Pollinations fonctionne mieux en anglais)
+    # Construction du prompt en anglais (meilleurs résultats avec tous les services)
     prompt = build_image_prompt
 
     # Sauvegarde du prompt utilisé (utile pour débuguer ou régénérer)
     @story.update_column(:image_prompt, prompt)
 
-    # Tentative 1 : Pollinations.ai (gratuit, prioritaire)
+    # Tentative 1 : fal.ai en priorité si la clé est configurée
+    # FLUX.1 Dev = meilleure qualité artistique, images stockées sur CDN permanent
+    if ENV["FAL_API_KEY"].present?
+      Rails.logger.info("ImageGeneratorService — tentative fal.ai pour story ##{@story.id}")
+      result = generate_with_fal(prompt)
+      return result if result[:success]
+      Rails.logger.warn("ImageGeneratorService — fal.ai a échoué : #{result[:error]}, tentative DALL-E")
+    end
+
+    # Tentative 2 : DALL-E si la clé OpenAI est configurée
+    if ENV["OPENAI_API_KEY"].present?
+      Rails.logger.info("ImageGeneratorService — tentative DALL-E pour story ##{@story.id}")
+      result = generate_with_dalle(prompt)
+      return result if result[:success]
+      Rails.logger.warn("ImageGeneratorService — DALL-E a échoué : #{result[:error]}, tentative Pollinations")
+    end
+
+    # Tentative 3 : Pollinations.ai (gratuit, dernier recours)
+    # Sauvegarde une URL externe — le navigateur charge l'image directement
+    Rails.logger.info("ImageGeneratorService — tentative Pollinations pour story ##{@story.id}")
     result = generate_with_pollinations(prompt)
     return result if result[:success]
 
-    # Tentative 2 : DALL-E (fallback si clé OpenAI présente)
-    # Permet de passer à OpenAI plus tard sans changer de code
-    if ENV["OPENAI_API_KEY"].present?
-      Rails.logger.info("ImageGeneratorService — Pollinations a échoué, tentative DALL-E")
-      return generate_with_dalle(prompt)
-    end
-
-    # Les deux ont échoué — l'histoire sera créée sans image
+    # Tous les services ont échoué — l'histoire sera créée sans image
     Rails.logger.warn("ImageGeneratorService — aucune image générée pour story ##{@story.id}")
     { success: false, error: result[:error] }
   end
@@ -67,25 +88,104 @@ class ImageGeneratorService
   private
 
   # ============================================================
-  # Génération via Pollinations.ai (gratuit)
+  # Génération via fal.ai (FLUX.1 Dev) — priorité 1
   # ============================================================
-  # Pollinations expose une API HTTP simple :
-  # GET https://image.pollinations.ai/prompt/{prompt}?width=1024&height=1024&model=flux
-  # La réponse est directement le fichier image (JPEG)
+  # API REST synchrone : POST avec le prompt → reçoit l'URL de l'image
+  # Auth : header "Authorization: Key FAL_API_KEY"
+  # Réponse JSON : { "images": [{ "url": "https://...", ... }] }
+  def generate_with_fal(prompt)
+    # Prépare la requête HTTP vers l'endpoint fal.ai
+    uri  = URI(FAL_API_URL)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl     = true       # fal.ai utilise HTTPS
+    http.read_timeout = 120       # 120s max — FLUX peut prendre ~10-30s
+    http.open_timeout = 10        # 10s pour établir la connexion
+
+    # Construit la requête POST avec les paramètres de génération
+    request = Net::HTTP::Post.new(uri.path)
+    request["Authorization"] = "Key #{ENV['FAL_API_KEY']}"  # Auth fal.ai
+    request["Content-Type"]  = "application/json"
+
+    request.body = {
+      prompt: prompt,
+      image_size:          "landscape_4_3",  # Format paysage — idéal pour couverture de livre
+      num_inference_steps: 28,               # Qualité/vitesse — 28 = bon compromis
+      guidance_scale:      3.5,              # Fidélité au prompt — valeur recommandée par fal.ai
+      num_images:          1,                # Une seule image par histoire
+      enable_safety_checker: true            # Filtre de sécurité — obligatoire pour app enfants
+    }.to_json
+
+    # Exécute la requête et parse la réponse JSON
+    response = http.request(request)
+    body     = JSON.parse(response.body)
+
+    # Vérifie que la réponse contient bien une image
+    unless response.code == "200" && body["images"]&.first&.dig("url")
+      error_msg = body["detail"] || body["error"] || "Réponse inattendue (code #{response.code})"
+      return { success: false, error: "fal.ai : #{error_msg}" }
+    end
+
+    # Récupère l'URL permanente de l'image sur le CDN fal.ai
+    image_url = body["images"].first["url"]
+
+    # Sauvegarde l'URL en base et télécharge l'image dans ActiveStorage
+    @story.update_column(:cover_image_url, image_url)
+    attach_image_from_url(image_url, "png")
+
+    Rails.logger.info("ImageGeneratorService — fal.ai OK pour story ##{@story.id} : #{image_url}")
+    { success: true, url: image_url }
+  rescue StandardError => e
+    Rails.logger.error("ImageGeneratorService — échec fal.ai : #{e.message}")
+    { success: false, error: "Erreur fal.ai : #{e.message}" }
+  end
+
+  # ============================================================
+  # Génération via DALL-E 3 (OpenAI) — priorité 2
+  # ============================================================
+  # Utilisé seulement si OPENAI_API_KEY est configurée dans .env
+  def generate_with_dalle(prompt)
+    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+
+    response = client.images.generate(
+      parameters: {
+        prompt:  prompt,
+        model:   "dall-e-3",
+        size:    "1024x1024",
+        quality: "standard",
+        style:   "natural",
+        n:       1
+      }
+    )
+
+    image_url = response.dig("data", 0, "url")
+    return { success: false, error: "DALL-E n'a pas retourné d'URL" } unless image_url
+
+    # Sauvegarde l'URL et télécharge l'image dans ActiveStorage
+    @story.update_column(:cover_image_url, image_url)
+    attach_image_from_url(image_url, "png")
+
+    { success: true, url: image_url }
+  rescue StandardError => e
+    { success: false, error: "Erreur DALL-E : #{e.message}" }
+  end
+
+  # ============================================================
+  # Génération via Pollinations.ai — priorité 3 (dernier recours)
+  # ============================================================
+  # API simple : construire une URL GET avec le prompt encodé
+  # Pollinations bloque les requêtes serveur → on sauvegarde l'URL directement
+  # Le navigateur chargera l'image côté client via <img src="...">
   def generate_with_pollinations(prompt)
     # Encode le prompt pour une URL valide (espaces → %20, etc.)
     encoded_prompt = URI.encode_uri_component(prompt)
 
     # Construction de l'URL avec les paramètres
-    # nologo=true  : retire le watermark Pollinations
-    # enhance=false : désactivé — ajoute du temps de traitement côté Pollinations
-    # 768x512 : format paysage, idéal pour une illustration de livre + plus rapide à générer
+    # 768x512 : format paysage, plus rapide à générer
+    # nologo=true : retire le watermark Pollinations
     image_url = "#{POLLINATIONS_BASE_URL}/#{encoded_prompt}" \
                 "?width=768&height=512&model=#{POLLINATIONS_MODEL}&nologo=true&enhance=false"
 
-    # Sauvegarde de l'URL directement en base — Pollinations bloque les requêtes serveur (401)
-    # On NE télécharge PAS l'image côté serveur : le navigateur l'affichera directement via <img src="...">
-    # L'URL Pollinations est permanente et ne s'expire pas (contrairement à DALL-E)
+    # On sauvegarde uniquement l'URL — pas de téléchargement côté serveur
     @story.update_column(:cover_image_url, image_url)
 
     Rails.logger.info("ImageGeneratorService — URL Pollinations sauvegardée pour story ##{@story.id}")
@@ -96,50 +196,29 @@ class ImageGeneratorService
   end
 
   # ============================================================
-  # Génération via DALL-E 3 (OpenAI — payant, fallback)
-  # ============================================================
-  # Utilisé seulement si OPENAI_API_KEY est configurée dans .env
-  def generate_with_dalle(prompt)
-    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
-
-    response = client.images.generate(
-      parameters: {
-        prompt: prompt,
-        model: "dall-e-3",
-        size: "1024x1024",
-        quality: "standard",
-        style: "natural",
-        n: 1
-      }
-    )
-
-    image_url = response.dig("data", 0, "url")
-    return { success: false, error: "DALL-E n'a pas retourné d'URL" } unless image_url
-
-    @story.update_column(:cover_image_url, image_url)
-    attach_image_from_url(image_url, "png")
-
-    { success: true, url: image_url }
-  rescue StandardError => e
-    { success: false, error: "Erreur DALL-E : #{e.message}" }
-  end
-
-  # ============================================================
   # Construction du prompt image
   # ============================================================
   # Le prompt utilise le titre de l'histoire ET un moment clé extrait du texte
   # pour générer une illustration personnalisée, pas générique.
-  # En anglais car Pollinations fonctionne mieux en anglais.
+  # En anglais car tous les modèles fonctionnent mieux en anglais.
   def build_image_prompt
     # Extrait une scène dramatique du milieu de l'histoire (souvent le climax)
     key_moment = extract_key_moment
 
-    # Combine : style visuel + titre de l'histoire + scène clé + personnage
+    # Construit la description des héros avec leurs caractéristiques physiques
+    # avatar_description inclut les traits physiques (lunettes, couleur cheveux, etc.)
+    hero_descriptions = @story.all_children.map do |child|
+      # Traduit la description en anglais pour de meilleurs résultats
+      "a child named #{child.name}, #{child.age} years old" +
+        (child.child_description.present? ? ", #{child.child_description}" : "")
+    end.join(" and ")
+
+    # Combine : style visuel + scène clé + description précise des héros
     prompt = "#{VISUAL_STYLE}. "
-    prompt += "Illustration for a children's story titled '#{@story.title}'. " if @story.title.present?
     prompt += "Key scene: #{key_moment}. " if key_moment.present?
-    prompt += "Main character: a child named #{@child.name}, #{@child.age} years old. "
-    prompt += "Positive, magical, child-friendly image."
+    prompt += "Heroes: #{hero_descriptions}. "
+    prompt += "The illustration must show all the heroes together in the same scene. "
+    prompt += "Positive, epic, child-friendly image."
     prompt
   end
 
@@ -150,10 +229,9 @@ class ImageGeneratorService
 
     # Nettoie le contenu : retire le bloc [CHOIX] et les lignes de titre markdown
     # NOTE : on utilise [#]{1,3} au lieu de #{1,3} pour éviter l'interpolation Ruby
-    # (#{ est interprété comme début d'interpolation de chaîne, ce qui causerait une SyntaxError)
     clean = @story.content
                   .gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")
-                  .gsub(/^[#]{1,3} .+$/, "")   # Retire les titres ## / # / ###
+                  .gsub(/^[#]{1,3} .+$/, "")
                   .strip
 
     # Récupère tous les paragraphes non vides
@@ -164,7 +242,7 @@ class ImageGeneratorService
     climax_index = (paragraphs.length * 2 / 3).clamp(0, paragraphs.length - 1)
     moment = paragraphs[climax_index].gsub(/\n/, " ").strip
 
-    # Limite à 200 caractères pour ne pas dépasser la longueur d'URL acceptable
+    # Limite à 200 caractères pour ne pas dépasser la longueur maximale du prompt
     moment.length > 200 ? moment[0..200].rstrip + "..." : moment
   end
 
@@ -172,8 +250,8 @@ class ImageGeneratorService
   # Téléchargement et attachement à ActiveStorage
   # ============================================================
   # Télécharge l'image depuis une URL distante et l'attache à l'histoire.
-  # content_type : "jpg" pour Pollinations, "png" pour DALL-E
-  def attach_image_from_url(url, extension = "jpg")
+  # Utilisé par fal.ai et DALL-E (pas Pollinations qui bloque les requêtes serveur)
+  def attach_image_from_url(url, extension = "png")
     # Ouvre l'URL avec un timeout pour éviter de bloquer le job trop longtemps
     downloaded_file = URI.open(url, read_timeout: 60, open_timeout: 30)
 
@@ -181,14 +259,13 @@ class ImageGeneratorService
 
     # Attache l'image téléchargée à l'histoire via ActiveStorage
     @story.cover_image.attach(
-      io: downloaded_file,
-      filename: "histoire_#{@story.id}_couverture.#{extension}",
+      io:           downloaded_file,
+      filename:     "histoire_#{@story.id}_couverture.#{extension}",
       content_type: content_type
     )
   rescue StandardError => e
-    # Si le téléchargement échoue, on garde l'URL comme fallback
-    # L'histoire s'affichera quand même, avec l'URL directe comme src
+    # Si le téléchargement échoue, l'URL est déjà sauvegardée en base comme fallback
     Rails.logger.error("ImageGeneratorService — échec téléchargement : #{e.message}")
-    raise  # On re-raise pour que generate_with_pollinations capture l'erreur
+    raise  # Re-raise pour que la méthode appelante capture l'erreur
   end
 end
