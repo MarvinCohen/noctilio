@@ -131,8 +131,12 @@ export default class extends Controller {
       this.updateButtons(false)
     }
 
-    // Lance effectivement la lecture
-    window.speechSynthesis.speak(this.utterance)
+    // Workaround bug Chrome : cancel() est asynchrone, un délai de 100ms garantit
+    // que la file est vraiment vide avant de lancer speak() — sinon la synthèse
+    // démarre silencieusement sans produire de son
+    setTimeout(() => {
+      window.speechSynthesis.speak(this.utterance)
+    }, 100)
 
     // Met les boutons en état "en cours de lecture"
     this.updateButtons(true)
