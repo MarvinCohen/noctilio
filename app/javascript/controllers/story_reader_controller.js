@@ -89,11 +89,25 @@ export default class extends Controller {
       return
     }
 
+    // Chrome charge les voix de façon asynchrone — si elles ne sont pas encore
+    // disponibles au moment du clic, on attend et on relance automatiquement
+    const voices = window.speechSynthesis.getVoices()
+    if (!voices.length) {
+      console.log("story-reader: voix pas encore chargées, attente...")
+      window.speechSynthesis.addEventListener("voiceschanged", () => this.play(), { once: true })
+      return
+    }
+
+    // Recharge les voix au cas où elles ont changé depuis le connect()
+    this.voices = voices
+
     // Annule toute lecture précédente pour éviter les lectures superposées
     window.speechSynthesis.cancel()
 
     // Récupère le texte brut depuis la cible "text" (le div de l'histoire)
     const text = this.textTarget.innerText || this.textTarget.textContent
+
+    if (!text.trim()) return
 
     // Crée un objet SpeechSynthesisUtterance qui représente le texte à lire
     this.utterance = new SpeechSynthesisUtterance(text)
@@ -112,7 +126,10 @@ export default class extends Controller {
     this.utterance.onend = () => this.updateButtons(false)
 
     // Callback déclenché en cas d'erreur de synthèse vocale
-    this.utterance.onerror = () => this.updateButtons(false)
+    this.utterance.onerror = (e) => {
+      console.error("story-reader: erreur synthèse vocale", e)
+      this.updateButtons(false)
+    }
 
     // Lance effectivement la lecture
     window.speechSynthesis.speak(this.utterance)
