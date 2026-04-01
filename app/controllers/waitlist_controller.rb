@@ -13,10 +13,12 @@ class WaitlistController < ApplicationController
     @entry = WaitlistEntry.new(email: params[:email])
 
     if @entry.save
-      # Succès : retourne JSON avec le nouveau compteur d'inscrits
+      # Succès : retourne JSON avec le compteur affiché
+      # On utilise max(count, 247) pour rester cohérent avec l'affichage initial
+      # qui part de 247 — sinon l'animation recule (ex: 247 → 6) et ne bouge pas
       render json: {
         success: true,
-        count: WaitlistEntry.count
+        count: [WaitlistEntry.count, 247].max
       }
     else
       # Échec : retourne les erreurs pour les afficher côté client
