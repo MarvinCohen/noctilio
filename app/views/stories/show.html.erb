@@ -69,15 +69,12 @@
         <%# Titre de l'histoire %>
         <h1 class="fw-bold display-6 mb-4"><%= @story.title || "Mon histoire magique" %></h1>
 
-        <%# Contrôles de lecture vocale — Web Speech API %>
+        <%# Contrôles de lecture vocale — OpenAI TTS %>
         <%# data-controller connecte le Stimulus controller story-reader %>
-        <div data-controller="story-reader" class="mb-5">
-          <%# Message affiché si le navigateur ne supporte pas la synthèse vocale %>
-          <%# (Firefox mobile, certains navigateurs Android) — caché par défaut %>
-          <p class="reader-unsupported text-muted small d-none mb-3">
-            🎙️ La lecture vocale n'est pas disponible sur ce navigateur.
-          </p>
-
+        <%# data-story-id permet au JS de construire l'URL POST /stories/:id/audio %>
+        <div data-controller="story-reader"
+             data-story-id="<%= @story.id %>"
+             class="mb-5">
           <%# Boutons de contrôle de lecture %>
           <div class="reader-controls d-flex align-items-center gap-2 mb-3">
             <span class="text-muted small fw-semibold">🎙️ Lecture vocale :</span>
@@ -193,30 +190,40 @@
         <%# Placée à la fin pour ne pas spoiler et avoir un effet "récompense" %>
         <%# ================================================ %>
         <%# Section illustration — toujours affichée pour une histoire terminée %>
-        <%# Le skeleton est visible en attendant que Pollinations génère et charge l'image %>
         <div class="story-illustration-section">
           <div class="story-illustration-label">✦ L'illustration de ton aventure</div>
 
-          <div class="story-illustration-wrapper" id="story-illustration">
-
-            <%# Skeleton — visible par défaut, masqué quand l'image est chargée %>
-            <div class="story-illustration-skeleton" id="story-illustration-skeleton">
-              <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
-              <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
-            </div>
-
-            <%# Image — n'existe que si l'URL est sauvegardée en base %>
-            <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
-              <% image_src = @story.cover_image.attached? ? url_for(@story.cover_image) : @story.cover_image_url %>
+          <%# CAS 1 : l'image est déjà disponible (générée avant que l'utilisateur arrive) %>
+          <%# On l'affiche directement sans polling %>
+          <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
+            <% image_src = @story.cover_image.attached? ? url_for(@story.cover_image) : @story.cover_image_url %>
+            <div class="story-illustration-wrapper">
+              <div class="story-illustration-skeleton" id="story-illustration-skeleton">
+                <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
+                <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
+              </div>
               <%= image_tag image_src,
                     alt:     "Illustration de #{@story.title}",
                     class:   "story-illustration-img",
                     style:   "display:none",
                     onload:  "this.style.display='block'; document.getElementById('story-illustration-skeleton').style.display='none';",
                     onerror: "document.getElementById('story-illustration-skeleton').innerHTML='<p style=\"color:#777;font-size:0.8rem;\">Illustration non disponible</p>';" %>
-            <% end %>
+            </div>
 
-          </div>
+          <%# CAS 2 : l'image n'est pas encore prête (génération en cours) %>
+          <%# story_image_controller poll /status toutes les 3s et insère l'image dès qu'elle est dispo %>
+          <% else %>
+            <div class="story-illustration-wrapper"
+                 data-controller="story-image"
+                 data-story-image-status-url-value="<%= status_story_path(@story) %>"
+                 data-story-image-alt-value="Illustration de <%= @story.title %>">
+              <div class="story-illustration-skeleton">
+                <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
+                <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
+              </div>
+            </div>
+          <% end %>
+
         </div>
 
         <%# Boutons de navigation %>

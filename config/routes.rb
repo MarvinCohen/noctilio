@@ -42,6 +42,9 @@ Rails.application.routes.draw do
 
       # POST /stories/:id/save_story — sauvegarder l'histoire dans la bibliothèque
       post :save_story
+
+      # POST /stories/:id/audio — génère et retourne l'audio TTS (OpenAI)
+      post :audio
     end
   end
 

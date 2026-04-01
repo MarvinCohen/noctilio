@@ -218,7 +218,8 @@ class StoryGeneratorService
   end
 
   # Construit les messages pour la continuation après un choix interactif
-  # Adapte le prompt selon qu'il reste d'autres choix ou non après celui-ci
+  # N'envoie PAS l'histoire depuis le début — seulement le contexte récent
+  # pour que l'IA continue naturellement sans repartir à zéro
   def build_continuation_messages(story_choice)
     # Vérifie s'il reste des choix non résolus après celui-ci (step_number supérieur)
     remaining_choices = @story.story_choices
@@ -226,41 +227,53 @@ class StoryGeneratorService
                               .where("step_number > ?", story_choice.step_number)
                               .count
 
-    # Calcule combien de mots par section de continuation
+    # Calcule combien de mots pour cette continuation
     continuation_words = tokens_for_duration / 4   # ~quart de l'histoire par continuation
 
+    # Prend les 1500 derniers caractères de l'histoire — assez pour la cohérence narrative,
+    # sans envoyer tout le texte depuis le début (qui ferait repartir l'IA au début)
+    recent_context = @story.content.to_s.last(1500)
+
     if remaining_choices > 0
-      # Il reste des choix — génère le prochain chapitre qui se termine par un autre choix
+      # Il reste des choix à venir — génère un passage intermédiaire qui fait avancer l'histoire
+      # sans la conclure (l'enfant aura encore un choix à faire après)
       continuation_instruction = <<~CHOICE
+        L'histoire s'intitule "#{@story.title}".
+
+        Voici la fin du dernier passage :
+        #{recent_context}
+
         L'enfant a choisi : #{story_choice.chosen_text}
 
-        Continue l'histoire à partir de ce choix (environ #{continuation_words} mots).
-        Écris un chapitre dynamique et intense dans le même style.
-        Termine ce chapitre par un nouveau bloc de choix :
-        [CHOIX]
-        Question : (nouvelle question excitante)
-        Option A : (première possibilité)
-        Option B : (deuxième possibilité)
-        [FIN CHOIX]
-        L'histoire n'est PAS terminée — d'autres aventures attendent.
+        Continue DIRECTEMENT depuis ce choix (environ #{continuation_words} mots).
+        Ne résume pas ce qui s'est passé avant — plonge immédiatement dans l'action.
+        Même style cinématographique, même ton.
+        NE termine PAS l'histoire — l'aventure n'est pas encore finie, d'autres rebondissements attendent.
+        Arrête-toi sur un moment de tension ou de découverte.
       CHOICE
     else
-      # Dernier choix — génère la conclusion finale
+      # Dernier choix — génère la conclusion finale de l'histoire
       continuation_instruction = <<~CHOICE
+        L'histoire s'intitule "#{@story.title}".
+
+        Voici la fin du dernier passage :
+        #{recent_context}
+
         L'enfant a choisi : #{story_choice.chosen_text}
 
         C'est le dernier chapitre — écris une conclusion épique et mémorable (environ #{continuation_words} mots).
+        Continue DIRECTEMENT depuis ce choix sans résumer ce qui s'est passé avant.
         Le climax doit être intense, la résolution satisfaisante.
-        Termine par une leçon vécue naturellement dans l'action — jamais expliquée.
+        Termine par une leçon vécue naturellement dans l'action — jamais expliquée, jamais moralisatrice.
       CHOICE
     end
 
     [
+      # Le prompt système garde les règles de style (Pixar, structure narrative, etc.)
       { role: "system", content: system_prompt },
-      { role: "user",   content: user_prompt },
-      # L'histoire déjà générée
-      { role: "assistant", content: @story.content },
-      # Le choix et l'instruction de continuation
+      # Un seul message utilisateur avec le contexte récent + le choix + l'instruction
+      # Pas de user_prompt original (qui demandait de créer une histoire depuis le début)
+      # Pas du contenu complet de l'histoire (qui ferait repartir l'IA au début)
       { role: "user", content: continuation_instruction }
     ]
   end

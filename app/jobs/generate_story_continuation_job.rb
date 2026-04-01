@@ -19,13 +19,6 @@ class GenerateStoryContinuationJob < ApplicationJob
       # Sauvegarder la suite dans le choix résolu
       story_choice.update!(context_chosen: result[:content])
 
-      # Si la continuation contient un nouveau [CHOIX], le parser et créer le StoryChoice
-      # Cela arrive quand il y a plusieurs choix (10 min = 2, 15 min = 3)
-      if result[:content].include?("[CHOIX]")
-        next_step = story.story_choices.maximum(:step_number).to_i + 1
-        parse_new_choice(story, result[:content], next_step)
-      end
-
       # Marquer l'histoire comme terminée de nouveau
       story.update!(status: :completed)
 
@@ -37,31 +30,5 @@ class GenerateStoryContinuationJob < ApplicationJob
     end
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn("GenerateStoryContinuationJob — enregistrement introuvable")
-  end
-
-  private
-
-  # Parse un nouveau bloc [CHOIX] dans le texte de continuation
-  # et crée un nouveau StoryChoice pour le prochain tour interactif
-  def parse_new_choice(story, content, step_number)
-    match = content.match(/\[CHOIX\](.*?)\[FIN CHOIX\]/m)
-    return unless match
-
-    block    = match[1]
-    question = block.match(/Question\s*:\s*(.+)/i)&.captures&.first&.strip
-    option_a = block.match(/Option A\s*:\s*(.+)/i)&.captures&.first&.strip
-    option_b = block.match(/Option B\s*:\s*(.+)/i)&.captures&.first&.strip
-
-    return unless question && option_a && option_b
-
-    story.story_choices.create!(
-      step_number: step_number,
-      question:    question,
-      option_a:    option_a,
-      option_b:    option_b
-    )
-    Rails.logger.info("GenerateStoryContinuationJob — nouveau choix #{step_number} créé pour story ##{story.id}")
-  rescue StandardError => e
-    Rails.logger.error("GenerateStoryContinuationJob — échec parsing choix : #{e.message}")
   end
 end

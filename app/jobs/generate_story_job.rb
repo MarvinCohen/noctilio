@@ -53,16 +53,25 @@ class GenerateStoryJob < ApplicationJob
       create_story_choice_from_content(story, content)
     end
 
-    # 6. Sauvegarder l'URL Pollinations — INSTANTANÉ (construction d'URL + écriture DB, zéro HTTP)
-    # On le fait ici, avant completed, pour que l'URL soit présente dès que l'histoire est lisible.
-    # Le navigateur chargera l'image depuis Pollinations de façon asynchrone (skeleton → image).
-    ImageGeneratorService.new(story).call
-
-    # 7. Marquer l'histoire comme terminée — l'URL d'image est déjà sauvegardée
+    # 6. Marquer l'histoire comme terminée DÈS QUE LE TEXTE EST PRÊT
+    # → le Stimulus story_status_controller redirige immédiatement vers la page de lecture
+    # → l'utilisateur peut lire et écouter l'histoire pendant que l'image se génère
     story.update!(status: :completed)
 
-    # 8. Vérifier si l'utilisateur mérite de nouveaux badges
+    # 7. Vérifier si l'utilisateur mérite de nouveaux badges (texte disponible = histoire comptée)
     Badge.check_and_award(story.child.user)
+
+    # 8. Générer l'image EN ARRIÈRE-PLAN, APRÈS completed
+    # L'image peut prendre du temps (fal.ai, DALL-E 3) — on ne bloque plus l'utilisateur pour ça.
+    # Le Stimulus story_image_controller poll /status toutes les 3s et affiche l'image quand dispo.
+    # Si la génération d'image échoue, l'histoire reste lisible — aucun impact sur le statut.
+    begin
+      ImageGeneratorService.new(story).call
+      Rails.logger.info("GenerateStoryJob — image générée pour story ##{story_id}")
+    rescue StandardError => e
+      # Échec image non-bloquant — l'histoire est déjà lisible, on log juste l'erreur
+      Rails.logger.error("GenerateStoryJob — échec image pour story ##{story_id} : #{e.message}")
+    end
 
     Rails.logger.info("GenerateStoryJob — histoire ##{story_id} générée avec succès")
   rescue ActiveRecord::RecordNotFound

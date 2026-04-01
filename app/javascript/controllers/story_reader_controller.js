@@ -1,11 +1,20 @@
+// ============================================================
 // Controller Stimulus — lecture vocale de l'histoire
-// Utilise l'API Web Speech (speechSynthesis) intégrée dans les navigateurs modernes
-// Zéro dépendance, zéro coût — fonctionne sur Chrome, Edge, Safari, Firefox
+// ============================================================
+// Utilise OpenAI TTS côté serveur + HTML5 Audio API côté client.
+// Le texte est envoyé au serveur (POST /stories/:id/audio),
+// qui appelle OpenAI et retourne un fichier MP3.
+// Le navigateur joue le MP3 via un objet Audio standard.
+//
+// Plus fiable que Web Speech API (speechSynthesis) qui est instable
+// et silencieuse sur certaines configurations Chrome/Mac.
+// ============================================================
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   // Cibles déclarées :
-  // - "text"     : le div contenant le texte de l'histoire à lire
+  // - "text"     : le div contenant le texte de l'histoire (non utilisé pour TTS ici,
+  //                mais conservé pour compatibilité avec story_choice_controller)
   // - "playBtn"  : bouton "Écouter" / "Reprendre"
   // - "pauseBtn" : bouton "Pause"
   // - "stopBtn"  : bouton "Arrêter"
@@ -13,212 +22,171 @@ export default class extends Controller {
 
   // connect() est appelé automatiquement par Stimulus quand le controller est attaché au DOM
   connect() {
-    // Vérifie que le navigateur supporte la synthèse vocale Web Speech API
-    this.supported = "speechSynthesis" in window
+    // L'élément Audio HTML5 qui jouera le MP3 retourné par OpenAI TTS
+    this.audio = null
 
-    if (!this.supported) {
-      // Cache les contrôles et affiche un message d'info pour les navigateurs sans support
-      // (Firefox mobile, certains navigateurs Android ne supportent pas speechSynthesis)
-      this.element.querySelector(".reader-controls")?.classList.add("d-none")
-      const notice = this.element.querySelector(".reader-unsupported")
-      if (notice) notice.classList.remove("d-none")
-      return
-    }
-
-    // Stocke l'objet SpeechSynthesisUtterance courant
-    this.utterance = null
-    // Indicateur d'état : true si une lecture est en cours
-    this.playing = false
-
-    // Pré-charge les voix dès que possible
-    this.voices = []
-    this.loadVoices()
-    window.speechSynthesis.addEventListener("voiceschanged", () => this.loadVoices())
+    // URL blob créée depuis le binaire MP3 — on la libère au stop() / disconnect()
+    this.audioUrl = null
 
     // Écoute l'événement déclenché par story_choice_controller quand la continuation
     // interactive est prête — reprend automatiquement la lecture sur le nouveau texte
-    // IMPORTANT : (event) doit être passé pour que resumeAfterContinuation reçoive le texte
     this.onContinuationReady = (event) => this.resumeAfterContinuation(event)
     document.addEventListener("story:continuation-ready", this.onContinuationReady)
   }
 
-  // Charge et met en cache la liste des voix disponibles
-  // Appelée au connect() ET sur l'événement "voiceschanged"
-  loadVoices() {
-    this.voices = window.speechSynthesis.getVoices()
-  }
-
-  // Sélectionne la meilleure voix française disponible
-  // Ordre de priorité : voix neurales Google > voix macOS Thomas/Amélie > n'importe quelle voix fr
-  selectBestFrenchVoice() {
-    const voices = this.voices.length ? this.voices : window.speechSynthesis.getVoices()
-
-    // Priorité 1 : "Google français" — voix neuronale Chrome, nettement moins robotique
-    const googleFr = voices.find(v => v.name === "Google français")
-    if (googleFr) return googleFr
-
-    // Priorité 2 : voix macOS Thomas (fr-FR) — naturelle sur Safari / Chrome Mac
-    const thomas = voices.find(v => v.name === "Thomas")
-    if (thomas) return thomas
-
-    // Priorité 3 : voix macOS Amélie (fr-CA) — naturelle également
-    const amelie = voices.find(v => v.name === "Amélie")
-    if (amelie) return amelie
-
-    // Priorité 4 : voix Microsoft françaises (Edge/Windows) — ex: "Microsoft Paul"
-    const microsoftFr = voices.find(v => v.name.toLowerCase().includes("microsoft") && v.lang.startsWith("fr"))
-    if (microsoftFr) return microsoftFr
-
-    // Fallback : n'importe quelle voix fr-FR, puis fr-* en général
-    return (
-      voices.find(v => v.lang === "fr-FR") ||
-      voices.find(v => v.lang.startsWith("fr")) ||
-      null
-    )
-  }
-
-  // Lance la lecture du texte de l'histoire
+  // ============================================================
+  // play() — lance ou reprend la lecture
+  // ============================================================
   // Appelée par data-action="click->story-reader#play"
-  play() {
-    if (!this.supported) return
-
-    // Si la synthèse est en pause, on reprend simplement sans recréer l'utterance
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume()
+  async play() {
+    // Si un audio est déjà chargé et en pause, on reprend sans rappeler le serveur
+    if (this.audio && this.audio.paused && this.audio.currentTime > 0) {
+      this.audio.play()
       this.updateButtons(true)
       return
     }
 
-    // Chrome charge les voix de façon asynchrone — si elles ne sont pas encore
-    // disponibles au moment du clic, on attend et on relance automatiquement
-    const voices = window.speechSynthesis.getVoices()
-    if (!voices.length) {
-      console.log("story-reader: voix pas encore chargées, attente...")
-      window.speechSynthesis.addEventListener("voiceschanged", () => this.play(), { once: true })
-      return
-    }
+    // Sinon, on demande l'audio de l'histoire complète au serveur
+    await this.loadAndPlay("story")
+  }
 
-    // Recharge les voix au cas où elles ont changé depuis le connect()
-    this.voices = voices
+  // ============================================================
+  // loadAndPlay(source) — appelle le serveur TTS et joue le MP3
+  // ============================================================
+  // source : "story" pour l'histoire principale, "continuation" pour la suite interactive
+  async loadAndPlay(source) {
+    // Indique visuellement que le chargement est en cours
+    this.setLoading(true)
+    this.updateButtons(true)
 
-    // Annule toute lecture précédente pour éviter les lectures superposées
-    window.speechSynthesis.cancel()
+    try {
+      // Récupère l'ID de l'histoire depuis l'attribut data-story-id du controller
+      const storyId = this.element.dataset.storyId
 
-    // Récupère le texte brut depuis la cible "text" (le div de l'histoire)
-    const text = this.textTarget.innerText || this.textTarget.textContent
+      // Token CSRF obligatoire pour les requêtes POST Rails (protection CSRF)
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
 
-    if (!text.trim()) return
+      // Appel POST vers /stories/:id/audio
+      // Le serveur appelle OpenAI TTS et retourne le MP3 binaire
+      const response = await fetch(`/stories/${storyId}/audio`, {
+        method:  "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token":  csrfToken
+        },
+        // Indique au serveur quel texte lire : histoire ou continuation
+        body: JSON.stringify({ source })
+      })
 
-    // Crée un objet SpeechSynthesisUtterance qui représente le texte à lire
-    this.utterance = new SpeechSynthesisUtterance(text)
+      // Gestion des erreurs HTTP (500, 503, etc.)
+      if (!response.ok) {
+        console.error(`story-reader: erreur serveur TTS (${response.status})`)
+        this.setLoading(false)
+        this.updateButtons(false)
+        return
+      }
 
-    // --- Configuration de la voix pour un rendu naturel ---
-    this.utterance.lang   = "fr-FR" // Langue française pour une bonne prononciation
-    this.utterance.rate   = 0.88    // Un peu plus lent — plus agréable pour les enfants
-    this.utterance.pitch  = 1.05    // Légèrement plus aigu — plus chaleureux, moins robotique
-    this.utterance.volume = 1.0     // Volume maximum
+      // Récupère la réponse binaire (MP3) sous forme de Blob
+      const blob = await response.blob()
 
-    // Applique la meilleure voix française disponible
-    const bestVoice = this.selectBestFrenchVoice()
-    if (bestVoice) this.utterance.voice = bestVoice
+      // Crée une URL temporaire en mémoire pour que l'élément Audio puisse la jouer
+      // URL.createObjectURL génère un lien du type "blob:http://..."
+      const url = URL.createObjectURL(blob)
 
-    // Callback déclenché quand la lecture se termine naturellement
-    this.utterance.onend = () => this.updateButtons(false)
+      // Libère l'ancienne URL blob si elle existe (évite les fuites mémoire)
+      if (this.audioUrl) URL.revokeObjectURL(this.audioUrl)
+      this.audioUrl = url
 
-    // Callback déclenché en cas d'erreur de synthèse vocale
-    this.utterance.onerror = (e) => {
-      console.error("story-reader: erreur synthèse vocale", e)
+      // Crée un élément Audio standard — fonctionne comme <audio src="...">
+      this.audio = new Audio(url)
+
+      // Quand la lecture se termine naturellement, on remet les boutons à l'état initial
+      this.audio.onended = () => this.updateButtons(false)
+
+      // En cas d'erreur de lecture (codec, réseau, etc.)
+      this.audio.onerror = (e) => {
+        console.error("story-reader: erreur lecture audio", e)
+        this.updateButtons(false)
+      }
+
+      // Tout est prêt — retire le loading et lance la lecture
+      this.setLoading(false)
+      this.audio.play()
+
+    } catch (error) {
+      // Erreur réseau (pas de connexion, timeout, etc.)
+      console.error("story-reader: erreur lors de la récupération de l'audio TTS", error)
+      this.setLoading(false)
       this.updateButtons(false)
     }
-
-    // Workaround bug Chrome : cancel() est asynchrone, un délai de 100ms garantit
-    // que la file est vraiment vide avant de lancer speak() — sinon la synthèse
-    // démarre silencieusement sans produire de son
-    setTimeout(() => {
-      window.speechSynthesis.speak(this.utterance)
-    }, 100)
-
-    // Met les boutons en état "en cours de lecture"
-    this.updateButtons(true)
   }
 
-  // Met la lecture en pause sans la réinitialiser
+  // ============================================================
+  // pause() — met la lecture en pause sans la réinitialiser
+  // ============================================================
   // Appelée par data-action="click->story-reader#pause"
   pause() {
-    if (!this.supported) return
-    window.speechSynthesis.pause()
-    // Affiche à nouveau le bouton Play pour permettre de reprendre
-    this.updateButtons(false)
+    if (this.audio) {
+      // HTML5 Audio.pause() mémorise la position — on pourra reprendre avec play()
+      this.audio.pause()
+      this.updateButtons(false)
+    }
   }
 
-  // Arrête complètement la lecture et réinitialise l'état
+  // ============================================================
+  // stop() — arrête complètement la lecture et remet à zéro
+  // ============================================================
   // Appelée par data-action="click->story-reader#stop"
   stop() {
-    if (!this.supported) return
-    // cancel() arrête la lecture ET vide la file d'attente
-    window.speechSynthesis.cancel()
-    this.utterance = null
-    this.updateButtons(false)
+    if (this.audio) {
+      this.audio.pause()
+      // currentTime = 0 remet au début — si on reclique Play, ça repart depuis le début
+      this.audio.currentTime = 0
+      this.updateButtons(false)
+    }
   }
 
   // ============================================================
-  // resumeAfterContinuation — lit UNIQUEMENT la continuation
+  // resumeAfterContinuation — lit la continuation interactive
   // ============================================================
   // Appelé via l'événement "story:continuation-ready".
-  // event.detail.text contient le texte brut markdown de la continuation.
-  // On le nettoie des symboles markdown avant de le lire.
-  resumeAfterContinuation(event) {
-    const html = event?.detail?.html
-    if (!html) return
-
-    // Extrait le texte brut depuis le HTML généré par Redcarpet côté serveur
-    // On crée un élément temporaire pour utiliser innerText (nettoie les balises proprement)
-    const tempDiv = document.createElement("div")
-    tempDiv.innerHTML = html
-    const cleanText = (tempDiv.innerText || tempDiv.textContent || "").trim()
-
-    if (!cleanText) return
-
-    setTimeout(() => {
-      // Annule toute lecture en cours (l'histoire principale)
-      window.speechSynthesis.cancel()
-
-      // Crée un utterance avec UNIQUEMENT le texte de la continuation
-      // → la lecture reprend juste après le choix, pas depuis le début
-      const utterance = new SpeechSynthesisUtterance(cleanText)
-      utterance.lang   = "fr-FR"
-      utterance.rate   = 0.88
-      utterance.pitch  = 1.05
-      utterance.volume = 1.0
-
-      const bestVoice = this.selectBestFrenchVoice()
-      if (bestVoice) utterance.voice = bestVoice
-
-      utterance.onend   = () => this.updateButtons(false)
-      utterance.onerror = () => this.updateButtons(false)
-
-      window.speechSynthesis.speak(utterance)
-      this.utterance = utterance
-      this.updateButtons(true)
-    }, 400) // Petit délai pour laisser le DOM se stabiliser
+  // Génère et joue uniquement le texte de la continuation,
+  // pas toute l'histoire depuis le début.
+  async resumeAfterContinuation(event) {
+    // Arrête la lecture en cours si nécessaire avant de charger la suite
+    if (this.audio) {
+      this.audio.pause()
+      this.audio.currentTime = 0
+    }
+    await this.loadAndPlay("continuation")
   }
 
-  // disconnect() est appelé automatiquement par Stimulus quand on quitte la page
-  // Garantit que la lecture s'arrête si l'utilisateur navigue vers une autre page
+  // ============================================================
+  // disconnect() — nettoyage quand on quitte la page
+  // ============================================================
+  // Appelé automatiquement par Stimulus lors de la navigation
   disconnect() {
-    if (this.supported) {
-      window.speechSynthesis.cancel()
-      window.speechSynthesis.removeEventListener("voiceschanged", () => this.loadVoices())
+    // Arrête la lecture si l'utilisateur navigue ailleurs
+    if (this.audio) {
+      this.audio.pause()
+      this.audio = null
     }
+
+    // Libère la mémoire allouée par le blob URL
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl)
+      this.audioUrl = null
+    }
+
     // Retire le listener pour éviter les memory leaks
     document.removeEventListener("story:continuation-ready", this.onContinuationReady)
   }
 
-  // Met à jour l'état des boutons selon si une lecture est en cours ou non
-  // isPlaying : true → lecture en cours, false → lecture stoppée/en pause
+  // ============================================================
+  // updateButtons(isPlaying) — synchronise l'état des boutons
+  // ============================================================
+  // isPlaying : true → lecture en cours, false → lecture arrêtée/en pause
   updateButtons(isPlaying) {
-    this.playing = isPlaying
-
     // Masque le bouton Play quand la lecture est active
     if (this.hasPlayBtnTarget) {
       this.playBtnTarget.classList.toggle("d-none", isPlaying)
@@ -228,6 +196,19 @@ export default class extends Controller {
     if (this.hasPauseBtnTarget) {
       this.pauseBtnTarget.classList.toggle("d-none", !isPlaying)
     }
+
     // Le bouton Stop reste toujours visible
+  }
+
+  // ============================================================
+  // setLoading(isLoading) — état de chargement sur le bouton Play
+  // ============================================================
+  // Pendant que le serveur génère l'audio, on désactive le bouton Play
+  // et on change son texte pour indiquer que ça charge
+  setLoading(isLoading) {
+    if (this.hasPlayBtnTarget) {
+      this.playBtnTarget.disabled    = isLoading
+      this.playBtnTarget.textContent = isLoading ? "⏳ Chargement..." : "▶ Écouter"
+    }
   }
 }

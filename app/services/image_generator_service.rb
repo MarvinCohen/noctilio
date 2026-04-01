@@ -39,12 +39,20 @@ class ImageGeneratorService
   # Style visuel cohérent pour toutes les illustrations de l'app
   # Optimisé pour FLUX.1 Dev — langage naturel narratif (pas de liste de mots-clés)
   # Structure FLUX : sujet → action → environnement → lumière → style/mood
+  #
+  # Style : anime semi-réaliste — inspiré des productions Makoto Shinkai (Your Name,
+  # Weathering With You) et des films Ghibli récents. Personnages expressifs avec
+  # proportions réalistes (pas super-déformés), décors ultra-détaillés, lumière
+  # atmosphérique et couleurs vibrantes.
   # ----------------------------------------------------------------
-  VISUAL_STYLE = "storybook illustration with soft watercolor brushstrokes, " \
-                 "warm golden light filtering through the scene, " \
-                 "muted pastel palette with ochre and blush tones, " \
-                 "whimsical and magical mood, cozy and adventurous atmosphere, " \
-                 "gentle film grain texture, safe and child-friendly"
+  VISUAL_STYLE = "semi-realistic anime illustration, " \
+                 "Makoto Shinkai and Studio Ghibli cinematic style, " \
+                 "expressive characters with realistic proportions, " \
+                 "highly detailed painterly backgrounds, " \
+                 "dramatic volumetric lighting with god rays, " \
+                 "vibrant saturated colors with deep shadows, " \
+                 "cinematic widescreen composition, " \
+                 "child-safe, no violence, magical and emotional atmosphere"
 
   def initialize(story)
     @story = story
@@ -232,9 +240,13 @@ class ImageGeneratorService
     end
 
     # Prompt final : contexte de l'aventure → héros avec physique → style → lumière
-    prompt = "#{adventure_context}, #{heroes_str} as the heroes, " \
-             "#{VISUAL_STYLE}, soft rim light around the characters, " \
-             "all heroes visible together in the same scene, dynamic and epic composition"
+    # "anime-style character design" ancre le style sur les personnages eux-mêmes
+    # "rim light" et "bokeh" sont des marqueurs forts du style Shinkai
+    prompt = "#{adventure_context}, #{heroes_str} as the main characters, " \
+             "anime-style character design with detailed expressive faces, " \
+             "#{VISUAL_STYLE}, " \
+             "soft rim light around the characters, background bokeh depth of field, " \
+             "all characters visible together in one epic scene"
 
     prompt
   end
