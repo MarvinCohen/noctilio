@@ -126,17 +126,23 @@ class StoriesController < ApplicationController
   def status
     # Récupère la continuation interactive si disponible (mode interactif terminé)
     # Utilisé par story_choice_controller.js pour mettre à jour le texte sans recharger
-    continuation = nil
+    continuation_html = nil
     if @story.completed? && @story.interactive?
       resolved = @story.story_choices.where.not(chosen_option: nil).order(:step_number).last
-      continuation = resolved&.context_chosen
+      if resolved&.context_chosen.present?
+        # Convertit le markdown généré par l'IA en HTML propre côté serveur
+        # Redcarpet est plus fiable que le parser JS artisanal dans story_choice_controller
+        renderer = Redcarpet::Render::HTML.new(safe_links_only: true)
+        markdown  = Redcarpet::Markdown.new(renderer, autolink: false, tables: false)
+        continuation_html = markdown.render(resolved.context_chosen)
+      end
     end
 
     render json: {
       status:       @story.status,
       completed:    @story.completed?,
       title:        @story.title,
-      continuation: continuation,   # Texte de la suite après le choix interactif
+      continuation: continuation_html,  # HTML prêt à insérer dans le DOM
       redirect_url: story_path(@story)
     }
   end

@@ -112,82 +112,29 @@ export default class extends Controller {
   // ============================================================
   // appendContinuation — insère la suite dans la page
   // ============================================================
-  appendContinuation(continuationText) {
+  appendContinuation(continuationHtml) {
     // Supprime la card de choix (ce composant) du DOM
     this.element.remove()
 
-    if (!continuationText) return
+    if (!continuationHtml) return
 
     // Trouve le div qui contient le texte de l'histoire
     // (data-story-reader-target="text" dans show.html.erb)
     const storyContent = document.querySelector('[data-story-reader-target="text"]')
     if (!storyContent) return
 
-    // Convertit le markdown de la continuation en HTML lisible
-    const html = this.markdownToHtml(continuationText)
-
-    // Insère la continuation à la fin du contenu existant
+    // Le HTML est déjà généré côté serveur par Redcarpet (stories#status)
+    // On l'insère directement sans parser le markdown en JS
     storyContent.insertAdjacentHTML("beforeend", `
       <div class="story-continuation-divider">✦ ✦ ✦</div>
-      ${html}
+      ${continuationHtml}
     `)
 
-    // Déclenche l'événement personnalisé avec le texte brut de la continuation
-    // story_reader_controller lit UNIQUEMENT cette partie, pas toute l'histoire depuis le début
+    // Déclenche l'événement personnalisé avec le HTML de la continuation
+    // story_reader_controller extrait le texte brut depuis innerText pour la lecture vocale
     document.dispatchEvent(new CustomEvent("story:continuation-ready", {
-      detail: { text: continuationText }
+      detail: { html: continuationHtml }
     }))
-  }
-
-  // ============================================================
-  // markdownToHtml — convertit le markdown en HTML (côté JS)
-  // ============================================================
-  // Traitement LIGNE PAR LIGNE — mirror exact du helper Ruby flush_paragraph.
-  // Nécessaire car le LLM peut mettre "## Titre\nParagraphe" avec un seul \n,
-  // et split(/\n\n+/) raterait le titre (il serait collé au paragraphe).
-  markdownToHtml(text) {
-    const html          = []
-    const paragraphBuf  = []   // Buffer de lignes pour le paragraphe en cours
-
-    // Vide le buffer et crée un <p> si des lignes sont en attente
-    const flushParagraph = () => {
-      if (!paragraphBuf.length) return
-      const raw = paragraphBuf.join(" ").trim()
-      paragraphBuf.length = 0
-      if (!raw) return
-      // Échappe le HTML puis applique gras/italique
-      const formatted = raw
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*(.+?)\*/g,     "<em>$1</em>")
-      html.push(`<p class="story-paragraph">${formatted}</p>`)
-    }
-
-    // Traite chaque ligne individuellement
-    for (const line of text.split("\n")) {
-      const s = line.trimEnd()
-
-      if (s.startsWith("## ")) {
-        flushParagraph()
-        html.push(`<h2 class="story-chapter">${s.slice(3).trim()}</h2>`)
-      } else if (s.startsWith("### ")) {
-        flushParagraph()
-        html.push(`<h3 class="story-section">${s.slice(4).trim()}</h3>`)
-      } else if (s.startsWith("# ")) {
-        flushParagraph()
-        html.push(`<h2 class="story-chapter">${s.slice(2).trim()}</h2>`)
-      } else if (s === "") {
-        // Ligne vide = fin de paragraphe
-        flushParagraph()
-      } else {
-        paragraphBuf.push(s)
-      }
-    }
-
-    // Flush du dernier paragraphe si le texte ne termine pas par une ligne vide
-    flushParagraph()
-
-    return html.join("\n")
   }
 
   // Arrête le polling si l'utilisateur quitte la page

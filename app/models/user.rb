@@ -37,13 +37,19 @@ class User < ApplicationRecord
   # ============================================================
 
   # Retourne true si l'utilisateur a un abonnement premium actif
-  # Quand Stripe sera activé, remplacer le corps par : subscribed?
+  # TODO Stripe : quand l'intégration sera prête, remplacer false par : subscribed?
   def premium?
-    # En développement : l'email admin est toujours premium pour pouvoir tester
-    # sans être bloqué par la limite de 3 histoires/mois
-    return true if Rails.env.development? && email == "marvincohen95@gmail.com"
+    # Les admins sont toujours premium — accès illimité pour tester l'app
+    return true if admin?
 
     false
+  end
+
+  # Retourne true si l'utilisateur est administrateur de l'application
+  # Pour passer un compte admin : User.find_by(email: "...").update!(admin: true)
+  # OU via Rails console Heroku : heroku run rails console
+  def admin?
+    admin == true
   end
 
   # Compte les histoires créées ce mois-ci (tous enfants confondus)

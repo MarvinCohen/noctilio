@@ -24,13 +24,13 @@ class AdminController < ApplicationController
   private
 
   # ============================================================
-  # Vérifie que l'utilisateur connecté est bien l'admin
+  # Vérifie que l'utilisateur connecté est bien admin
   # Si ce n'est pas le cas, redirige vers le dashboard
   # ============================================================
   def require_admin!
-    # Compare l'email de l'utilisateur connecté avec celui de l'admin
-    unless current_user.email == "marvincohen95@gmail.com"
-      # Redirige avec un message d'alerte — pas d'accès pour les autres
+    # Utilise User#admin? qui vérifie la colonne admin en base
+    # Pour activer : User.find_by(email: "ton@email.com").update!(admin: true)
+    unless current_user.admin?
       redirect_to dashboard_path, alert: "Accès non autorisé."
     end
   end

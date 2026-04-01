@@ -17,8 +17,11 @@ export default class extends Controller {
     this.supported = "speechSynthesis" in window
 
     if (!this.supported) {
-      // Masque les contrôles si le navigateur ne supporte pas la synthèse vocale
+      // Cache les contrôles et affiche un message d'info pour les navigateurs sans support
+      // (Firefox mobile, certains navigateurs Android ne supportent pas speechSynthesis)
       this.element.querySelector(".reader-controls")?.classList.add("d-none")
+      const notice = this.element.querySelector(".reader-unsupported")
+      if (notice) notice.classList.remove("d-none")
       return
     }
 
@@ -144,15 +147,14 @@ export default class extends Controller {
   // event.detail.text contient le texte brut markdown de la continuation.
   // On le nettoie des symboles markdown avant de le lire.
   resumeAfterContinuation(event) {
-    const rawText = event?.detail?.text
-    if (!rawText) return
+    const html = event?.detail?.html
+    if (!html) return
 
-    // Nettoie le texte markdown pour que la voix ne lise pas "## " ou "**"
-    const cleanText = rawText
-      .replace(/^#{1,3} /gm, "")   // Retire les # en début de ligne (titres)
-      .replace(/\*\*/g, "")         // Retire les **gras**
-      .replace(/\*/g, "")           // Retire les *italique*
-      .trim()
+    // Extrait le texte brut depuis le HTML généré par Redcarpet côté serveur
+    // On crée un élément temporaire pour utiliser innerText (nettoie les balises proprement)
+    const tempDiv = document.createElement("div")
+    tempDiv.innerHTML = html
+    const cleanText = (tempDiv.innerText || tempDiv.textContent || "").trim()
 
     if (!cleanText) return
 

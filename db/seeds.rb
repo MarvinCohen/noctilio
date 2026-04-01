@@ -37,6 +37,12 @@ badges_data = [
     description: "Tu as choisi la gentillesse comme valeur 3 fois. Beau choix !",
     icon: "❤️",
     condition_key: "kind_heart"
+  },
+  {
+    name: "Grand Lecteur",
+    description: "Tu as sauvegardé 10 histoires dans ta bibliothèque. Un vrai amoureux des livres !",
+    icon: "🔖",
+    condition_key: "bookworm"
   }
 ]
 

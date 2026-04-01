@@ -72,6 +72,12 @@
         <%# Contrôles de lecture vocale — Web Speech API %>
         <%# data-controller connecte le Stimulus controller story-reader %>
         <div data-controller="story-reader" class="mb-5">
+          <%# Message affiché si le navigateur ne supporte pas la synthèse vocale %>
+          <%# (Firefox mobile, certains navigateurs Android) — caché par défaut %>
+          <p class="reader-unsupported text-muted small d-none mb-3">
+            🎙️ La lecture vocale n'est pas disponible sur ce navigateur.
+          </p>
+
           <%# Boutons de contrôle de lecture %>
           <div class="reader-controls d-flex align-items-center gap-2 mb-3">
             <span class="text-muted small fw-semibold">🎙️ Lecture vocale :</span>

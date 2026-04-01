@@ -49,6 +49,12 @@ class Badge < ApplicationRecord
     if user.stories.where(educational_value: "kindness").count >= 3
       award_if_not_earned(user, KIND_HEART)
     end
+
+    # Badge : Grand lecteur — avoir 10 histoires complétées sauvegardées
+    # Mesure l'engagement à long terme : l'enfant a relu et gardé 10 histoires
+    if user.stories.completed.where(saved: true).count >= 10
+      award_if_not_earned(user, BOOKWORM)
+    end
   end
 
   private

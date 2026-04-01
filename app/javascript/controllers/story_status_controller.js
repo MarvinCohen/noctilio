@@ -18,27 +18,41 @@ export default class extends Controller {
   }
 
   connect() {
-    // Démarre le polling toutes les 2 secondes quand le controller est monté
+    // Démarre le polling avec un délai initial de 2 secondes
     console.log("StoryStatus: démarrage du polling...")
-    this.startPolling()
+    // Délai courant en ms — commence à 2s, double à chaque tentative (max 16s)
+    this.currentDelay = 2000
+    this.scheduleNextPoll()
   }
 
   disconnect() {
-    // Arrête le polling quand on quitte la page (évite les memory leaks)
+    // Annule le prochain poll planifié quand on quitte la page (évite les memory leaks)
     this.stopPolling()
   }
 
-  startPolling() {
-    // setInterval exécute checkStatus toutes les 2000ms (2 secondes)
-    this.pollingInterval = setInterval(() => {
+  // Planifie le prochain poll avec le délai courant (backoff exponentiel)
+  // Plus l'attente dure, moins on interroge souvent le serveur
+  scheduleNextPoll() {
+    this.pollingTimeout = setTimeout(() => {
       this.checkStatus()
-    }, 2000)
+    }, this.currentDelay)
+  }
+
+  // Augmente le délai entre chaque poll : 2s → 4s → 8s → 16s max
+  // Économise les ressources serveur si la génération prend du temps
+  increaseDelay() {
+    const MAX_DELAY = 16000 // Plafond à 16 secondes
+    this.currentDelay = Math.min(this.currentDelay * 2, MAX_DELAY)
+  }
+
+  startPolling() {
+    this.scheduleNextPoll()
   }
 
   stopPolling() {
-    // clearInterval annule le setInterval en cours
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval)
+    // clearTimeout annule le poll planifié en cours
+    if (this.pollingTimeout) {
+      clearTimeout(this.pollingTimeout)
     }
   }
 
@@ -66,17 +80,27 @@ export default class extends Controller {
         this.stopPolling()
         console.log("StoryStatus: histoire prête ! Redirection...")
         window.location.href = this.redirectValue
+        return
       }
 
-      // Si la génération a échoué, on recharge la page pour afficher l'erreur
+      // Si la génération a échoué, on recharge pour afficher le message d'erreur
       if (data.status === "failed") {
         this.stopPolling()
         window.location.reload()
+        return
       }
 
+      // Histoire encore en cours : augmente le délai et planifie le prochain poll
+      // Backoff exponentiel : 2s → 4s → 8s → 16s max
+      this.increaseDelay()
+      console.log(`StoryStatus: ${data.status} — prochain poll dans ${this.currentDelay / 1000}s`)
+      this.scheduleNextPoll()
+
     } catch (error) {
-      // En cas d'erreur réseau, on logge mais on continue le polling
+      // En cas d'erreur réseau, on logge et on replanifie quand même
       console.error("StoryStatus: erreur réseau", error)
+      this.increaseDelay()
+      this.scheduleNextPoll()
     }
   }
 }
