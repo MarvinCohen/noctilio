@@ -108,21 +108,37 @@ class StoryGeneratorService
     ]
   end
 
-  # Prompt système — définit le personnage que joue l'IA
+  # Prompt système — personnage et règles NON-NÉGOCIABLES de l'IA
+  # IMPORTANT : les directives critiques sont EN PREMIER (Llama pèse plus les premiers tokens)
   def system_prompt
     <<~PROMPT
-      Tu es un maître conteur d'histoires épiques pour enfants, dans le style des grands films d'aventure.
-      Tu écris en français, avec un style vivant, immersif et plein d'action.
+      Tu es le meilleur conteur d'histoires épiques et magiques pour enfants au monde.
+      Tu écris en français, dans le style des grands films d'animation (Pixar, Miyazaki, Disney).
 
-      Règles absolues :
-      - Les enfants NE "partent pas à l'aventure" — ils SONT directement les héros dès la première phrase.
-        Exemple : "Isaac brandit son sabre de samouraï" (pas "Isaac rêvait d'être samouraï").
-      - Chaque scène est cinématographique : on voit, on entend, on ressent.
-      - Les dialogues sont percutants et révèlent le caractère des personnages.
-      - Le rythme est dynamique : action, tension, rebondissement, résolution.
-      - Les caractéristiques physiques des enfants (lunettes, couleur des yeux, etc.) apparaissent dans l'histoire.
-      - L'histoire transmet une valeur positive sans jamais être moralisatrice.
-      - Pas de violence graphique, mais les combats, défis et dangers sont permis et excitants.
+      RÈGLES NON-NÉGOCIABLES — respecte-les à la lettre :
+
+      1. INCIPIT EN ACTION : La première phrase plonge IMMÉDIATEMENT dans l'action.
+         Les héros SONT déjà le personnage demandé — ils ne "rêvent" pas de l'être.
+         ✓ "La lame d'Isaac fendit l'air d'un éclair argenté."
+         ✗ "Isaac rêvait de devenir samouraï."
+
+      2. STYLE CINÉMATOGRAPHIQUE : Chaque scène est visuelle, sensorielle, immersive.
+         Utilise les 5 sens. Décris les lumières, les textures, les sons, les odeurs.
+         Les dialogues révèlent le caractère — ils sont percutants, jamais plats.
+
+      3. STRUCTURE NARRATIVE PARFAITE :
+         - Acte 1 (20%) : situation de départ, héros en action, enjeu clair
+         - Acte 2 (60%) : montée de tension, obstacles, retournements, alliance
+         - Acte 3 (20%) : climax intense, résolution satisfaisante, leçon subtile
+
+      4. CARACTÉRISTIQUES PHYSIQUES : Intègre naturellement les détails physiques
+         des héros (lunettes, couleur des cheveux, des yeux, etc.) dans les scènes.
+
+      5. VALEUR ÉDUCATIVE SUBTILE : La leçon morale se vit dans l'histoire —
+         jamais expliquée, jamais moralisatrice. L'enfant la ressent, pas la subit.
+
+      6. VOCABULAIRE ADAPTÉ : Adapté à l'âge, mais jamais simplet.
+         Les enfants aiment les grands mots quand le contexte les rend compréhensibles.
     PROMPT
   end
 
@@ -133,28 +149,36 @@ class StoryGeneratorService
     level_label    = @story.reading_level == "intermediate" ? "intermédiaire" : "débutant"
     duration_label = "#{@story.duration_minutes} minutes de lecture"
 
+    # Construction du prompt utilisateur — variables enfant + contexte de l'aventure
+    # Chain of Thought : on guide le modèle étape par étape pour une meilleure cohérence
+    extra        = @story.extra_children.to_a
+    all_heroes   = [@child] + extra
+    heroes_desc  = all_heroes.map { |c| "• #{c.avatar_description}" }.join("\n")
+    word_count   = @story.duration_minutes * 200
+
     prompt = <<~PROMPT
-      Écris une histoire épique avec ces paramètres :
+      PARAMÈTRES DE L'HISTOIRE :
 
-      ⚔️  Héros principal : #{@child.avatar_description}
-      💫 Valeur à transmettre : #{value_label}
-      📚 Niveau de lecture : #{level_label}
-      ⏱️  Durée : #{duration_label} (environ #{@story.duration_minutes * 200} mots)
+      ⚔️  HÉROS (présents ensemble dès la première phrase) :
+      #{heroes_desc}
+
+      🌟 AVENTURE : #{@story.custom_theme.presence || "une aventure épique et magique"}
+      💫 VALEUR À TRANSMETTRE : #{value_label}
+      📚 NIVEAU : #{level_label}
+      ⏱️  LONGUEUR OBLIGATOIRE : #{word_count} mots minimum — ne termine PAS avant d'avoir atteint #{word_count} mots.
+
+      AVANT D'ÉCRIRE, pense étape par étape (ne pas afficher cette réflexion) :
+      1. Comment les héros SONT-ILS déjà dans la situation dès la 1ère phrase ?
+      2. Quel est l'obstacle principal et comment la valeur "#{value_label}" aide à le surmonter ?
+      3. Quel moment visuel fort peut ouvrir et clore l'histoire ?
+
+      MAINTENANT ÉCRIS L'HISTOIRE :
+      — Titre accrocheur sur la première ligne (sans "Titre :" ni "#")
+      — #{interactive_choices_count + 1} chapitres avec titres courts et percutants — chaque chapitre fait au moins #{word_count / (interactive_choices_count + 1)} mots
+      — Première phrase = action immédiate, héros déjà dans leur rôle
+      — Chaque chapitre se termine sur une tension ou une découverte
+      — Finale mémorable avec leçon vécue, pas expliquée
     PROMPT
-
-    # Si des enfants supplémentaires sont présents, ils sont CO-HÉROS (pas personnages secondaires)
-    extra = @story.extra_children.to_a
-    if extra.any?
-      descriptions = extra.map { |c| c.avatar_description }.join(" ; ")
-      prompt += "\n⚔️  Co-héros (aussi importants que le héros principal) : #{descriptions}"
-      prompt += "\n→ Tous les héros apparaissent DÈS LA PREMIÈRE SCÈNE et agissent ensemble."
-    end
-
-    # La description libre est le cœur de l'aventure — les enfants sont DIRECTEMENT dans ce rôle
-    if @story.custom_theme.present?
-      prompt += "\n🌟 L'aventure : #{@story.custom_theme}"
-      prompt += "\n→ Les héros SONT déjà dans cette situation dès la première ligne — pas d'introduction."
-    end
 
     # Instructions de format
     prompt += <<~FORMAT
@@ -168,21 +192,25 @@ class StoryGeneratorService
 
     # Mode interactif : nombre de choix selon la durée de l'histoire
     # 5 min → 1 choix, 10 min → 2 choix, 15 min → 3 choix
+    # IMPORTANT : tous les blocs [CHOIX] sont dans la génération initiale —
+    # la suite après chaque choix sera générée séparément par GenerateStoryContinuationJob
     if @story.interactive?
       nb_choices = interactive_choices_count
-      chapters   = nb_choices + 1   # Ex: 3 choix = 4 chapitres
 
       prompt += <<~INTERACTIVE
 
-        IMPORTANT — Mode interactif (#{nb_choices} choix) :
-        L'histoire comporte #{chapters} chapitres.
-        #{nb_choices == 1 ? "À la fin du chapitre 2" : "À la fin de chaque chapitre sauf le dernier"}, insère un bloc de choix avec exactement ce format :
+        IMPORTANT — Mode interactif : insère EXACTEMENT #{nb_choices} bloc(s) de choix dans l'histoire.
+        Place un bloc [CHOIX] à la fin de chaque chapitre sauf le dernier.
+        L'histoire CONTINUE après chaque bloc [CHOIX] — ne t'arrête pas.
+
+        Format de chaque bloc (respecte exactement ce format) :
         [CHOIX]
-        Question : (une question courte et excitante pour l'enfant)
+        Question : (question courte et excitante pour l'enfant)
         Option A : (première possibilité d'action)
         Option B : (deuxième possibilité d'action)
         [FIN CHOIX]
-        → Ne continue PAS l'histoire après un [FIN CHOIX] — arrête-toi là, la suite sera générée après la décision de l'enfant.
+
+        Rappel : #{nb_choices} bloc(s) [CHOIX] au total, un par chapitre sauf le dernier.
       INTERACTIVE
     end
 
@@ -190,32 +218,50 @@ class StoryGeneratorService
   end
 
   # Construit les messages pour la continuation après un choix interactif
+  # Adapte le prompt selon qu'il reste d'autres choix ou non après celui-ci
   def build_continuation_messages(story_choice)
-    [
-      {
-        role: "system",
-        content: system_prompt
-      },
-      {
-        role: "user",
-        content: user_prompt
-      },
-      # L'histoire déjà générée (avant le choix)
-      {
-        role: "assistant",
-        content: @story.content
-      },
-      # Le choix fait par l'enfant
-      {
-        role: "user",
-        content: <<~CHOICE
-          L'enfant a choisi : #{story_choice.chosen_text}
+    # Vérifie s'il reste des choix non résolus après celui-ci (step_number supérieur)
+    remaining_choices = @story.story_choices
+                              .where(chosen_option: nil)
+                              .where("step_number > ?", story_choice.step_number)
+                              .count
 
-          Continue l'histoire à partir de ce choix.
-          Écris le 3ème chapitre et la conclusion (environ 200 mots).
-          Garde le même style et termine par une belle morale.
-        CHOICE
-      }
+    # Calcule combien de mots par section de continuation
+    continuation_words = tokens_for_duration / 4   # ~quart de l'histoire par continuation
+
+    if remaining_choices > 0
+      # Il reste des choix — génère le prochain chapitre qui se termine par un autre choix
+      continuation_instruction = <<~CHOICE
+        L'enfant a choisi : #{story_choice.chosen_text}
+
+        Continue l'histoire à partir de ce choix (environ #{continuation_words} mots).
+        Écris un chapitre dynamique et intense dans le même style.
+        Termine ce chapitre par un nouveau bloc de choix :
+        [CHOIX]
+        Question : (nouvelle question excitante)
+        Option A : (première possibilité)
+        Option B : (deuxième possibilité)
+        [FIN CHOIX]
+        L'histoire n'est PAS terminée — d'autres aventures attendent.
+      CHOICE
+    else
+      # Dernier choix — génère la conclusion finale
+      continuation_instruction = <<~CHOICE
+        L'enfant a choisi : #{story_choice.chosen_text}
+
+        C'est le dernier chapitre — écris une conclusion épique et mémorable (environ #{continuation_words} mots).
+        Le climax doit être intense, la résolution satisfaisante.
+        Termine par une leçon vécue naturellement dans l'action — jamais expliquée.
+      CHOICE
+    end
+
+    [
+      { role: "system", content: system_prompt },
+      { role: "user",   content: user_prompt },
+      # L'histoire déjà générée
+      { role: "assistant", content: @story.content },
+      # Le choix et l'instruction de continuation
+      { role: "user", content: continuation_instruction }
     ]
   end
 

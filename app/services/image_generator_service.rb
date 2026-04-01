@@ -37,11 +37,14 @@ class ImageGeneratorService
 
   # ----------------------------------------------------------------
   # Style visuel cohérent pour toutes les illustrations de l'app
-  # Ce texte est ajouté à chaque prompt pour garantir un rendu uniforme
+  # Optimisé pour FLUX.1 Dev — langage naturel narratif (pas de liste de mots-clés)
+  # Structure FLUX : sujet → action → environnement → lumière → style/mood
   # ----------------------------------------------------------------
-  VISUAL_STYLE = "children book illustration, soft watercolor, pastel colors, " \
-                 "hand-drawn style, warm and magical atmosphere, simple background, " \
-                 "cute and friendly, safe for kids"
+  VISUAL_STYLE = "storybook illustration with soft watercolor brushstrokes, " \
+                 "warm golden light filtering through the scene, " \
+                 "muted pastel palette with ochre and blush tones, " \
+                 "whimsical and magical mood, cozy and adventurous atmosphere, " \
+                 "gentle film grain texture, safe and child-friendly"
 
   def initialize(story)
     @story = story
@@ -109,8 +112,8 @@ class ImageGeneratorService
     request.body = {
       prompt: prompt,
       image_size:          "landscape_4_3",  # Format paysage — idéal pour couverture de livre
-      num_inference_steps: 28,               # Qualité/vitesse — 28 = bon compromis
-      guidance_scale:      3.5,              # Fidélité au prompt — valeur recommandée par fal.ai
+      num_inference_steps: 24,               # 24 = meilleur compromis qualité/vitesse pour FLUX Dev
+      guidance_scale:      4.0,              # 4.0 = créatif mais fidèle (recommandé FLUX illustrations)
       num_images:          1,                # Une seule image par histoire
       enable_safety_checker: true            # Filtre de sécurité — obligatoire pour app enfants
     }.to_json
@@ -196,29 +199,43 @@ class ImageGeneratorService
   end
 
   # ============================================================
-  # Construction du prompt image
+  # Construction du prompt image — optimisé FLUX.1 Dev
   # ============================================================
-  # Le prompt utilise le titre de l'histoire ET un moment clé extrait du texte
-  # pour générer une illustration personnalisée, pas générique.
-  # En anglais car tous les modèles fonctionnent mieux en anglais.
+  # FLUX fonctionne en langage naturel narratif, pas en liste de mots-clés.
+  # Structure optimale : sujet+action → environnement → lumière → style → mood
+  # Longueur idéale : 40-60 mots (assez précis sans noyer le modèle)
   def build_image_prompt
-    # Extrait une scène dramatique du milieu de l'histoire (souvent le climax)
+    # Extrait la scène clé du climax de l'histoire (2/3 du texte)
     key_moment = extract_key_moment
 
-    # Construit la description des héros avec leurs caractéristiques physiques
-    # avatar_description inclut les traits physiques (lunettes, couleur cheveux, etc.)
-    hero_descriptions = @story.all_children.map do |child|
-      # Traduit la description en anglais pour de meilleurs résultats
-      "a child named #{child.name}, #{child.age} years old" +
-        (child.child_description.present? ? ", #{child.child_description}" : "")
-    end.join(" and ")
+    # Description physique précise de chaque héros pour la cohérence visuelle
+    # FLUX intègre bien les caractéristiques physiques (lunettes, couleur des cheveux, etc.)
+    hero_parts = @story.all_children.map do |child|
+      desc = "#{child.name} (#{child.age} years old"
+      desc += ", #{child.child_description}" if child.child_description.present?
+      desc += ")"
+      desc
+    end
+    heroes_str = hero_parts.join(" and ")
 
-    # Combine : style visuel + scène clé + description précise des héros
-    prompt = "#{VISUAL_STYLE}. "
-    prompt += "Key scene: #{key_moment}. " if key_moment.present?
-    prompt += "Heroes: #{hero_descriptions}. "
-    prompt += "The illustration must show all the heroes together in the same scene. "
-    prompt += "Positive, epic, child-friendly image."
+    # Construit le prompt en langage naturel narratif — optimisé FLUX
+    # Priorité : custom_theme (thème de l'aventure) > scène extraite > fallback générique
+    # Le custom_theme donne l'univers visuel exact voulu par le parent
+    adventure_context = if @story.custom_theme.present?
+      # Utilise le thème de l'aventure défini par le parent — donne l'univers visuel exact
+      @story.custom_theme.truncate(100)
+    elsif key_moment.present?
+      # Utilise la scène extraite du texte comme contexte visuel
+      key_moment.truncate(100)
+    else
+      "an epic magical adventure"
+    end
+
+    # Prompt final : contexte de l'aventure → héros avec physique → style → lumière
+    prompt = "#{adventure_context}, #{heroes_str} as the heroes, " \
+             "#{VISUAL_STYLE}, soft rim light around the characters, " \
+             "all heroes visible together in the same scene, dynamic and epic composition"
+
     prompt
   end
 
