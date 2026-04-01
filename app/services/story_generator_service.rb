@@ -146,7 +146,6 @@ class StoryGeneratorService
   def user_prompt
     # Récupération des paramètres de l'histoire
     value_label    = educational_value_label
-    level_label    = @story.reading_level == "intermediate" ? "intermédiaire" : "débutant"
     duration_label = "#{@story.duration_minutes} minutes de lecture"
 
     # Construction du prompt utilisateur — variables enfant + contexte de l'aventure
@@ -164,7 +163,6 @@ class StoryGeneratorService
 
       🌟 AVENTURE : #{@story.custom_theme.presence || "une aventure épique et magique"}
       💫 VALEUR À TRANSMETTRE : #{value_label}
-      📚 NIVEAU : #{level_label}
       ⏱️  LONGUEUR OBLIGATOIRE : #{word_count} mots minimum — ne termine PAS avant d'avoir atteint #{word_count} mots.
 
       AVANT D'ÉCRIRE, pense étape par étape (ne pas afficher cette réflexion) :
@@ -174,7 +172,7 @@ class StoryGeneratorService
 
       MAINTENANT ÉCRIS L'HISTOIRE :
       — Titre accrocheur sur la première ligne (sans "Titre :" ni "#")
-      — #{interactive_choices_count + 1} chapitres avec titres courts et percutants — chaque chapitre fait au moins #{word_count / (interactive_choices_count + 1)} mots
+      — #{chapter_count} chapitres avec titres courts et percutants — chaque chapitre fait au moins #{word_count / chapter_count} mots
       — Première phrase = action immédiate, héros déjà dans leur rôle
       — Chaque chapitre se termine sur une tension ou une découverte
       — Finale mémorable avec leçon vécue, pas expliquée
@@ -299,5 +297,24 @@ class StoryGeneratorService
   # 5 min → 1 choix, 10 min → 2 choix, 15 min → 3 choix
   def interactive_choices_count
     { 5 => 1, 10 => 2, 15 => 3 }.fetch(@story.duration_minutes.to_i, 1)
+  end
+
+  # Retourne le nombre de chapitres à générer selon le mode et la durée
+  #
+  # Non-interactif : toujours 3 chapitres (début / milieu / fin classique)
+  #
+  # Interactif : un chapitre par choix + 1
+  #   5 min  → 1 choix → 2 chapitres (le 2ème se termine sur le choix)
+  #   10 min → 2 choix → 3 chapitres
+  #   15 min → 3 choix → 4 chapitres
+  #
+  # Les continuations après chaque choix s'ajoutent ensuite séparément,
+  # donc le total lu par l'enfant est bien proportionnel à la durée choisie.
+  def chapter_count
+    if @story.interactive?
+      interactive_choices_count + 1
+    else
+      3
+    end
   end
 end

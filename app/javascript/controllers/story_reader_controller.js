@@ -1,35 +1,37 @@
 // ============================================================
-// Controller Stimulus — lecture vocale de l'histoire
+// Controller Stimulus — lecteur audio sticky
 // ============================================================
 // Utilise OpenAI TTS côté serveur + HTML5 Audio API côté client.
-// Le texte est envoyé au serveur (POST /stories/:id/audio),
-// qui appelle OpenAI et retourne un fichier MP3.
-// Le navigateur joue le MP3 via un objet Audio standard.
-//
-// Plus fiable que Web Speech API (speechSynthesis) qui est instable
-// et silencieuse sur certaines configurations Chrome/Mac.
+// Affiche un lecteur fixe à droite de la page avec :
+//   - Bouton Play / Pause / Stop
+//   - Barre de progression cliquable
+//   - Timer temps écoulé / durée totale
 // ============================================================
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   // Cibles déclarées :
-  // - "text"     : le div contenant le texte de l'histoire (non utilisé pour TTS ici,
-  //                mais conservé pour compatibilité avec story_choice_controller)
-  // - "playBtn"  : bouton "Écouter" / "Reprendre"
-  // - "pauseBtn" : bouton "Pause"
-  // - "stopBtn"  : bouton "Arrêter"
-  static targets = ["text", "playBtn", "pauseBtn", "stopBtn"]
+  // - "text"        : div du contenu de l'histoire (utilisé par story_choice_controller)
+  // - "playBtn"     : bouton play / reprendre
+  // - "pauseBtn"    : bouton pause (masqué par défaut)
+  // - "stopBtn"     : bouton stop
+  // - "progressBar" : barre de progression (div intérieure qui s'élargit)
+  // - "track"       : barre de progression cliquable (conteneur)
+  // - "currentTime" : span temps écoulé (ex: "1:23")
+  // - "totalTime"   : span durée totale (ex: "6:12")
+  static targets = ["text", "playBtn", "pauseBtn", "stopBtn", "progressBar", "track", "currentTime", "totalTime"]
 
-  // connect() est appelé automatiquement par Stimulus quand le controller est attaché au DOM
   connect() {
-    // L'élément Audio HTML5 qui jouera le MP3 retourné par OpenAI TTS
+    // Objet Audio HTML5 courant
     this.audio = null
 
-    // URL blob créée depuis le binaire MP3 — on la libère au stop() / disconnect()
+    // URL blob du MP3 — libérée à stop() / disconnect()
     this.audioUrl = null
 
-    // Écoute l'événement déclenché par story_choice_controller quand la continuation
-    // interactive est prête — reprend automatiquement la lecture sur le nouveau texte
+    // Indique si l'utilisateur était en train d'écouter (pour la continuation)
+    this.playing = false
+
+    // Écoute la continuation interactive pour reprendre la lecture si elle était active
     this.onContinuationReady = (event) => this.resumeAfterContinuation(event)
     document.addEventListener("story:continuation-ready", this.onContinuationReady)
   }
@@ -37,9 +39,8 @@ export default class extends Controller {
   // ============================================================
   // play() — lance ou reprend la lecture
   // ============================================================
-  // Appelée par data-action="click->story-reader#play"
   async play() {
-    // Si un audio est déjà chargé et en pause, on reprend sans rappeler le serveur
+    // Si l'audio est en pause (pas à 0), on reprend sans rappeler le serveur
     if (this.audio && this.audio.paused && this.audio.currentTime > 0) {
       this.audio.play()
       this.updateButtons(true)
@@ -53,32 +54,20 @@ export default class extends Controller {
   // ============================================================
   // loadAndPlay(source) — appelle le serveur TTS et joue le MP3
   // ============================================================
-  // source : "story" pour l'histoire principale, "continuation" pour la suite interactive
   async loadAndPlay(source) {
-    // Indique visuellement que le chargement est en cours
     this.setLoading(true)
     this.updateButtons(true)
 
     try {
-      // Récupère l'ID de l'histoire depuis l'attribut data-story-id du controller
-      const storyId = this.element.dataset.storyId
-
-      // Token CSRF obligatoire pour les requêtes POST Rails (protection CSRF)
+      const storyId   = this.element.dataset.storyId
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
 
-      // Appel POST vers /stories/:id/audio
-      // Le serveur appelle OpenAI TTS et retourne le MP3 binaire
       const response = await fetch(`/stories/${storyId}/audio`, {
         method:  "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token":  csrfToken
-        },
-        // Indique au serveur quel texte lire : histoire ou continuation
-        body: JSON.stringify({ source })
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+        body:    JSON.stringify({ source })
       })
 
-      // Gestion des erreurs HTTP (500, 503, etc.)
       if (!response.ok) {
         console.error(`story-reader: erreur serveur TTS (${response.status})`)
         this.setLoading(false)
@@ -86,35 +75,40 @@ export default class extends Controller {
         return
       }
 
-      // Récupère la réponse binaire (MP3) sous forme de Blob
       const blob = await response.blob()
 
-      // Crée une URL temporaire en mémoire pour que l'élément Audio puisse la jouer
-      // URL.createObjectURL génère un lien du type "blob:http://..."
-      const url = URL.createObjectURL(blob)
-
-      // Libère l'ancienne URL blob si elle existe (évite les fuites mémoire)
+      // Libère l'ancienne URL blob avant d'en créer une nouvelle
       if (this.audioUrl) URL.revokeObjectURL(this.audioUrl)
-      this.audioUrl = url
+      this.audioUrl = URL.createObjectURL(blob)
 
-      // Crée un élément Audio standard — fonctionne comme <audio src="...">
-      this.audio = new Audio(url)
+      this.audio = new Audio(this.audioUrl)
 
-      // Quand la lecture se termine naturellement, on remet les boutons à l'état initial
-      this.audio.onended = () => this.updateButtons(false)
+      // Quand les métadonnées sont chargées : affiche la durée totale
+      this.audio.addEventListener("loadedmetadata", () => {
+        if (this.hasTotalTimeTarget) {
+          this.totalTimeTarget.textContent = this.formatTime(this.audio.duration)
+        }
+      })
 
-      // En cas d'erreur de lecture (codec, réseau, etc.)
+      // Mise à jour de la barre de progression et du timer à chaque seconde
+      this.audio.addEventListener("timeupdate", () => this.updateProgress())
+
+      // Fin de la lecture
+      this.audio.onended = () => {
+        this.updateButtons(false)
+        this.resetProgress()
+      }
+
+      // Erreur de lecture
       this.audio.onerror = (e) => {
         console.error("story-reader: erreur lecture audio", e)
         this.updateButtons(false)
       }
 
-      // Tout est prêt — retire le loading et lance la lecture
       this.setLoading(false)
       this.audio.play()
 
     } catch (error) {
-      // Erreur réseau (pas de connexion, timeout, etc.)
       console.error("story-reader: erreur lors de la récupération de l'audio TTS", error)
       this.setLoading(false)
       this.updateButtons(false)
@@ -122,38 +116,50 @@ export default class extends Controller {
   }
 
   // ============================================================
-  // pause() — met la lecture en pause sans la réinitialiser
+  // pause() — met en pause
   // ============================================================
-  // Appelée par data-action="click->story-reader#pause"
   pause() {
     if (this.audio) {
-      // HTML5 Audio.pause() mémorise la position — on pourra reprendre avec play()
       this.audio.pause()
       this.updateButtons(false)
     }
   }
 
   // ============================================================
-  // stop() — arrête complètement la lecture et remet à zéro
+  // stop() — arrête et remet à zéro
   // ============================================================
-  // Appelée par data-action="click->story-reader#stop"
   stop() {
     if (this.audio) {
       this.audio.pause()
-      // currentTime = 0 remet au début — si on reclique Play, ça repart depuis le début
       this.audio.currentTime = 0
       this.updateButtons(false)
+      this.resetProgress()
     }
   }
 
   // ============================================================
-  // resumeAfterContinuation — lit la continuation interactive
+  // seek(event) — clic sur la barre pour naviguer dans l'audio
   // ============================================================
-  // Appelé via l'événement "story:continuation-ready".
-  // Génère et joue uniquement le texte de la continuation,
-  // pas toute l'histoire depuis le début.
+  seek(event) {
+    if (!this.audio || !this.audio.duration) return
+
+    // Calcule la position relative du clic (0 → 1) sur la barre
+    const track    = event.currentTarget
+    const rect     = track.getBoundingClientRect()
+    const ratio    = (event.clientX - rect.left) / rect.width
+    const clamped  = Math.max(0, Math.min(1, ratio))
+
+    // Déplace la lecture à la position cliquée
+    this.audio.currentTime = clamped * this.audio.duration
+  }
+
+  // ============================================================
+  // resumeAfterContinuation — reprend après un choix interactif
+  // ============================================================
   async resumeAfterContinuation(event) {
-    // Arrête la lecture en cours si nécessaire avant de charger la suite
+    // Ne lance la lecture que si l'utilisateur écoutait déjà
+    if (!this.playing) return
+
     if (this.audio) {
       this.audio.pause()
       this.audio.currentTime = 0
@@ -162,53 +168,75 @@ export default class extends Controller {
   }
 
   // ============================================================
-  // disconnect() — nettoyage quand on quitte la page
+  // disconnect() — nettoyage en quittant la page
   // ============================================================
-  // Appelé automatiquement par Stimulus lors de la navigation
   disconnect() {
-    // Arrête la lecture si l'utilisateur navigue ailleurs
     if (this.audio) {
       this.audio.pause()
       this.audio = null
     }
-
-    // Libère la mémoire allouée par le blob URL
     if (this.audioUrl) {
       URL.revokeObjectURL(this.audioUrl)
       this.audioUrl = null
     }
-
-    // Retire le listener pour éviter les memory leaks
     document.removeEventListener("story:continuation-ready", this.onContinuationReady)
+  }
+
+  // ============================================================
+  // updateProgress() — met à jour la barre et le timer
+  // ============================================================
+  updateProgress() {
+    if (!this.audio || !this.audio.duration) return
+
+    const ratio = this.audio.currentTime / this.audio.duration
+
+    // Largeur de la barre en pourcentage
+    if (this.hasProgressBarTarget) {
+      this.progressBarTarget.style.width = `${ratio * 100}%`
+    }
+
+    // Temps écoulé affiché
+    if (this.hasCurrentTimeTarget) {
+      this.currentTimeTarget.textContent = this.formatTime(this.audio.currentTime)
+    }
+  }
+
+  // ============================================================
+  // resetProgress() — remet la barre et le timer à zéro
+  // ============================================================
+  resetProgress() {
+    if (this.hasProgressBarTarget)  this.progressBarTarget.style.width = "0%"
+    if (this.hasCurrentTimeTarget)  this.currentTimeTarget.textContent  = "0:00"
+    if (this.hasTotalTimeTarget)    this.totalTimeTarget.textContent    = "--:--"
   }
 
   // ============================================================
   // updateButtons(isPlaying) — synchronise l'état des boutons
   // ============================================================
-  // isPlaying : true → lecture en cours, false → lecture arrêtée/en pause
   updateButtons(isPlaying) {
-    // Masque le bouton Play quand la lecture est active
-    if (this.hasPlayBtnTarget) {
-      this.playBtnTarget.classList.toggle("d-none", isPlaying)
-    }
+    this.playing = isPlaying
 
-    // Masque le bouton Pause quand la lecture est inactive
-    if (this.hasPauseBtnTarget) {
-      this.pauseBtnTarget.classList.toggle("d-none", !isPlaying)
-    }
-
-    // Le bouton Stop reste toujours visible
+    if (this.hasPlayBtnTarget)  this.playBtnTarget.classList.toggle("d-none", isPlaying)
+    if (this.hasPauseBtnTarget) this.pauseBtnTarget.classList.toggle("d-none", !isPlaying)
   }
 
   // ============================================================
-  // setLoading(isLoading) — état de chargement sur le bouton Play
+  // setLoading(isLoading) — état chargement sur le bouton Play
   // ============================================================
-  // Pendant que le serveur génère l'audio, on désactive le bouton Play
-  // et on change son texte pour indiquer que ça charge
   setLoading(isLoading) {
     if (this.hasPlayBtnTarget) {
       this.playBtnTarget.disabled    = isLoading
-      this.playBtnTarget.textContent = isLoading ? "⏳ Chargement..." : "▶ Écouter"
+      this.playBtnTarget.textContent = isLoading ? "⏳" : "▶"
     }
+  }
+
+  // ============================================================
+  // formatTime(seconds) — convertit des secondes en "M:SS"
+  // ============================================================
+  formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) return "0:00"
+    const m = Math.floor(seconds / 60)
+    const s = Math.floor(seconds % 60).toString().padStart(2, "0")
+    return `${m}:${s}`
   }
 }

@@ -158,6 +158,62 @@
   to   { opacity: 1; }
 }
 
+// ============================================================
+// Cartes de sélection de durée
+// ============================================================
+// Remplace les simples radio buttons par des cartes visuelles
+// Même principe que child-selector — :has(input:checked) + classe "selected"
+.duration-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 20px;
+  border: 2px solid $gray-border;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+  min-width: 90px;
+  background: white;
+
+  // État sélectionné via CSS natif
+  &:has(input:checked),
+  &.selected {
+    border-color: $navy !important;
+    background-color: $navy-light;
+    transform: scale(1.04);
+  }
+
+  &:hover {
+    border-color: $navy;
+  }
+
+  // Icône grande et centrée
+  .duration-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  // Label principal en gras
+  .duration-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $text-dark;
+  }
+
+  // Sous-label discret
+  .duration-sub {
+    font-size: 0.72rem;
+    color: $text-light;
+  }
+}
+
+// État du bouton pendant la soumission
+.btn-submitting {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
 // Séparateur entre l'histoire principale et la continuation interactive
 // Inséré par story_choice_controller.js après le choix
 .story-continuation-divider {
@@ -167,4 +223,138 @@
   letter-spacing: 0.5em;
   margin: 2rem 0;
   opacity: 0.6;
+}
+
+// ============================================================
+// Lecteur audio sticky — fixé en bas à droite de la page
+// ============================================================
+.audio-player-sticky {
+  position: fixed;
+  right: 24px;
+  bottom: 32px;
+  z-index: 1050;                           // Au-dessus du contenu, sous les modals Bootstrap
+  width: 210px;
+  background: $navy-dark;                  // Fond bleu nuit profond
+  border-radius: 20px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 40px rgba($navy-dark, 0.45), 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  // Label discret en haut du lecteur
+  .audio-player-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(white, 0.45);
+  }
+
+  // Ligne des boutons de contrôle
+  .audio-player-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  // Bouton générique
+  .audio-btn {
+    border: none;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    flex-shrink: 0;
+
+    &:hover   { transform: scale(1.1); }
+    &:active  { transform: scale(0.95); }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  // Play / Pause — bouton principal doré
+  .audio-btn-play,
+  .audio-btn-pause {
+    background: $gold;
+    color: $navy-dark;
+    font-size: 1.1rem;
+    width: 46px;
+    height: 46px;
+  }
+
+  // Stop — bouton secondaire discret
+  .audio-btn-stop {
+    background: rgba(white, 0.1);
+    color: rgba(white, 0.7);
+    font-size: 0.9rem;
+
+    &:hover { background: rgba(white, 0.18); color: white; }
+  }
+
+  // Barre de progression cliquable
+  .audio-player-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(white, 0.15);
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: height 0.15s ease;
+
+    // Au survol : barre plus épaisse pour faciliter le clic
+    &:hover {
+      height: 6px;
+
+      .audio-player-fill { border-radius: 6px; }
+    }
+  }
+
+  // Portion jouée — s'élargit de gauche à droite
+  .audio-player-fill {
+    height: 100%;
+    width: 0%;
+    background: $gold;
+    border-radius: 4px;
+    transition: width 0.25s linear;
+    pointer-events: none;               // Le clic passe au parent (.audio-player-track)
+  }
+
+  // Timer temps écoulé / durée totale
+  .audio-player-timer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums; // Chiffres à largeur fixe — évite les sauts visuels
+    color: rgba(white, 0.55);
+
+    .audio-timer-sep { opacity: 0.4; }
+  }
+}
+
+// Sur mobile : lecteur centré en bas, pleine largeur
+@media (max-width: 576px) {
+  .audio-player-sticky {
+    right: 12px;
+    left: 12px;
+    bottom: 16px;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .audio-player-label   { display: none; }      // Cache le label sur mobile
+    .audio-player-track   { flex: 1; min-width: 80px; }
+    .audio-player-timer   { font-size: 0.7rem; }
+  }
 }

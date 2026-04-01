@@ -69,60 +69,73 @@
         <%# Titre de l'histoire %>
         <h1 class="fw-bold display-6 mb-4"><%= @story.title || "Mon histoire magique" %></h1>
 
-        <%# Contrôles de lecture vocale — OpenAI TTS %>
-        <%# data-controller connecte le Stimulus controller story-reader %>
-        <%# data-story-id permet au JS de construire l'URL POST /stories/:id/audio %>
-        <div data-controller="story-reader"
-             data-story-id="<%= @story.id %>"
-             class="mb-5">
-          <%# Boutons de contrôle de lecture %>
-          <div class="reader-controls d-flex align-items-center gap-2 mb-3">
-            <span class="text-muted small fw-semibold">🎙️ Lecture vocale :</span>
+        <%# Contenu de l'histoire %>
+        <%# data-story-reader-target="text" : utilisé par story_choice_controller pour insérer la continuation %>
+        <div class="story-content mb-5" data-story-reader-target="text">
+          <%= render_story_markdown(@story.content) %>
 
-            <%# Bouton Play — visible quand la lecture est arrêtée %>
+          <%# Si un choix interactif est en attente, on insère le texte du choix ICI %>
+          <% if @story.interactive? && @pending_choice %>
+            <div class="story-choice-voice-text">
+              <p class="story-paragraph">À toi de décider ! <%= @pending_choice.question %></p>
+              <p class="story-paragraph">Option A : <%= @pending_choice.option_a %></p>
+              <p class="story-paragraph">Option B : <%= @pending_choice.option_b %></p>
+            </div>
+          <% end %>
+        </div>
+
+        <%# ================================================ %>
+        <%# LECTEUR AUDIO STICKY — fixé à droite de la page %>
+        <%# Visible uniquement sur la page d'histoire terminée %>
+        <%# ================================================ %>
+        <div class="audio-player-sticky"
+             data-controller="story-reader"
+             data-story-id="<%= @story.id %>">
+
+          <%# Label %>
+          <div class="audio-player-label">🎙️ Lecture vocale</div>
+
+          <%# Boutons play / pause / stop %>
+          <div class="audio-player-controls">
+
+            <%# Bouton Play — visible quand la lecture est arrêtée ou en pause %>
             <button data-story-reader-target="playBtn"
                     data-action="click->story-reader#play"
-                    class="btn btn-sm btn-outline-primary">
-              ▶ Écouter
+                    class="audio-btn audio-btn-play"
+                    title="Écouter">
+              ▶
             </button>
 
-            <%# Bouton Pause — masqué par défaut, affiché quand la lecture est en cours %>
+            <%# Bouton Pause — visible uniquement pendant la lecture %>
             <button data-story-reader-target="pauseBtn"
                     data-action="click->story-reader#pause"
-                    class="btn btn-sm btn-outline-secondary d-none">
-              ⏸ Pause
+                    class="audio-btn audio-btn-pause d-none"
+                    title="Pause">
+              ⏸
             </button>
 
-            <%# Bouton Stop — arrête complètement la lecture %>
+            <%# Bouton Stop — toujours visible %>
             <button data-story-reader-target="stopBtn"
                     data-action="click->story-reader#stop"
-                    class="btn btn-sm btn-outline-danger">
-              ⏹ Arrêter
+                    class="audio-btn audio-btn-stop"
+                    title="Arrêter">
+              ⏹
             </button>
+
           </div>
 
-          <%# Contenu de l'histoire — data-story-reader-target="text" permet au controller de le lire %>
-          <%# render_story_markdown convertit ## et **bold** en vrai HTML (sans symboles parasites) %>
-          <%# Le TTS lit innerText, donc il ne verra que le texte propre sans les balises %>
-          <div class="story-content" data-story-reader-target="text">
-            <%= render_story_markdown(@story.content) %>
-
-            <%# Si un choix interactif est en attente, on insère le texte du choix ICI %>
-            <%# pour que la voix le lise naturellement dans la continuité de l'histoire %>
-            <% if @story.interactive? && @pending_choice %>
-              <div class="story-choice-voice-text">
-                <p class="story-paragraph">
-                  À toi de décider ! <%= @pending_choice.question %>
-                </p>
-                <p class="story-paragraph">
-                  Option A : <%= @pending_choice.option_a %>
-                </p>
-                <p class="story-paragraph">
-                  Option B : <%= @pending_choice.option_b %>
-                </p>
-              </div>
-            <% end %>
+          <%# Barre de progression cliquable %>
+          <div class="audio-player-track" data-story-reader-target="track" data-action="click->story-reader#seek">
+            <div class="audio-player-fill" data-story-reader-target="progressBar"></div>
           </div>
+
+          <%# Timer : temps écoulé / durée totale %>
+          <div class="audio-player-timer">
+            <span data-story-reader-target="currentTime">0:00</span>
+            <span class="audio-timer-sep">/</span>
+            <span data-story-reader-target="totalTime">--:--</span>
+          </div>
+
         </div>
 
         <%# ================================================ %>

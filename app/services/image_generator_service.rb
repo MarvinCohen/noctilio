@@ -239,39 +239,69 @@ class ImageGeneratorService
       "an epic magical adventure"
     end
 
-    # Prompt final : contexte de l'aventure → héros avec physique → style → lumière
-    # "anime-style character design" ancre le style sur les personnages eux-mêmes
-    # "rim light" et "bokeh" sont des marqueurs forts du style Shinkai
-    prompt = "#{adventure_context}, #{heroes_str} as the main characters, " \
+    # Prompt final : scène d'action épique → héros → style → lumière
+    # "action scene", "dynamic pose", "motion blur" ancrent l'image dans le mouvement
+    prompt = "epic action scene, #{adventure_context}, " \
+             "#{heroes_str} as the main characters in dynamic combat or heroic pose, " \
+             "intense motion and energy, characters in the heat of the action, " \
              "anime-style character design with detailed expressive faces, " \
              "#{VISUAL_STYLE}, " \
-             "soft rim light around the characters, background bokeh depth of field, " \
-             "all characters visible together in one epic scene"
+             "dramatic rim light, motion blur on fast movements, " \
+             "all characters visible together in one explosive scene"
 
     prompt
   end
 
-  # Extrait un moment clé de l'histoire pour personnaliser l'illustration
-  # On prend un paragraphe vers les 2/3 du texte (souvent le moment dramatique)
+  # Extrait le moment le plus épique/action de l'histoire pour l'illustration
+  #
+  # Stratégie :
+  #   1. Cherche le paragraphe avec le plus de mots d'action (combat, éclair, bondit...)
+  #   2. Si aucun trouvé : fallback sur le paragraphe aux 2/3 (zone climax habituelle)
+  #
+  # Les mots d'action sont des indicateurs forts d'une scène visuelle intense —
+  # exactement ce qu'on veut pour une illustration épique.
   def extract_key_moment
     return "" if @story.content.blank?
 
-    # Nettoie le contenu : retire le bloc [CHOIX] et les lignes de titre markdown
+    # Nettoie le contenu : retire les blocs [CHOIX] et les titres markdown
     # NOTE : on utilise [#]{1,3} au lieu de #{1,3} pour éviter l'interpolation Ruby
     clean = @story.content
                   .gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")
                   .gsub(/^[#]{1,3} .+$/, "")
                   .strip
 
-    # Récupère tous les paragraphes non vides
-    paragraphs = clean.split(/\n\n+/).map(&:strip).reject(&:empty?)
+    # Récupère tous les paragraphes non vides d'au moins 80 caractères
+    # (les courts sont souvent des transitions, pas des scènes visuelles)
+    paragraphs = clean.split(/\n\n+/).map(&:strip).reject { |p| p.length < 80 }
     return "" if paragraphs.empty?
 
-    # Prend le paragraphe situé aux 2/3 du texte (zone climax habituelle)
-    climax_index = (paragraphs.length * 2 / 3).clamp(0, paragraphs.length - 1)
-    moment = paragraphs[climax_index].gsub(/\n/, " ").strip
+    # Mots-clés d'action et d'intensité dramatique en français
+    # Chaque occurrence dans un paragraphe augmente son score d'action
+    ACTION_KEYWORDS = %w[
+      bondit frappe combat affronte attaque charge plonge s'élance surgit
+      jaillit fend tranche transperce explose éclate rugit hurle tonne
+      fonce tourbillonne s'envole combat bataille affrontement éclair flamme
+      tempête choc impact lame épée coup poursuite fuir sauter courir
+      vaincre terrasse renverse déchire saisit arrache défend protège
+    ].freeze
 
-    # Limite à 200 caractères pour ne pas dépasser la longueur maximale du prompt
+    # Score chaque paragraphe selon le nombre de mots d'action qu'il contient
+    best_paragraph = paragraphs.max_by do |para|
+      para_downcase = para.downcase
+      ACTION_KEYWORDS.count { |word| para_downcase.include?(word) }
+    end
+
+    # Vérifie que le "meilleur" paragraphe a au moins 1 mot d'action
+    # Sinon, fallback sur le paragraphe aux 2/3 du texte
+    best_score = ACTION_KEYWORDS.count { |w| best_paragraph.downcase.include?(w) }
+    if best_score == 0
+      climax_index  = (paragraphs.length * 2 / 3).clamp(0, paragraphs.length - 1)
+      best_paragraph = paragraphs[climax_index]
+    end
+
+    moment = best_paragraph.gsub(/\n/, " ").strip
+
+    # Limite à 200 caractères pour ne pas dépasser la longueur optimale du prompt image
     moment.length > 200 ? moment[0..200].rstrip + "..." : moment
   end
 

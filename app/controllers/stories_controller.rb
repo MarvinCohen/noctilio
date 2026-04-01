@@ -307,7 +307,6 @@ class StoriesController < ApplicationController
       :child_id,
       :world_theme,
       :educational_value,
-      :reading_level,
       :duration_minutes,
       :custom_theme,
       :interactive,

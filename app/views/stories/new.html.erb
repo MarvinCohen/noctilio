@@ -1,12 +1,13 @@
 <%# ============================================================ %>
 <%# Formulaire de création d'une nouvelle histoire %>
-<%# Stimulus controller "story-creation" gère les étapes et le preview %>
+<%# story-creation controller gère : validation, feedback bouton, insertions d'idées %>
 <%# ============================================================ %>
 
-<%# data-action="change->story-creation#onRadioChange" : écoute tous les radio buttons en bubbling %>
+<%# data-action="change" : écoute les radio/checkbox en bubbling %>
+<%# data-action="submit" : valide avant d'envoyer le formulaire %>
 <div class="container py-4"
      data-controller="story-creation"
-     data-action="change->story-creation#onRadioChange">
+     data-action="change->story-creation#onRadioChange submit->story-creation#validateForm">
   <div class="row justify-content-center">
     <div class="col-lg-8">
 
@@ -16,31 +17,29 @@
         <h1 class="fw-bold display-6">Crée ton histoire magique</h1>
       </div>
 
-      <%# Formulaire de création %>
       <%= simple_form_for @story, url: stories_path do |f| %>
-        <%# Affichage des erreurs de validation %>
         <%= f.error_notification %>
 
         <%# ================================================ %>
-        <%# ÉTAPE 1 — Choix des héros (sélection multiple) %>
+        <%# ÉTAPE 1 — Choix des héros %>
         <%# ================================================ %>
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-4">
             <h2 class="h5 fw-bold mb-1">👤 Qui sont les héros ?</h2>
-            <p class="text-muted small mb-3">Tu peux sélectionner plusieurs enfants — ils seront tous intégrés dans l'histoire.</p>
+            <p class="text-muted small mb-3">Tu peux sélectionner plusieurs enfants.</p>
 
             <% if @children.any? %>
               <div class="row g-2">
                 <% @children.each do |child| %>
                   <div class="col-sm-6">
-                    <%# Checkbox stylisée pour chaque enfant %>
-                    <%# story[child_ids][] envoie un tableau d'IDs au controller %>
+                    <%# data-action="change" déclenche onCheckboxChange pour la validation en temps réel %>
                     <label class="child-selector w-100 p-3 rounded-3 border d-flex align-items-center gap-3"
                            style="cursor: pointer;">
                       <input type="checkbox"
                              name="story[child_ids][]"
                              value="<%= child.id %>"
-                             class="form-check-input me-1">
+                             class="form-check-input me-1"
+                             data-action="change->story-creation#onCheckboxChange">
                       <div>
                         <div class="fw-semibold"><%= child.name %></div>
                         <small class="text-muted"><%= child.age %> ans • <%= child.gender == "boy" ? "Garçon" : "Fille" %></small>
@@ -51,6 +50,11 @@
               </div>
             <% end %>
 
+            <%# Message d'erreur — caché par défaut, affiché si soumission sans enfant %>
+            <p class="text-danger small mt-2 d-none" data-story-creation-target="childError">
+              ⚠️ Sélectionne au moins un enfant pour créer l'histoire.
+            </p>
+
             <div class="mt-2">
               <%= link_to "+ Nouveau profil", new_child_path, class: "btn btn-sm btn-outline-secondary" %>
             </div>
@@ -58,22 +62,21 @@
         </div>
 
         <%# ================================================ %>
-        <%# ÉTAPE 2 — Description libre (remplace le choix d'univers) %>
+        <%# ÉTAPE 2 — Description libre de l'aventure %>
         <%# ================================================ %>
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-4">
             <h2 class="h5 fw-bold mb-1">💬 Qu'est-ce qu'il/elle veut vivre aujourd'hui ?</h2>
             <p class="text-muted small mb-3">
-              Décris librement l'aventure souhaitée — un rêve, un endroit magique, un super-pouvoir, une mission...
+              Décris librement l'aventure — un rêve, un endroit magique, un super-pouvoir...
             </p>
 
-            <%# Textarea principal — description libre du parent %>
             <%= f.text_area :custom_theme,
                   rows: 4,
                   class: "form-control",
-                  placeholder: "Ex : Elle veut être une exploratrice qui découvre une île secrète avec des animaux parlants... Elle adore les dauphins et les arcs-en-ciel !" %>
+                  placeholder: "Ex : Elle veut être une exploratrice qui découvre une île secrète avec des animaux parlants..." %>
 
-            <%# Exemples d'inspiration cliquables — insèrent le texte dans le textarea %>
+            <%# Idées cliquables — s'ajoutent au texte existant sans l'écraser %>
             <div class="mt-2 d-flex flex-wrap gap-2">
               <span class="text-muted small me-1 align-self-center">Inspiration :</span>
               <% [
@@ -83,10 +86,11 @@
                 "🏴‍☠️ Pirate qui cherche un trésor caché sous la mer",
                 "🌳 Gardien de la forêt qui sauve les animaux"
               ].each do |idea| %>
-                <%# data-idea stocke le texte — onclick le récupère sans problème de quotes %>
+                <%# data-action="click" → insertIdea() qui ajoute sans écraser %>
+                <%# data-idea stocke le texte pour éviter les problèmes de quotes %>
                 <button type="button"
                         class="btn btn-sm btn-outline-secondary"
-                        onclick="document.getElementById('story_custom_theme').value = this.dataset.idea"
+                        data-action="click->story-creation#insertIdea"
                         data-idea="<%= idea %>">
                   <%= idea %>
                 </button>
@@ -102,17 +106,18 @@
           <div class="card-body p-4">
             <h2 class="h5 fw-bold mb-4">⚙️ Paramètres de l'histoire</h2>
 
-            <%# Valeur éducative %>
+            <%# Valeur éducative — courage sélectionné par défaut %>
             <div class="mb-4">
               <label class="form-label fw-semibold">💫 Valeur à transmettre</label>
               <div class="d-flex flex-wrap gap-2">
                 <% [
-                  { value: "courage",    label: "Courage" },
-                  { value: "sharing",    label: "Partage" },
-                  { value: "kindness",   label: "Gentillesse" },
-                  { value: "confidence", label: "Confiance" }
+                  { value: "courage",    label: "💪 Courage",    default: true  },
+                  { value: "sharing",    label: "🤝 Partage",    default: false },
+                  { value: "kindness",   label: "❤️ Gentillesse", default: false },
+                  { value: "confidence", label: "⭐ Confiance",   default: false }
                 ].each do |val| %>
-                  <label class="badge-selector btn btn-sm btn-outline-primary">
+                  <%# checked: true sur le premier → visuellement actif dès le chargement %>
+                  <label class="badge-selector btn btn-sm btn-outline-primary <%= 'selected' if @story.educational_value == val[:value] %>">
                     <%= f.radio_button :educational_value, val[:value], class: "d-none" %>
                     <%= val[:label] %>
                   </label>
@@ -120,29 +125,20 @@
               </div>
             </div>
 
-            <%# Niveau de lecture %>
-            <div class="mb-4">
-              <label class="form-label fw-semibold">📚 Niveau de lecture</label>
-              <div class="d-flex gap-3">
-                <label class="d-flex align-items-center gap-2">
-                  <%= f.radio_button :reading_level, "beginner", checked: true %>
-                  <span>Débutant (3-6 ans)</span>
-                </label>
-                <label class="d-flex align-items-center gap-2">
-                  <%= f.radio_button :reading_level, "intermediate" %>
-                  <span>Intermédiaire (7-12 ans)</span>
-                </label>
-              </div>
-            </div>
-
-            <%# Durée %>
+            <%# Durée — cartes visuelles au lieu de simples radio buttons %>
             <div class="mb-4">
               <label class="form-label fw-semibold">⏱️ Durée de l'histoire</label>
-              <div class="d-flex gap-3">
-                <% [[5, "5 min ⚡"], [10, "10 min 📖"], [15, "15 min 🌟"]].each do |mins, label| %>
-                  <label class="d-flex align-items-center gap-2">
-                    <%= f.radio_button :duration_minutes, mins, checked: mins == 5 %>
-                    <span><%= label %></span>
+              <div class="d-flex gap-3 flex-wrap">
+                <% [
+                  { mins: 5,  icon: "⚡", label: "5 min",  sub: "Court"  },
+                  { mins: 10, icon: "📖", label: "10 min", sub: "Moyen"  },
+                  { mins: 15, icon: "🌟", label: "15 min", sub: "Long"   }
+                ].each do |d| %>
+                  <label class="duration-selector <%= 'selected' if @story.duration_minutes == d[:mins] %>">
+                    <%= f.radio_button :duration_minutes, d[:mins], class: "d-none", checked: d[:mins] == 5 %>
+                    <span class="duration-icon"><%= d[:icon] %></span>
+                    <span class="duration-label"><%= d[:label] %></span>
+                    <span class="duration-sub"><%= d[:sub] %></span>
                   </label>
                 <% end %>
               </div>
@@ -158,7 +154,6 @@
                     <small class="text-muted d-block">L'enfant fait des choix qui changent l'histoire</small>
                   </label>
                 <% else %>
-                  <%# Désactivé pour les utilisateurs gratuits %>
                   <input class="form-check-input" type="checkbox" disabled>
                   <label class="form-check-label text-muted">
                     🎮 Mode interactif
@@ -174,9 +169,12 @@
           </div>
         </div>
 
-        <%# Bouton de génération %>
+        <%# Bouton de génération avec feedback visuel %>
+        <%# data-story-creation-target="submitBtn" : le controller le désactive et change son texte %>
         <div class="d-grid">
-          <%= f.submit "✨ Générer l'histoire magique", class: "btn btn-primary btn-lg py-3" %>
+          <%= f.submit "✨ Générer l'histoire magique",
+                class: "btn btn-primary btn-lg py-3",
+                data: { "story-creation-target": "submitBtn" } %>
         </div>
 
       <% end %>

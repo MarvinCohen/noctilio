@@ -109,6 +109,11 @@ class GenerateStoryJob < ApplicationJob
     blocks = content.scan(/\[CHOIX\](.*?)\[FIN CHOIX\]/m)
     return if blocks.empty?
 
+    # Nombre de choix attendu selon la durée : 5min→1, 10min→2, 15min→3
+    # On limite au nombre attendu même si l'IA en a généré plus — évite les doublons
+    expected_count = { 5 => 1, 10 => 2, 15 => 3 }.fetch(story.duration_minutes.to_i, 1)
+    blocks = blocks.first(expected_count)
+
     # Crée un StoryChoice pour chaque bloc trouvé
     # step_number indique l'ordre : 1er choix = étape 1, 2ème = étape 2, etc.
     blocks.each_with_index do |captures, index|
