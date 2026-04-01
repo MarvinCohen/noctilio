@@ -147,84 +147,38 @@ class StoriesController < ApplicationController
       @story.cover_image_url               # URL externe (Pollinations)
     end
 
+    # URL de l'audio si le fichier est déjà généré par GenerateAudioJob
+    audio_url = @story.audio_file.attached? ? url_for(@story.audio_file) : nil
+
     render json: {
       status:       @story.status,
       completed:    @story.completed?,
       title:        @story.title,
-      continuation: continuation_html,  # HTML prêt à insérer dans le DOM
+      continuation: continuation_html,
       redirect_url: story_path(@story),
-      image_url:    image_url           # nil si l'image n'est pas encore générée
+      image_url:    image_url,
+      audio_url:    audio_url           # nil si l'audio n'est pas encore généré
     }
   end
 
-  # POST /stories/:id/audio — génère l'audio TTS via OpenAI et retourne le MP3 binaire
-  # Appelée par story_reader_controller.js (HTML5 Audio)
+  # POST /stories/:id/audio — sert l'audio pré-généré ou lance la génération en background
+  # Appelée par story_reader_controller.js
   #
-  # Gestion des textes longs : OpenAI TTS accepte max 4096 chars par requête.
-  # On découpe le texte en chunks à la dernière phrase complète avant la limite,
-  # on fait un appel par chunk, et on concatène les MP3 binaires en un seul fichier.
-  # (Les fichiers MP3 peuvent être concaténés directement — le navigateur les joue sans problème.)
+  # Si l'audio est déjà attaché (généré par GenerateAudioJob) : redirige vers l'URL du fichier
+  # Sinon : lance GenerateAudioJob et retourne 202 Accepted → le JS poll /status jusqu'à ce que
+  # audio_url soit disponible dans la réponse JSON
   def audio
-    # Détermine quel texte lire selon le paramètre "source" passé par le JS
-    # "continuation" → lit uniquement la dernière continuation interactive
-    # tout autre valeur → lit le contenu principal de l'histoire
     source = params[:source] || "story"
 
-    text = case source
-    when "continuation"
-      # Récupère la dernière continuation résolue (après un choix interactif)
-      last_choice = @story.story_choices
-                          .where.not(context_chosen: nil)
-                          .order(:step_number)
-                          .last
-      last_choice&.context_chosen
+    if @story.audio_file.attached?
+      # Audio prêt — redirige vers l'URL ActiveStorage (Cloudinary en prod)
+      redirect_to url_for(@story.audio_file), allow_other_host: true
     else
-      # Contenu principal de l'histoire généré par l'IA
-      @story.content
+      # Audio pas encore généré — lance le job en arrière-plan
+      # Le JS recevra 202 et commencera à poller /status toutes les 3s
+      GenerateAudioJob.perform_later(@story.id, source: source)
+      head :accepted  # 202
     end
-
-    # Renvoie une erreur si le texte est vide ou absent
-    return head :unprocessable_entity if text.blank?
-
-    # Initialise le client OpenAI avec la clé d'API
-    # Différent du client Groq utilisé pour la génération de texte —
-    # OpenAI est requis car Groq ne propose pas de TTS
-    client = OpenAI::Client.new(access_token: ENV.fetch("OPENAI_API_KEY"))
-
-    # Découpe le texte en blocs de max 4000 chars chacun
-    # (marge de sécurité sous la limite de 4096 d'OpenAI)
-    chunks = tts_split_text(text, max_chars: 4000)
-
-    # Génère l'audio pour chaque chunk et concatène les binaires MP3
-    # map + join → tableau de strings binaires → une seule string binaire
-    audio_data = chunks.map do |chunk|
-      # Appel à l'API TTS d'OpenAI pour ce chunk
-      # model: "tts-1"         → standard, bon équilibre qualité/vitesse/coût (~0.015$/1000 chars)
-      # voice: "nova"          → voix féminine naturelle, chaleureuse — idéale pour les enfants
-      # response_format: "mp3" → format compressé, compatible HTML5 Audio
-      client.audio.speech(
-        parameters: {
-          model:           "tts-1",
-          input:           chunk,
-          voice:           "nova",
-          response_format: "mp3"
-        }
-      )
-    end.join
-
-    # Envoie le binaire MP3 directement au navigateur
-    # disposition: "inline" → le navigateur joue l'audio sans proposer de téléchargement
-    send_data audio_data,
-              type:        "audio/mpeg",
-              disposition: "inline"
-
-  rescue KeyError => e
-    # OPENAI_API_KEY manquante dans les variables d'environnement
-    Rails.logger.error "TTS : clé OPENAI_API_KEY manquante — #{e.message}"
-    head :service_unavailable
-  rescue => e
-    Rails.logger.error "TTS : erreur inattendue — #{e.message}"
-    head :internal_server_error
   end
 
   # POST /stories/:id/save — sauvegarde l'histoire dans la bibliothèque de l'utilisateur
@@ -250,53 +204,6 @@ class StoriesController < ApplicationController
     @story = current_user.stories.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to stories_path, alert: "Histoire introuvable."
-  end
-
-  # ============================================================
-  # tts_split_text — découpe un texte long en chunks pour OpenAI TTS
-  # ============================================================
-  # OpenAI TTS accepte max 4096 chars par requête.
-  # Cette méthode découpe proprement au niveau des phrases (. ! ?)
-  # pour éviter de couper une phrase en plein milieu.
-  #
-  # Exemple : un texte de 9000 chars → 3 chunks de ~3000 chars chacun
-  #
-  # Paramètres :
-  #   text      : le texte complet à découper
-  #   max_chars : limite par chunk (défaut 4000, sous la limite OpenAI de 4096)
-  #
-  # Retourne : un tableau de strings, chaque string ≤ max_chars
-  def tts_split_text(text, max_chars: 4000)
-    chunks    = []
-    remaining = text.strip
-
-    while remaining.length > max_chars
-      # Prend les max_chars premiers caractères
-      candidate = remaining[0, max_chars]
-
-      # Cherche la dernière position d'un signe de fin de phrase suivi d'un espace
-      # rindex retourne la position de la DERNIÈRE occurrence du pattern
-      last_boundary = candidate.rindex(/[.!?]\s/)
-
-      if last_boundary
-        # Coupe après le signe de ponctuation (+ 1 pour inclure le . ! ?)
-        cut_at = last_boundary + 1
-      else
-        # Pas de fin de phrase trouvée — coupe au dernier espace (évite de couper un mot)
-        last_space = candidate.rindex(" ")
-        cut_at     = last_space || max_chars
-      end
-
-      # Ajoute le chunk proprement découpé
-      chunks    << remaining[0, cut_at].strip
-      # Continue avec le reste du texte
-      remaining  = remaining[cut_at..].strip
-    end
-
-    # Ajoute le dernier morceau (qui fait moins de max_chars)
-    chunks << remaining unless remaining.empty?
-
-    chunks
   end
 
   # Paramètres autorisés pour la création d'une histoire

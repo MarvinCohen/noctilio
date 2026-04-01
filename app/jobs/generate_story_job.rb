@@ -61,6 +61,10 @@ class GenerateStoryJob < ApplicationJob
     # 7. Vérifier si l'utilisateur mérite de nouveaux badges (texte disponible = histoire comptée)
     Badge.check_and_award(story.child.user)
 
+    # 8. Générer l'audio TTS en arrière-plan via Solid Queue
+    # Évite le timeout Heroku de 30s — l'audio sera disponible quelques secondes après la page
+    GenerateAudioJob.perform_later(story.id)
+
     # 8. Générer l'image EN ARRIÈRE-PLAN, APRÈS completed
     # L'image peut prendre du temps (fal.ai, DALL-E 3) — on ne bloque plus l'utilisateur pour ça.
     # Le Stimulus story_image_controller poll /status toutes les 3s et affiche l'image quand dispo.

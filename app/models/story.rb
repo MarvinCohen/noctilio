@@ -10,8 +10,11 @@ class Story < ApplicationRecord
   # (supprimés automatiquement si l'histoire est supprimée)
   has_many :story_choices, dependent: :destroy
 
-  # Image de couverture stockée dans ActiveStorage (S3 en prod, local en dev)
+  # Image de couverture stockée dans ActiveStorage
   has_one_attached :cover_image
+
+  # Fichier audio MP3 généré par OpenAI TTS via GenerateAudioJob
+  has_one_attached :audio_file
 
   # ============================================================
   # Enum — statuts de génération

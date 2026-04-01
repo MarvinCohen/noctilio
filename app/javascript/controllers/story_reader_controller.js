@@ -52,8 +52,10 @@ export default class extends Controller {
   }
 
   // ============================================================
-  // loadAndPlay(source) — appelle le serveur TTS et joue le MP3
+  // loadAndPlay(source) — récupère l'audio et le joue
   // ============================================================
+  // Si le serveur retourne 200 avec une redirection : joue directement l'URL
+  // Si le serveur retourne 202 (génération en cours) : poll /status jusqu'à audio_url
   async loadAndPlay(source) {
     this.setLoading(true)
     this.updateButtons(true)
@@ -68,6 +70,12 @@ export default class extends Controller {
         body:    JSON.stringify({ source })
       })
 
+      if (response.status === 202) {
+        // Audio pas encore prêt — poll le status jusqu'à ce que audio_url apparaisse
+        await this.pollForAudio(storyId)
+        return
+      }
+
       if (!response.ok) {
         console.error(`story-reader: erreur serveur TTS (${response.status})`)
         this.setLoading(false)
@@ -75,44 +83,79 @@ export default class extends Controller {
         return
       }
 
-      const blob = await response.blob()
-
-      // Libère l'ancienne URL blob avant d'en créer une nouvelle
-      if (this.audioUrl) URL.revokeObjectURL(this.audioUrl)
-      this.audioUrl = URL.createObjectURL(blob)
-
-      this.audio = new Audio(this.audioUrl)
-
-      // Quand les métadonnées sont chargées : affiche la durée totale
-      this.audio.addEventListener("loadedmetadata", () => {
-        if (this.hasTotalTimeTarget) {
-          this.totalTimeTarget.textContent = this.formatTime(this.audio.duration)
-        }
-      })
-
-      // Mise à jour de la barre de progression et du timer à chaque seconde
-      this.audio.addEventListener("timeupdate", () => this.updateProgress())
-
-      // Fin de la lecture
-      this.audio.onended = () => {
-        this.updateButtons(false)
-        this.resetProgress()
-      }
-
-      // Erreur de lecture
-      this.audio.onerror = (e) => {
-        console.error("story-reader: erreur lecture audio", e)
-        this.updateButtons(false)
-      }
-
-      this.setLoading(false)
-      this.audio.play()
+      // 200 avec redirection suivie automatiquement par fetch → joue l'URL finale
+      const audioSrc = response.url
+      this.playFromUrl(audioSrc)
 
     } catch (error) {
       console.error("story-reader: erreur lors de la récupération de l'audio TTS", error)
       this.setLoading(false)
       this.updateButtons(false)
     }
+  }
+
+  // ============================================================
+  // pollForAudio — poll /status toutes les 3s jusqu'à audio_url
+  // ============================================================
+  async pollForAudio(storyId) {
+    const maxAttempts = 30  // 30 × 3s = 90s max d'attente
+    let   attempts    = 0
+
+    const interval = setInterval(async () => {
+      attempts++
+
+      try {
+        const response = await fetch(`/stories/${storyId}/status`, {
+          headers: { "Accept": "application/json" }
+        })
+        const data = await response.json()
+
+        if (data.audio_url) {
+          clearInterval(interval)
+          this.playFromUrl(data.audio_url)
+        } else if (attempts >= maxAttempts) {
+          // Timeout — on abandonne
+          clearInterval(interval)
+          this.setLoading(false)
+          this.updateButtons(false)
+          console.error("story-reader: timeout en attente de l'audio")
+        }
+      } catch (e) {
+        console.error("story-reader: erreur polling audio", e)
+      }
+    }, 3000)
+  }
+
+  // ============================================================
+  // playFromUrl — initialise et joue l'Audio depuis une URL
+  // ============================================================
+  playFromUrl(url) {
+    this.audio = new Audio(url)
+
+    // Durée totale dès que les métadonnées sont chargées
+    this.audio.addEventListener("loadedmetadata", () => {
+      if (this.hasTotalTimeTarget) {
+        this.totalTimeTarget.textContent = this.formatTime(this.audio.duration)
+      }
+    })
+
+    // Progression à chaque seconde
+    this.audio.addEventListener("timeupdate", () => this.updateProgress())
+
+    // Fin de lecture
+    this.audio.onended = () => {
+      this.updateButtons(false)
+      this.resetProgress()
+    }
+
+    // Erreur de lecture
+    this.audio.onerror = (e) => {
+      console.error("story-reader: erreur lecture audio", e)
+      this.updateButtons(false)
+    }
+
+    this.setLoading(false)
+    this.audio.play()
   }
 
   // ============================================================
