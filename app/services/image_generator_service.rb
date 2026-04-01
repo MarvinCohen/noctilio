@@ -36,6 +36,18 @@ class ImageGeneratorService
   POLLINATIONS_MODEL    = "flux-schnell"
 
   # ----------------------------------------------------------------
+  # Mots-clés d'action pour identifier la scène la plus épique
+  # Défini au niveau classe (pas dans une méthode) — requis par Ruby
+  # ----------------------------------------------------------------
+  ACTION_KEYWORDS = %w[
+    bondit frappe combat affronte attaque charge plonge s'élance surgit
+    jaillit fend tranche transperce explose éclate rugit hurle tonne
+    fonce tourbillonne s'envole bataille affrontement éclair flamme
+    tempête choc impact lame épée coup poursuite fuir sauter courir
+    vaincre terrasse renverse déchire saisit arrache défend protège
+  ].freeze
+
+  # ----------------------------------------------------------------
   # Style visuel cohérent pour toutes les illustrations de l'app
   # Optimisé pour FLUX.1 Dev — langage naturel narratif (pas de liste de mots-clés)
   # Structure FLUX : sujet → action → environnement → lumière → style/mood
@@ -274,16 +286,6 @@ class ImageGeneratorService
     # (les courts sont souvent des transitions, pas des scènes visuelles)
     paragraphs = clean.split(/\n\n+/).map(&:strip).reject { |p| p.length < 80 }
     return "" if paragraphs.empty?
-
-    # Mots-clés d'action et d'intensité dramatique en français
-    # Chaque occurrence dans un paragraphe augmente son score d'action
-    ACTION_KEYWORDS = %w[
-      bondit frappe combat affronte attaque charge plonge s'élance surgit
-      jaillit fend tranche transperce explose éclate rugit hurle tonne
-      fonce tourbillonne s'envole combat bataille affrontement éclair flamme
-      tempête choc impact lame épée coup poursuite fuir sauter courir
-      vaincre terrasse renverse déchire saisit arrache défend protège
-    ].freeze
 
     # Score chaque paragraphe selon le nombre de mots d'action qu'il contient
     best_paragraph = paragraphs.max_by do |para|
