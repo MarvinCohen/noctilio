@@ -69,6 +69,12 @@ Rails.application.routes.draw do
   post "/abonnement/checkout", to: "subscriptions#checkout", as: :subscription_checkout
 
   # ============================================================
+  # Admin — pages privées accessibles uniquement par marvincohen95@gmail.com
+  # ============================================================
+  # GET /admin/waitlist — liste des emails inscrits sur la waitlist
+  get "/admin/waitlist", to: "admin#waitlist", as: :admin_waitlist
+
+  # ============================================================
   # Health check — vérifie que l'application fonctionne
   # ============================================================
   get "up" => "rails/health#show", as: :rails_health_check
