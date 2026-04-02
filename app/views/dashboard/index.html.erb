@@ -1,225 +1,635 @@
 <%# ============================================================ %>
-<%# Dashboard principal — page d'accueil après connexion %>
-<%# Design fidèle au Figma : hero card + mes histoires + trophées %>
+<%# Dashboard — ambiance landing page %>
+<%# Contenu flottant dans le vide cosmique, pas de cartes conventionnelles %>
+<%# Étoiles, lune, typographie éditoriale Cormorant Garamond %>
 <%# ============================================================ %>
 
 <%# full_bleed : le dashboard gère son propre fond (pas de carte blanche du layout) %>
 <% content_for :full_bleed, true %>
 
-<div class="dashboard-page">
+<%# ---------------------------------------------------------------- %>
+<%# Textures et effets d'arrière-plan %>
+<%# ---------------------------------------------------------------- %>
 
-  <%# ---------------------------------------------------------------- %>
-  <%# Alerte si des histoires sont en cours de génération %>
-  <%# ---------------------------------------------------------------- %>
-  <% if @pending_stories.any? %>
-    <div class="dashboard-alert">
-      <%# Spinner animé pour indiquer que quelque chose se passe %>
-      <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-      <%= pluralize(@pending_stories.count, "histoire est", "histoires sont") %> en cours de création...
-      <%= link_to "Voir →", story_path(@pending_stories.first), class: "dashboard-alert-link" %>
-    </div>
-  <% end %>
+<%# Texture de bruit — même que la landing, donne le côté "filmic" premium %>
+<div class="db-noise"></div>
 
-  <%# ---------------------------------------------------------------- %>
-  <%# HERO CARD — Accroche principale avec CTA %>
-  <%# Fond violet clair, message inspirant, bouton d'action %>
-  <%# ---------------------------------------------------------------- %>
-  <div class="dashboard-hero">
-    <div class="dashboard-hero-content">
-      <%# Sous-titre discret au-dessus du titre principal %>
-      <p class="dashboard-hero-eyebrow">Ce soir, l'aventure commence</p>
+<%# Canvas étoiles animées — même logique que la landing page %>
+<canvas id="db-stars" class="db-stars-canvas"></canvas>
 
-      <%# Titre principal avec mot "créer" mis en évidence %>
-      <h1 class="dashboard-hero-title">
-        Quelle magie allez-vous<br>
-        <span class="dashboard-hero-highlight">créer</span> ce soir ?
-      </h1>
+<%# Canvas sillage doré — trail qui suit le curseur comme sur la landing %>
+<canvas id="db-trail" class="db-trail-canvas"></canvas>
 
-      <%# Description courte %>
-      <p class="dashboard-hero-desc">
-        Transformez vos rêves en aventures illustrées grâce à notre créateur d'histoires IA.
-      </p>
+<%# ---------------------------------------------------------------- %>
+<%# HERO — flotte dans le vide, pas de carte %>
+<%# ---------------------------------------------------------------- %>
+<section class="db-hero">
 
-      <%# Bouton CTA — crée une histoire %>
-      <%= link_to new_story_path, class: "dashboard-hero-btn" do %>
-        <span>✦</span> Créer mon histoire
-      <% end %>
+  <%# Lune réelle — canvas dessiné en JS selon la phase lunaire du jour %>
+  <%# data-phase transmis depuis le controller (0.0 = nouvelle, 0.5 = pleine) %>
+  <canvas id="db-moon-canvas"
+          class="db-hero-moon"
+          data-phase="<%= @moon_phase %>"
+          width="160" height="160"
+          aria-label="Phase de la lune ce soir"></canvas>
 
-      <%# Limite gratuite (discrète, seulement si non premium) %>
-      <% unless current_user.premium? %>
-        <p class="dashboard-hero-limit">
-          <%= @stories_this_month %>/3 histoires ce mois ·
-          <%= link_to "Passer en Premium", subscription_path, class: "dashboard-hero-limit-link" %>
-        </p>
-      <% end %>
-    </div>
+  <%# Nébuleuse — halo diffus derrière le titre %>
+  <div class="db-hero-nebula"></div>
 
-    <%# Décoration droite de la hero card — illustration de landing %>
-    <div class="dashboard-hero-deco">
-      <%= image_tag "hero-illustration.png",
-            alt: "Illustration Noctilio",
-            class: "dashboard-hero-illustration" %>
+  <%# Signature typographique centrée — "Noctilio" + chouette en haut du hero %>
+  <%# aria-hidden : élément purement décoratif %>
+  <div class="db-noctilio-display" aria-hidden="true">
+    <span class="db-owl">🦉</span>
+    <div class="db-owl-perch"></div>
+    <p class="db-noctilio-word">Noctilio</p>
+    <div class="db-noctilio-sparks">
+      <span class="db-spark db-spark--1">✦</span>
+      <span class="db-spark db-spark--2">✦</span>
+      <span class="db-spark db-spark--3">✦</span>
     </div>
   </div>
 
-  <%# ---------------------------------------------------------------- %>
-  <%# MES HISTOIRES — Section avec les histoires récentes %>
-  <%# ---------------------------------------------------------------- %>
-  <div class="dashboard-section">
+  <%# Contenu centré en dessous du logo %>
+  <div class="db-hero-text">
 
-    <%# En-tête de section avec lien "Voir tout" %>
-    <div class="dashboard-section-header">
-      <div>
-        <h2 class="dashboard-section-title">Mes histoires</h2>
-        <p class="dashboard-section-sub">Vos dernières aventures créées</p>
-      </div>
-      <%= link_to "Voir tout →", stories_path, class: "dashboard-section-link" %>
-    </div>
+    <%# Eyebrow — petit texte doré espacé, style landing %>
+    <p class="db-eyebrow">✦ Ce soir, l'aventure commence ✦</p>
 
-    <% if @recent_stories.any? %>
-      <%# Grille de cartes d'histoires %>
-      <div class="dashboard-stories-grid">
+    <%# Titre principal — Cormorant Garamond, énorme, aérien %>
+    <h1 class="db-hero-title">
+      Quelle magie allez-vous<br>
+      <em>créer</em> ce soir&nbsp;?
+    </h1>
 
-        <% @recent_stories.each do |story| %>
-          <%# Carte d'histoire — image + titre + enfant + bouton %>
-          <div class="dashboard-story-card">
+    <%# Description %>
+    <p class="db-hero-desc">
+      Transformez vos rêves en aventures illustrées grâce à notre créateur d'histoires IA.
+    </p>
 
-            <%# Vignette image de l'histoire (ou emoji de l'univers si pas d'image) %>
-            <div class="dashboard-story-thumb">
-              <% if story.cover_image_url.present? %>
-                <%# Image générée par Pollinations — chargée directement par le navigateur %>
-                <%= image_tag story.cover_image_url,
-                      alt: "Couverture de #{story.title}",
-                      loading: "lazy",
-                      onerror: "this.style.display='none'; this.nextElementSibling.style.display='flex'" %>
-                <%# Fallback emoji si l'image échoue à charger %>
-                <div class="dashboard-story-thumb-fallback" style="display:none">
-                  <%= story.world_emoji %>
-                </div>
-              <% else %>
-                <%# Pas d'image — affiche l'emoji de l'univers %>
-                <div class="dashboard-story-thumb-fallback"><%= story.world_emoji %></div>
-              <% end %>
-            </div>
+    <%# CTA — pill doré, même style que landing %>
+    <%= link_to new_story_path, class: "db-cta-btn" do %>
+      <span class="db-cta-star">✦</span> Créer mon histoire
+    <% end %>
 
-            <%# Infos de la carte %>
-            <div class="dashboard-story-info">
-              <%# Titre de l'histoire (ou placeholder si pas encore généré) %>
-              <p class="dashboard-story-title"><%= story.title || "Histoire sans titre" %></p>
-
-              <%# Métadonnées : enfant + durée %>
-              <p class="dashboard-story-meta">
-                Pour <%= story.child.name %> · <%= story.duration_minutes %> min
-              </p>
-            </div>
-
-            <%# Bouton "Reprendre la lecture" %>
-            <%= link_to story_path(story), class: "dashboard-story-btn" do %>
-              Reprendre la lecture
-            <% end %>
-
-          </div>
-        <% end %>
-
-        <%# Carte "+ Créer une nouvelle histoire" toujours à la fin de la grille %>
-        <div class="dashboard-story-card dashboard-story-card--new">
-          <%= link_to new_story_path, class: "dashboard-story-new-link" do %>
-            <div class="dashboard-story-new-icon">+</div>
-            <p class="dashboard-story-new-label">Nouvelle histoire</p>
-          <% end %>
-        </div>
-
-      </div>
-
-    <% else %>
-      <%# État vide — première visite ou aucune histoire terminée %>
-      <div class="dashboard-empty">
-        <div class="dashboard-empty-icon">📖</div>
-        <h3 class="dashboard-empty-title">Aucune histoire pour l'instant</h3>
-        <p class="dashboard-empty-desc">Créez votre première histoire magique en quelques secondes !</p>
-        <%= link_to "✦ Créer ma première histoire", new_story_path, class: "dashboard-hero-btn d-inline-flex" %>
-      </div>
+    <%# Limite gratuite — discrète %>
+    <% unless current_user.premium? %>
+      <p class="db-limit-text">
+        <%= @stories_this_month %>/3 histoires ce mois ·
+        <%= link_to "Passer en Premium →", subscription_path, class: "db-limit-link" %>
+      </p>
     <% end %>
 
   </div>
 
-  <%# ---------------------------------------------------------------- %>
-  <%# TROPHY ROOM — Aperçu des badges et XP %>
-  <%# ---------------------------------------------------------------- %>
-  <div class="dashboard-section">
+  <%# Alerte histoires en cours — discrète, sous le hero %>
+  <% if @pending_stories.any? %>
+    <div class="db-generating-alert">
+      <span class="db-generating-dot"></span>
+      <%= pluralize(@pending_stories.count, "histoire est", "histoires sont") %> en cours de génération…
+      <%= link_to "Voir →", story_path(@pending_stories.first), class: "db-generating-link" %>
+    </div>
+  <% end %>
 
-    <%# En-tête avec total XP %>
-    <div class="dashboard-section-header">
-      <div>
-        <h2 class="dashboard-section-title">Salle des trophées</h2>
-        <p class="dashboard-section-sub">Vos accomplissements magiques</p>
+</section>
+
+<%# ---------------------------------------------------------------- %>
+<%# Séparateur vertical doré — inspiré de la landing %>
+<%# ---------------------------------------------------------------- %>
+<div class="db-divider"></div>
+
+<%# ================================================================ %>
+<%# COMMENT ÇA MARCHE — 3 étapes numérotées %>
+<%# ================================================================ %>
+<section class="db-section db-section--centered">
+
+  <div class="db-section-head db-section-head--centered" data-reveal="up">
+    <p class="db-eyebrow db-eyebrow--small">Simple comme bonjour</p>
+    <h2 class="db-section-title">Comment ça marche</h2>
+    <p class="db-section-subtitle">Trois étapes vers une histoire magique</p>
+  </div>
+
+  <div class="db-steps-grid">
+
+    <%# Étape 1 — apparaît en premier %>
+    <div class="db-step-card" data-reveal="up" style="--reveal-delay: 100ms">
+      <div class="db-step-number">1</div>
+      <div class="db-step-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
       </div>
-      <div class="dashboard-xp-badge">
-        ⭐ <%= current_user.xp_points %> XP
-      </div>
+      <h3 class="db-step-title">Créer le profil</h3>
+      <p class="db-step-desc">Prénom, âge, personnalité et centres d'intérêt de votre enfant.</p>
     </div>
 
-    <%# Grille de badges %>
-    <% earned_badges = current_user.badges %>
-    <div class="dashboard-badges-grid">
+    <%# Connecteur entre les étapes %>
+    <div class="db-step-connector" aria-hidden="true">✦</div>
 
-      <%# On affiche les badges gagnés + des slots vides pour les non gagnés %>
-      <% [
-        { key: "first_story",  emoji: "🔭", label: "Explorateur" },
-        { key: "night_owl",    emoji: "🌙", label: "Noctambule" },
-        { key: "five_stories", emoji: "📚", label: "Lecteur" },
-        { key: "ten_stories",  emoji: "🏆", label: "Héros" },
-        { key: "kind_heart",   emoji: "💜", label: "Cœur tendre" }
-      ].each do |badge_def| %>
-        <% earned = earned_badges.any? { |b| b.condition_key == badge_def[:key] } %>
-        <%# Classe "locked" si le badge n'est pas encore gagné %>
-        <div class="dashboard-badge-item <%= earned ? 'earned' : 'locked' %>">
-          <div class="dashboard-badge-icon"><%= badge_def[:emoji] %></div>
-          <span class="dashboard-badge-label"><%= badge_def[:label] %></span>
-        </div>
-      <% end %>
-
+    <%# Étape 2 — décalée de 200ms %>
+    <div class="db-step-card" data-reveal="up" style="--reveal-delay: 250ms">
+      <div class="db-step-number">2</div>
+      <div class="db-step-icon">
+        <%# Sliders — personnalisation de l'histoire %>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="18" x2="20" y2="18"/>
+          <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
+          <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
+          <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <h3 class="db-step-title">Choisir l'histoire</h3>
+      <p class="db-step-desc">Univers, valeur éducative, durée et mode interactif.</p>
     </div>
 
-    <%# Lien vers la salle des trophées complète %>
-    <div class="text-center mt-3">
-      <%= link_to "Voir tous les trophées →", trophy_room_path, class: "dashboard-section-link" %>
+    <div class="db-step-connector" aria-hidden="true">✦</div>
+
+    <%# Étape 3 — décalée de 400ms %>
+    <div class="db-step-card" data-reveal="up" style="--reveal-delay: 400ms">
+      <div class="db-step-number">3</div>
+      <div class="db-step-icon">
+        <%# Étoiles — la magie opère %>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+        </svg>
+      </div>
+      <h3 class="db-step-title">La magie opère</h3>
+      <p class="db-step-desc">L'IA génère l'histoire et l'illustration en quelques secondes.</p>
     </div>
 
   </div>
 
-  <%# ---------------------------------------------------------------- %>
-  <%# MES HÉROS — Profils enfants avec raccourci création %>
-  <%# ---------------------------------------------------------------- %>
-  <% if @children.any? %>
-    <div class="dashboard-section">
-      <div class="dashboard-section-header">
-        <div>
-          <h2 class="dashboard-section-title">Mes héros</h2>
-          <p class="dashboard-section-sub">Les personnages principaux de vos histoires</p>
-        </div>
-        <%= link_to "+ Ajouter", new_child_path, class: "dashboard-section-link" %>
-      </div>
+</section>
 
-      <div class="dashboard-children-grid">
-        <% @children.each do |child| %>
-          <div class="dashboard-child-card">
-            <%# Avatar avec initiale du prénom %>
-            <div class="dashboard-child-avatar"><%= child.name[0].upcase %></div>
-            <div class="dashboard-child-info">
-              <span class="dashboard-child-name"><%= child.name %></span>
-              <span class="dashboard-child-age"><%= child.age %> ans</span>
-            </div>
-            <%# Raccourci pour créer une histoire directement pour cet enfant %>
-            <%= link_to new_story_path(child_id: child.id),
-                  class: "dashboard-child-btn",
-                  title: "Créer une histoire pour #{child.name}" do %>
-              ✦
-            <% end %>
-          </div>
-        <% end %>
+<div class="db-divider"></div>
+
+<%# ================================================================ %>
+<%# FONCTIONNALITÉS — grille 3×2 de features %>
+<%# ================================================================ %>
+<section class="db-section db-section--centered">
+
+  <div class="db-section-head db-section-head--centered" data-reveal="up">
+    <p class="db-eyebrow db-eyebrow--small">Ce qui rend Noctilio unique</p>
+    <h2 class="db-section-title">Fonctionnalités magiques</h2>
+    <p class="db-section-subtitle">Tout ce dont vous avez besoin pour des soirées inoubliables</p>
+  </div>
+
+  <div class="db-features-grid">
+
+    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 0ms">
+      <div class="db-feature-icon">
+        <%# Étincelles — histoires IA %>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+        </svg>
+      </div>
+      <h3 class="db-feature-title">Histoires IA personnalisées</h3>
+      <p class="db-feature-desc">Chaque histoire est unique, générée spécialement pour votre enfant.</p>
+    </div>
+
+    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 100ms">
+      <div class="db-feature-icon">
+        <%# Bouclier check — contenu adapté à l'âge %>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <polyline points="9 12 11 14 15 10"/>
+        </svg>
+      </div>
+      <h3 class="db-feature-title">Adaptée à l'âge</h3>
+      <p class="db-feature-desc">Contenu calibré pour les enfants de 3 à 15 ans.</p>
+    </div>
+
+    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 200ms">
+      <div class="db-feature-icon">
+        <%# Branches — choix interactifs %>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6" cy="18" r="3"/>
+          <circle cx="6" cy="6" r="3"/>
+          <circle cx="18" cy="6" r="3"/>
+          <path d="M6 9v6"/>
+          <path d="M6 9a6 6 0 0 0 6 6h1"/>
+          <path d="M18 9v3a3 3 0 0 1-3 3h-1"/>
+        </svg>
+      </div>
+      <h3 class="db-feature-title">Mode interactif</h3>
+      <p class="db-feature-desc">L'enfant fait des choix qui changent la suite de l'histoire.</p>
+    </div>
+
+    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 150ms">
+      <div class="db-feature-icon">
+        <%# Cadre image — illustration %>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </div>
+      <h3 class="db-feature-title">Illustrations générées</h3>
+      <p class="db-feature-desc">Chaque histoire est accompagnée d'une illustration unique.</p>
+    </div>
+
+    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 250ms">
+      <div class="db-feature-icon">
+        <%# Cœur — valeurs éducatives %>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </div>
+      <h3 class="db-feature-title">Valeurs éducatives</h3>
+      <p class="db-feature-desc">Courage, partage, gentillesse — des leçons douces tissées dans l'aventure.</p>
+    </div>
+
+    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 350ms">
+      <div class="db-feature-icon">
+        <%# Utilisateurs — plusieurs profils %>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h3 class="db-feature-title">Plusieurs profils</h3>
+      <p class="db-feature-desc">Créez un profil pour chacun de vos enfants.</p>
+    </div>
+
+  </div>
+
+</section>
+
+<div class="db-divider"></div>
+
+<%# ================================================================ %>
+<%# TÉMOIGNAGES — ce que disent les parents %>
+<%# ================================================================ %>
+<section class="db-section db-section--centered db-section--last">
+
+  <div class="db-section-head db-section-head--centered" data-reveal="up">
+    <p class="db-eyebrow db-eyebrow--small">Des familles qui nous font confiance</p>
+    <h2 class="db-section-title">Ce qu'ils en disent</h2>
+  </div>
+
+  <div class="db-testimonials-grid">
+
+    <%# Témoignage 1 — entre depuis la gauche %>
+    <div class="db-testimonial-card" data-reveal="left" style="--reveal-delay: 0ms">
+      <div class="db-stars">★★★★★</div>
+      <p class="db-testimonial-text">« Noctilio a transformé nos soirées. Mes enfants réclament maintenant d'aller se coucher pour écouter leur histoire. »</p>
+      <div class="db-testimonial-author">
+        <span class="db-testimonial-name">Sarah M.</span>
+        <span class="db-testimonial-role">Maman de 2 enfants</span>
       </div>
     </div>
-  <% end %>
 
-</div>
+    <%# Témoignage 2 — monte depuis le bas %>
+    <div class="db-testimonial-card" data-reveal="up" style="--reveal-delay: 150ms">
+      <div class="db-stars">★★★★★</div>
+      <p class="db-testimonial-text">« En tant que parent pressé, c'est un gain de temps énorme tout en gardant des moments de qualité avec ma fille. »</p>
+      <div class="db-testimonial-author">
+        <span class="db-testimonial-name">Michaël T.</span>
+        <span class="db-testimonial-role">Papa de 1 enfant</span>
+      </div>
+    </div>
+
+    <%# Témoignage 3 — entre depuis la droite %>
+    <div class="db-testimonial-card" data-reveal="right" style="--reveal-delay: 300ms">
+      <div class="db-stars">★★★★★</div>
+      <p class="db-testimonial-text">« Le mode interactif est brillant — mon fils se sent vraiment le héros de l'histoire. Il ne voudrait plus s'en passer. »</p>
+      <div class="db-testimonial-author">
+        <span class="db-testimonial-name">Émilie R.</span>
+        <span class="db-testimonial-role">Maman de 3 enfants</span>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<%# Espace final %>
+<div style="height: 80px;"></div>
+
+<%# ============================================================ %>
+<%# JS — Étoiles + Trail doré (même logique que la landing) %>
+<%# ============================================================ %>
+<script nonce="<%= content_security_policy_nonce %>">
+// turbo:load se déclenche à chaque navigation Turbo (et au premier chargement)
+// contrairement à window.load qui ne s'exécute qu'une seule fois
+document.addEventListener('turbo:load', function() {
+  // Annule les boucles d'animation précédentes si on revient sur la page
+  // Sans ça, chaque retour sur le dashboard crée une nouvelle boucle en doublon
+  if (window._dbAnimFrame) cancelAnimationFrame(window._dbAnimFrame);
+  if (window._dbTrailFrame) cancelAnimationFrame(window._dbTrailFrame);
+
+  try {
+
+    // ============================================================
+    // Étoiles animées — canvas fixe en arrière-plan
+    // ============================================================
+    const canvas = document.getElementById('db-stars');
+    const ctx    = canvas ? canvas.getContext('2d') : null;
+    let stars    = [];
+
+    if (canvas && ctx) {
+      function resizeStars() {
+        const dpr    = window.devicePixelRatio || 1;
+        canvas.width  = window.innerWidth  * dpr;
+        canvas.height = window.innerHeight * dpr;
+      }
+
+      function createStars() {
+        const dpr = window.devicePixelRatio || 1;
+        stars = [];
+        for (let i = 0; i < 250; i++) {
+          stars.push({
+            x:     Math.random() * canvas.width,
+            y:     Math.random() * canvas.height,
+            r:     (Math.random() * 1.3 + 0.6) * dpr,
+            speed: Math.random() * 0.004 + 0.001,
+            phase: Math.random() * Math.PI * 2
+          });
+        }
+      }
+
+      // Scintillement doré — même couleur que la landing (240, 201, 122)
+      function drawStars(t) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(s => {
+          const alpha = 0.2 + 0.5 * Math.sin(s.phase + t * s.speed);
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(240, 201, 122, ${alpha})`;
+          ctx.fill();
+        });
+        // Stocke l'ID pour pouvoir l'annuler au prochain turbo:load
+        window._dbAnimFrame = requestAnimationFrame(drawStars);
+      }
+
+      resizeStars(); createStars(); window._dbAnimFrame = requestAnimationFrame(drawStars);
+
+      // Resize — ignore les scrolls mobile (seul la largeur compte)
+      let lastW = window.innerWidth, rTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(rTimer);
+        rTimer = setTimeout(() => {
+          if (Math.abs(window.innerWidth - lastW) > 10) {
+            lastW = window.innerWidth; resizeStars(); createStars();
+          }
+        }, 250);
+      });
+    }
+
+    // ============================================================
+    // Trail doré — sillage qui suit le curseur et se rétracte à l'arrêt
+    // Chaque particule a une durée de vie (life) qui décroît à chaque frame
+    // Quand la souris s'arrête, les particules s'effacent naturellement
+    // ============================================================
+    const trail    = document.getElementById('db-trail');
+    const trailCtx = trail ? trail.getContext('2d') : null;
+    let particles  = [];
+    let mx = 0, my = 0;
+
+    if (trail && trailCtx) {
+      function resizeTrail() {
+        trail.width  = window.innerWidth;
+        trail.height = window.innerHeight;
+      }
+      resizeTrail();
+      window.addEventListener('resize', resizeTrail);
+
+      // Ajoute une particule à chaque mouvement de souris
+      // life : durée de vie de 1.0 → 0, décrémentée à chaque frame dans drawTrail
+      document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        particles.push({
+          x: mx, y: my,
+          r: Math.random() * 2 + 0.5,
+          life: 1.0  // Vie pleine à la création — s'estompe jusqu'à 0
+        });
+      });
+
+      // Dessine le trail — chaque particule vieillit et disparaît
+      function drawTrail() {
+        trailCtx.clearRect(0, 0, trail.width, trail.height);
+
+        // Diminue la vie de chaque particule et supprime celles épuisées
+        // 0.03 = vitesse de décroissance (1/0.03 ≈ 33 frames ≈ 0.55s à 60fps)
+        particles = particles.filter(function(p) {
+          p.life -= 0.03;
+          return p.life > 0;
+        });
+
+        particles.forEach(function(p, i) {
+          // progress : position dans la queue (0 = plus vieille, 1 = plus récente)
+          const progress = i / Math.max(particles.length, 1);
+          // Opacité = vie restante × position dans la queue × intensité max
+          const alpha = p.life * progress * 0.7;
+          trailCtx.beginPath();
+          trailCtx.arc(p.x, p.y, p.r * progress, 0, Math.PI * 2);
+          trailCtx.fillStyle = 'rgba(240, 201, 122, ' + alpha + ')';
+          trailCtx.fill();
+        });
+
+        window._dbTrailFrame = requestAnimationFrame(drawTrail);
+      }
+      window._dbTrailFrame = requestAnimationFrame(drawTrail);
+    }
+
+    // ============================================================
+    // Dessin de la vraie phase lunaire sur canvas
+    // ============================================================
+    // L'algorithme utilise deux arcs + une ellipse (le terminateur)
+    // pour reproduire fidèlement la forme de la lune vue de France
+    // (hémisphère nord : croissant éclairé à droite en phase croissante)
+    const moonCanvas = document.getElementById('db-moon-canvas');
+    if (moonCanvas) {
+      const phase = parseFloat(moonCanvas.dataset.phase || '0.5');
+      drawMoonPhase(moonCanvas, phase);
+    }
+
+    // ============================================================
+    // Split-text — révélation mot par mot pour les titres de section
+    // Inspiré de GSAP SplitText mais en pur JS natif
+    // Technique : chaque mot est enveloppé dans un .db-word-wrap (overflow:hidden)
+    // avec un .db-word-inner qui part du bas et remonte quand le titre est visible
+    // ============================================================
+    document.querySelectorAll('.db-section-title').forEach(function(title) {
+      // Découpe le texte en mots, en préservant les espaces entre eux
+      const words = title.textContent.trim().split(/\s+/);
+
+      // Reconstruit le HTML avec les spans de masque et d'animation
+      // --wi : index du mot, utilisé par CSS pour calculer le délai en cascade
+      title.innerHTML = words.map(function(word, i) {
+        return '<span class="db-word-wrap">' +
+                 '<span class="db-word-inner" style="--wi:' + i + '">' + word + '</span>' +
+               '</span>';
+      }).join(' '); // L'espace entre les spans assure les espaces entre les mots
+
+      // Marque le titre comme "splité" — requis par le sélecteur CSS
+      title.classList.add('db-title-split');
+    });
+
+    // Intersection Observer dédié aux titres de section
+    // Rejoue à chaque fois que le titre entre / quitte le viewport
+    const titleObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          // Entre dans le viewport — lance l'animation mot par mot
+          entry.target.classList.add('db-title-revealed');
+        } else {
+          // Sort du viewport (remontée) — réinitialise pour le prochain passage
+          entry.target.classList.remove('db-title-revealed');
+        }
+      });
+    }, { threshold: 0.4, rootMargin: '0px 0px -30px 0px' });
+
+    document.querySelectorAll('.db-section-title').forEach(function(title) {
+      titleObserver.observe(title);
+    });
+
+    // ============================================================
+    // Scroll Reveal — Intersection Observer
+    // Observe chaque élément [data-reveal] et lui ajoute .revealed
+    // quand il entre dans le viewport (15% de visibilité suffit)
+    // Une fois révélé, l'élément n'est plus observé (animation unique)
+    // ============================================================
+    const revealEls = document.querySelectorAll('[data-reveal]');
+    if (revealEls.length > 0 && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            // Entre dans le viewport — déclenche l'animation
+            entry.target.classList.add('revealed');
+          } else {
+            // Sort du viewport (remontée) — réinitialise pour rejouer au prochain passage
+            entry.target.classList.remove('revealed');
+          }
+        });
+      }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      revealEls.forEach(function(el) { observer.observe(el); });
+    }
+
+  } catch(e) {
+    console.error('Dashboard FX error:', e);
+  }
+});
+
+// ============================================================
+// drawMoonPhase — dessine la phase lunaire sur un canvas
+// phase : 0.0 = nouvelle lune, 0.5 = pleine lune, 1.0 = nouvelle lune
+// Vue depuis l'hémisphère nord (France) : croissant éclairé à droite en phase croissante
+// ============================================================
+function drawMoonPhase(canvas, phase) {
+  const dpr  = window.devicePixelRatio || 1;
+  const size = canvas.getBoundingClientRect().width || 80;
+
+  // Adapte la résolution pour les écrans Retina (Mac → devicePixelRatio = 2)
+  canvas.width  = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width  = size + 'px';
+  canvas.style.height = size + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr); // Toutes les coords en CSS pixels
+
+  const r  = size / 2;
+  const cx = r;
+  const cy = r;
+
+  // Palette — identique à la landing
+  const litColor  = '#fff9e6'; // Crème — face éclairée
+  const darkColor = '#0b0e1a'; // Nuit profonde — face sombre
+
+  // Fraction d'illumination visible : 0 = nouvelle lune, 1 = pleine lune
+  const illum = (1 - Math.cos(2 * Math.PI * phase)) / 2;
+
+  // ── 1. Disque sombre de base ────────────────────────────────────────
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 1, 0, 2 * Math.PI);
+  ctx.fillStyle = darkColor;
+  ctx.fill();
+
+  // Nouvelle lune = disque noir avec halo très léger
+  if (phase < 0.01 || phase > 0.99) {
+    addMoonGlow(ctx, cx, cy, r, 0.05);
+    return;
+  }
+
+  // ── 2. Zone éclairée ────────────────────────────────────────────────
+  // Technique : demi-cercle (côté éclairé) + ellipse terminateur
+  // Hémisphère nord (France) :
+  //   Lune croissante  (0 → 0.5) : lumière à droite
+  //   Lune décroissante (0.5 → 1) : lumière à gauche
+  const isWaxing = phase < 0.5;
+
+  ctx.save();
+  ctx.beginPath();
+
+  if (isWaxing) {
+    // Demi-cercle droit (arc du bas vers le haut en passant par la droite)
+    ctx.arc(cx, cy, r - 1, Math.PI / 2, -Math.PI / 2, false);
+    // Terminateur : ellipse dont le rayon X varie de r (0°) à 0 (90°) à -r (180°)
+    const tx = r * Math.cos(phase * 2 * Math.PI);
+    if (tx >= 0) {
+      // Croissant (0→0.25) : terminateur courbe vers la droite, réduit la zone éclairée
+      ctx.ellipse(cx, cy, tx, r - 1, 0, Math.PI / 2, -Math.PI / 2, false);
+    } else {
+      // Gibbeuse croissante (0.25→0.5) : terminateur courbe vers la gauche, agrandit
+      ctx.ellipse(cx, cy, Math.abs(tx), r - 1, 0, -Math.PI / 2, Math.PI / 2, false);
+    }
+  } else {
+    // Demi-cercle gauche (arc du bas vers le haut en passant par la gauche)
+    ctx.arc(cx, cy, r - 1, -Math.PI / 2, Math.PI / 2, false);
+    const tx = r * Math.cos(phase * 2 * Math.PI);
+    if (tx <= 0) {
+      // Gibbeuse décroissante (0.5→0.75)
+      ctx.ellipse(cx, cy, Math.abs(tx), r - 1, 0, Math.PI / 2, -Math.PI / 2, false);
+    } else {
+      // Croissant décroissant (0.75→1)
+      ctx.ellipse(cx, cy, tx, r - 1, 0, -Math.PI / 2, Math.PI / 2, false);
+    }
+  }
+
+  ctx.closePath();
+  ctx.fillStyle = litColor;
+  ctx.fill();
+  ctx.restore();
+
+  // ── 3. Texture de volume ─────────────────────────────────────────────
+  // Gradient interne qui donne du relief à la face éclairée
+  const volGrad = ctx.createRadialGradient(
+    cx - r * 0.2, cy - r * 0.2, r * 0.05,
+    cx, cy, r
+  );
+  volGrad.addColorStop(0, 'rgba(255,255,255,0.18)');
+  volGrad.addColorStop(1, 'rgba(200,148,58,0.22)'); // Bord doré chaud
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-atop'; // S'applique uniquement sur le dessin existant
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 1, 0, 2 * Math.PI);
+  ctx.fillStyle = volGrad;
+  ctx.fill();
+  ctx.restore();
+
+  // ── 4. Halo extérieur — proportionnel à l'illumination ───────────────
+  addMoonGlow(ctx, cx, cy, r, illum);
+}
+
+// Halo doré autour de la lune — s'intensifie à la pleine lune
+function addMoonGlow(ctx, cx, cy, r, intensity) {
+  const g = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 2.4);
+  g.addColorStop(0,   `rgba(240,201,122,${(intensity * 0.45).toFixed(3)})`);
+  g.addColorStop(0.4, `rgba(240,201,122,${(intensity * 0.15).toFixed(3)})`);
+  g.addColorStop(1,   'rgba(240,201,122,0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 2.4, 0, 2 * Math.PI);
+  ctx.fillStyle = g;
+  ctx.fill();
+}
+</script>

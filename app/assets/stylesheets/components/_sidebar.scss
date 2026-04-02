@@ -1,235 +1,206 @@
 // ============================================================
-// Sidebar — navigation verticale gauche (utilisateurs connectés)
-// Thème : ciel nocturne sombre (bleu nuit profond) avec accents dorés
+// Top Nav — barre de navigation transparente (style landing page)
+// Remplace l'ancienne sidebar verticale
+// Structure : [Logo] [Nav liens] [XP + CTA + Avatar]
 // ============================================================
-// Structure générale :
-//   .app-layout    → wrapper flex qui divise l'écran en sidebar + main
-//   .app-sidebar   → colonne gauche fixe (220px), fond sombre
-//   .app-main      → colonne droite scrollable (tout le reste)
 
-// --- Layout global deux colonnes ---
+// Palette locale — identique à la landing
+$night-nav:  #0b0e1a;
+$gold-nav:   #f0c97a;
+$cream-nav:  #fdf6e3;
+
+// --- Layout global — colonne (nav en haut, contenu en dessous) ---
 .app-layout {
-  display: flex;
+  display: block;       // Plus de flex row — la nav est fixed, le main prend toute la page
   min-height: 100vh;
 }
 
-// --- Colonne principale (contenu de la page) ---
-// Fond sombre nocturne — cohérent avec la sidebar et le hero du dashboard
-// Les pages "contenu" (formulaires, lecture) flottent dessus via .page-card
+// --- Contenu principal — pleine largeur sous la nav ---
 .app-main {
-  flex: 1;
-  margin-left: 220px;
+  width: 100%;
   min-height: 100vh;
-  background: $navy-dark;       // Fond ciel nocturne — même teinte que la sidebar
-  padding: 0;
+  background: #0b0e1a;  // Noir nuit profond — identique à la landing
+  padding-top: 72px;    // Espace pour la nav fixe (hauteur nav ~72px)
 }
 
 // ============================================================
 // Carte de page — enveloppe les pages de contenu (hors dashboard)
 // ============================================================
-// Crée l'effet "livre ouvert sur fond de nuit" :
-// le fond sombre de app-main est visible autour de la carte blanche.
-// Utilisée pour : lecture d'histoire, formulaires, profil enfant, etc.
 .page-card {
   background: $white;
-  border-radius: 20px;          // Grands coins arrondis — carte posée sur la nuit
-  margin: 24px;                 // Espace autour pour voir le fond sombre
-  padding: 8px 0;               // Les pages gardent leur padding interne (container py-4)
-  min-height: calc(100vh - 48px); // Remplit presque toute la hauteur
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); // Ombre forte — card flottante
+  border-radius: 20px;
+  margin: 24px;
+  padding: 8px 0;
+  min-height: calc(100vh - 96px); // Ajusté pour la hauteur nav + margin
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 // ============================================================
-// Sidebar — fond ciel nocturne
+// Top Nav — barre fixe transparente style landing
 // ============================================================
 .app-sidebar {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 220px;
-  height: 100vh;
-  // Dégradé vertical du bleu nuit foncé vers le bleu nuit moyen —
-  // rappelle la profondeur du ciel de l'illustration
-  background: linear-gradient(180deg, $navy-dark 0%, darken($navy, 10%) 100%);
-  border-right: 1px solid rgba($gold, 0.15); // Filet doré subtil à droite
+  top: 0; left: 0; right: 0;
+  height: 72px;
+  z-index: 200;         // Au-dessus de tout le contenu
+  // Dégradé opaque → transparent — identique à la nav de la landing
+  background: linear-gradient(to bottom, rgba($night-nav, 0.92) 0%, rgba($night-nav, 0.75) 100%);
+  backdrop-filter: blur(14px);       // Effet verre — les étoiles filtrent à travers
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba($gold-nav, 0.1); // Filet doré très subtil en bas
+
+  // Layout horizontal : logo | nav | actions
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 100;
+  align-items: center;
+  padding: 0 2.5rem;
+  gap: 0;
 }
 
 // ============================================================
-// Logo / Brand
+// Logo — à gauche de la nav
 // ============================================================
 .sidebar-brand {
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08); // Séparateur discret
-
-  .sidebar-logo-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: $white;
-
-    &:hover {
-      text-decoration: none;
-      color: $white;
-    }
-  }
-
-  // Icône dans un carré arrondi — fond légèrement plus clair que le fond sombre
-  .sidebar-logo-icon {
-    font-size: 1.4rem;
-    width: 36px;
-    height: 36px;
-    background: rgba($gold, 0.15);  // Halo doré autour de l'icône
-    border: 1px solid rgba($gold, 0.3);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .sidebar-logo-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
-
-  // Nom de l'app — blanc pur, gras
-  .sidebar-logo-name {
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: $white;
-  }
-
-  // Sous-titre — doré discret
-  .sidebar-logo-sub {
-    font-size: 0.7rem;
-    color: rgba($gold, 0.7);
-  }
-}
-
-// ============================================================
-// Navigation
-// ============================================================
-.sidebar-nav {
-  flex: 1;
-  padding: 12px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow-y: auto;
-}
-
-// Un item de navigation
-.sidebar-nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px;
-  border-radius: 8px;
   text-decoration: none;
-  color: rgba($white, 0.65);      // Texte blanc semi-transparent (non actif)
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: background 0.15s ease, color 0.15s ease;
+  color: $cream-nav;
+  flex-shrink: 0;
+  margin-right: 3rem;  // Espace entre logo et liens de nav
 
-  .sidebar-nav-icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  // Survol — fond légèrement éclairé, texte blanc opaque
-  &:hover {
-    background: rgba($white, 0.08);
-    color: $white;
-    text-decoration: none;
-  }
-
-  // État actif — fond doré translucide, texte doré brillant
-  // Rappelle la lueur des lanternes de l'illustration
-  &.active {
-    background: rgba($gold, 0.15);
-    color: $gold;
-    font-weight: 600;
-    border: 1px solid rgba($gold, 0.25);
-
-    .sidebar-nav-icon svg {
-      stroke: $gold;              // L'icône active prend la couleur dorée
-    }
-  }
+  &:hover { text-decoration: none; color: $cream-nav; }
 }
 
-// ============================================================
-// Footer de la sidebar
-// ============================================================
-.sidebar-footer {
-  padding: 12px 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-// Badge "Premium" — doré sur fond doré translucide
-.sidebar-premium-badge {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: $gold;
-  background: rgba($gold, 0.15);
-  border: 1px solid rgba($gold, 0.3);
-  border-radius: 20px;
-  padding: 3px 10px;
-  text-align: center;
-}
-
-// Bouton CTA "Créer une histoire" — doré plein (couleur principale des CTA)
-.sidebar-cta-btn {
+// Emoji lune dans un carré arrondi — halo doré
+.sidebar-logo-icon {
+  font-size: 1.2rem;
+  width: 34px;
+  height: 34px;
+  background: rgba($gold-nav, 0.12);
+  border: 1px solid rgba($gold-nav, 0.25);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 12px;
-  background: $gold;              // Fond doré — CTA principal
-  color: $navy-dark;              // Texte sombre sur fond doré (contraste élevé)
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  flex-shrink: 0;
+}
+
+// Nom de l'app — police serif élégante comme la landing
+.sidebar-logo-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $gold-nav;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+// ============================================================
+// Navigation — liens horizontaux au centre
+// ============================================================
+.sidebar-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;          // Prend l'espace restant entre logo et actions droite
+}
+
+// Un item de navigation — horizontal, compact
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 100px;   // Pill — cohérence avec les boutons de la landing
   text-decoration: none;
-  transition: opacity 0.15s ease, transform 0.1s ease;
+  color: rgba($cream-nav, 0.5);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  transition: color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+
+  svg { flex-shrink: 0; }
 
   &:hover {
-    opacity: 0.9;
-    color: $navy-dark;
+    color: $cream-nav;
+    background: rgba(255, 255, 255, 0.06);
     text-decoration: none;
-    transform: translateY(-1px);
+  }
+
+  // Actif — texte doré + fond doré translucide
+  &.active {
+    color: $gold-nav;
+    background: rgba($gold-nav, 0.1);
+    border: 1px solid rgba($gold-nav, 0.2);
+    font-weight: 600;
+
+    svg { stroke: $gold-nav; }
   }
 }
 
-// Bloc utilisateur (avatar + nom + XP + déconnexion)
+// ============================================================
+// Zone droite — XP + CTA + Avatar
+// ============================================================
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-left: auto; // Pousse tout à droite
+}
+
+// Score XP — pastille dorée discrète
+.sidebar-xp {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba($gold-nav, 0.7);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+// Bouton CTA "Créer" — pill doré compact
+.sidebar-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: $gold-nav;
+  color: $night-nav;
+  border-radius: 100px;     // Pill — identique landing
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 16px rgba($gold-nav, 0.3);
+
+  &:hover {
+    background: $cream-nav;
+    color: $night-nav;
+    text-decoration: none;
+    transform: scale(1.03);
+    box-shadow: 0 4px 24px rgba($gold-nav, 0.45);
+  }
+}
+
+// Bloc avatar + déconnexion
 .sidebar-user {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 4px;
 }
 
-// Avatar avec initiales — halo doré discret
+// Avatar initiales — petit orbe doré
 .sidebar-user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba($gold, 0.2);
-  border: 1px solid rgba($gold, 0.4);
-  color: $gold;
-  font-size: 0.7rem;
+  background: rgba($gold-nav, 0.12);
+  border: 1px solid rgba($gold-nav, 0.3);
+  color: $gold-nav;
+  font-size: 0.68rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -238,50 +209,35 @@
   letter-spacing: 0.5px;
 }
 
-// Bloc nom + XP
-.sidebar-user-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  min-width: 0;
-}
-
-// Prénom de l'utilisateur — blanc
-.sidebar-user-name {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: $white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-// Score XP — doré discret
-.sidebar-user-xp {
-  font-size: 0.68rem;
-  color: rgba($gold, 0.7);
-}
-
 // Bouton déconnexion — icône discrète
 .sidebar-logout-btn {
-  color: rgba($white, 0.4);
+  color: rgba($cream-nav, 0.3);
   display: flex;
   align-items: center;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: color 0.15s ease;
   flex-shrink: 0;
+  text-decoration: none;
 
-  &:hover {
-    color: #FF6B6B; // Rouge-corail au survol pour signaler l'action destructive
-  }
+  &:hover { color: #ff7070; }
 }
 
 // ============================================================
-// Responsive — sur mobile la sidebar disparaît
+// Responsive — sur mobile la nav se simplifie
 // ============================================================
-@media (max-width: 768px) {
-  .app-sidebar { display: none; }
-  .app-main    { margin-left: 0; }
+@media (max-width: 900px) {
+  .app-sidebar { padding: 0 1.5rem; }
+
+  // Cache les labels de nav sur petit écran — garde juste les icônes
+  .sidebar-nav-label { display: none; }
+  .sidebar-nav-item  { padding: 7px 10px; }
+
+  // Cache les éléments verbeux
+  .sidebar-xp { display: none; }
+}
+
+@media (max-width: 600px) {
+  // Cache le nom du logo aussi
+  .sidebar-logo-name { display: none; }
 }

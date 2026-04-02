@@ -1,0 +1,191 @@
+// ============================================================
+// Footer global — compact, une seule bande
+// Palette nuit + accents dorés, cohérent avec la nav
+// ============================================================
+
+$footer-bg:    #080b16;
+$footer-gold:  #f0c97a;
+$footer-cream: #fdf6e3;
+$footer-dim:   rgba(#fdf6e3, 0.35);
+
+// ============================================================
+// Conteneur principal — bande fine en bas de page
+// ============================================================
+.app-footer {
+  background: $footer-bg;
+  border-top: 1px solid rgba($footer-gold, 0.12);
+  padding: 0 2.5rem;
+  position: relative; // Nécessaire pour positionner le canvas en absolu
+  z-index: 10;
+  overflow: hidden;   // Le canvas déborde pas du footer
+}
+
+// Canvas étoiles — couvre tout le footer, en arrière-plan absolu
+.app-footer__stars {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; // Laisse passer les clics vers les éléments du footer
+  z-index: 0;           // Derrière le contenu
+}
+
+// La ligne principale et le copyright passent devant le canvas
+.app-footer__row,
+.app-footer__bottom {
+  position: relative;
+  z-index: 1;
+}
+
+// ============================================================
+// Ligne principale — logo | nav | réseaux sociaux
+// ============================================================
+.app-footer__row {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 60px; // Hauteur fixe — compact comme une seconde nav
+}
+
+// ============================================================
+// Logo — identique à la nav mais plus petit
+// ============================================================
+.app-footer__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex: 1; // Pousse les réseaux sociaux à droite
+
+  &:hover { text-decoration: none; }
+}
+
+// Emoji lune dans un carré arrondi
+.app-footer__logo-icon {
+  font-size: 0.9rem;
+  width: 26px;
+  height: 26px;
+  background: rgba($footer-gold, 0.1);
+  border: 1px solid rgba($footer-gold, 0.2);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+// Nom de l'app — Cormorant, doré, compact
+.app-footer__logo-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: $footer-gold;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+// ============================================================
+// Hibou — piste de déplacement (flex: 1 pour prendre tout l'espace central)
+// ============================================================
+.app-footer__owl-track {
+  flex: 1;           // Occupe tout l'espace entre logo et icônes sociales
+  position: relative;
+  overflow: hidden;  // Le hibou reste dans la zone centrale
+  height: 40px;      // Hauteur fixe pour que l'animation soit cadrée
+  display: flex;
+  align-items: center;
+}
+
+// Hibou — se déplace de droite à gauche en planant, avec un léger ondulé vertical
+.app-footer__owl {
+  font-size: 1.8rem;   // Plus grand — bien visible
+  position: absolute;
+  // Déplacement horizontal : part de la droite (100%) vers la gauche (-10%)
+  // + ondulation verticale via un second keyframe imbriqué
+  animation: footer-owl-fly 14s linear infinite;
+  display: block;
+  line-height: 1;
+  will-change: transform; // Optimise le rendu de l'animation
+}
+
+// Vol du hibou — aller-retour en boucle, flip instantané aux extrémités
+// Aller (0→50%) : gauche → droite, hibou face à droite (scaleX 1)
+// Retour (50→100%) : droite → gauche, hibou retourné face à gauche (scaleX -1)
+@keyframes footer-owl-fly {
+  // --- Aller : gauche → droite ---
+  0%     { left: 0%;    transform: translateY(0px)  scaleX(1);  }
+  12%    { left: 20%;   transform: translateY(-7px) scaleX(1);  }
+  25%    { left: 42%;   transform: translateY(0px)  scaleX(1);  }
+  37%    { left: 65%;   transform: translateY(-7px) scaleX(1);  }
+  // Arrivée à droite — flip instantané avant de repartir
+  50%    { left: 95%;   transform: translateY(0px)  scaleX(1);  }
+  50.01% { left: 95%;   transform: translateY(0px)  scaleX(-1); }
+
+  // --- Retour : droite → gauche ---
+  62%    { left: 72%;   transform: translateY(-7px) scaleX(-1); }
+  75%    { left: 50%;   transform: translateY(0px)  scaleX(-1); }
+  87%    { left: 25%;   transform: translateY(-7px) scaleX(-1); }
+  // Arrivée à gauche — flip instantané avant de repartir
+  100%   { left: 0%;    transform: translateY(0px)  scaleX(-1); }
+}
+
+// ============================================================
+// Réseaux sociaux — icônes à droite
+// ============================================================
+.app-footer__socials {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+// Bouton icône sociale — cercle très discret, s'éclaire au hover
+.app-footer__social-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba($footer-gold, 0.06);
+  border: 1px solid rgba($footer-gold, 0.15);
+  color: rgba($footer-cream, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  padding: 0;
+
+  &:hover {
+    color: $footer-gold;
+    background: rgba($footer-gold, 0.12);
+    border-color: rgba($footer-gold, 0.3);
+  }
+}
+
+// ============================================================
+// Barre de copyright — tout en bas, très fine
+// ============================================================
+.app-footer__bottom {
+  border-top: 1px solid rgba($footer-gold, 0.06);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 0;
+  text-align: center; // Copyright centré
+}
+
+// Copyright — très atténué
+.app-footer__copyright {
+  font-size: 0.68rem;
+  color: rgba($footer-cream, 0.2);
+  letter-spacing: 0.03em;
+}
+
+// ============================================================
+// Responsive — mobile
+// ============================================================
+@media (max-width: 768px) {
+  .app-footer { padding: 0 1.5rem; }
+
+  .app-footer__row { gap: 16px; }
+}

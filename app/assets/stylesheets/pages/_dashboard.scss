@@ -1,567 +1,1240 @@
 // ============================================================
-// Dashboard — styles du tableau de bord utilisateur connecté
-// Fidèle au design Figma : hero card, grille d'histoires, badges
+// Dashboard — ambiance landing page
+// Philosophie : contenu qui flotte dans le vide cosmique
+// Pas de cartes conventionnelles — texte et images dans l'espace
+// Palette identique à la landing : #0b0e1a, #f0c97a, #fdf6e3
 // ============================================================
 
 // ============================================================
-// Page wrapper — padding global du contenu
+// Variables locales — reprend exactement la palette de la landing
+// ============================================================
+$night:    #0b0e1a;
+$deep:     #111527;
+$indigo:   #1a1f3c;
+$gold-lp:  #f0c97a;      // Doré landing (plus chaud que $gold du design system)
+$cream-lp: #fdf6e3;      // Crème landing
+$text-dim: rgba(#fdf6e3, 0.45);
+
+// ============================================================
+// Textures & effets de fond
 // ============================================================
 
-// Conteneur principal du dashboard — tout le contenu est dans ce div
+// Bruit de grain — même texture filmique que la landing
+// Couvre tout l'écran en fixed, pointer-events: none pour ne pas bloquer les clics
+.db-noise {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+}
+
+// Canvas étoiles — couvre tout l'écran, fixé (scroll invisible)
+.db-stars-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 2; // Au-dessus du bruit, en dessous du contenu
+}
+
+// Canvas trail curseur — au-dessus de tout sauf le contenu cliquable
+.db-trail-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 9000;
+}
+
+// ============================================================
+// Animations
+// ============================================================
+
+@keyframes db-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes db-moon-pulse {
+  0%, 100% { box-shadow: 0 0 40px rgba($gold-lp, 0.35), 0 0 100px rgba($gold-lp, 0.12); }
+  50%       { box-shadow: 0 0 60px rgba($gold-lp, 0.55), 0 0 130px rgba($gold-lp, 0.2); }
+}
+
+@keyframes db-badge-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba($gold-lp, 0.4), 0 0 30px rgba($gold-lp, 0.15); }
+  50%       { box-shadow: 0 0 24px rgba($gold-lp, 0.7), 0 0 50px rgba($gold-lp, 0.3); }
+}
+
+@keyframes db-fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes db-dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.6; }
+}
+
+// ============================================================
+// Wrapper principal
+// ============================================================
+
+// Tout le contenu est au-dessus du canvas (z-index: 3+) et du bruit (z-index: 1)
+// La position relative + z-index crée un nouveau contexte d'empilement
 .dashboard-page {
-  padding: 28px 32px;          // Espace intérieur confortable
+  position: relative;
+  z-index: 3;
+}
+
+// ============================================================
+// HERO — flotte dans le vide, pas de carte
+// ============================================================
+
+// Section hero — layout colonne centré : Noctilio en haut, texte en dessous
+// Pas de background : on voit les étoiles à travers
+.db-hero {
+  position: relative;
+  min-height: calc(100vh - 72px); // Plein écran sans la nav
   display: flex;
   flex-direction: column;
-  gap: 28px;                   // Espace vertical entre chaque grande section
-}
-
-// ============================================================
-// Alerte "histoires en cours de génération"
-// ============================================================
-
-// Bandeau d'information discret — apparaît seulement si job en cours
-.dashboard-alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: $navy-light;     // Fond bleu nuit clair
-  border-radius: 10px;
-  font-size: 0.875rem;
-  color: $navy;
-  font-weight: 500;
-
-  .dashboard-alert-link {
-    color: $navy;
-    font-weight: 700;
-    text-decoration: none;
-    margin-left: auto;
-
-    &:hover { text-decoration: underline; }
-  }
-}
-
-// ============================================================
-// HERO CARD — grande carte d'accroche en haut du dashboard
-// ============================================================
-
-// La hero card — fond ciel nocturne profond avec lueurs dorées
-// Reprend l'ambiance de l'illustration : nuit magique, lanternes, chouette
-.dashboard-hero {
-  background: linear-gradient(135deg, $navy-dark 0%, $navy 60%, darken($navy-mid, 5%) 100%);
-  border-radius: 20px;
-  padding: 36px 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  position: relative;
+  align-items: center;      // Centrage horizontal
+  justify-content: center;  // Centrage vertical
+  text-align: center;
+  padding: 48px 40px 60px;
   overflow: hidden;
-
-  // Halo doré très subtil en haut à gauche — effet lanterne
-  &::before {
-    content: "";
-    position: absolute;
-    top: -60px;
-    left: -60px;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba($gold, 0.12) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  // Contenu texte + bouton
-  .dashboard-hero-content {
-    flex: 1;
-    max-width: 60%;
-    position: relative; // Passe au-dessus du pseudo-élément halo
-  }
+  gap: 36px;                // Espace entre le bloc Noctilio et le texte
 }
 
-// Sous-titre — doré sur fond sombre
-.dashboard-hero-eyebrow {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: $gold;                 // Doré comme les lanternes de l'illustration
+// Lune — canvas positionné en haut à droite, flotte dans l'espace
+// Le dessin (phase réelle) est géré entièrement par drawMoonPhase() en JS
+.db-hero-moon {
+  position: absolute;
+  top: 40px;
+  right: 80px;
+  width: 80px;   // Taille CSS — le canvas s'y adapte (Retina inclus)
+  height: 80px;
+  border-radius: 50%; // Évite les coins carrés pendant le chargement
+  pointer-events: none;
+  z-index: 4;
+  animation: db-float 5s ease-in-out infinite, db-moon-pulse 3s ease-in-out infinite;
+}
+
+// Nébuleuse — halo radial centré derrière le contenu
+.db-hero-nebula {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba($gold-lp, 0.04) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+// Bloc texte — centré sous le Noctilio
+.db-hero-text {
+  position: relative;
+  z-index: 4;
+  max-width: 600px;   // Limite la largeur pour rester lisible
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Centre le bouton CTA aussi
+}
+
+// ============================================================
+// Typographie éditoriale — identique à la landing
+// ============================================================
+
+// Eyebrow — petit texte doré très espacé, comme la landing
+.db-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 10px;
+  color: $gold-lp;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: db-fadeUp 0.8s ease forwards 0.3s;
 }
 
-// Titre principal — blanc sur fond sombre
-.dashboard-hero-title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: $white;                // Blanc pur — contraste maximal sur fond nuit
-  line-height: 1.2;
-  margin-bottom: 12px;
+// Variante small — pour les headers de section (moins de margin)
+.db-eyebrow--small {
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  margin-bottom: 0.4rem;
+  // Réinitialise l'animation héros pour les sections — elles ont leur propre entrée
+  opacity: 1;
+  animation: none;
 }
 
-// Mot mis en évidence — doré brillant comme le titre "Noctilio" dans l'image
-.dashboard-hero-highlight {
-  color: $gold;
-  font-style: italic;
+// Titre hero — Cormorant Garamond, énorme, aérien
+// Identique au hero-title de la landing (clamp, weight 300, line-height serré)
+.db-hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 4vw, 3.8rem); // Légèrement plus petit — Noctilio est la vedette
+  font-weight: 300;
+  line-height: 1.15;
+  color: $cream-lp;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: db-fadeUp 0.9s ease forwards 0.5s;
+
+  // Mot en italique doré — signature Cormorant Garamond
+  em {
+    font-style: italic;
+    color: $gold-lp;
+    font-weight: 300;
+  }
 }
 
-// Description courte sous le titre
-.dashboard-hero-desc {
-  font-size: 0.9rem;
-  color: rgba($white, 0.65);   // Blanc semi-transparent pour rester lisible
-  margin-bottom: 24px;
-  line-height: 1.6;
+// Description hero
+.db-hero-desc {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: $text-dim;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: db-fadeUp 0.9s ease forwards 0.7s;
 }
 
-// Bouton CTA principal — doré plein sur fond sombre
-// Le doré ressort très fort sur le bleu nuit
-.dashboard-hero-btn {
+// ============================================================
+// CTA — pill doré identique au bouton de la landing
+// ============================================================
+
+.db-cta-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: $gold;
-  color: $navy-dark;            // Texte sombre sur fond doré (contraste élevé)
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.9rem;
+  background: $gold-lp;
+  color: $night;
+  border: none;
+  border-radius: 100px;             // Pill — même style landing
+  padding: 0.85rem 1.8rem;
+  font-family: 'DM Sans', 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   text-decoration: none;
-  transition: opacity 0.15s ease, transform 0.1s ease;
-  box-shadow: 0 4px 20px rgba($gold, 0.35); // Halo doré sous le bouton
+  transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 24px rgba($gold-lp, 0.35);
+  opacity: 0;
+  animation: db-fadeUp 0.9s ease forwards 0.9s;
 
   &:hover {
-    opacity: 0.9;
-    color: $navy-dark;
+    background: $cream-lp;
+    color: $night;
     text-decoration: none;
-    transform: translateY(-1px);
+    transform: scale(1.03) translateY(-1px);
+    box-shadow: 0 8px 36px rgba($gold-lp, 0.5);
+  }
+  &:active { transform: scale(0.98); }
+}
+
+// Étoile dans le bouton — tourne au survol
+.db-cta-star {
+  display: inline-block;
+  transition: transform 0.5s ease;
+
+  .db-cta-btn:hover & { transform: rotate(180deg); }
+}
+
+// Variante petite — pour l'état vide
+.db-cta-btn--sm {
+  padding: 0.7rem 1.5rem;
+  font-size: 0.82rem;
+  opacity: 1;     // Pas d'animation d'entrée (elle est dans le contenu, pas le hero)
+  animation: none;
+}
+
+// Limite gratuite — texte discret sous le CTA
+.db-limit-text {
+  margin-top: 1.2rem;
+  font-size: 0.72rem;
+  color: rgba($cream-lp, 0.3);
+  opacity: 0;
+  animation: db-fadeUp 0.9s ease forwards 1.1s;
+}
+
+.db-limit-link {
+  color: $gold-lp;
+  font-weight: 500;
+  text-decoration: none;
+  &:hover { opacity: 0.75; }
+}
+
+// ============================================================
+// Animations chouette
+// ============================================================
+
+// Vol d'arrivée — la chouette arrive de la droite en diagonale et se pose
+// cubic-bezier custom pour simuler l'inertie du vol + atterrissage
+@keyframes owl-arrive {
+  0% {
+    transform: translate(180px, -120px) rotate(-40deg) scale(0.5);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  65% {
+    // Légère sur-correction (rebond) avant de se poser
+    transform: translate(-12px, 8px) rotate(12deg) scale(1.06);
+  }
+  80% {
+    transform: translate(5px, -5px) rotate(-5deg) scale(0.97);
+  }
+  92% {
+    transform: translate(-2px, 2px) rotate(2deg) scale(1.01);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0) scale(1);
+    opacity: 1;
   }
 }
 
-// Mention de la limite gratuite — discrète sur fond sombre
-.dashboard-hero-limit {
-  margin-top: 12px;
-  font-size: 0.75rem;
-  color: rgba($white, 0.45);
-  margin-bottom: 0;
+// Balancement doux — chouette posée qui observe, légère rotation de tête simulée
+@keyframes owl-perched {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  20%       { transform: translateY(-4px) rotate(-3deg) scale(1.02); }
+  50%       { transform: translateY(-6px) rotate(2deg) scale(1.01); }
+  70%       { transform: translateY(-2px) rotate(-1deg) scale(1); }
 }
 
-.dashboard-hero-limit-link {
-  color: $gold;
-  font-weight: 600;
-  text-decoration: none;
-
-  &:hover { text-decoration: underline; }
+// Apparition des étincelles ✦ — fade in avec légère montée
+@keyframes spark-appear {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.5); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-// Décoration droite de la hero card — illustration ou emoji
-.dashboard-hero-deco {
-  flex-shrink: 0;
-  // Le wrapper n'a plus de fond circulaire — l'image remplace l'emoji
-}
-
-// Image d'illustration dans le hero — reprend l'image de la landing page
-.dashboard-hero-illustration {
-  height: 260px;       // Hauteur fixe pour s'intégrer dans la card
-  width: auto;         // Largeur automatique pour garder les proportions
-  object-fit: contain;
-  // Légère animation de flottement pour garder la carte vivante
-  animation: float 4s ease-in-out infinite;
-  // Ombre douce pour détacher l'image du fond coloré
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12));
-}
-
-// Animation flottement doux pour la décoration
-@keyframes float {
-  0%, 100% { transform: translateY(0);    }
-  50%       { transform: translateY(-8px); }
+// Pulsation des étincelles — brillent doucement une fois apparues
+@keyframes spark-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.3); }
 }
 
 // ============================================================
-// Sections génériques (Mes histoires, Trophées, Mes héros)
+// Signature Noctilio — chouette + branche + mot, centré en haut du hero
 // ============================================================
 
-// Wrapper de section — verre nocturne sur fond sombre
-// Semi-transparent pour laisser transparaître légèrement le fond navy-dark
-.dashboard-section {
-  background: rgba(255, 255, 255, 0.05);  // Verre très légèrement clair
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1); // Bordure subtile lumineuse
-  padding: 24px;
-}
-
-// En-tête de section — titre + lien "Voir tout" en ligne
-.dashboard-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-}
-
-// Titre de section — blanc sur fond sombre
-.dashboard-section-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: $white;
-  margin-bottom: 2px;
-}
-
-// Sous-titre de section — blanc semi-transparent
-.dashboard-section-sub {
-  font-size: 0.78rem;
-  color: rgba($white, 0.45);
-  margin-bottom: 0;
-}
-
-// Lien "Voir tout →" à droite du titre — bleu nuit
-.dashboard-section-link {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: $navy;
-  text-decoration: none;
-  white-space: nowrap;
-  margin-top: 2px;
-
-  &:hover { text-decoration: underline; }
-}
-
-// ============================================================
-// Grille de cartes d'histoires
-// ============================================================
-
-// Grille responsive — 2 colonnes sur desktop, 1 sur mobile
-.dashboard-stories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-// Carte d'histoire individuelle — fond légèrement plus clair que la section
-.dashboard-story-card {
-  background: rgba(255, 255, 255, 0.08);  // Légèrement plus visible que la section
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 12px;
+.db-noctilio-display {
+  position: relative;
+  z-index: 4;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: box-shadow 0.15s ease, transform 0.1s ease, background 0.15s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.13);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    transform: translateY(-2px);
-  }
+  align-items: center;
+  gap: 0;
+  padding: 0 20px;
+  // Entrée en fondu — apparaît avant la chouette
+  opacity: 0;
+  animation: db-fadeUp 0.8s ease forwards 0.8s;
 }
 
-// Vignette image — format carré
-.dashboard-story-thumb {
-  width: 100%;
-  aspect-ratio: 4/3;           // Ratio paysage adapté aux illustrations
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.06);  // Fond sombre pendant le chargement
-  position: relative;
+// ============================================================
+// La chouette 🦉
+// ============================================================
 
-  // Image de couverture générée par Pollinations
+.db-owl {
+  font-size: 4rem;           // Taille généreuse — bien visible
+  display: block;
+  line-height: 1;
+  // Position au-dessus de la branche
+  position: relative;
+  z-index: 2;
+  // Commence invisible, hors écran en haut à droite
+  // owl-arrive se déclenche après 1.8s (le temps que le titre et le CTA soient apparus)
+  // owl-perched prend le relais à 3.4s (1.8s + 1.6s durée de l'arrivée)
+  opacity: 0;
+  animation:
+    owl-arrive  1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards 1.8s,
+    owl-perched 4s   ease-in-out infinite 3.4s;
+  // Halo doré sous la chouette — comme si elle brille légèrement
+  filter: drop-shadow(0 4px 20px rgba($gold-lp, 0.35));
+  transform-origin: bottom center; // La chouette pivote depuis sa base (les pattes)
+}
+
+// ============================================================
+// La branche / perchoir — ligne fine dorée
+// ============================================================
+
+.db-owl-perch {
+  width: 200px;                           // Largeur de la branche
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba($gold-lp, 0.6) 20%,
+    rgba($gold-lp, 0.8) 50%,
+    rgba($gold-lp, 0.6) 80%,
+    transparent
+  );
+  position: relative;
+  z-index: 1;
+  margin-bottom: 16px;
+  // Apparaît légèrement avant la chouette
+  opacity: 0;
+  animation: db-fadeUp 0.6s ease forwards 1.4s;
+}
+
+// ============================================================
+// Le mot "Noctilio" — signature typographique
+// ============================================================
+
+.db-noctilio-word {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3.5rem, 6vw, 6rem); // Centré il peut être plus imposant
+  font-weight: 300;
+  font-style: italic;                   // L'italique Cormorant est magnifique
+  color: $cream-lp;
+  letter-spacing: 0.12em;
+  text-align: center;
+  margin: 0;
+  line-height: 1;
+  // Halo très subtil — comme si le mot est légèrement lumineux
+  text-shadow: 0 0 60px rgba($gold-lp, 0.12);
+  // Apparaît avant la chouette
+  opacity: 0;
+  animation: db-fadeUp 0.9s ease forwards 1.0s;
+}
+
+// ============================================================
+// Étincelles ✦ autour du mot
+// ============================================================
+
+// Conteneur positionné autour du mot
+.db-noctilio-sparks {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+// Chaque étincelle est positionnée autour du mot
+.db-spark {
+  position: absolute;
+  font-size: 0.7rem;
+  color: $gold-lp;
+  opacity: 0;
+}
+
+// Étincelle 1 — à gauche du mot, un peu en hauteur
+.db-spark--1 {
+  left: -10px;
+  top: 55%;
+  animation:
+    spark-appear 0.5s ease forwards 3.6s,
+    spark-pulse  2.5s ease-in-out infinite 4.1s;
+}
+
+// Étincelle 2 — à droite du mot, plus bas
+.db-spark--2 {
+  right: -10px;
+  bottom: 20%;
+  animation:
+    spark-appear 0.5s ease forwards 3.9s,
+    spark-pulse  2.5s ease-in-out infinite 4.4s;
+}
+
+// Étincelle 3 — au-dessus, légèrement à droite
+.db-spark--3 {
+  right: 20%;
+  top: 5%;
+  font-size: 0.55rem;
+  animation:
+    spark-appear 0.5s ease forwards 4.2s,
+    spark-pulse  3s ease-in-out infinite 4.7s;
+}
+
+// ============================================================
+// Alerte génération en cours — discrète, sous le hero
+// ============================================================
+
+.db-generating-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+  padding: 8px 18px;
+  background: rgba($gold-lp, 0.06);
+  border: 1px solid rgba($gold-lp, 0.2);
+  border-radius: 100px;
+  font-size: 0.78rem;
+  color: rgba($cream-lp, 0.6);
+  position: relative;
+  z-index: 4;
+}
+
+// Point qui pulse — indique une activité en cours
+.db-generating-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $gold-lp;
+  flex-shrink: 0;
+  animation: db-dot-pulse 1.5s ease-in-out infinite;
+}
+
+.db-generating-link {
+  color: $gold-lp;
+  font-weight: 600;
+  text-decoration: none;
+  &:hover { opacity: 0.75; }
+}
+
+// ============================================================
+// Séparateur vertical doré — identique à la landing page
+// ============================================================
+
+.db-divider {
+  width: 1px;
+  height: 70px;
+  background: linear-gradient(to bottom, transparent, rgba($gold-lp, 0.28), transparent);
+  margin: 0 auto;
+  position: relative;
+  z-index: 4;
+}
+
+// ============================================================
+// Sections éditoriales — pas de boîte, contenu dans le vide
+// ============================================================
+
+.db-section {
+  padding: 48px 56px;
+  position: relative;
+  z-index: 4;
+}
+
+.db-section--last {
+  padding-bottom: 20px;
+}
+
+// Header de section — eyebrow + titre + action à droite
+.db-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 36px;
+}
+
+// Titre de section — Cormorant Garamond, taille moyenne, aérien
+.db-section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 300;
+  color: $cream-lp;
+  line-height: 1.2;
+  margin: 0;
+}
+
+// ============================================================
+// Split-text — révélation mot par mot au scroll
+// Technique "mask reveal" : chaque mot est dans un conteneur overflow:hidden
+// Le mot glisse depuis le bas → donne l'impression d'apparaître derrière un rideau
+// ============================================================
+
+// Conteneur d'un mot — agit comme un masque (overflow:hidden cache ce qui dépasse)
+.db-word-wrap {
+  display: inline-block;
+  overflow: hidden;         // Le mot visible uniquement quand il remonte dans ce conteneur
+  vertical-align: bottom;   // Aligne les baselines correctement
+  line-height: inherit;
+  padding-bottom: 0.05em;   // Évite que les descendantes (g, p, y) soient coupées
+}
+
+// Le mot lui-même — part du bas (hors du masque), remonte à sa place
+.db-word-inner {
+  display: inline-block;
+  transform: translateY(105%);  // Démarre juste sous le masque — invisible
+  opacity: 0;
+  // Timing spring : départ rapide, arrive en douceur
+  transition:
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity   0.4s ease;
+  // Délai calculé par index du mot — crée le décalage en cascade
+  transition-delay: calc(var(--wi, 0) * 75ms + 80ms);
+  will-change: transform, opacity;
+}
+
+// Déclenché par JS quand le titre entre dans le viewport
+// Tous les .db-word-inner du titre remontent en cascade
+.db-title-split.db-title-revealed .db-word-inner {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+// Lien "Voir tout" — discret, doré
+.db-see-all {
+  font-size: 0.75rem;
+  color: rgba($gold-lp, 0.7);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  padding-bottom: 4px; // Aligne avec la baseline du titre
+
+  &:hover { color: $gold-lp; text-decoration: none; }
+}
+
+// ============================================================
+// Strip histoires — images flottantes, pas de cartes
+// ============================================================
+
+// Conteneur horizontal scrollable
+// Les images flottent dans l'espace comme des affiches de film
+.db-stories-strip {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  padding-bottom: 20px; // Espace pour l'ombre des images
+
+  // Masque le scrollbar — garde le look clean
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+// Un item histoire — image + texte en dessous, pas de conteneur
+.db-story-item {
+  flex-shrink: 0;
+  width: 160px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  // Au survol : tout l'item s'élève légèrement
+  &:hover { text-decoration: none; }
+}
+
+// Enveloppe de l'image — c'est l'image qui compte, pas la boîte autour
+.db-story-cover {
+  width: 160px;
+  height: 200px;               // Format "affiche de film" — plus haut que large
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  // Pas de border, pas de background — juste l'image dans l'espace
+  // L'ombre donne la profondeur
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s ease;
   }
 
-  // Fallback emoji si pas d'image ou erreur de chargement
-  .dashboard-story-thumb-fallback {
+  // Overlay doré semi-transparent au survol — like "sélectionné"
+  .db-story-cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba($gold-lp, 0.0);
+    transition: background 0.3s ease;
+    border-radius: 14px;
+    // Bordure dorée qui apparaît au survol — subtile
+    border: 2px solid rgba($gold-lp, 0);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  // Fallback emoji si pas d'image
+  .db-story-cover-fallback {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
-    background: rgba(255, 255, 255, 0.07);  // Fond sombre pour l'emoji
+    font-size: 3rem;
+    background: $deep; // Fond très sombre pour l'emoji
+  }
+
+  // Survol — image zoome, bordure dorée apparaît
+  .db-story-item:hover & {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 30px rgba($gold-lp, 0.15);
+
+    img { transform: scale(1.05); }
+
+    .db-story-cover-overlay {
+      background: rgba($gold-lp, 0.06);
+      border-color: rgba($gold-lp, 0.35);
+    }
   }
 }
 
-// Titre de l'histoire — blanc sur fond sombre
-.dashboard-story-title {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: $white;
-  margin-bottom: 0;
+// Image "Nouvelle histoire" — cercle en pointillés dorés
+.db-story-cover--new {
+  background: rgba($gold-lp, 0.03);
+  border: 1px dashed rgba($gold-lp, 0.25) !important; // Override box-shadow uniquement
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .db-story-new:hover & {
+    border-color: rgba($gold-lp, 0.55) !important;
+    background: rgba($gold-lp, 0.06);
+    box-shadow: 0 0 24px rgba($gold-lp, 0.1) !important;
+    transform: translateY(-4px);
+
+    .db-story-new-plus { color: $gold-lp; transform: rotate(90deg); }
+  }
+}
+
+// Icône "+" dans la carte nouvelle histoire
+.db-story-new-plus {
+  font-size: 2.5rem;
+  font-weight: 200;
+  color: rgba($cream-lp, 0.2);
+  line-height: 1;
+  transition: color 0.3s ease, transform 0.4s ease;
+}
+
+// Titre de l'histoire sous l'image
+.db-story-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: $cream-lp;
+  margin: 0;
+  line-height: 1.3;
+  // Coupe à 2 lignes maximum
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  transition: color 0.2s ease;
+
+  .db-story-item:hover & { color: $gold-lp; }
 }
 
-.dashboard-story-info {
-  flex: 1;
+// Meta — enfant + durée
+.db-story-child {
+  font-size: 0.68rem;
+  color: $text-dim;
+  margin: 0;
+  letter-spacing: 0.03em;
 }
 
-// Métadonnées — blanc semi-transparent
-.dashboard-story-meta {
-  font-size: 0.72rem;
-  color: rgba($white, 0.45);
-  margin-bottom: 0;
+.db-story-meta-wrap {
+  padding: 0 2px;
 }
 
-// Bouton "Reprendre la lecture" — semi-transparent sur fond sombre
-.dashboard-story-btn {
-  display: block;
+// ============================================================
+// État vide — éditorial, centré
+// ============================================================
+
+.db-empty {
   text-align: center;
-  padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgba($white, 0.8);
-  text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    background: $gold;
-    color: $navy-dark;           // Texte sombre sur fond doré
-    border-color: $gold;
-    text-decoration: none;
-  }
+  padding: 60px 20px;
 }
 
-// Carte spéciale "+ Nouvelle histoire" — pointillés discrets sur fond sombre
-.dashboard-story-card--new {
-  border: 2px dashed rgba(255, 255, 255, 0.2);
-  background: transparent;
-  align-items: center;
-  justify-content: center;
-  min-height: 160px;
-  cursor: pointer;
-
-  &:hover {
-    border-color: $gold;
-    background: rgba($gold, 0.08);
-
-    .dashboard-story-new-icon { color: $gold; }
-    .dashboard-story-new-label { color: $gold; }
-  }
-
-  // Lien qui occupe toute la carte
-  .dashboard-story-new-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    width: 100%;
-    height: 100%;
-    justify-content: center;
-    padding: 20px;
-  }
+.db-empty-icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 20px rgba($gold-lp, 0.3));
 }
 
-// Grand "+" dans la carte nouvelle histoire
-.dashboard-story-new-icon {
+.db-empty-title {
+  font-family: 'Cormorant Garamond', serif;
   font-size: 1.8rem;
   font-weight: 300;
-  color: rgba($white, 0.35);
-  line-height: 1;
-  transition: color 0.15s ease;
+  color: $cream-lp;
+  margin-bottom: 10px;
 }
 
-// Label sous le "+"
-.dashboard-story-new-label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: rgba($white, 0.35);
-  transition: color 0.15s ease;
-}
-
-// ============================================================
-// État vide (aucune histoire)
-// ============================================================
-
-// Centre le contenu vide dans la section
-.dashboard-empty {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.dashboard-empty-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-}
-
-.dashboard-empty-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: $white;
-  margin-bottom: 8px;
-}
-
-.dashboard-empty-desc {
+.db-empty-desc {
   font-size: 0.875rem;
-  color: rgba($white, 0.5);
-  margin-bottom: 20px;
+  color: $text-dim;
+  margin-bottom: 28px;
 }
 
 // ============================================================
-// Badge XP dans le header de la section trophées
+// Badge XP — pastille dorée
 // ============================================================
 
-// Pastille dorée avec le total XP
-.dashboard-xp-badge {
+.db-xp-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: rgba($gold, 0.2);
-  color: $gold;
-  border: 1px solid rgba($gold, 0.35);
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 20px;
+  gap: 6px;
+  background: rgba($gold-lp, 0.08);
+  color: $gold-lp;
+  border: 1px solid rgba($gold-lp, 0.25);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 100px;
+  letter-spacing: 0.06em;
 }
 
 // ============================================================
-// Grille de badges / trophées
+// Badges / Trophées — orbes cosmiques
 // ============================================================
 
-// 5 badges en ligne, espacés régulièrement
-.dashboard-badges-grid {
+// Rangée de badges — flottent dans l'espace, pas de conteneur
+.db-badges-row {
   display: flex;
-  gap: 12px;
+  gap: 40px;         // Espace généreux — les orbes "respirent"
   flex-wrap: wrap;
 }
 
-// Un badge individuel
-.dashboard-badge-item {
+// Un orbe badge — cercle lumineux ou fantôme
+.db-badge-orb {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 68px;
+  gap: 10px;
+  cursor: default;
 
-  // Badge gagné — halo doré
-  &.earned {
-    .dashboard-badge-icon {
-      background: rgba($gold, 0.15);
-      border: 2px solid rgba($gold, 0.5);
-      box-shadow: 0 0 12px rgba($gold, 0.2);  // Lueur dorée
-    }
-    .dashboard-badge-label { color: rgba($white, 0.85); }
-  }
-
-  // Badge non gagné — grisé et verrouillé visuellement
-  &.locked {
-    opacity: 0.3;
-    filter: grayscale(1);
+  &:hover .db-badge-emoji {
+    transform: scale(1.1) translateY(-3px);
   }
 }
 
-// Cercle contenant l'emoji du badge
-.dashboard-badge-icon {
-  width: 52px;
-  height: 52px;
+// Emoji dans le cercle
+.db-badge-emoji {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  border: 2px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.7rem;
+  transition: transform 0.25s ease;
 }
 
-// Label sous l'icône du badge
-.dashboard-badge-label {
-  font-size: 0.65rem;
+// Badge gagné — orbe doré avec halo pulsant
+.db-badge-orb--earned {
+  .db-badge-emoji {
+    background: rgba($gold-lp, 0.1);
+    border: 2px solid rgba($gold-lp, 0.4);
+    animation: db-badge-glow 2.5s ease-in-out infinite;
+  }
+  .db-badge-label {
+    color: rgba($cream-lp, 0.8);
+    letter-spacing: 0.06em;
+  }
+}
+
+// Badge verrouillé — presque invisible, comme une étoile lointaine
+.db-badge-orb--locked {
+  opacity: 0.18;
+  filter: grayscale(1);
+
+  .db-badge-emoji {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+// Label sous l'orbe
+.db-badge-label {
+  font-size: 0.6rem;
   font-weight: 600;
-  color: rgba($white, 0.4);
+  color: rgba($cream-lp, 0.25);
   text-align: center;
-  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+// Lien vers la salle des trophées complète
+.db-badges-cta {
+  margin-top: 32px;
 }
 
 // ============================================================
-// Grille des profils enfants
+// Héros (profils enfants)
 // ============================================================
 
-// Ligne horizontale de cartes enfants
-.dashboard-children-grid {
+// Liste verticale de cartes enfants
+// Ici on garde un fond minimaliste — juste une ligne légère
+.db-heroes-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  max-width: 480px; // La liste ne prend pas toute la largeur
 }
 
-// Carte enfant — ligne avec avatar + infos + bouton, sur fond sombre
-.dashboard-child-card {
+.db-hero-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba($gold-lp, 0.08); // Très subtil
+  background: rgba(255, 255, 255, 0.02);  // Quasi transparent
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    border-color: rgba($gold-lp, 0.2);
+    background: rgba($gold-lp, 0.03);
+  }
 }
 
-// Avatar initiale de l'enfant — halo doré
-.dashboard-child-avatar {
-  width: 36px;
-  height: 36px;
+// Avatar — initiale dans un orbe doré
+.db-hero-avatar {
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: rgba($gold, 0.2);
-  border: 1px solid rgba($gold, 0.35);
-  color: $gold;
-  font-size: 0.9rem;
-  font-weight: 700;
+  background: rgba($gold-lp, 0.1);
+  border: 1px solid rgba($gold-lp, 0.3);
+  color: $gold-lp;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.dashboard-child-info {
+.db-hero-info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
-.dashboard-child-name {
-  font-size: 0.85rem;
+.db-hero-name {
+  font-size: 0.88rem;
   font-weight: 600;
-  color: $white;
+  color: $cream-lp;
 }
 
-.dashboard-child-age {
-  font-size: 0.72rem;
-  color: rgba($white, 0.45);
+.db-hero-age {
+  font-size: 0.7rem;
+  color: $text-dim;
 }
 
-// Bouton étoile pour créer une histoire pour cet enfant
-.dashboard-child-btn {
-  width: 30px;
-  height: 30px;
+// Bouton ✦ — crée une histoire pour cet enfant
+.db-hero-action {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: rgba($white, 0.7);
-  font-size: 0.9rem;
+  background: rgba($gold-lp, 0.06);
+  border: 1px solid rgba($gold-lp, 0.2);
+  color: rgba($gold-lp, 0.5);
   text-decoration: none;
+  font-size: 0.85rem;
   flex-shrink: 0;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.25s, box-shadow 0.25s;
 
   &:hover {
-    background: $gold;
-    color: $navy-dark;
-    border-color: $gold;
+    background: $gold-lp;
+    border-color: $gold-lp;
+    color: $night;
     text-decoration: none;
+    transform: scale(1.15) rotate(15deg);
+    box-shadow: 0 4px 16px rgba($gold-lp, 0.4);
   }
 }
 
 // ============================================================
-// Boutons génériques réutilisables du dashboard
-// (conservés de l'ancienne version pour compatibilité)
+// Sections centrées (How it works, Features, Testimonials)
+// ============================================================
+
+// Section centrée — contenu aligné au centre
+.db-section--centered {
+  text-align: center;
+}
+
+// Header de section centré
+.db-section-head--centered {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  margin-bottom: 52px;
+}
+
+// Sous-titre de section — phrase descriptive sous le titre
+.db-section-subtitle {
+  font-size: 0.9rem;
+  color: rgba($cream-lp, 0.4);
+  font-weight: 300;
+  margin: 0;
+  line-height: 1.6;
+}
+
+// ============================================================
+// COMMENT ÇA MARCHE — 3 étapes en ligne
+// ============================================================
+
+// Grille 3 étapes + 2 connecteurs
+.db-steps-grid {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+}
+
+// Carte d'une étape — flotte sur le fond noir
+.db-step-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 36px 24px;
+  border-radius: 20px;
+  border: 1px solid rgba($gold-lp, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.3s ease, background 0.3s ease, transform 0.25s ease;
+
+  &:hover {
+    border-color: rgba($gold-lp, 0.22);
+    background: rgba($gold-lp, 0.03);
+    transform: translateY(-4px);
+  }
+}
+
+// Numéro de l'étape — grand chiffre doré en arrière-plan
+.db-step-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.5rem;
+  font-weight: 300;
+  color: rgba($gold-lp, 0.15);
+  line-height: 1;
+  margin-bottom: -8px;
+  // Force les chiffres "alignés" (lining) — tous à la même hauteur
+  // Sans ça, Cormorant utilise des chiffres elzéviriens (hauteurs variables)
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
+}
+
+// Icône de l'étape — cercle doré translucide
+.db-step-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba($gold-lp, 0.08);
+  border: 1px solid rgba($gold-lp, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gold-lp;  // Les SVG héritent de cette couleur via stroke="currentColor"
+  transition: background 0.2s ease, box-shadow 0.3s ease, transform 0.25s ease;
+
+  .db-step-card:hover & {
+    background: rgba($gold-lp, 0.14);
+    box-shadow: 0 0 20px rgba($gold-lp, 0.15);
+    transform: scale(1.08);
+  }
+}
+
+.db-step-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: $cream-lp;
+  margin: 0;
+}
+
+.db-step-desc {
+  font-size: 0.82rem;
+  color: rgba($cream-lp, 0.45);
+  line-height: 1.65;
+  margin: 0;
+}
+
+// Connecteur ✦ entre les étapes
+.db-step-connector {
+  flex-shrink: 0;
+  color: rgba($gold-lp, 0.25);
+  font-size: 0.7rem;
+  padding: 0 16px;
+  margin-top: 80px; // Aligné avec le milieu des icônes
+}
+
+// ============================================================
+// FONCTIONNALITÉS — grille 3 colonnes × 2 lignes
+// ============================================================
+
+.db-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+// Carte de feature — glassmorphism léger
+.db-feature-card {
+  padding: 32px 28px;
+  border-radius: 20px;
+  border: 1px solid rgba($gold-lp, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+  text-align: left;
+  transition: border-color 0.3s ease, background 0.3s ease, transform 0.25s ease;
+
+  &:hover {
+    border-color: rgba($gold-lp, 0.2);
+    background: rgba($gold-lp, 0.03);
+    transform: translateY(-3px);
+  }
+}
+
+// Icône SVG de feature — cercle doré translucide, identique aux step icons
+.db-feature-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba($gold-lp, 0.08);
+  border: 1px solid rgba($gold-lp, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gold-lp;          // Les SVG héritent de cette couleur via stroke="currentColor"
+  margin-bottom: 16px;
+  flex-shrink: 0;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+
+  // Hover — léger glow doré
+  .db-feature-card:hover & {
+    background: rgba($gold-lp, 0.14);
+    box-shadow: 0 0 18px rgba($gold-lp, 0.25);
+  }
+}
+
+.db-feature-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $cream-lp;
+  margin-bottom: 8px;
+}
+
+.db-feature-desc {
+  font-size: 0.8rem;
+  color: rgba($cream-lp, 0.4);
+  line-height: 1.65;
+  margin: 0;
+}
+
+// ============================================================
+// TÉMOIGNAGES — grille 3 colonnes
+// ============================================================
+
+.db-testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+// Carte témoignage
+.db-testimonial-card {
+  padding: 32px 28px;
+  border-radius: 20px;
+  border: 1px solid rgba($gold-lp, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.3s ease, transform 0.25s ease;
+
+  &:hover {
+    border-color: rgba($gold-lp, 0.18);
+    transform: translateY(-3px);
+  }
+}
+
+// Étoiles — dorées
+.db-stars {
+  color: $gold-lp;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+}
+
+// Texte du témoignage
+.db-testimonial-text {
+  font-size: 0.85rem;
+  color: rgba($cream-lp, 0.65);
+  line-height: 1.75;
+  font-style: italic;
+  flex: 1;
+  margin: 0;
+}
+
+.db-testimonial-author {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 8px;
+  border-top: 1px solid rgba($gold-lp, 0.08);
+}
+
+.db-testimonial-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $cream-lp;
+}
+
+.db-testimonial-role {
+  font-size: 0.72rem;
+  color: rgba($gold-lp, 0.5);
+}
+
+// ============================================================
+// Scroll Reveal — animations déclenchées par Intersection Observer
+// Chaque type d'animation a son propre état initial (caché)
+// La classe .revealed est ajoutée par JS quand l'élément entre dans le viewport
+// --reveal-delay : CSS custom property pour le décalage entre les cartes (stagger)
+// ============================================================
+
+// État initial commun — transition définie ici pour qu'elle soit active dès le départ
+[data-reveal] {
+  transition:
+    opacity   0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+// Slide du bas — pour les titres de section et les step cards
+[data-reveal="up"] {
+  opacity: 0;
+  transform: translateY(52px);
+}
+
+// Scale depuis le bas — pour les feature cards (effet pop plus moderne)
+[data-reveal="scale"] {
+  opacity: 0;
+  transform: translateY(36px) scale(0.93);
+}
+
+// Slide depuis la gauche — témoignage gauche
+[data-reveal="left"] {
+  opacity: 0;
+  transform: translateX(-50px);
+}
+
+// Slide depuis la droite — témoignage droite
+[data-reveal="right"] {
+  opacity: 0;
+  transform: translateX(50px);
+}
+
+// État visible — déclenché par JS (.revealed ajouté via Intersection Observer)
+[data-reveal].revealed {
+  opacity: 1;
+  transform: none; // Annule translateY / translateX / scale — retour à la position naturelle
+}
+
+// ============================================================
+// Boutons génériques réutilisables (compatibilité ancienne version)
 // ============================================================
 
 .btn-cta-primary {
-  background-color: $purple;
+  background-color: $navy;
   color: $white;
   border: none;
   font-weight: 700;
@@ -569,26 +1242,21 @@
   padding: 0.75rem 1.5rem;
   transition: background-color 0.2s ease, transform 0.1s ease;
 
-  &:hover {
-    background-color: darken($purple, 8%);
-    color: $white;
-    transform: translateY(-1px);
-  }
-
-  &:active  { transform: translateY(0); background-color: darken($purple, 14%); }
-  &:focus   { box-shadow: 0 0 0 0.25rem rgba($purple, 0.3); color: $white; }
+  &:hover   { background-color: darken($navy, 8%); color: $white; transform: translateY(-1px); }
+  &:active  { transform: translateY(0); }
+  &:focus   { box-shadow: 0 0 0 0.25rem rgba($navy, 0.3); color: $white; }
 }
 
 .btn-cta-accent {
-  background-color: $yellow-accent;
-  color: $yellow-dark;
+  background-color: $gold-light;
+  color: $gold-dark;
   border: none;
   font-weight: 700;
   border-radius: $border-radius;
   padding: 0.75rem 1.5rem;
   transition: background-color 0.2s ease, transform 0.1s ease;
 
-  &:hover   { background-color: darken($yellow-accent, 6%); color: $yellow-dark; transform: translateY(-1px); }
-  &:active  { transform: translateY(0); background-color: darken($yellow-accent, 10%); }
-  &:focus   { box-shadow: 0 0 0 0.25rem rgba($yellow-accent, 0.5); color: $yellow-dark; }
+  &:hover   { background-color: darken($gold-light, 6%); color: $gold-dark; transform: translateY(-1px); }
+  &:active  { transform: translateY(0); }
+  &:focus   { box-shadow: 0 0 0 0.25rem rgba($gold-light, 0.5); color: $gold-dark; }
 }

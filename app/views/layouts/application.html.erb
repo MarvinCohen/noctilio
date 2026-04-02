@@ -41,6 +41,8 @@
               <%= yield %>
             </div>
           <% end %>
+          <%# Footer global — affiché en bas de toutes les pages connectées %>
+          <%= render "shared/footer" %>
         </main>
       </div>
     <% else %>
@@ -49,6 +51,8 @@
       <%= render "shared/navbar" %>
       <%= render "shared/flashes" %>
       <%= yield %>
+      <%# Footer global — affiché en bas de la landing page aussi %>
+      <%= render "shared/footer" %>
     <% end %>
   </body>
 </html>
