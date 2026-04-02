@@ -197,18 +197,27 @@ class StoryGeneratorService
 
       prompt += <<~INTERACTIVE
 
-        IMPORTANT — Mode interactif : insère EXACTEMENT #{nb_choices} bloc(s) de choix dans l'histoire.
-        Place un bloc [CHOIX] à la fin de chaque chapitre sauf le dernier.
-        L'histoire CONTINUE après chaque bloc [CHOIX] — ne t'arrête pas.
+        IMPORTANT — Mode interactif : insère EXACTEMENT #{nb_choices} bloc(s) de choix.
+
+        RÈGLE ABSOLUE : le bloc [CHOIX] doit apparaître au MOMENT DE TENSION MAXIMALE —
+        AVANT que la situation soit résolue, AVANT que le héros agisse, AVANT le dénouement.
+        L'histoire doit s'arrêter net sur un dilemme, comme au bord d'un précipice.
+
+        ✓ BON : "Le robot ennemi se dressa face à Isaac. Deux options s'offrirent à lui..."
+            → [CHOIX] ← l'enfant décide MAINTENANT
+        ✗ MAUVAIS : "Isaac vainquit le robot et rentra chez lui triomphant."
+            → [CHOIX] ← trop tard, l'histoire est déjà finie
 
         Format de chaque bloc (respecte exactement ce format) :
         [CHOIX]
-        Question : (question courte et excitante pour l'enfant)
-        Option A : (première possibilité d'action)
-        Option B : (deuxième possibilité d'action)
+        Question : (question courte au moment de la décision — "Que va faire [héros] ?")
+        Option A : (première action possible)
+        Option B : (deuxième action possible)
         [FIN CHOIX]
 
-        Rappel : #{nb_choices} bloc(s) [CHOIX] au total, un par chapitre sauf le dernier.
+        Après chaque bloc [CHOIX], NE PAS résoudre l'action — arrête-toi là.
+        La suite sera générée par l'enfant en faisant son choix.
+        Nombre de blocs [CHOIX] : #{nb_choices}, placés avant chaque résolution de chapitre.
       INTERACTIVE
     end
 
