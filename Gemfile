@@ -62,7 +62,7 @@ gem "cloudinary", "~> 1.29"
 gem "activestorage-cloudinary-service"
 
 # Abonnements Stripe — gère les paiements et plans premium
-gem "pay", "~> 7.0"
+gem "pay", "~> 11.6"
 gem "stripe", "~> 12.0"
 
 group :development, :test do
