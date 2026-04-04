@@ -16,9 +16,10 @@ class WaitlistController < ApplicationController
       # Succès : retourne JSON avec le compteur affiché
       # On utilise max(count, 247) pour rester cohérent avec l'affichage initial
       # qui part de 247 — sinon l'animation recule (ex: 247 → 6) et ne bouge pas
+      # Cumul waitlist + users Devise — même logique que PagesController#home
       render json: {
         success: true,
-        count: [WaitlistEntry.count, 247].max
+        count: [WaitlistEntry.count + User.count, 247].max
       }
     else
       # Échec : retourne les erreurs pour les afficher côté client

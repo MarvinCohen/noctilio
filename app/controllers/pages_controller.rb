@@ -11,7 +11,8 @@ class PagesController < ApplicationController
     # vers son dashboard — pas besoin de lui montrer la landing page
     redirect_to dashboard_path if user_signed_in?
 
-    # Compte les inscrits pour afficher le vrai chiffre sur la page
-    @waitlist_count = WaitlistEntry.count
+    # Cumul : emails waitlist + utilisateurs Devise réellement inscrits
+    # Les deux populations représentent l'intérêt total pour Noctilio
+    @waitlist_count = WaitlistEntry.count + User.count
   end
 end
