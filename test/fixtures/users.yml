@@ -1,0 +1,32 @@
+# Fixtures pour les utilisateurs
+# Les mots de passe Devise sont stockés chiffrés.
+# La valeur ci-dessous est un hash BCrypt pré-calculé pour le mot de passe "password".
+# On utilise une valeur fixe en dur pour éviter les problèmes de chargement de BCrypt
+# dans le contexte ERB des fixtures Rails (BCrypt n'est pas disponible dans ce contexte).
+# Pour la regénérer : bundle exec rails runner "require 'bcrypt'; puts BCrypt::Password.create('password')"
+# Hash correspondant au mot de passe : "password"
+
+# Utilisateur standard — pas admin, pas premium
+marie:
+  email: marie@example.com
+  encrypted_password: $2a$12$R9qMzelufW5/.1.7qayyxuusBb8g51LB08a8ZkU2XsjZXmZUSpnim
+  first_name: Marie
+  last_name: Dupont
+  admin: false
+
+# Deuxième utilisateur — pour tester les autorisations croisées
+# (ex. : Marie ne doit pas voir les histoires de Paul)
+paul:
+  email: paul@example.com
+  encrypted_password: $2a$12$R9qMzelufW5/.1.7qayyxuusBb8g51LB08a8ZkU2XsjZXmZUSpnim
+  first_name: Paul
+  last_name: Martin
+  admin: false
+
+# Utilisateur admin — premium? retourne true automatiquement
+admin_user:
+  email: admin@example.com
+  encrypted_password: $2a$12$R9qMzelufW5/.1.7qayyxuusBb8g51LB08a8ZkU2XsjZXmZUSpnim
+  first_name: Admin
+  last_name: Noctilio
+  admin: true

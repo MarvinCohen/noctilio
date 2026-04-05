@@ -1,6 +1,95 @@
+// ============================================================
+// Alertes / Flash messages — DA cosmique Noctilio
+// Positionnées en bas à droite en fixed, flottant au-dessus du contenu
+// Style "toast" sombre avec accent coloré selon le type de message
+// ============================================================
+
+// Classe de base — commune à toutes les alertes Bootstrap
 .alert {
+  // Positionnement fixe en bas à droite (toast style)
   position: fixed;
   bottom: 16px;
   right: 16px;
-  z-index: 1000;
+
+  // Au-dessus de tout (sidebar z-index est ~100, on passe au-dessus)
+  z-index: 1050;
+
+  // Dimensions et espacement
+  min-width: 280px;
+  max-width: 420px;
+  padding: 14px 18px;
+
+  // DA cosmique — fond sombre semi-opaque avec flou de fond
+  background: rgba(17, 21, 39, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); // Compatibilité Safari
+
+  // Bordure subtile par défaut (couleur dorée très transparente)
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  // Typographie — corps de texte cosmique
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  // Supprime le box-shadow Bootstrap par défaut
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+// ── Notice (info) — accent doré ────────────────────────────────────────────
+// Utilisé pour les messages de confirmation (connexion réussie, création OK…)
+.alert-info {
+  // Trait coloré à gauche — signature visuelle du type "succès/info"
+  border-left: 3px solid var(--gold);
+
+  // Icône et texte en doré pour les éléments d'action
+  .btn-close {
+    // Teinte le X de fermeture en doré — cohérent avec l'accent
+    filter: invert(80%) sepia(30%) saturate(400%) hue-rotate(10deg);
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// ── Alert (danger/warning) — accent rouge ──────────────────────────────────
+// Utilisé pour les erreurs (mauvais mot de passe, quota dépassé…)
+.alert-warning,
+.alert-danger {
+  // Trait coloré à gauche — rouge doux pour ne pas agresser sur fond sombre
+  border-left: 3px solid rgba(220, 80, 80, 0.7);
+
+  // Couleur du texte légèrement rosée pour accentuer le type "danger"
+  color: rgba(220, 160, 160, 0.95);
+
+  .btn-close {
+    // Teinte le X de fermeture en rouge doux
+    filter: invert(60%) sepia(20%) saturate(600%) hue-rotate(310deg);
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// ── Succès — accent vert doux ───────────────────────────────────────────────
+// Moins courant dans Noctilio mais prévu pour extensibilité
+.alert-success {
+  border-left: 3px solid rgba(80, 200, 120, 0.7);
+  color: rgba(160, 220, 180, 0.95);
+
+  .btn-close {
+    filter: invert(60%) sepia(30%) saturate(400%) hue-rotate(100deg);
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
 }

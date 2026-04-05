@@ -1,4 +1,45 @@
 // ============================================================
+// CSS Custom Properties — palette cosmique Noctilio
+// Disponibles globalement via var(--nom) dans tout le CSS et les styles inline
+// Séparées des variables SCSS pour pouvoir être utilisées en JavaScript aussi
+// ============================================================
+
+:root {
+  // Fond principal — nuit profonde (body, arrière-plan général)
+  --night: #0b0e1a;
+
+  // Fond secondaire — cartes, panels, modales
+  --deep: #111527;
+
+  // Fond tertiaire — hover, états secondaires
+  --indigo: #1a1f3c;
+
+  // Accent principal — doré (CTA, éléments actifs, icônes clés)
+  --gold: #f0c97a;
+
+  // Accent doré adouci — hover sur les éléments dorés
+  --gold-soft: #e8b95a;
+
+  // Texte des titres — crème très clair pour contraste sur fond sombre
+  --cream: #fdf6e3;
+
+  // Fond de survol ultra-transparent — hover background discret
+  --mist: rgba(240, 201, 122, 0.08);
+
+  // Texte principal — gris chaud légèrement crème
+  --text: #d4cfc4;
+
+  // Texte secondaire — labels, métadonnées, textes discrets
+  --text-dim: #8a8578;
+
+  // Bordure par défaut — dorée très transparente
+  --border: rgba(240, 201, 122, 0.15);
+
+  // Bordure active — focus, sélection, état actif
+  --border-active: rgba(240, 201, 122, 0.4);
+}
+
+// ============================================================
 // Design tokens couleurs — Noctilio Design System v2
 // Palette inspirée de l'illustration : chouette magique, ciel nocturne,
 // lanternes dorées, livre lumineux.

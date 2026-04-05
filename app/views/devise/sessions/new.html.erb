@@ -1,57 +1,351 @@
 <%# ============================================================ %>
-<%# Page de connexion Noctilio %>
+<%# Page de connexion — DA cosmique Noctilio %>
+<%# Card centrale sur fond nuit, typographie Cormorant Garamond %>
 <%# ============================================================ %>
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
+<%# ── Styles CSS injectés directement dans la page ────────────────────── %>
+<%# On utilise un <style> tag inline plutôt qu'un fichier SCSS séparé %>
+<%# pour garder la page auto-suffisante et limiter l'impact sur le reste %>
+<style>
+  /* ── Wrapper plein écran — centre la card verticalement et horizontalement ── */
+  .auth-page {
+    min-height: 100vh;          /* Prend toute la hauteur de la fenêtre */
+    display: flex;
+    align-items: center;        /* Centrage vertical */
+    justify-content: center;    /* Centrage horizontal */
+    padding: 2rem 1rem;         /* Marge sur mobile pour éviter les bords */
+  }
 
-      <%# En-tête %>
-      <div class="text-center mb-4">
-        <span style="font-size: 3rem;">🌙</span>
-        <h1 class="fw-bold mt-2">Bon retour !</h1>
-        <p class="text-muted">Connectez-vous pour retrouver vos histoires</p>
+  /* ── Card centrale — le panneau de connexion ── */
+  .auth-card {
+    background: #111527;                          /* Bleu nuit profond */
+    border: 1px solid rgba(240, 201, 122, 0.15);  /* Bordure dorée subtile */
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;                             /* Largeur max pour lisibilité */
+  }
+
+  /* ── Logo Noctilio en haut de la card ── */
+  .auth-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Icône lune du logo */
+  .auth-logo-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  /* Nom "Noctilio" en Cormorant Garamond doré */
+  .auth-logo-name {
+    font-family: 'Cormorant Garamond', serif;
+    color: #f0c97a;             /* Or Noctilio */
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Titre de la page (h1) — grand, italique, crème ── */
+  .auth-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: #fdf6e3;             /* Crème */
+    font-size: 2rem;
+    font-weight: 300;
+    text-align: center;
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+  }
+
+  /* ── Sous-titre — texte discret sous le titre ── */
+  .auth-subtitle {
+    color: #8a8578;             /* Gris poussiéreux — text-dim */
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  /* ── Groupe de champ — label + input regroupés ── */
+  .auth-field {
+    margin-bottom: 1.2rem;
+  }
+
+  /* ── Label de champ — petit, espacé, uppercase ── */
+  .auth-label {
+    display: block;
+    color: #8a8578;             /* text-dim */
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  /* ── Input — fond semi-transparent, bordure dorée légère ── */
+  .auth-input {
+    display: block;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);       /* Fond léger sur fond nuit */
+    border: 1px solid rgba(240, 201, 122, 0.2);  /* Bordure dorée douce */
+    color: #d4cfc4;                               /* Texte crème clair */
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  /* Focus input — bordure dorée vive + halo subtil */
+  .auth-input:focus {
+    border-color: #f0c97a;                        /* Or vif au focus */
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(240, 201, 122, 0.1); /* Halo doré léger */
+  }
+
+  /* Placeholder — plus discret que le texte saisi */
+  .auth-input::placeholder {
+    color: #8a8578;
+  }
+
+  /* ── Checkbox "Se souvenir de moi" — accent doré ── */
+  .auth-remember {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-remember input[type="checkbox"] {
+    accent-color: #f0c97a;      /* Coche dorée */
+    width: 16px;
+    height: 16px;
+  }
+
+  .auth-remember label {
+    color: #8a8578;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+
+  /* ── Bouton submit principal — pill doré ── */
+  .auth-btn {
+    display: block;
+    width: 100%;
+    background: #f0c97a;        /* Or Noctilio */
+    color: #0b0e1a;             /* Texte sombre sur fond doré */
+    border-radius: 50px;        /* Pill */
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    margin-top: 1.5rem;
+  }
+
+  /* Hover bouton — légèrement plus sombre */
+  .auth-btn:hover {
+    background: #e8b95a;
+    transform: translateY(-1px); /* Légère élévation au survol */
+  }
+
+  /* Active bouton — retour à la position initiale */
+  .auth-btn:active {
+    transform: translateY(0);
+  }
+
+  /* ── Zone de liens alternatifs — en bas de la card ── */
+  .auth-links {
+    margin-top: 1.5rem;
+    text-align: center;
+    color: #8a8578;
+    font-size: 0.88rem;
+  }
+
+  /* Liens dans la zone auth-links */
+  .auth-links a {
+    color: rgba(240, 201, 122, 0.8);   /* Or semi-transparent */
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  /* Hover sur les liens — or vif */
+  .auth-links a:hover {
+    color: #f0c97a;
+  }
+
+  /* Séparateur visuel entre les liens */
+  .auth-links-divider {
+    display: block;
+    height: 1px;
+    background: rgba(240, 201, 122, 0.1);
+    margin: 1rem 0;
+  }
+
+  /* ── Messages d'erreur ── */
+  /* Simple Form génère une div .auth-errors avec les messages d'erreur */
+  .auth-errors {
+    background: rgba(220, 80, 80, 0.08);
+    border: 1px solid rgba(220, 80, 80, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    color: rgba(220, 80, 80, 0.9);   /* Rouge doux */
+    font-size: 0.85rem;
+  }
+
+  /* ── Surcharge Simple Form — retire les styles Bootstrap par défaut ── */
+  /* Simple Form ajoute des classes Bootstrap qu'on neutralise ici */
+  .auth-card .form-group,
+  .auth-card .form-check {
+    margin-bottom: 0;
+  }
+
+  /* Retire les labels Bootstrap — on utilise nos propres .auth-label */
+  .auth-card .form-group > label {
+    display: block;
+    color: #8a8578;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Applique le style auth-input aux champs Simple Form */
+  .auth-card .form-group input[type="email"],
+  .auth-card .form-group input[type="password"],
+  .auth-card .form-group input[type="text"] {
+    display: block;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    color: #d4cfc4;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  /* Focus Simple Form */
+  .auth-card .form-group input:focus {
+    border-color: #f0c97a;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(240, 201, 122, 0.1);
+  }
+
+  /* Placeholder Simple Form */
+  .auth-card .form-group input::placeholder {
+    color: #8a8578;
+  }
+
+  /* Retire la bordure bleue Bootstrap par défaut */
+  .auth-card .form-control:focus {
+    border-color: #f0c97a;
+    box-shadow: 0 0 0 3px rgba(240, 201, 122, 0.1);
+  }
+
+  /* Hint text Simple Form */
+  .auth-card .form-text,
+  .auth-card .hint {
+    color: #8a8578;
+    font-size: 0.78rem;
+    margin-top: 0.3rem;
+  }
+
+  /* Messages d'erreur inline Simple Form */
+  .auth-card .invalid-feedback,
+  .auth-card .form-group .error {
+    color: rgba(220, 80, 80, 0.9);
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+  }
+</style>
+
+<%# ── Structure de la page ─────────────────────────────────────────────── %>
+<%# .auth-page : wrapper plein écran qui centre la card verticalement %>
+<div class="auth-page">
+
+  <%# .auth-card : panneau principal avec fond nuit et bordure dorée %>
+  <div class="auth-card">
+
+    <%# ── Logo Noctilio ── %>
+    <%# Lune + nom de l'app en Cormorant Garamond doré %>
+    <div class="auth-logo">
+      <span class="auth-logo-icon">🌙</span>
+      <span class="auth-logo-name">Noctilio</span>
+    </div>
+
+    <%# ── Titre et sous-titre de la page ── %>
+    <h1 class="auth-title">Bon retour</h1>
+    <p class="auth-subtitle">Retrouve tes histoires magiques</p>
+
+    <%# ── Formulaire de connexion — simple_form_for Devise ── %>
+    <%# resource = User (défini par Devise), resource_name = :user %>
+    <%# session_path(resource_name) = /users/sign_in %>
+    <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+
+      <%# Champ email avec autocomplete pour les navigateurs %>
+      <div class="auth-field">
+        <%= f.input :email,
+              label: "Adresse e-mail",
+              required: false,
+              autofocus: true,
+              placeholder: "votre@email.com",
+              input_html: {
+                autocomplete: "email",
+                class: "auth-input"
+              } %>
       </div>
 
-      <div class="card border-0 shadow-sm p-4">
-        <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+      <%# Champ mot de passe %>
+      <div class="auth-field">
+        <%= f.input :password,
+              label: "Mot de passe",
+              required: false,
+              input_html: {
+                autocomplete: "current-password",
+                class: "auth-input"
+              } %>
+      </div>
 
-          <%# Email %>
-          <%= f.input :email,
-                label: "Adresse e-mail",
-                required: false,
-                autofocus: true,
-                placeholder: "votre@email.com",
-                input_html: { autocomplete: "email" } %>
-
-          <%# Mot de passe %>
-          <%= f.input :password,
-                label: "Mot de passe",
-                required: false,
-                input_html: { autocomplete: "current-password" } %>
-
-          <%# Se souvenir de moi %>
-          <%= f.input :remember_me, as: :boolean, label: "Se souvenir de moi" if devise_mapping.rememberable? %>
-
-          <%# Bouton de connexion %>
-          <div class="d-grid mt-3">
-            <%= f.button :submit, "Se connecter", class: "btn btn-primary btn-lg" %>
-          </div>
-
-        <% end %>
-
-        <%# Lien mot de passe oublié %>
-        <div class="text-center mt-3">
-          <%= link_to "Mot de passe oublié ?", new_user_password_path, class: "text-muted small" %>
+      <%# Case "Se souvenir de moi" — uniquement si le mapping Devise l'autorise %>
+      <% if devise_mapping.rememberable? %>
+        <div class="auth-remember">
+          <%= f.input :remember_me,
+                as: :boolean,
+                label: "Se souvenir de moi",
+                wrapper: false,
+                label_html: { style: "color: #8a8578; font-size: 0.88rem;" } %>
         </div>
-      </div>
+      <% end %>
+
+      <%# Bouton de connexion — pill doré pleine largeur %>
+      <%= f.button :submit, "Se connecter", class: "auth-btn" %>
+
+    <% end %>
+
+    <%# ── Liens alternatifs sous le formulaire ── %>
+    <div class="auth-links">
+
+      <%# Lien mot de passe oublié %>
+      <%= link_to "Mot de passe oublié ?", new_user_password_path %>
+
+      <%# Séparateur visuel %>
+      <span class="auth-links-divider"></span>
 
       <%# Lien vers l'inscription %>
-      <div class="text-center mt-3 text-muted">
-        Pas encore de compte ?
-        <%= link_to "Créer un compte gratuitement", new_user_registration_path %>
-      </div>
+      Pas encore de compte ?
+      <%= link_to "Créer un compte gratuitement →", new_user_registration_path %>
 
     </div>
-  </div>
-</div>
+
+  </div><%# fin .auth-card %>
+
+</div><%# fin .auth-page %>

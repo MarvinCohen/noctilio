@@ -1,31 +1,686 @@
 // ============================================================
-// Formulaire profil enfant — traits et centres d'intérêt
+// Pages children — DA cosmique Noctilio
 // ============================================================
-// Les checkboxes sont cachées (d-none), le label joue le rôle de bouton.
-// :has(input:checked) détecte quand la checkbox est cochée pour
-// changer l'apparence du label → fond violet + texte blanc.
+// Toutes les pages liées aux profils enfants :
+//   - index (grille de cartes)
+//   - show (fiche enfant)
+//   - new / edit (formulaire)
+// Palette : fond #111527, accents dorés #f0c97a, texte #d4cfc4
 // ============================================================
 
-// Label-bouton pour les traits de caractère et centres d'intérêt
-// Au repos : outline gris (style Bootstrap btn-outline-secondary)
-// Sélectionné : fond violet + texte blanc — clairement visible
-.badge-check {
+
+// ============================================================
+// SECTION HEADER — titre de page + bouton CTA
+// ============================================================
+// Conteneur de l'en-tête de chaque page children
+.ch-page-header {
+  display: flex;
+  align-items: center;       // Aligne titre et bouton sur la même ligne
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;           // Passe en colonne sur mobile
+}
+
+// Titre h1 cosmique — Cormorant Garamond en italic
+.ch-page-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(2rem, 4vw, 2.8rem); // Taille fluide responsive
+  color: #fdf6e3;                       // Cream — lumineux sur fond sombre
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+}
+
+// Sous-titre de la page — discret, texte dim
+.ch-page-subtitle {
+  color: #8a8578;       // Text-dim
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0;
+}
+
+
+// ============================================================
+// BOUTON PRINCIPAL — pill doré (CTA "Nouveau héros")
+// ============================================================
+.ch-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.5rem;
+  background: #f0c97a;         // Gold
+  color: #0b0e1a;              // Fond sombre pour le texte — contraste maximal
+  border: none;
+  border-radius: 50px;         // Pill
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+
+  &:hover {
+    opacity: 0.88;             // Légèrement transparent au survol
+    transform: translateY(-1px);
+    color: #0b0e1a;            // Garde la couleur au hover
+    text-decoration: none;
+  }
+}
+
+// Bouton secondaire — outline doré semi-transparent
+.ch-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  background: transparent;
+  color: #f0c97a;                          // Gold
+  border: 1px solid rgba(240, 201, 122, 0.35); // Border dorée subtile
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(240, 201, 122, 0.08); // Mist doré
+    border-color: rgba(240, 201, 122, 0.6);
+    transform: translateY(-1px);
+    color: #f0c97a;
+    text-decoration: none;
+  }
+}
+
+// Bouton danger — outline rouge discret
+.ch-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  background: transparent;
+  color: rgba(220, 100, 100, 0.9);
+  border: 1px solid rgba(220, 80, 80, 0.4);
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
   cursor: pointer;
-  user-select: none;              // Empêche la sélection de texte au clic
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
 
-  // Quand la checkbox cachée à l'intérieur est cochée :
-  // Le label prend les couleurs "actif" — violet plein
-  &:has(input:checked) {
-    background-color: $purple;    // Fond violet de marque
-    color: $white;                // Texte blanc pour le contraste
-    border-color: $purple;        // Bordure assortie
+  // Bouton submit — reset les styles natifs du navigateur
+  &[type="submit"] {
+    appearance: none;
+    -webkit-appearance: none;
   }
 
-  // Survol : légère indication que le bouton est cliquable
+  &:hover {
+    background: rgba(220, 80, 80, 0.1);
+    border-color: rgba(220, 80, 80, 0.7);
+    color: rgba(220, 100, 100, 1);
+  }
+}
+
+
+// ============================================================
+// GRILLE DE CARTES — liste des profils enfants (index)
+// ============================================================
+// Grille responsive : 3 colonnes desktop, 2 tablette, 1 mobile
+.ch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+// Carte individuelle d'un profil enfant
+// Fond deep (#111527), bordure dorée, coins arrondis
+.ch-card {
+  background: #111527;                         // Deep — fond de carte
+  border: 1px solid rgba(240, 201, 122, 0.15); // Border dorée subtile
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: border-color 0.25s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(240, 201, 122, 0.35);   // Bordure plus visible au survol
+    transform: translateY(-3px);               // Légère élévation
+  }
+}
+
+// Corps de la carte — tout le contenu principal
+.ch-card-body {
+  padding: 1.75rem 1.5rem 1.25rem;
+  text-align: center;
+  flex: 1;                                     // Prend tout l'espace disponible
+}
+
+// Pied de la carte — boutons d'action
+.ch-card-footer {
+  padding: 0.75rem 1.25rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  border-top: 1px solid rgba(240, 201, 122, 0.08); // Séparateur très discret
+}
+
+
+// ============================================================
+// AVATAR CERCLE — emoji enfant dans un anneau doré
+// ============================================================
+// Cercle semi-transparent doré contenant l'emoji (👧 ou 🧒)
+.ch-avatar-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(240, 201, 122, 0.1);        // Mist doré
+  border: 2px solid rgba(240, 201, 122, 0.35); // Anneau doré
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1rem;
+}
+
+// Variante large pour la page show
+.ch-avatar-circle--lg {
+  width: 100px;
+  height: 100px;
+  font-size: 3rem;
+  border-width: 2px;
+  margin-bottom: 0;                             // Pas de marge en bas (aligné avec le texte)
+}
+
+
+// ============================================================
+// TYPOGRAPHIE DES CARTES
+// ============================================================
+
+// Nom de l'enfant — Cormorant Garamond italic
+.ch-child-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: #fdf6e3;   // Cream
+  margin-bottom: 0.2rem;
+}
+
+// Âge de l'enfant — texte dim discret
+.ch-child-age {
+  color: #8a8578;   // Text-dim
+  font-size: 0.88rem;
+  margin-bottom: 0.75rem;
+}
+
+
+// ============================================================
+// TRAITS DE PERSONNALITÉ — pills dans les cartes
+// ============================================================
+// Petits badges dorés affichant les traits (Courageux, Curieux…)
+.ch-traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+// Badge individuel pour un trait de personnalité
+.ch-trait-pill {
+  padding: 0.2rem 0.65rem;
+  background: rgba(240, 201, 122, 0.1);        // Fond doré très léger
+  border: 1px solid rgba(240, 201, 122, 0.3);  // Bordure dorée
+  border-radius: 50px;
+  color: #f0c97a;                              // Or
+  font-size: 0.73rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+
+// ============================================================
+// COMPTEUR HISTOIRES — badge doré
+// ============================================================
+.ch-story-count {
+  font-size: 0.82rem;
+  color: #8a8578;      // Text-dim
+  margin-top: 0.25rem;
+
+  // Chiffre mis en avant avec une couleur dorée
+  strong {
+    color: #f0c97a;   // Gold
+    font-weight: 600;
+  }
+}
+
+
+// ============================================================
+// ÉTAT VIDE — quand il n'y a aucun profil
+// ============================================================
+.ch-empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+
+  // Grand emoji central
+  .ch-empty-emoji {
+    font-size: 5rem;
+    display: block;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+
+  // Titre de l'état vide — Cormorant
+  h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 1.8rem;
+    color: #fdf6e3;
+    margin-bottom: 0.75rem;
+  }
+
+  // Description — texte dim
+  p {
+    color: #8a8578;
+    max-width: 380px;
+    margin: 0 auto 2rem;
+  }
+}
+
+
+// ============================================================
+// PAGE SHOW — fiche d'un enfant
+// ============================================================
+
+// En-tête de la page show : avatar + nom + boutons
+.ch-show-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+
+  // Actions à droite
+  .ch-show-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+}
+
+// Infos (nom + âge) dans le header show
+.ch-show-info {
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    color: #fdf6e3;
+    margin: 0 0 0.15rem;
+  }
+
+  p {
+    color: #8a8578;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+}
+
+// Section "Ses histoires" — carte dark
+.ch-stories-section {
+  background: #111527;
+  border: 1px solid rgba(240, 201, 122, 0.15);
+  border-radius: 16px;
+  padding: 1.75rem;
+}
+
+// Titre de section dans show
+.ch-section-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.35rem;
+  color: #fdf6e3;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(240, 201, 122, 0.1); // Séparateur très discret
+}
+
+// Ligne d'une histoire dans la liste
+.ch-story-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);           // Légèrement plus clair que la carte
+  border: 1px solid rgba(240, 201, 122, 0.07);
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    background: rgba(240, 201, 122, 0.04);
+    border-color: rgba(240, 201, 122, 0.2);
+  }
+}
+
+// Emoji de l'univers de l'histoire
+.ch-story-emoji {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+// Titre et méta de l'histoire
+.ch-story-info {
+  flex: 1;
+  min-width: 0;                      // Empêche le débordement du flex item
+
+  .ch-story-title {
+    font-weight: 600;
+    color: #d4cfc4;                  // Text
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;         // Coupe les titres trop longs
+  }
+
+  .ch-story-meta {
+    color: #8a8578;                  // Text-dim
+    font-size: 0.8rem;
+    margin-top: 0.1rem;
+  }
+}
+
+// Message quand il n'y a aucune histoire
+.ch-no-stories {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #8a8578;
+
+  a {
+    color: #f0c97a;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+
+// ============================================================
+// FORMULAIRE (new / edit)
+// ============================================================
+
+// Titre de page du formulaire — Cormorant Garamond
+.ch-form-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: #fdf6e3;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+// Sous-titre du formulaire
+.ch-form-subtitle {
+  color: #8a8578;
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+// Carte de section du formulaire (Infos de base, Apparence, Personnalité)
+// Même style que les cartes children : fond deep, bordure dorée
+.ch-form-section {
+  background: #111527;
+  border: 1px solid rgba(240, 201, 122, 0.15);
+  border-radius: 16px;
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+
+// Titre de chaque section du formulaire — Cormorant Garamond
+.ch-form-section-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #fdf6e3;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+// Sous-texte d'aide dans une section
+.ch-form-hint {
+  color: #8a8578;
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+  margin-top: -0.75rem;             // Rapproché du titre de section
+}
+
+// Labels des champs — style cosmique uppercase dim
+// Utilisé par simple_form via wrapper_html ou en override
+.ch-form-section {
+  // Override global pour les labels dans les sections du formulaire
+  label,
+  .form-label {
+    color: #8a8578;                    // Text-dim
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;         // Uppercase comme la DA
+    margin-bottom: 0.4rem;
+    display: block;
+  }
+
+  // Inputs / selects / textareas — fond sombre, bordure dorée subtile
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  select,
+  textarea,
+  .form-control,
+  .form-select {
+    background: rgba(255, 255, 255, 0.04); // Fond quasi-transparent
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 10px;
+    color: #d4cfc4;                        // Text
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.9rem;
+    width: 100%;
+    transition: border-color 0.2s ease, background 0.2s ease;
+
+    // Placeholder — encore plus discret que le texte
+    &::placeholder {
+      color: rgba(138, 133, 120, 0.6);
+    }
+
+    // Focus — bordure dorée + fond légèrement plus visible
+    &:focus {
+      outline: none;
+      box-shadow: none;
+      border-color: #f0c97a;               // Gold
+      background: rgba(240, 201, 122, 0.04);
+    }
+  }
+
+  // Textarea — hauteur minimale
+  textarea,
+  textarea.form-control {
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  // Select — flèche personnalisée dorée
+  select,
+  .form-select {
+    // Flèche custom (chevron SVG doré encodé en base64)
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f0c97a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    padding-right: 2.25rem;
+  }
+
+  // Messages d'erreur de validation — rouge discret
+  .invalid-feedback,
+  .field_with_errors + .invalid-feedback,
+  span.help-block,
+  .form-text.text-danger {
+    color: rgba(220, 100, 100, 0.9);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+  }
+}
+
+
+// ============================================================
+// BADGE-CHECK — pills de sélection (traits & hobbies)
+// ============================================================
+// Les checkboxes sont cachées (.d-none), le label joue le rôle de bouton.
+// :has(input:checked) détecte si la checkbox enfant est cochée
+// → applique le style "actif" doré
+
+.badge-check {
+  cursor: pointer;
+  user-select: none;       // Empêche la sélection de texte au clic
+
+  // État de repos — contour doré très atténué, texte dim
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid rgba(240, 201, 122, 0.2);
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #8a8578;           // Text-dim
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  // État sélectionné (checkbox cochée à l'intérieur)
+  // Fond doré léger + bordure dorée + texte or
+  &:has(input:checked) {
+    background: rgba(240, 201, 122, 0.15); // Mist doré plus visible
+    border-color: rgba(240, 201, 122, 0.5);
+    color: #f0c97a;                        // Gold
+  }
+
+  // Survol quand NON sélectionné — petit feedback visuel
   &:hover:not(:has(input:checked)) {
-    background-color: $purple-light; // Fond violet clair au survol
-    border-color: $purple;
-    color: $purple;
+    background: rgba(240, 201, 122, 0.07);
+    border-color: rgba(240, 201, 122, 0.35);
+    color: #d4cfc4;          // Text — plus visible qu'en repos
+  }
+}
+
+
+// ============================================================
+// BOUTONS DU FORMULAIRE — submit + annuler
+// ============================================================
+.ch-form-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+// Bouton submit — reprend .ch-btn-primary mais en taille normale
+.ch-btn-submit {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.75rem;
+  background: #f0c97a;       // Gold
+  color: #0b0e1a;            // Texte sombre pour le contraste
+  border: none;
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+
+  &:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+    color: #0b0e1a;
+  }
+}
+
+// Bouton annuler — outline doré transparent
+.ch-btn-cancel {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 1.4rem;
+  background: transparent;
+  color: #f0c97a;                             // Gold
+  border: 1px solid rgba(240, 201, 122, 0.35);
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: rgba(240, 201, 122, 0.08);
+    border-color: rgba(240, 201, 122, 0.6);
+    color: #f0c97a;
+    text-decoration: none;
+  }
+}
+
+
+// ============================================================
+// SÉPARATEUR VERTICAL DORÉ — comme le dashboard
+// ============================================================
+// Utilisé entre le header et le contenu dans certaines pages
+.ch-divider {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom,
+    transparent,
+    rgba(240, 201, 122, 0.4),
+    transparent
+  );
+  margin: 1.5rem auto;
+}
+
+
+// ============================================================
+// SIMPLE_FORM — override des wrappers générés par simple_form
+// ============================================================
+// simple_form génère des .form-group autour de chaque champ
+// On surcharge les styles Bootstrap pour coller à la DA cosmique
+.ch-form-section {
+
+  // Wrapper généré par simple_form
+  .form-group {
+    margin-bottom: 1.1rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // Erreurs de validation générées par simple_form (span.help-block)
+  .help-block {
+    color: rgba(220, 100, 100, 0.85);
+    font-size: 0.78rem;
+    margin-top: 0.25rem;
+    display: block;
+  }
+
+  // Contour rouge sur le champ en erreur — moins agressif
+  .field_with_errors input,
+  .field_with_errors select,
+  .field_with_errors textarea,
+  .is-invalid {
+    border-color: rgba(220, 80, 80, 0.5) !important;
   }
 }

@@ -18,12 +18,44 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <%# ---------------------------------------------------------------- %>
+    <%# Google Fonts — Cormorant Garamond (titres serif italiques) + DM Sans (corps) %>
+    <%# Les mêmes polices que la landing page pour cohérence totale de la DA %>
+    <%# preconnect réduit la latence de connexion initiale à Google Fonts %>
+    <%# ---------------------------------------------------------------- %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <%# ---------------------------------------------------------------- %>
+    <%# Style inline minimal — impose le fond sombre sur TOUT le body %>
+    <%# !important nécessaire pour passer au-dessus de Bootstrap %>
+    <%# Ce style s'applique avant le chargement du CSS complet (pas de FOUC) %>
+    <%# ---------------------------------------------------------------- %>
+    <style>
+      /* Fond nuit profonde sur tout le body — palette cosmique Noctilio */
+      body { background: #0b0e1a !important; color: #d4cfc4 !important; }
+    </style>
+
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
+    <%# ---------------------------------------------------------------- %>
+    <%# Canvas étoiles — fixé derrière tout le contenu sur toutes les pages %>
+    <%# Le JS en bas de page dessine 250 étoiles dorées scintillantes %>
+    <%# z-index: -1 garantit qu'il reste derrière tout le contenu %>
+    <%# ---------------------------------------------------------------- %>
+    <canvas id="global-stars-canvas" aria-hidden="true" style="
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    "></canvas>
+
     <% if user_signed_in? %>
       <%# --- Layout avec sidebar (utilisateurs connectés) --- %>
       <%# Structure deux colonnes : sidebar fixe à gauche + contenu principal scrollable %>
@@ -31,9 +63,9 @@
         <%= render "shared/sidebar" %>
         <main class="app-main">
           <%= render "shared/flashes" %>
-          <%# content_for(:full_bleed) permet aux pages de prendre tout l'espace sans la carte blanche %>
-          <%# Utilisé par le dashboard qui gère son propre fond sombre %>
-          <%# Les autres pages (lecture, formulaires) sont enveloppées dans une carte blanche flottante %>
+          <%# full_bleed : le dashboard gère son propre fond, pas de wrapper supplémentaire %>
+          <%# Les autres pages (formulaires, lecture) sont enveloppées dans .page-card %>
+          <%# .page-card est transparent — le fond sombre #0b0e1a vient du body %>
           <% if content_for?(:full_bleed) %>
             <%= yield %>
           <% else %>
@@ -54,5 +86,96 @@
       <%# Footer global — affiché en bas de la landing page aussi %>
       <%= render "shared/footer" %>
     <% end %>
+    <%# ---------------------------------------------------------------- %>
+    <%# Script étoiles — dessine et anime le ciel étoilé global %>
+    <%# Identique au dashboard mais dans le layout pour couvrir toutes les pages %>
+    <%# ---------------------------------------------------------------- %>
+    <script nonce="<%= content_security_policy_nonce %>">
+      (function() {
+        // Attendre que le DOM soit prêt avant de chercher le canvas
+        document.addEventListener('DOMContentLoaded', function() {
+          initGlobalStars();
+        });
+
+        // Relancer les étoiles à chaque navigation Turbo (SPA-like)
+        // sans Turbo, DOMContentLoaded suffit
+        document.addEventListener('turbo:load', function() {
+          // Annule l'animation précédente si elle tourne encore
+          if (window._globalStarsFrame) cancelAnimationFrame(window._globalStarsFrame);
+          initGlobalStars();
+        });
+
+        // ============================================================
+        // initGlobalStars — initialise le canvas et lance l'animation
+        // ============================================================
+        function initGlobalStars() {
+          const canvas = document.getElementById('global-stars-canvas');
+          if (!canvas) return;
+
+          const ctx  = canvas.getContext('2d');
+          let stars  = [];
+
+          // ── Redimensionne le canvas en tenant compte du ratio Retina ──
+          // Sans ça, les étoiles sont floues sur les écrans HiDPI (Mac, iPhone)
+          function resizeStars() {
+            const dpr      = window.devicePixelRatio || 1;
+            canvas.width   = window.innerWidth  * dpr;
+            canvas.height  = window.innerHeight * dpr;
+          }
+
+          // ── Crée 250 étoiles avec position, taille et phase aléatoires ──
+          function createStars() {
+            const dpr = window.devicePixelRatio || 1;
+            stars = [];
+            for (let i = 0; i < 250; i++) {
+              stars.push({
+                x:     Math.random() * canvas.width,   // Position X aléatoire
+                y:     Math.random() * canvas.height,  // Position Y aléatoire
+                r:     (Math.random() * 1.4 + 0.6) * dpr, // Rayon entre 0.6 et 2px
+                speed: Math.random() * 0.005 + 0.002,  // Vitesse de scintillement
+                phase: Math.random() * Math.PI * 2     // Phase de départ aléatoire (sin)
+              });
+            }
+          }
+
+          // ── Dessine toutes les étoiles avec un scintillement sinusoïdal ──
+          // t : timestamp fourni par requestAnimationFrame (ms depuis le chargement)
+          function drawStars(t) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(function(s) {
+              // Alpha oscille entre 0.2 et 0.7 selon la phase et le temps
+              const alpha = 0.2 + 0.5 * Math.sin(s.phase + t * s.speed);
+              ctx.beginPath();
+              ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(240, 201, 122, ' + alpha.toFixed(3) + ')'; // Or Noctilio
+              ctx.fill();
+            });
+            // Stocke l'ID pour pouvoir annuler l'animation au prochain turbo:load
+            window._globalStarsFrame = requestAnimationFrame(drawStars);
+          }
+
+          // ── Lance l'animation ──
+          resizeStars();
+          createStars();
+          window._globalStarsFrame = requestAnimationFrame(drawStars);
+
+          // ── Resize — ignore les changements de hauteur seuls (scroll mobile) ──
+          // Ne recrée les étoiles que si la LARGEUR change (vrai resize ou rotation)
+          let lastW = window.innerWidth;
+          let rTimer;
+          window.addEventListener('resize', function() {
+            clearTimeout(rTimer);
+            rTimer = setTimeout(function() {
+              if (Math.abs(window.innerWidth - lastW) > 10) {
+                lastW = window.innerWidth;
+                resizeStars();
+                createStars();
+              }
+            }, 250);
+          });
+        }
+      })();
+    </script>
+
   </body>
 </html>

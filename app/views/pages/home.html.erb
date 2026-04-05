@@ -145,15 +145,11 @@
     position: relative;
   }
 
-  /* Lune animée — point d'entrée visuel */
+  /* Lune — canvas qui dessine la vraie phase lunaire du jour */
+  /* La forme et le halo sont rendus par drawMoonPhase() en JS */
   .moon {
+    display: block;
     width: 120px; height: 120px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #fff9e6, #f0c97a 40%, #c8943a 80%, #8a5c1a);
-    box-shadow:
-      0 0 40px rgba(240, 201, 122, 0.3),
-      0 0 100px rgba(240, 201, 122, 0.12),
-      0 0 200px rgba(240, 201, 122, 0.06);
     margin-bottom: 3rem;
     opacity: 0;
     /* moonEntry : apparition unique (1 seule fois, non infinite) */
@@ -429,7 +425,13 @@
 
 <%# HERO %>
 <section class="hero">
-  <div class="moon"></div>
+  <%# Lune réelle — canvas dessiné en JS selon la phase lunaire du jour %>
+  <%# data-phase transmis depuis PagesController (@moon_phase) %>
+  <canvas id="landing-moon-canvas"
+          class="moon"
+          data-phase="<%= @moon_phase %>"
+          width="120" height="120"
+          aria-label="Phase de la lune ce soir"></canvas>
 
   <p class="hero-eyebrow">✦ Histoires personnalisées par IA ✦</p>
 
@@ -517,6 +519,16 @@
   // Encapsulé dans load pour garantir que tout le DOM est prêt
   window.addEventListener('load', function() {
     try {
+
+  // ============================================================
+  // Lune réelle — dessin de la phase lunaire sur canvas
+  // ============================================================
+  // data-phase est injecté par Rails depuis PagesController (@moon_phase)
+  const landingMoon = document.getElementById('landing-moon-canvas');
+  if (landingMoon) {
+    const phase = parseFloat(landingMoon.dataset.phase || '0.5');
+    drawMoonPhase(landingMoon, phase);
+  }
 
   // ============================================================
   // Curseur personnalisé — point doré + anneau avec délai
@@ -768,4 +780,118 @@
       console.error('Noctilio JS error:', e);
     }
   }); // fin window.load
+
+// ============================================================
+// drawMoonPhase — dessine la phase lunaire sur un canvas
+// phase : 0.0 = nouvelle lune, 0.5 = pleine lune, 1.0 = nouvelle lune
+// Vue depuis l'hémisphère nord (France) : croissant éclairé à droite en phase croissante
+// ============================================================
+function drawMoonPhase(canvas, phase) {
+  const dpr  = window.devicePixelRatio || 1;
+  const size = canvas.getBoundingClientRect().width || 120;
+
+  // Adapte la résolution pour les écrans Retina (Mac → devicePixelRatio = 2)
+  canvas.width  = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width  = size + 'px';
+  canvas.style.height = size + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr); // Toutes les coords en CSS pixels
+
+  const r  = size / 2;
+  const cx = r;
+  const cy = r;
+
+  // Palette — identique au dashboard
+  const litColor  = '#fff9e6'; // Crème — face éclairée
+  const darkColor = '#0b0e1a'; // Nuit profonde — face sombre
+
+  // Fraction d'illumination visible : 0 = nouvelle lune, 1 = pleine lune
+  const illum = (1 - Math.cos(2 * Math.PI * phase)) / 2;
+
+  // ── 1. Disque sombre de base ────────────────────────────────────────
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 1, 0, 2 * Math.PI);
+  ctx.fillStyle = darkColor;
+  ctx.fill();
+
+  // Nouvelle lune = disque noir avec halo très léger
+  if (phase < 0.01 || phase > 0.99) {
+    addMoonGlow(ctx, cx, cy, r, 0.05);
+    return;
+  }
+
+  // ── 2. Zone éclairée ────────────────────────────────────────────────
+  // Technique : demi-cercle (côté éclairé) + ellipse terminateur
+  // Hémisphère nord (France) :
+  //   Lune croissante  (0 → 0.5) : lumière à droite
+  //   Lune décroissante (0.5 → 1) : lumière à gauche
+  const isWaxing = phase < 0.5;
+
+  ctx.save();
+  ctx.beginPath();
+
+  if (isWaxing) {
+    // Demi-cercle droit (arc du bas vers le haut en passant par la droite)
+    ctx.arc(cx, cy, r - 1, Math.PI / 2, -Math.PI / 2, false);
+    // Terminateur : ellipse dont le rayon X varie de r (0°) à 0 (90°) à -r (180°)
+    const tx = r * Math.cos(phase * 2 * Math.PI);
+    if (tx >= 0) {
+      // Croissant (0→0.25) : terminateur courbe vers la droite, réduit la zone éclairée
+      ctx.ellipse(cx, cy, tx, r - 1, 0, Math.PI / 2, -Math.PI / 2, false);
+    } else {
+      // Gibbeuse croissante (0.25→0.5) : terminateur courbe vers la gauche, agrandit
+      ctx.ellipse(cx, cy, Math.abs(tx), r - 1, 0, -Math.PI / 2, Math.PI / 2, false);
+    }
+  } else {
+    // Demi-cercle gauche (arc du bas vers le haut en passant par la gauche)
+    ctx.arc(cx, cy, r - 1, -Math.PI / 2, Math.PI / 2, false);
+    const tx = r * Math.cos(phase * 2 * Math.PI);
+    if (tx <= 0) {
+      // Gibbeuse décroissante (0.5→0.75)
+      ctx.ellipse(cx, cy, Math.abs(tx), r - 1, 0, Math.PI / 2, -Math.PI / 2, false);
+    } else {
+      // Croissant décroissant (0.75→1)
+      ctx.ellipse(cx, cy, tx, r - 1, 0, -Math.PI / 2, Math.PI / 2, false);
+    }
+  }
+
+  ctx.closePath();
+  ctx.fillStyle = litColor;
+  ctx.fill();
+  ctx.restore();
+
+  // ── 3. Texture de volume ─────────────────────────────────────────────
+  // Gradient interne qui donne du relief à la face éclairée
+  const volGrad = ctx.createRadialGradient(
+    cx - r * 0.2, cy - r * 0.2, r * 0.05,
+    cx, cy, r
+  );
+  volGrad.addColorStop(0, 'rgba(255,255,255,0.18)');
+  volGrad.addColorStop(1, 'rgba(200,148,58,0.22)'); // Bord doré chaud
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-atop'; // S'applique uniquement sur le dessin existant
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 1, 0, 2 * Math.PI);
+  ctx.fillStyle = volGrad;
+  ctx.fill();
+  ctx.restore();
+
+  // ── 4. Halo extérieur — proportionnel à l'illumination ───────────────
+  addMoonGlow(ctx, cx, cy, r, illum);
+}
+
+// Halo doré autour de la lune — s'intensifie à la pleine lune
+function addMoonGlow(ctx, cx, cy, r, intensity) {
+  const g = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 2.4);
+  g.addColorStop(0,   `rgba(240,201,122,${(intensity * 0.45).toFixed(3)})`);
+  g.addColorStop(0.4, `rgba(240,201,122,${(intensity * 0.15).toFixed(3)})`);
+  g.addColorStop(1,   'rgba(240,201,122,0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 2.4, 0, 2 * Math.PI);
+  ctx.fillStyle = g;
+  ctx.fill();
+}
 </script>

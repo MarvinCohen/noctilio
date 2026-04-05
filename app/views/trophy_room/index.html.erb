@@ -1,100 +1,295 @@
 <%# ============================================================ %>
 <%# Salle des Trophées — badges, XP et galerie d'illustrations %>
+<%# DA cosmique : fond sombre #111527, accents dorés #f0c97a %>
+<%# Style inline temporaire — à externaliser dans trophy_room.scss %>
 <%# ============================================================ %>
 
-<div class="container py-4">
+<%# ---------------------------------------------------------------- %>
+<%# Styles inline — DA cosmique (temporaire, à externaliser) %>
+<%# ---------------------------------------------------------------- %>
+<style nonce="<%= content_security_policy_nonce %>">
+  /* ── Tokens de couleur ── */
+  /* Ces variables reproduisent les tokens de la DA cosmique */
+  .tr-page          { padding: 2.5rem 0 4rem; }
 
-  <%# En-tête avec niveau et XP %>
-  <div class="card border-0 shadow-sm mb-5 p-4">
-    <div class="row align-items-center">
+  /* ── Hero XP ── */
+  /* Carte principale qui affiche le niveau, la barre de progression et le total XP */
+  .tr-hero-card {
+    background:    #111527;                      /* Deep — fond de carte */
+    border:        1px solid rgba(240,201,122,0.15); /* Border doré subtil */
+    border-radius: 16px;
+    padding:       2rem 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+  /* Titre de page — Cormorant Garamond italic, style éditorial */
+  .tr-page-title {
+    font-family:   'Cormorant Garamond', Georgia, serif;
+    font-style:    italic;
+    font-size:     clamp(2rem, 5vw, 3.2rem);
+    color:         #fdf6e3; /* Cream */
+    line-height:   1.1;
+    margin-bottom: 0.25rem;
+  }
+  .tr-page-subtitle {
+    color:       #8a8578; /* Text-dim */
+    font-size:   0.95rem;
+    margin-bottom: 0;
+  }
+  /* Emoji trophée — grand, centré */
+  .tr-trophy-icon { font-size: 3.5rem; line-height: 1; }
+
+  /* Badge pill niveau — fond doré, texte sombre */
+  .tr-level-badge {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           0.4rem;
+    background:    #f0c97a;
+    color:         #0b0e1a;
+    border-radius: 50px;
+    font-weight:   700;
+    font-size:     1rem;
+    padding:       0.4rem 1.1rem;
+    white-space:   nowrap;
+  }
+  /* Valeur XP — Cormorant Garamond, grand, doré */
+  .tr-xp-value {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style:  italic;
+    font-size:   2.2rem;
+    color:       #f0c97a;
+    line-height: 1;
+  }
+  .tr-xp-label { color: #8a8578; font-size: 0.85rem; }
+
+  /* Barre de progression XP — fond très sombre, remplissage doré */
+  .tr-progress {
+    background:    rgba(240,201,122,0.10); /* Mist */
+    border-radius: 50px;
+    height:        8px;
+    overflow:      hidden;
+    margin:        0.6rem 0 0.3rem;
+  }
+  .tr-progress-fill {
+    height:        100%;
+    background:    #f0c97a; /* Gold */
+    border-radius: 50px;
+    transition:    width 0.6s ease;
+  }
+  .tr-progress-label { color: #8a8578; font-size: 0.8rem; }
+
+  /* ── Section titre ── */
+  .tr-section-title {
+    font-family:   'Cormorant Garamond', Georgia, serif;
+    font-style:    italic;
+    font-size:     1.6rem;
+    color:         #fdf6e3;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── Grille de badges ── */
+  /* Chaque badge est une carte dark avec ou sans glow selon statut */
+  .tr-badge-card {
+    background:    #111527;
+    border:        1px solid rgba(240,201,122,0.15);
+    border-radius: 16px;
+    padding:       1.5rem 1rem;
+    text-align:    center;
+    height:        100%;
+    transition:    border-color 0.2s, box-shadow 0.2s;
+  }
+  /* Carte badge obtenu — glow doré subtil */
+  .tr-badge-card--earned {
+    border-color: rgba(240,201,122,0.40);
+    box-shadow:   0 0 20px rgba(240,201,122,0.12);
+  }
+  /* Carte badge non obtenu — désaturée, opacité réduite */
+  .tr-badge-card--locked {
+    opacity: 0.40;
+  }
+  /* Emoji du badge — grand */
+  .tr-badge-icon   { font-size: 2.8rem; display: block; margin-bottom: 0.6rem; }
+  .tr-badge-name   { color: #fdf6e3; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; }
+  .tr-badge-desc   { color: #8a8578; font-size: 0.75rem; line-height: 1.4; }
+  /* Tag "Obtenu" vert crème et "À débloquer" discret */
+  .tr-badge-tag {
+    display:       inline-block;
+    font-size:     0.72rem;
+    border-radius: 50px;
+    padding:       0.2rem 0.7rem;
+    margin-top:    0.6rem;
+    font-weight:   600;
+  }
+  .tr-badge-tag--earned   { background: rgba(80,200,120,0.18); color: #5cc87a; }
+  .tr-badge-tag--locked   { background: rgba(138,133,120,0.15); color: #8a8578; }
+  .tr-badge-date { color: #8a8578; font-size: 0.7rem; display: block; margin-top: 0.3rem; }
+
+  /* ── Galerie d'illustrations ── */
+  /* Cartes dark, image avec border-radius en haut */
+  .tr-gallery-card {
+    background:    #111527;
+    border:        1px solid rgba(240,201,122,0.15);
+    border-radius: 16px;
+    overflow:      hidden;
+    text-decoration: none;
+    display:       block;
+    transition:    border-color 0.2s, transform 0.2s;
+  }
+  .tr-gallery-card:hover {
+    border-color: rgba(240,201,122,0.40);
+    transform:    translateY(-3px);
+  }
+  .tr-gallery-img {
+    width:       100%;
+    height:      180px;
+    object-fit:  cover;
+    display:     block;
+  }
+  .tr-gallery-body { padding: 0.75rem 1rem; }
+  .tr-gallery-title { color: #fdf6e3; font-size: 0.88rem; font-weight: 600; }
+  .tr-gallery-meta  { color: #8a8578; font-size: 0.75rem; margin-top: 0.2rem; }
+
+  /* ── Message vide ── */
+  .tr-empty { color: #8a8578; text-align: center; padding: 2rem 0; font-size: 0.95rem; }
+
+  /* ── Séparateur ── */
+  .tr-divider {
+    border: none;
+    border-top: 1px solid rgba(240,201,122,0.08);
+    margin: 2.5rem 0;
+  }
+</style>
+
+<div class="container tr-page">
+
+  <%# ============================================================ %>
+  <%# HERO — niveau + barre de progression XP %>
+  <%# ============================================================ %>
+  <div class="tr-hero-card">
+    <div class="row align-items-center g-3">
+
+      <%# Icône trophée à gauche %>
       <div class="col-auto">
-        <div class="text-center">
-          <span style="font-size: 3rem;">🏆</span>
-          <div class="fw-bold text-primary">Niveau <%= @level %></div>
-        </div>
+        <div class="tr-trophy-icon">🏆</div>
       </div>
+
+      <%# Titre + progression au centre %>
       <div class="col">
-        <h1 class="fw-bold mb-1">Salle des Trophées</h1>
-        <p class="text-muted mb-2"><%= @xp_points %> XP accumulés</p>
+        <%# Titre principal — Cormorant Garamond italic, crème %>
+        <h1 class="tr-page-title">Salle des Trophées</h1>
+        <p class="tr-page-subtitle">Tes exploits, tes rêves, ton univers</p>
+
         <%# Barre de progression vers le prochain niveau %>
-        <div class="progress" style="height: 10px;">
-          <div class="progress-bar bg-primary" style="width: <%= @level_progress %>%"
+        <div class="tr-progress mt-3">
+          <%# La largeur est calculée depuis le controller : @level_progress (0–100) %>
+          <div class="tr-progress-fill" style="width: <%= @level_progress %>%"
                title="<%= @level_progress %>% vers le niveau suivant"></div>
         </div>
-        <small class="text-muted"><%= @level_progress %>% vers le niveau <%= @level + 1 %></small>
+        <span class="tr-progress-label">
+          <%= @level_progress %>% vers le niveau <%= @level + 1 %>
+        </span>
       </div>
-      <div class="col-auto text-end">
-        <span class="badge bg-warning text-dark fs-6 px-3 py-2">⭐ <%= @xp_points %> XP</span>
+
+      <%# XP total + badge niveau à droite %>
+      <div class="col-auto text-end d-flex flex-column align-items-end gap-2">
+        <%# XP en grand, Cormorant doré %>
+        <div>
+          <div class="tr-xp-value"><%= @xp_points %></div>
+          <div class="tr-xp-label">XP accumulés</div>
+        </div>
+        <%# Pill niveau — fond doré, texte sombre %>
+        <span class="tr-level-badge">⭐ Niveau <%= @level %></span>
       </div>
+
     </div>
   </div>
 
-  <%# Badges %>
+  <hr class="tr-divider">
+
+  <%# ============================================================ %>
+  <%# BADGES MAGIQUES — grille 4 colonnes %>
+  <%# Obtenu = carte lumineuse avec glow, À débloquer = opacity 0.4 %>
+  <%# ============================================================ %>
   <div class="mb-5">
-    <h2 class="h4 fw-bold mb-4">Badges Magiques</h2>
+    <h2 class="tr-section-title">✦ Badges Magiques</h2>
+
     <div class="row g-3">
       <% @all_badges.each do |badge| %>
+        <%# Vérifie si ce badge est dans la liste des badges obtenus %>
         <% earned = @earned_badge_ids.include?(badge.id) %>
+
         <div class="col-6 col-md-3">
-          <div class="card border-0 h-100 text-center p-3 <%= earned ? 'shadow-sm' : 'bg-light opacity-50' %>">
-            <%# Emoji du badge — grisé si non encore obtenu %>
-            <div class="mb-2" style="font-size: 2.5rem;">
-              <%= badge.icon %>
-            </div>
-            <div class="fw-bold small"><%= badge.name %></div>
-            <div class="text-muted" style="font-size: 0.75rem;"><%= badge.description %></div>
+          <%# Classe différente selon le statut : glow si obtenu, désaturé si verrouillé %>
+          <div class="tr-badge-card <%= earned ? 'tr-badge-card--earned' : 'tr-badge-card--locked' %>">
+
+            <%# Emoji du badge — affiché en grand dans les deux cas %>
+            <span class="tr-badge-icon"><%= badge.icon %></span>
+
+            <%# Nom du badge %>
+            <div class="tr-badge-name"><%= badge.name %></div>
+
+            <%# Description du badge — condition à remplir %>
+            <div class="tr-badge-desc"><%= badge.description %></div>
+
             <% if earned %>
+              <%# Retrouve le UserBadge pour afficher la date d'obtention %>
               <% user_badge = @earned_user_badges.find { |ub| ub.badge_id == badge.id } %>
-              <div class="mt-2">
-                <span class="badge bg-success">✓ Obtenu</span>
-                <div class="text-muted" style="font-size: 0.7rem;">
-                  le <%= user_badge.earned_at.strftime("%d/%m/%Y") %>
-                </div>
-              </div>
+              <%# Tag vert "Obtenu" %>
+              <span class="tr-badge-tag tr-badge-tag--earned">✓ Obtenu</span>
+              <%# Date en petit, discrète %>
+              <span class="tr-badge-date">le <%= user_badge.earned_at.strftime("%d/%m/%Y") %></span>
             <% else %>
-              <div class="mt-2">
-                <span class="badge bg-secondary">À débloquer</span>
-              </div>
+              <%# Tag gris "À débloquer" %>
+              <span class="tr-badge-tag tr-badge-tag--locked">À débloquer</span>
             <% end %>
+
           </div>
         </div>
       <% end %>
 
-      <%# Message si aucun badge défini %>
+      <%# Message affiché si aucun badge n'est encore défini en base %>
       <% if @all_badges.empty? %>
-        <div class="col-12 text-center py-4 text-muted">
+        <div class="col-12 tr-empty">
           Les badges seront bientôt disponibles !
         </div>
       <% end %>
     </div>
   </div>
 
-  <%# Galerie des illustrations générées %>
+  <hr class="tr-divider">
+
+  <%# ============================================================ %>
+  <%# GALERIE DE RÊVES — illustrations générées pour les histoires %>
+  <%# Cartes dark cliquables, image en haut avec border-radius %>
+  <%# Affichée uniquement si au moins une histoire a une illustration %>
+  <%# ============================================================ %>
   <% if @illustrated_stories.any? %>
     <div class="mb-5">
-      <h2 class="h4 fw-bold mb-4">Galerie de Rêves</h2>
-      <p class="text-muted mb-4">Les illustrations générées pour tes histoires</p>
+      <h2 class="tr-section-title">✦ Galerie de Rêves</h2>
+      <p class="tr-page-subtitle mb-4">Les illustrations générées pour tes histoires</p>
+
       <div class="row g-3">
         <% @illustrated_stories.each do |story| %>
           <div class="col-6 col-md-4">
-            <%= link_to story_path(story), class: "text-decoration-none" do %>
-              <div class="card border-0 shadow-sm overflow-hidden">
-                <% if story.cover_image.attached? %>
-                  <%= image_tag story.cover_image,
-                        class: "w-100",
-                        style: "height: 180px; object-fit: cover;",
-                        alt: story.title %>
-                <% elsif story.cover_image_url.present? %>
-                  <%= image_tag story.cover_image_url,
-                        class: "w-100",
-                        style: "height: 180px; object-fit: cover;",
-                        alt: story.title %>
-                <% end %>
-                <div class="card-body p-2">
-                  <div class="small fw-semibold text-dark text-truncate"><%= story.title %></div>
-                  <div class="text-muted" style="font-size: 0.75rem;">Pour <%= story.child.name %></div>
-                </div>
+            <%# Lien vers la page de l'histoire — toute la carte est cliquable %>
+            <%= link_to story_path(story), class: "tr-gallery-card" do %>
+
+              <%# Image de couverture — priorité à ActiveStorage, fallback sur cover_image_url %>
+              <% if story.cover_image.attached? %>
+                <%= image_tag story.cover_image,
+                      class: "tr-gallery-img",
+                      alt: story.title %>
+              <% elsif story.cover_image_url.present? %>
+                <%= image_tag story.cover_image_url,
+                      class: "tr-gallery-img",
+                      alt: story.title %>
+              <% end %>
+
+              <%# Corps de la carte : titre tronqué + enfant associé %>
+              <div class="tr-gallery-body">
+                <div class="tr-gallery-title text-truncate"><%= story.title %></div>
+                <div class="tr-gallery-meta">Pour <%= story.child.name %></div>
               </div>
+
             <% end %>
           </div>
         <% end %>

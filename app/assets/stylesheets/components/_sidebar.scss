@@ -25,14 +25,25 @@ $cream-nav:  #fdf6e3;
 
 // ============================================================
 // Carte de page — enveloppe les pages de contenu (hors dashboard)
+// DA cosmique : fond transparent — le fond sombre vient du body (#0b0e1a)
+// Bordure dorée subtile pour délimiter visuellement la zone de contenu
+// Pas de box-shadow blanc — on conserve l'ambiance nuit profonde
 // ============================================================
 .page-card {
-  background: $white;
+  // Fond transparent — laisse voir le #0b0e1a du body
+  background: transparent;
+
+  // Bordure subtile pour structurer sans opacifier
+  border: 1px solid var(--border);
   border-radius: 20px;
+
+  // Marges identiques à l'ancienne version
   margin: 24px;
   padding: 8px 0;
   min-height: calc(100vh - 96px); // Ajusté pour la hauteur nav + margin
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  // Pas de box-shadow — l'ombre blanche cassait la DA sombre
+  box-shadow: none;
 }
 
 // ============================================================

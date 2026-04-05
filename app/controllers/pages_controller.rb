@@ -14,5 +14,9 @@ class PagesController < ApplicationController
     # Cumul : emails waitlist + utilisateurs Devise réellement inscrits
     # Les deux populations représentent l'intérêt total pour Noctilio
     @waitlist_count = WaitlistEntry.count + User.count
+
+    # Phase lunaire du jour — passée au canvas JS pour dessiner la vraie forme
+    # La méthode current_moon_phase est définie dans ApplicationController
+    @moon_phase = current_moon_phase
   end
 end

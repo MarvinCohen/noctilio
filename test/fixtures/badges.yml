@@ -1,0 +1,39 @@
+# Fixtures pour les badges
+# condition_key doit être unique (contrainte en base)
+# Ces clés correspondent exactement aux constantes définies dans Badge
+
+first_story:
+  name: "Première histoire"
+  condition_key: first_story
+  description: "Créer sa première histoire"
+  icon: "star"
+
+five_stories:
+  name: "5 histoires"
+  condition_key: five_stories
+  description: "Créer 5 histoires au total"
+  icon: "book"
+
+ten_stories:
+  name: "10 histoires"
+  condition_key: ten_stories
+  description: "Créer 10 histoires au total"
+  icon: "trophy"
+
+night_owl:
+  name: "Hibou nocturne"
+  condition_key: night_owl
+  description: "Créer une histoire après 21h"
+  icon: "moon"
+
+kind_heart:
+  name: "Coeur généreux"
+  condition_key: kind_heart
+  description: "Choisir la valeur gentillesse 3 fois"
+  icon: "heart"
+
+bookworm:
+  name: "Grand lecteur"
+  condition_key: bookworm
+  description: "Avoir 10 histoires sauvegardées"
+  icon: "glasses"

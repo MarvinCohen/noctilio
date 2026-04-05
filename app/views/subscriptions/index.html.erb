@@ -1,29 +1,155 @@
-<%# Page abonnement — version temporaire en attendant Stripe %>
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-      <span style="font-size: 4rem;">💳</span>
-      <h1 class="fw-bold mt-3 mb-3">Abonnement Premium</h1>
-      <p class="lead text-muted mb-5">
-        Le paiement sera disponible prochainement.<br>
-        Pour l'instant, profitez de l'application gratuitement !
-      </p>
+<%# ============================================================ %>
+<%# Page abonnement Premium — DA cosmique %>
+<%# Version temporaire en attendant Stripe — bouton disabled %>
+<%# ============================================================ %>
 
-      <div class="card border-0 shadow-sm p-5 mb-4">
-        <h2 class="h4 fw-bold mb-4">Ce qui vous attend en Premium</h2>
-        <ul class="list-unstyled text-start mx-auto" style="max-width: 350px;">
-          <li class="mb-3">✅ Histoires <strong>illimitées</strong></li>
-          <li class="mb-3">✅ Mode interactif (choix qui changent l'histoire)</li>
-          <li class="mb-3">✅ Dashboard parental avancé</li>
-          <li class="mb-3">✅ Accès prioritaire aux nouveaux univers</li>
-        </ul>
-        <p class="text-muted">À partir de <strong>9,99€/mois</strong></p>
-        <button class="btn btn-primary btn-lg px-5 mt-2" disabled>
-          Bientôt disponible
-        </button>
-      </div>
+<style nonce="<%= content_security_policy_nonce %>">
+  /* ── Wrapper de page ── */
+  .sub-page { padding: 3rem 0 5rem; }
 
-      <%= link_to "← Retour au dashboard", dashboard_path, class: "btn btn-outline-secondary" %>
-    </div>
+  /* ── Hero — titre + prix ── */
+  .sub-hero { text-align: center; margin-bottom: 3rem; }
+  .sub-hero-icon { font-size: 4rem; display: block; margin-bottom: 1.5rem; }
+  /* Titre Cormorant Garamond italic, crème */
+  .sub-hero-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 300;
+    color: #fdf6e3;
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+  }
+  .sub-hero-subtitle { color: #8a8578; font-size: 1rem; margin-bottom: 2.5rem; }
+
+  /* Carte centrale — fond deep, bordure dorée lumineuse */
+  .sub-card {
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.3);
+    border-radius: 24px;
+    padding: 2.5rem;
+    max-width: 480px;
+    margin: 0 auto;
+    box-shadow: 0 0 60px rgba(240, 201, 122, 0.06);
+  }
+
+  /* Prix mis en valeur */
+  .sub-price {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.1);
+  }
+  /* Montant — Cormorant Garamond très grand, doré */
+  .sub-price-amount {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 4.5rem;
+    color: #f0c97a;
+    line-height: 1;
+    font-weight: 300;
+  }
+  .sub-price-period { color: #8a8578; font-size: 0.9rem; margin-top: 0.3rem; }
+
+  /* Liste des features */
+  .sub-features { list-style: none; padding: 0; margin: 0 0 2rem; }
+  .sub-feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.05);
+    color: #d4cfc4;
+    font-size: 0.95rem;
+  }
+  .sub-feature-item:last-child { border-bottom: none; }
+  /* Symbole ✦ doré devant chaque feature */
+  .sub-feature-icon { color: #f0c97a; font-size: 0.8rem; flex-shrink: 0; margin-top: 3px; }
+  .sub-feature-label strong { color: #fdf6e3; }
+
+  /* Bouton CTA "Bientôt disponible" — doré, pill, disabled */
+  .sub-btn-cta {
+    display: block;
+    width: 100%;
+    padding: 0.85rem;
+    background: rgba(240, 201, 122, 0.3);  /* Moins intense car disabled */
+    color: rgba(11, 14, 26, 0.6);
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: not-allowed;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  /* Note sous le bouton */
+  .sub-note { text-align: center; color: #8a8578; font-size: 0.82rem; }
+
+  /* Lien retour */
+  .sub-back-link {
+    display: block;
+    text-align: center;
+    margin-top: 2rem;
+    color: rgba(240, 201, 122, 0.6);
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: color 0.15s ease;
+  }
+  .sub-back-link:hover { color: #f0c97a; text-decoration: none; }
+</style>
+
+<div class="container sub-page">
+
+  <%# ── Hero — icône + titre + sous-titre ── %>
+  <div class="sub-hero">
+    <span class="sub-hero-icon">✨</span>
+    <h1 class="sub-hero-title">Abonnement Premium</h1>
+    <p class="sub-hero-subtitle">
+      Le paiement sera disponible prochainement.<br>
+      Pour l'instant, profitez de l'application gratuitement !
+    </p>
   </div>
+
+  <%# ── Carte Premium ── %>
+  <div class="sub-card">
+
+    <%# Prix — 9,99€/mois en Cormorant doré %>
+    <div class="sub-price">
+      <div class="sub-price-amount">9,99€</div>
+      <div class="sub-price-period">par mois · sans engagement</div>
+    </div>
+
+    <%# Liste des features incluses %>
+    <ul class="sub-features">
+      <li class="sub-feature-item">
+        <span class="sub-feature-icon">✦</span>
+        <span class="sub-feature-label">Histoires <strong>illimitées</strong></span>
+      </li>
+      <li class="sub-feature-item">
+        <span class="sub-feature-icon">✦</span>
+        <span class="sub-feature-label">Mode <strong>interactif</strong> — l'enfant fait des choix</span>
+      </li>
+      <li class="sub-feature-item">
+        <span class="sub-feature-icon">✦</span>
+        <span class="sub-feature-label">Dashboard parental <strong>avancé</strong></span>
+      </li>
+      <li class="sub-feature-item">
+        <span class="sub-feature-icon">✦</span>
+        <span class="sub-feature-label">Accès <strong>prioritaire</strong> aux nouveaux univers</span>
+      </li>
+    </ul>
+
+    <%# Bouton CTA — disabled en attendant Stripe %>
+    <button class="sub-btn-cta" disabled>
+      🌙 Bientôt disponible
+    </button>
+
+    <p class="sub-note">Stripe en cours de configuration. On vous prévient dès l'ouverture !</p>
+
+  </div>
+
+  <%# Lien retour %>
+  <%= link_to "← Retour au dashboard", dashboard_path, class: "sub-back-link" %>
+
 </div>

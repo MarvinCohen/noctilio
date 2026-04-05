@@ -4,56 +4,89 @@
 // La navbar doit s'intégrer naturellement au fond du body
 // ============================================================
 
-// Conteneur principal de la navbar
-// Fond beige identique au body pour une continuité visuelle douce
-// Bordure bottom discrète pour séparer la nav du contenu sans agression
+// Conteneur principal de la navbar — DA cosmique Noctilio
+// Fond nuit semi-transparent avec blur, bordure dorée subtile
+// Utilisée sur les pages non connectées (Devise, landing publique)
 .navbar-lewagon {
-  justify-content: space-between;   // Brand à gauche, liens à droite
-  background-color: $cream;         // Fond beige chaud (même que body bg)
-  border-bottom: 1px solid $gray-border; // Séparateur discret et élégant
-  // Pas de box-shadow pour éviter l'effet "flottant" trop agressif
+  justify-content: space-between;
+  // Fond nuit semi-transparent + flou de fond (comme la sidebar)
+  background: rgba(11, 14, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  // Bordure dorée très discrète en bas
+  border-bottom: 1px solid rgba(240, 201, 122, 0.12);
 
   // ---- Brand / Logo ----
-  // Le nom de l'application — mis en valeur par un poids très fort
+  // "Noctilio" en Cormorant Garamond doré
   .navbar-brand {
-    font-weight: 800;               // Ultra-bold pour l'impact de marque
-    color: $text-dark;              // Texte quasi-noir, lisible et sobre
-    font-size: 1.2rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 400;
+    font-size: 1.35rem;
+    letter-spacing: 0.04em;
+    color: #f0c97a;           // Or Noctilio
 
-    // L'image du logo (si présente) reste petite et proportionnelle
-    img {
-      width: 40px;
-    }
+    img { width: 40px; }
 
-    // Hover du brand : virer le soulignement Bootstrap par défaut
-    &:hover {
-      color: $text-dark;
-    }
+    &:hover { color: #f0c97a; text-decoration: none; }
   }
 
   // ---- Liens de navigation ----
-  // Couleur neutre au repos, violet au survol/actif
+  // Texte atténué au repos, doré au survol
   .navbar-nav .nav-link {
-    color: $text-medium;            // Gris moyen : visible mais pas dominant
-    font-weight: 600;               // Semi-bold pour la lisibilité à petite taille
-    transition: color 0.15s ease;   // Transition douce au survol
+    color: #8a8578;           // Text-dim — discret
+    font-weight: 500;
+    transition: color 0.15s ease;
 
-    // État survol : passe au violet de marque
-    &:hover {
-      color: $purple;
-    }
-
-    // État actif (page courante) : violet, plus fort
+    &:hover  { color: #f0c97a; }  // Or au survol
     &.active,
-    &:focus {
-      color: $purple;
-      font-weight: 700;             // Un peu plus gras pour indiquer la page active
+    &:focus  { color: #f0c97a; font-weight: 600; }
+  }
+
+  // ---- Bouton "Commencer gratuitement" — pill doré ----
+  .btn-primary {
+    background: #f0c97a !important;
+    color: #0b0e1a !important;
+    border: none !important;
+    border-radius: 50px !important;
+    font-weight: 600;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.88rem;
+    transition: opacity 0.2s ease;
+
+    &:hover { opacity: 0.88; }
+  }
+
+  // ---- Lien "Se connecter" ----
+  // Outline doré léger, cohérent avec les autres boutons secondaires
+  .navbar-nav .nav-link:not(.btn) {
+    color: rgba(240, 201, 122, 0.7);
+    &:hover { color: #f0c97a; }
+  }
+
+  // Collapse — ne prend pas toute la largeur
+  .navbar-collapse { flex-grow: 0; }
+
+  // Toggler mobile — icône blanche sur fond sombre
+  .navbar-toggler {
+    border-color: rgba(240, 201, 122, 0.3);
+    .navbar-toggler-icon {
+      filter: invert(80%) sepia(30%) saturate(400%) hue-rotate(10deg);
     }
   }
 
-  // ---- Collapse (liens regroupés) ----
-  // On empêche le collapse de prendre toute la largeur disponible
-  .navbar-collapse {
-    flex-grow: 0;
+  // Dropdown — fond dark, bordure dorée
+  .dropdown-menu {
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    border-radius: 12px;
+
+    .dropdown-item {
+      color: #d4cfc4;
+      font-size: 0.9rem;
+      &:hover { background: rgba(240, 201, 122, 0.08); color: #f0c97a; }
+    }
+
+    .dropdown-divider { border-color: rgba(240, 201, 122, 0.1); }
+    .text-danger { color: rgba(220, 100, 100, 0.8) !important; }
   }
 }

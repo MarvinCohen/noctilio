@@ -1,100 +1,218 @@
 <%# ============================================================ %>
 <%# Page admin — liste des emails inscrits sur la waitlist %>
 <%# Accessible uniquement par marvincohen95@gmail.com %>
+<%# DA cosmique : table dark, accents dorés %>
 <%# ============================================================ %>
 
-<div class="container py-5">
+<style nonce="<%= content_security_policy_nonce %>">
+  /* ── Wrapper de page ── */
+  .admin-page { padding: 2.5rem 0 4rem; }
 
-  <%# En-tête avec titre et compteur total %>
-  <div class="d-flex align-items-center justify-content-between mb-4">
+  /* ── En-tête ── */
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  /* Titre Cormorant Garamond italic */
+  .admin-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: #fdf6e3;
+    margin: 0 0 0.2rem;
+    line-height: 1.1;
+  }
+  .admin-subtitle { color: #8a8578; font-size: 0.9rem; margin: 0; }
+
+  /* Badge compteur — fond doré, texte sombre */
+  .admin-count-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 1.2rem;
+    background: #f0c97a;
+    color: #0b0e1a;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  /* ── Carte table ── */
+  .admin-card {
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Table dark — override Bootstrap */
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+  }
+  /* Header — fond indigo, texte doré uppercase %>
+  .admin-table thead tr {
+    background: #1a1f3c;
+  }
+  .admin-table thead th {
+    color: #f0c97a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.85rem 1.25rem;
+    border: none;
+  }
+  /* Lignes de corps — alternées pour lisibilité */
+  .admin-table tbody tr:nth-child(odd)  { background: #111527; }
+  .admin-table tbody tr:nth-child(even) { background: #0d1020; }
+  .admin-table tbody tr:hover           { background: rgba(240, 201, 122, 0.04); }
+  .admin-table tbody td {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.06);
+    vertical-align: middle;
+  }
+  /* Numéro de ligne — dim */
+  .admin-td-index { color: #8a8578; font-size: 0.85rem; }
+  /* Email cliquable — doré %>
+  .admin-email-link { color: rgba(240, 201, 122, 0.8); text-decoration: none; font-size: 0.9rem; }
+  .admin-email-link:hover { color: #f0c97a; text-decoration: underline; }
+  /* Date et temps relatif — text-dim */
+  .admin-td-date, .admin-td-relative { color: #8a8578; font-size: 0.85rem; }
+
+  /* ── Bouton copier — pill doré outline ── */
+  .admin-btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 1.1rem;
+    background: transparent;
+    color: #f0c97a;
+    border: 1px solid rgba(240, 201, 122, 0.35);
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .admin-btn-copy:hover {
+    background: rgba(240, 201, 122, 0.08);
+    border-color: rgba(240, 201, 122, 0.6);
+  }
+  /* État "copié" — vert discret */
+  .admin-btn-copy.copied {
+    color: rgba(100, 220, 140, 0.9);
+    border-color: rgba(80, 200, 120, 0.4);
+    background: rgba(80, 200, 120, 0.08);
+  }
+
+  /* ── Message vide ── */
+  .admin-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #8a8578;
+  }
+</style>
+
+<div class="container admin-page">
+
+  <%# ── En-tête ── %>
+  <div class="admin-header">
     <div>
-      <h1 class="mb-1">Liste d'attente</h1>
-      <p class="text-muted mb-0">Emails inscrits depuis la landing page</p>
+      <h1 class="admin-title">Liste d'attente</h1>
+      <p class="admin-subtitle">Emails inscrits depuis la landing page</p>
     </div>
     <%# Badge avec le nombre total d'inscrits %>
-    <span class="badge bg-primary fs-5 px-3 py-2">
-      <%= @total %> inscrits
+    <span class="admin-count-badge">
+      <%= @total %> inscrit<%= "s" if @total > 1 %>
     </span>
   </div>
 
-  <%# Tableau des inscrits %>
   <% if @entries.any? %>
-    <div class="card shadow-sm">
-      <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-          <thead class="table-dark">
+
+    <%# ── Table des inscrits ── %>
+    <div class="admin-card">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Email</th>
+            <th>Date d'inscription</th>
+            <th>Il y a</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @entries.each_with_index do |entry, index| %>
             <tr>
-              <th class="ps-4">#</th>
-              <th>Email</th>
-              <th>Date d'inscription</th>
-              <th>Il y a</th>
+              <%# Numéro dans l'ordre %>
+              <td class="admin-td-index"><%= index + 1 %></td>
+
+              <%# Email cliquable — ouvre le client mail %>
+              <td>
+                <a href="mailto:<%= entry.email %>" class="admin-email-link">
+                  <%= entry.email %>
+                </a>
+              </td>
+
+              <%# Date complète formatée en français %>
+              <td class="admin-td-date">
+                <%= entry.created_at.strftime("%d/%m/%Y à %H:%M") %>
+              </td>
+
+              <%# Temps relatif %>
+              <td class="admin-td-relative">
+                <%= time_ago_in_words(entry.created_at) %>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            <%# Affiche chaque inscrit avec son numéro, email et date %>
-            <% @entries.each_with_index do |entry, index| %>
-              <tr>
-                <%# Numéro dans l'ordre inverse (le plus récent = 1) %>
-                <td class="ps-4 text-muted"><%= index + 1 %></td>
-
-                <%# Email cliquable pour ouvrir le client mail %>
-                <td>
-                  <a href="mailto:<%= entry.email %>" class="text-decoration-none">
-                    <%= entry.email %>
-                  </a>
-                </td>
-
-                <%# Date complète formatée en français %>
-                <td class="text-muted">
-                  <%= entry.created_at.strftime("%d/%m/%Y à %H:%M") %>
-                </td>
-
-                <%# Temps relatif (ex: "il y a 2 jours") %>
-                <td class="text-muted">
-                  <%= time_ago_in_words(entry.created_at) %>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
+          <% end %>
+        </tbody>
+      </table>
     </div>
 
-    <%# Bouton pour copier tous les emails (utile pour un envoi en masse) %>
-    <div class="mt-3 text-end">
-      <button
-        class="btn btn-outline-secondary btn-sm"
-        onclick="copyEmails()"
-        id="copyBtn">
+    <%# ── Bouton copier tous les emails ── %>
+    <div class="text-end">
+      <button class="admin-btn-copy" id="copyBtn" onclick="copyEmails()">
         Copier tous les emails
       </button>
     </div>
 
-    <%# Données cachées pour le bouton copier — liste séparée par des virgules %>
+    <%# Données cachées pour le bouton copier %>
     <div id="emailList" class="d-none">
       <%= @entries.map(&:email).join(", ") %>
     </div>
 
-    <script>
+    <script nonce="<%= content_security_policy_nonce %>">
       // Copie tous les emails dans le presse-papier
+      // et donne un feedback visuel temporaire "Copié !"
       function copyEmails() {
         const emails = document.getElementById('emailList').textContent.trim();
+        const btn = document.getElementById('copyBtn');
+
         navigator.clipboard.writeText(emails).then(() => {
-          const btn = document.getElementById('copyBtn');
-          btn.textContent = 'Copié !';
-          btn.classList.replace('btn-outline-secondary', 'btn-success');
-          // Remet le bouton à son état initial après 2 secondes
+          // Feedback visuel — classe "copied" passe le bouton en vert
+          btn.textContent = '✓ Copié !';
+          btn.classList.add('copied');
+
+          // Retour à l'état initial après 2 secondes
           setTimeout(() => {
             btn.textContent = 'Copier tous les emails';
-            btn.classList.replace('btn-success', 'btn-outline-secondary');
+            btn.classList.remove('copied');
           }, 2000);
         });
       }
     </script>
 
   <% else %>
-    <%# Message affiché si aucun inscrit pour l'instant %>
-    <div class="alert alert-info">
+    <%# Aucun inscrit pour l'instant %>
+    <div class="admin-empty">
       Aucun email inscrit pour l'instant.
     </div>
   <% end %>

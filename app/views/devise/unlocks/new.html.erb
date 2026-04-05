@@ -1,19 +1,68 @@
-<h2>Resend unlock instructions</h2>
+<%# ============================================================ %>
+<%# Page "Renvoyer les instructions de déverrouillage" — DA cosmique %>
+<%# Affiché quand le compte est verrouillé après trop de tentatives %>
+<%# ============================================================ %>
 
-<%= simple_form_for(resource, as: resource_name, url: unlock_path(resource_name), html: { method: :post }) do |f| %>
-  <%= f.error_notification %>
-  <%= f.full_error :unlock_token %>
+<style nonce="<%= content_security_policy_nonce %>">
+  .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+  .auth-card { background: #111527; border: 1px solid rgba(240,201,122,0.15); border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 420px; }
+  .auth-logo { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .auth-logo-icon { font-size: 2rem; line-height: 1; }
+  .auth-logo-name { font-family: 'Cormorant Garamond', serif; color: #f0c97a; font-size: 1.5rem; font-weight: 400; letter-spacing: 0.04em; }
+  .auth-title { font-family: 'Cormorant Garamond', serif; font-style: italic; color: #fdf6e3; font-size: 2rem; font-weight: 300; text-align: center; margin-bottom: 0.3rem; line-height: 1.2; }
+  .auth-subtitle { color: #8a8578; font-size: 0.9rem; text-align: center; margin-bottom: 2rem; }
+  .auth-card .form-group { margin-bottom: 1.1rem; }
+  .auth-card .form-group > label, .auth-card label.control-label { display: block; color: #8a8578; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .auth-card .form-group input, .auth-card .form-control { display: block; width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(240,201,122,0.2); color: #d4cfc4; border-radius: 10px; padding: 0.75rem 1rem; font-size: 1rem; box-sizing: border-box; transition: border-color 0.2s ease; }
+  .auth-card .form-group input:focus, .auth-card .form-control:focus { border-color: #f0c97a; outline: none; box-shadow: 0 0 0 3px rgba(240,201,122,0.1); }
+  .auth-btn { display: block; width: 100%; background: #f0c97a; color: #0b0e1a; border-radius: 50px; font-weight: 600; font-size: 1rem; padding: 0.75rem; border: none; cursor: pointer; margin-top: 1.5rem; transition: background 0.2s ease; }
+  .auth-btn:hover { background: #e8b95a; }
+  .auth-links { margin-top: 1.5rem; text-align: center; color: #8a8578; font-size: 0.88rem; }
+  .auth-links a { color: rgba(240,201,122,0.8); text-decoration: none; }
+  .auth-links a:hover { color: #f0c97a; }
+  .auth-links-divider { display: block; height: 1px; background: rgba(240,201,122,0.1); margin: 1rem 0; }
+</style>
 
-  <div class="form-inputs">
-    <%= f.input :email,
-                required: true,
-                autofocus: true,
-                input_html: { autocomplete: "email" } %>
+<div class="auth-page">
+  <div class="auth-card">
+
+    <%# Logo %>
+    <div class="auth-logo">
+      <span class="auth-logo-icon">🌙</span>
+      <span class="auth-logo-name">Noctilio</span>
+    </div>
+
+    <%# Titre et sous-titre %>
+    <h1 class="auth-title">Compte verrouillé</h1>
+    <p class="auth-subtitle">Saisis ton email pour recevoir les instructions de déverrouillage.</p>
+
+    <%# Formulaire Devise — renvoi des instructions de déverrouillage %>
+    <%= simple_form_for(resource, as: resource_name,
+          url: unlock_path(resource_name),
+          html: { method: :post }) do |f| %>
+
+      <%= f.error_notification %>
+      <%= f.full_error :unlock_token %>
+
+      <%# Email %>
+      <%= f.input :email,
+            label: "Adresse e-mail",
+            required: true,
+            autofocus: true,
+            placeholder: "votre@email.com",
+            input_html: { autocomplete: "email" } %>
+
+      <%# Bouton d'envoi %>
+      <%= f.button :submit, "Renvoyer les instructions de déverrouillage", class: "auth-btn" %>
+
+    <% end %>
+
+    <%# Liens alternatifs %>
+    <div class="auth-links">
+      <%= link_to "← Se connecter", new_user_session_path %>
+      <span class="auth-links-divider"></span>
+      <%= link_to "Mot de passe oublié ?", new_user_password_path %>
+    </div>
+
   </div>
-
-  <div class="form-actions">
-    <%= f.button :submit, "Resend unlock instructions" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+</div>

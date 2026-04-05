@@ -8,55 +8,50 @@
 
 // Carte de sélection d'univers — met en valeur la carte sélectionnée
 // L'utilisateur choisit l'univers de l'histoire en cliquant sur une carte
+// DA cosmique : bordure dorée + fond mist au lieu du violet
 .world-selector {
   transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
-  cursor: pointer; // Indique que la carte est cliquable
+  cursor: pointer;
 
-  // État sélectionné : bordure violette + fond légèrement coloré + légère mise en avant
-  // :has(input:checked) détecte si le radio button caché à l'intérieur est coché
+  // État sélectionné : bordure dorée + fond mist doré
   &:has(input:checked) {
-    border-color: $purple !important;          // Bordure violette forte pour marquer la sélection
-    background-color: rgba($purple, 0.08);     // Fond violet très transparent (8% opacité)
-    transform: scale(1.04);                    // Légère mise en avant visuelle
+    border-color: rgba(240, 201, 122, 0.55) !important;
+    background-color: rgba(240, 201, 122, 0.08);
+    transform: scale(1.04);
   }
 
-  // Survol : indication que la carte est interactive
   &:hover {
-    border-color: $gray-border; // Bordure grise plus visible au survol
+    border-color: rgba(240, 201, 122, 0.3);
   }
 }
 
 // Carte de sélection d'enfant — même principe que world-selector
-// L'utilisateur choisit pour quel enfant générer l'histoire
 .child-selector {
   transition: border-color 0.15s ease, background-color 0.15s ease;
   cursor: pointer;
 
-  // État sélectionné : bordure violette + fond doux violet
+  // État sélectionné : bordure dorée + fond mist
   &:has(input:checked) {
-    border-color: $purple !important;          // Violet de marque
-    background-color: rgba($purple, 0.05);     // Fond très subtil (5% opacité)
+    border-color: rgba(240, 201, 122, 0.55) !important;
+    background-color: rgba(240, 201, 122, 0.08);
   }
 
-  // Survol : légère indication visuelle
   &:hover {
-    border-color: $gray-border;
+    border-color: rgba(240, 201, 122, 0.3);
   }
 }
 
 // Badge de sélection de valeur éducative (bouton pill)
-// L'utilisateur choisit une ou plusieurs valeurs à transmettre dans l'histoire
-// Quand sélectionné : passe de "outline" à "plein" avec le violet principal
+// Sélectionné : fond doré + texte sombre (au lieu de violet + blanc)
 .badge-selector {
   transition: all 0.15s ease;
   cursor: pointer;
 
-  // État sélectionné : fond violet + texte blanc
-  // Effet de "bouton activé" pour un feedback visuel clair
+  // État sélectionné : fond doré + texte sombre pour le contraste
   &:has(input:checked) {
-    background-color: $purple;  // Violet plein pour indiquer la sélection
-    color: white;               // Texte blanc pour le contraste sur fond violet
-    border-color: $purple;      // Bordure assortie au fond
+    background-color: #f0c97a; // Gold
+    color: #0b0e1a;            // Texte sombre pour le contraste sur fond doré
+    border-color: #f0c97a;
   }
 }
 
@@ -65,21 +60,26 @@
 // ============================================================
 
 // Titres de chapitres générés par render_story_markdown (## Chapitre X)
+// DA cosmique : texte crème, séparateur doré discret
 .story-chapter {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: $text-dark;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #fdf6e3;                            // Cream — lumineux sur fond sombre
   margin-top: 2rem;
   margin-bottom: 0.75rem;
   padding-bottom: 0.4rem;
-  border-bottom: 2px solid $gray-border; // Ligne sous le titre de chapitre
+  border-bottom: 1px solid rgba(240, 201, 122, 0.15); // Séparateur doré discret
 }
 
 // Paragraphes de l'histoire — espacement confortable pour la lecture
+// Police Noto Serif pour un rendu "livre" agréable
 .story-paragraph {
-  line-height: 1.85;          // Interligne généreux pour faciliter la lecture
+  line-height: 1.85;
   margin-bottom: 1.1rem;
-  color: $text-dark;
+  color: #d4cfc4;              // Text — crème légèrement atténué pour un confort de lecture
+  font-size: 1rem;
 }
 
 // ============================================================
@@ -104,11 +104,12 @@
 }
 
 // Wrapper — position relative pour superposer le skeleton et l'image
+// DA cosmique : fond sombre au lieu du violet clair
 .story-illustration-wrapper {
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  background: $purple-light;   // Fond violet clair visible pendant le chargement
+  background: #1a1f3c;         // Indigo — fond visible pendant le chargement de l'image
   min-height: 280px;
   display: flex;
   align-items: center;
@@ -138,7 +139,7 @@
 
 .story-illustration-skeleton-text {
   font-size: 0.8rem;
-  color: $purple;
+  color: rgba(240, 201, 122, 0.6); // Doré atténué — cohérent avec la DA cosmique
   font-weight: 600;
   margin: 0;
 }
@@ -159,52 +160,47 @@
 }
 
 // ============================================================
-// Cartes de sélection de durée
-// ============================================================
-// Remplace les simples radio buttons par des cartes visuelles
-// Même principe que child-selector — :has(input:checked) + classe "selected"
+// Cartes de sélection de durée — DA cosmique
+// Fond sombre, bordure dorée au survol et à la sélection
 .duration-selector {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   padding: 14px 20px;
-  border: 2px solid $gray-border;
+  border: 1px solid rgba(240, 201, 122, 0.15); // Bordure dorée très discrète par défaut
   border-radius: 12px;
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
   min-width: 90px;
-  background: white;
+  background: rgba(255, 255, 255, 0.02);        // Fond quasi-transparent sur fond nuit
 
-  // État sélectionné via CSS natif
+  // État sélectionné : bordure dorée + fond mist + élévation
   &:has(input:checked),
   &.selected {
-    border-color: $navy !important;
-    background-color: $navy-light;
+    border-color: rgba(240, 201, 122, 0.55) !important;
+    background-color: rgba(240, 201, 122, 0.08);
     transform: scale(1.04);
   }
 
   &:hover {
-    border-color: $navy;
+    border-color: rgba(240, 201, 122, 0.3);
   }
 
-  // Icône grande et centrée
   .duration-icon {
     font-size: 1.6rem;
     line-height: 1;
   }
 
-  // Label principal en gras
   .duration-label {
     font-size: 0.95rem;
     font-weight: 700;
-    color: $text-dark;
+    color: #d4cfc4;  // Text cosmique — crème clair
   }
 
-  // Sous-label discret
   .duration-sub {
     font-size: 0.72rem;
-    color: $text-light;
+    color: #8a8578;  // Text-dim
   }
 }
 
@@ -216,13 +212,13 @@
 
 // Séparateur entre l'histoire principale et la continuation interactive
 // Inséré par story_choice_controller.js après le choix
+// DA cosmique : doré atténué sur fond sombre
 .story-continuation-divider {
   text-align: center;
-  color: $text-light;
+  color: rgba(240, 201, 122, 0.4); // Doré discret
   font-size: 1.1rem;
   letter-spacing: 0.5em;
   margin: 2rem 0;
-  opacity: 0.6;
 }
 
 // ============================================================

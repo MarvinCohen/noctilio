@@ -1,0 +1,25 @@
+# Fixtures pour les profils enfants
+# Chaque enfant appartient à un utilisateur (clé étrangère user_id)
+# On référence les fixtures users avec le nom symbolique (ex: marie)
+
+# Enfant principal de Marie — utilisé dans la majorité des tests
+leo:
+  name: Léo
+  age: 6
+  gender: boy
+  user: marie
+
+# Deuxième enfant de Marie — pour tester les histoires multi-enfants
+emma:
+  name: Emma
+  age: 8
+  gender: girl
+  user: marie
+
+# Enfant de Paul — pour tester les autorisations croisées
+# Marie ne doit JAMAIS pouvoir créer d'histoire avec l'enfant de Paul
+theo:
+  name: Théo
+  age: 5
+  gender: boy
+  user: paul

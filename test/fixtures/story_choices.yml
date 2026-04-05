@@ -1,0 +1,13 @@
+# Fixtures pour les choix interactifs
+# Un StoryChoice appartient à une Story (story_id)
+# chosen_option est nil si le choix n'a pas encore été fait
+
+# Choix en attente — l'enfant n'a pas encore choisi
+pending_choice:
+  story: interactive_story
+  step_number: 1
+  question: "Que doit faire Léo ?"
+  option_a: "Entrer dans la forêt sombre"
+  option_b: "Retourner au village"
+  chosen_option:
+  context_chosen:

@@ -1,12 +1,16 @@
 <%# Page de création d'un nouveau profil enfant %>
-<div class="container py-4">
+<%# DA cosmique : titre Cormorant Garamond, formulaire via _form.html.erb %>
+<div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-7">
-      <div class="mb-4">
-        <h1 class="fw-bold">Nouveau héros</h1>
-        <p class="text-muted">Créez le profil de votre enfant pour personnaliser ses histoires</p>
-      </div>
+
+      <%# Titre Cormorant Garamond italic %>
+      <h1 class="ch-form-title">Nouveau héros</h1>
+      <p class="ch-form-subtitle">Créez le profil de votre enfant pour personnaliser ses histoires</p>
+
+      <%# Le formulaire partagé (new + edit) %>
       <%= render "form", child: @child %>
+
     </div>
   </div>
 </div>

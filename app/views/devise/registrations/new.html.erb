@@ -1,74 +1,162 @@
 <%# ============================================================ %>
-<%# Page d'inscription Noctilio %>
-<%# Ajout des champs prénom et nom par rapport au template Devise de base %>
+<%# Page d'inscription Noctilio — DA cosmique %>
+<%# Card centrée sur fond nuit, Cormorant Garamond, inputs sombres %>
 <%# ============================================================ %>
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
+<%# Styles partagés avec la page de connexion (sessions/new.html.erb) %>
+<style nonce="<%= content_security_policy_nonce %>">
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .auth-card {
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 460px;
+  }
+  .auth-logo {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.5rem; margin-bottom: 1.5rem;
+  }
+  .auth-logo-icon { font-size: 2rem; line-height: 1; }
+  .auth-logo-name {
+    font-family: 'Cormorant Garamond', serif;
+    color: #f0c97a; font-size: 1.5rem; font-weight: 400; letter-spacing: 0.04em;
+  }
+  .auth-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; color: #fdf6e3;
+    font-size: 2rem; font-weight: 300;
+    text-align: center; margin-bottom: 0.3rem; line-height: 1.2;
+  }
+  .auth-subtitle { color: #8a8578; font-size: 0.9rem; text-align: center; margin-bottom: 2rem; }
+  /* Surcharge Simple Form — labels uppercase, inputs sombres */
+  .auth-card .form-group { margin-bottom: 1.1rem; }
+  .auth-card .form-group > label,
+  .auth-card label.control-label {
+    display: block; color: #8a8578;
+    font-size: 0.78rem; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem;
+  }
+  .auth-card .form-group input[type="email"],
+  .auth-card .form-group input[type="password"],
+  .auth-card .form-group input[type="text"],
+  .auth-card .form-control {
+    display: block; width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    color: #d4cfc4; border-radius: 10px;
+    padding: 0.75rem 1rem; font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+  }
+  .auth-card .form-group input:focus,
+  .auth-card .form-control:focus {
+    border-color: #f0c97a; outline: none;
+    box-shadow: 0 0 0 3px rgba(240, 201, 122, 0.1);
+  }
+  .auth-card .form-group input::placeholder,
+  .auth-card .form-control::placeholder { color: #8a8578; }
+  .auth-card .form-text, .auth-card .hint { color: #8a8578; font-size: 0.78rem; margin-top: 0.3rem; }
+  .auth-card .invalid-feedback,
+  .auth-card .form-group .error { color: rgba(220, 80, 80, 0.9); font-size: 0.85rem; margin-top: 0.3rem; }
+  .auth-btn {
+    display: block; width: 100%;
+    background: #f0c97a; color: #0b0e1a;
+    border-radius: 50px; font-weight: 600;
+    font-size: 1rem; padding: 0.75rem; border: none; cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease; margin-top: 1.5rem;
+  }
+  .auth-btn:hover { background: #e8b95a; transform: translateY(-1px); }
+  .auth-links { margin-top: 1.5rem; text-align: center; color: #8a8578; font-size: 0.88rem; }
+  .auth-links a { color: rgba(240, 201, 122, 0.8); text-decoration: none; transition: color 0.2s ease; }
+  .auth-links a:hover { color: #f0c97a; }
+  .auth-links-divider { display: block; height: 1px; background: rgba(240, 201, 122, 0.1); margin: 1rem 0; }
+  .auth-errors {
+    background: rgba(220, 80, 80, 0.08);
+    border: 1px solid rgba(220, 80, 80, 0.3);
+    border-radius: 8px; padding: 0.75rem 1rem;
+    margin-bottom: 1rem; color: rgba(220, 80, 80, 0.9); font-size: 0.85rem;
+  }
+  /* Séparateur de section dans le formulaire */
+  .auth-section-sep {
+    border: none; border-top: 1px solid rgba(240, 201, 122, 0.08); margin: 1rem 0;
+  }
+</style>
 
-      <%# En-tête %>
-      <div class="text-center mb-4">
-        <span style="font-size: 3rem;">🌙</span>
-        <h1 class="fw-bold mt-2">Créer un compte</h1>
-        <p class="text-muted">Rejoignez Noctilio et commencez à créer des histoires magiques</p>
-      </div>
+<div class="auth-page">
+  <div class="auth-card">
 
-      <div class="card border-0 shadow-sm p-4">
-        <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-          <%= f.error_notification %>
-
-          <%# Prénom et nom sur la même ligne %>
-          <div class="row g-3 mb-1">
-            <div class="col-6">
-              <%= f.input :first_name,
-                    label: "Prénom",
-                    placeholder: "Ex: Marie",
-                    autofocus: true,
-                    input_html: { autocomplete: "given-name" } %>
-            </div>
-            <div class="col-6">
-              <%= f.input :last_name,
-                    label: "Nom",
-                    placeholder: "Ex: Dupont",
-                    input_html: { autocomplete: "family-name" } %>
-            </div>
-          </div>
-
-          <%# Email %>
-          <%= f.input :email,
-                label: "Adresse e-mail",
-                required: true,
-                placeholder: "votre@email.com",
-                input_html: { autocomplete: "email" } %>
-
-          <%# Mot de passe %>
-          <%= f.input :password,
-                label: "Mot de passe",
-                required: true,
-                hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
-                input_html: { autocomplete: "new-password" } %>
-
-          <%# Confirmation du mot de passe %>
-          <%= f.input :password_confirmation,
-                label: "Confirmer le mot de passe",
-                required: true,
-                input_html: { autocomplete: "new-password" } %>
-
-          <%# Bouton d'inscription %>
-          <div class="d-grid mt-3">
-            <%= f.button :submit, "Créer mon compte ✨", class: "btn btn-primary btn-lg" %>
-          </div>
-
-        <% end %>
-      </div>
-
-      <%# Lien vers la connexion %>
-      <div class="text-center mt-3 text-muted">
-        Déjà un compte ?
-        <%= link_to "Se connecter", new_user_session_path %>
-      </div>
-
+    <%# Logo Noctilio %>
+    <div class="auth-logo">
+      <span class="auth-logo-icon">🌙</span>
+      <span class="auth-logo-name">Noctilio</span>
     </div>
+
+    <%# Titre et sous-titre %>
+    <h1 class="auth-title">Créer un compte</h1>
+    <p class="auth-subtitle">Rejoignez Noctilio et commencez à créer des histoires magiques</p>
+
+    <%# Formulaire d'inscription Devise %>
+    <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+      <%= f.error_notification message: f.object.errors.full_messages.to_sentence,
+            html: { class: "auth-errors" } if f.object.errors.any? %>
+
+      <%# Prénom et nom sur la même ligne %>
+      <div class="row g-2">
+        <div class="col-6">
+          <%= f.input :first_name,
+                label: "Prénom",
+                placeholder: "Ex: Marie",
+                autofocus: true,
+                input_html: { autocomplete: "given-name" } %>
+        </div>
+        <div class="col-6">
+          <%= f.input :last_name,
+                label: "Nom",
+                placeholder: "Ex: Dupont",
+                input_html: { autocomplete: "family-name" } %>
+        </div>
+      </div>
+
+      <%# Email %>
+      <%= f.input :email,
+            label: "Adresse e-mail",
+            required: true,
+            placeholder: "votre@email.com",
+            input_html: { autocomplete: "email" } %>
+
+      <hr class="auth-section-sep">
+
+      <%# Mot de passe %>
+      <%= f.input :password,
+            label: "Mot de passe",
+            required: true,
+            hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
+            input_html: { autocomplete: "new-password" } %>
+
+      <%# Confirmation du mot de passe %>
+      <%= f.input :password_confirmation,
+            label: "Confirmer le mot de passe",
+            required: true,
+            input_html: { autocomplete: "new-password" } %>
+
+      <%# Bouton d'inscription — pill doré %>
+      <%= f.button :submit, "Créer mon compte ✨", class: "auth-btn" %>
+
+    <% end %>
+
+    <%# Lien vers la connexion %>
+    <div class="auth-links">
+      Déjà un compte ?
+      <%= link_to "Se connecter →", new_user_session_path %>
+    </div>
+
   </div>
 </div>

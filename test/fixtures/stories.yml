@@ -1,0 +1,84 @@
+# Fixtures pour les histoires
+# Chaque histoire appartient à un enfant (child_id)
+# Les statuts correspondent à l'enum : pending=0, generating=1, completed=2, failed=3
+
+# Histoire terminée et sauvegardée — apparaît dans l'index (bibliothèque)
+completed_saved:
+  title: "Le voyage de Léo dans l'espace"
+  content: "Il était une fois un petit garçon nommé Léo qui rêvait d'étoiles..."
+  status: 2
+  saved: true
+  interactive: false
+  child: leo
+  educational_value: courage
+  duration_minutes: 5
+  created_at: <%= Time.current %>
+
+# Histoire terminée mais non sauvegardée — ne doit PAS apparaître dans l'index
+completed_not_saved:
+  title: "L'aventure des dinosaures"
+  content: "Un matin, Léo découvrit un oeuf de dinosaure géant..."
+  status: 2
+  saved: false
+  interactive: false
+  child: leo
+  educational_value: sharing
+  duration_minutes: 10
+  created_at: <%= Time.current %>
+
+# Histoire encore en cours de génération — statut pending
+pending_story:
+  title:
+  content:
+  status: 0
+  saved: false
+  interactive: false
+  child: leo
+  created_at: <%= Time.current %>
+
+# Histoire qui a échoué lors de la génération
+failed_story:
+  title:
+  content:
+  status: 3
+  saved: false
+  interactive: false
+  child: leo
+  created_at: <%= Time.current %>
+
+# Histoire interactive avec un choix en attente
+interactive_story:
+  title: "Le mystère de la forêt"
+  content: "Léo se retrouva face à un embranchement dans la forêt enchantée..."
+  status: 2
+  saved: false
+  interactive: true
+  child: leo
+  educational_value: courage
+  duration_minutes: 15
+  created_at: <%= Time.current %>
+
+# Histoire du mois DERNIER — pour tester stories_this_month
+# Cette histoire ne doit PAS être comptée dans le mois courant
+old_story:
+  title: "Le pirate du passé"
+  content: "Il y a longtemps, sur une mer lointaine..."
+  status: 2
+  saved: true
+  interactive: false
+  child: leo
+  educational_value: kindness
+  duration_minutes: 5
+  created_at: <%= 2.months.ago %>
+
+# Histoire de Paul — ne doit JAMAIS être accessible par Marie
+paul_story:
+  title: "L'aventure de Théo"
+  content: "Théo se lança dans une grande aventure..."
+  status: 2
+  saved: true
+  interactive: false
+  child: theo
+  educational_value: courage
+  duration_minutes: 5
+  created_at: <%= Time.current %>

@@ -1,0 +1,10 @@
+# Fixtures pour les associations user-badge
+# Un user_badge relie un utilisateur à un badge qu'il a déjà obtenu
+# earned_at est obligatoire (validates presence: true)
+
+# Marie a déjà le badge "première histoire"
+# Utile pour tester que check_and_award ne crée pas de doublon
+marie_first_story:
+  user: marie
+  badge: first_story
+  earned_at: <%= 1.week.ago %>

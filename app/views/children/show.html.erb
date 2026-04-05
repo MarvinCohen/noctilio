@@ -1,50 +1,78 @@
 <%# ============================================================ %>
 <%# Profil d'un enfant — affiche ses infos et ses histoires %>
+<%# DA cosmique : fond sombre #111527, accents dorés #f0c97a %>
+<%# Les styles sont définis dans _children.scss (classes ch-*) %>
 <%# ============================================================ %>
 
-<div class="container py-4">
+<div class="container py-5">
 
-  <%# En-tête : nom de l'enfant + actions %>
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center gap-3">
-      <%# Avatar avec initiale %>
-      <div class="child-show-avatar"><%= @child.name[0].upcase %></div>
-      <div>
-        <h1 class="fw-bold mb-0"><%= @child.name %></h1>
-        <p class="text-muted mb-0"><%= @child.age %> ans</p>
-      </div>
+  <%# ── En-tête : avatar grand + nom + actions ── %>
+  <div class="ch-show-header">
+
+    <%# Avatar emoji en cercle doré — variante large pour la page show %>
+    <div class="ch-avatar-circle ch-avatar-circle--lg">
+      <%= @child.gender == "girl" ? "👧" : "🧒" %>
     </div>
-    <div class="d-flex gap-2">
-      <%= link_to "✏️ Modifier", edit_child_path(@child), class: "btn btn-outline-secondary btn-sm" %>
-      <%= link_to "✨ Créer une histoire", new_story_path(child_id: @child.id), class: "btn btn-primary btn-sm" %>
+
+    <%# Nom et âge de l'enfant %>
+    <div class="ch-show-info">
+      <h1><%= @child.name %></h1>
+      <p><%= @child.age %> ans</p>
     </div>
-  </div>
 
-  <%# Histoires de cet enfant %>
-  <div class="card border-0 shadow-sm">
-    <div class="card-body p-4">
-      <h2 class="h5 fw-bold mb-3">Ses histoires</h2>
+    <%# Boutons d'action alignés à droite %>
+    <div class="ch-show-actions">
+      <%# Modifier le profil — outline doré %>
+      <%= link_to edit_child_path(@child), class: "ch-btn-secondary" do %>
+        ✏️ Modifier
+      <% end %>
 
-      <% if @stories.any? %>
-        <div class="d-flex flex-column gap-2">
-          <% @stories.each do |story| %>
-            <div class="d-flex align-items-center p-3 rounded-3 bg-light">
-              <div class="me-3 fs-3"><%= story.world_emoji %></div>
-              <div class="flex-grow-1">
-                <div class="fw-semibold"><%= story.title || "Histoire sans titre" %></div>
-                <small class="text-muted"><%= story.world_label %> · <%= story.duration_minutes %> min · <%= story.created_at.strftime("%d/%m/%Y") %></small>
-              </div>
-              <%= link_to "Lire", story_path(story), class: "btn btn-sm btn-outline-primary" %>
-            </div>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="text-muted text-center py-4">
-          Aucune histoire pour l'instant.<br>
-          <%= link_to "Créer la première ✨", new_story_path(child_id: @child.id) %>
-        </p>
+      <%# Créer une histoire pour cet enfant — CTA doré %>
+      <%= link_to new_story_path(child_id: @child.id), class: "ch-btn-primary" do %>
+        ✨ Créer une histoire
       <% end %>
     </div>
+
+  </div>
+
+  <%# ── Ses histoires — carte dark ── %>
+  <div class="ch-stories-section">
+
+    <%# Titre de section — Cormorant italic %>
+    <h2 class="ch-section-title">Ses histoires</h2>
+
+    <% if @stories.any? %>
+      <div class="d-flex flex-column gap-2">
+        <% @stories.each do |story| %>
+          <%# Ligne d'une histoire — fond légèrement plus clair, hover doré %>
+          <div class="ch-story-row">
+
+            <%# Emoji de l'univers de l'histoire %>
+            <span class="ch-story-emoji"><%= story.world_emoji %></span>
+
+            <%# Titre et méta de l'histoire %>
+            <div class="ch-story-info">
+              <div class="ch-story-title"><%= story.title || "Histoire sans titre" %></div>
+              <div class="ch-story-meta">
+                <%= story.world_label %> · <%= story.duration_minutes %> min · <%= story.created_at.strftime("%d/%m/%Y") %>
+              </div>
+            </div>
+
+            <%# Lien "Lire" — bouton secondaire pill %>
+            <%= link_to "Lire →", story_path(story), class: "ch-btn-secondary" %>
+
+          </div>
+        <% end %>
+      </div>
+
+    <% else %>
+      <%# Aucune histoire pour cet enfant %>
+      <div class="ch-no-stories">
+        <p>Aucune histoire pour l'instant.</p>
+        <%= link_to "Créer la première ✨", new_story_path(child_id: @child.id) %>
+      </div>
+    <% end %>
+
   </div>
 
 </div>
