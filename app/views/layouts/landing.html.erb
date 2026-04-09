@@ -15,8 +15,8 @@
     <%= csp_meta_tag %>
 
     <%# Favicon — mascotte hibou Noctilio %>
-    <link rel="icon" href="<%= asset_path('mascot.svg') %>" type="image/svg+xml">
-    <link rel="icon" href="<%= asset_path('mascot.png') %>" type="image/png" sizes="32x32">
+    <%= favicon_link_tag image_path('mascot.svg'), type: 'image/svg+xml' %>
+    <%= favicon_link_tag image_path('mascot.png'), type: 'image/png', sizes: '32x32' %>
 
     <%= yield :head %>
   </head>

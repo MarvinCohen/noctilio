@@ -57,6 +57,17 @@ export default class extends Controller {
     this._renderStepNoAnim()
     this._updateIndicators()
     this._updateProgress()
+
+    // Écoute le toggle interactif en temps réel pour mettre à jour le récap instantanément
+    const toggle = this.element.querySelector('input[name="story[interactive]"][type="checkbox"]')
+    if (toggle) {
+      toggle.addEventListener('change', () => {
+        if (this.hasSummaryInteractiveTarget) {
+          // Met à jour "Activé" / "Désactivé" dès le clic sur le toggle
+          this.summaryInteractiveTarget.textContent = toggle.checked ? "Activé" : "Désactivé"
+        }
+      })
+    }
   }
 
   // ============================================================
