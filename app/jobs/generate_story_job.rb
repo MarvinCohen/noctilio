@@ -65,15 +65,12 @@ class GenerateStoryJob < ApplicationJob
     # Évite le timeout Heroku de 30s — l'audio sera disponible quelques secondes après la page
     GenerateAudioJob.perform_later(story.id)
 
-    # 8. Générer l'image EN ARRIÈRE-PLAN, APRÈS completed
-    # L'image peut prendre du temps (fal.ai, DALL-E 3) — on ne bloque plus l'utilisateur pour ça.
-    # Le Stimulus story_image_controller poll /status toutes les 3s et affiche l'image quand dispo.
-    # Si la génération d'image échoue, l'histoire reste lisible — aucun impact sur le statut.
+    # Génère l'illustration via DALL-E 3 (ou fal.ai selon la config de ImageGeneratorService)
+    # On rescue StandardError pour ne pas bloquer la complétion de l'histoire si l'image échoue
     begin
       ImageGeneratorService.new(story).call
       Rails.logger.info("GenerateStoryJob — image générée pour story ##{story_id}")
     rescue StandardError => e
-      # Échec image non-bloquant — l'histoire est déjà lisible, on log juste l'erreur
       Rails.logger.error("GenerateStoryJob — échec image pour story ##{story_id} : #{e.message}")
     end
 

@@ -8,7 +8,12 @@
 
   <%# --- Logo à gauche --- %>
   <%= link_to root_path, class: "sidebar-brand" do %>
-    <span class="sidebar-logo-icon">🌙</span>
+    <%# Mascotte hibou — remplace l'icône lune %>
+    <%= image_tag "mascot.png",
+          alt:   "Noctilio",
+          width: 80,
+          height: 80,
+          style: "object-fit: contain; flex-shrink: 0;" %>
     <span class="sidebar-logo-name">Noctilio</span>
   <% end %>
 
@@ -67,7 +72,11 @@
   <div class="sidebar-footer">
 
     <%# Score XP — pastille dorée %>
-    <div class="sidebar-xp">⭐ <%= current_user.xp_points %> XP</div>
+    <%# Étoile SVG + points XP %>
+    <div class="sidebar-xp">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+      <%= current_user.xp_points %> XP
+    </div>
 
     <%# CTA Créer — bouton pill doré %>
     <%= link_to new_story_path, class: "sidebar-cta-btn" do %>

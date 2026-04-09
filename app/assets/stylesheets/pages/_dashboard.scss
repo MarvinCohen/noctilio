@@ -337,6 +337,17 @@ $text-dim: rgba(#fdf6e3, 0.45);
 // La chouette 🦉
 // ============================================================
 
+// Mascotte SVG — posée statique sur la barre, pattes qui accrochent le perchoir
+.db-owl-img {
+  display: block;
+  position: relative;
+  z-index: 2;
+  // Descend légèrement pour que les pattes touchent la barre dorée
+  margin-bottom: -4px;
+  // Halo doré subtil
+  filter: drop-shadow(0 4px 24px rgba($gold-lp, 0.4));
+}
+
 .db-owl {
   font-size: 4rem;           // Taille généreuse — bien visible
   display: block;

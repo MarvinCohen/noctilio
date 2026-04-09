@@ -73,13 +73,23 @@
   border-bottom: 1px solid rgba(240, 201, 122, 0.15); // Séparateur doré discret
 }
 
-// Paragraphes de l'histoire — espacement confortable pour la lecture
-// Police Noto Serif pour un rendu "livre" agréable
+// Paragraphes de l'histoire — Lora : serif chaleureuse, conçue pour la lecture longue
+// Style "livre de contes" — lisible, élégant, dans le thème nocturne de Noctilio
 .story-paragraph {
-  line-height: 1.85;
-  margin-bottom: 1.1rem;
-  color: #d4cfc4;              // Text — crème légèrement atténué pour un confort de lecture
-  font-size: 1rem;
+  line-height: 1.9;
+  margin-bottom: 1.2rem;
+  color: #e8e0d0;              // Crème légèrement plus chaud — encre sur parchemin
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+// Titres de chapitres — Cormorant Garamond italic, cohérent avec le reste de l'app
+.story-chapter {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-style: italic !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
 }
 
 // ============================================================

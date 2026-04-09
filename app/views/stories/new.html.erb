@@ -1,117 +1,210 @@
 <%# ============================================================ %>
-<%# Formulaire de création d'une nouvelle histoire %>
-<%# DA cosmique : cartes dark, accents dorés, Cormorant Garamond %>
-<%# story-creation controller gère : validation, feedback bouton, insertions d'idées %>
+<%# Formulaire de création d'histoire — Wizard 5 étapes %>
+<%# Navigation gérée par story-creation Stimulus controller %>
+<%# Le formulaire est unique — tous les champs sont soumis ensemble %>
 <%# ============================================================ %>
 
-<%# Styles inline — DA cosmique pour le formulaire de création %>
 <style nonce="<%= content_security_policy_nonce %>">
   /* ── Wrapper de page ── */
-  .new-story-page { padding: 2.5rem 0 4rem; }
+  .wizard-page { padding: 2rem 0 4rem; }
 
-  /* ── En-tête ── */
-  .new-story-eyebrow {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: #f0c97a;
-    margin-bottom: 0.5rem;
+  /* ── En-tête du wizard — titre + barre de progression + indicateurs ── */
+  .wizard-header {
+    margin-bottom: 2rem;
   }
-  /* Titre Cormorant Garamond italic */
-  .new-story-title {
+
+  /* Ligne supérieure : titre à gauche, indicateurs à droite */
+  .wizard-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+  }
+
+  /* Titre de la page wizard */
+  .wizard-page-title {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-style: italic;
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
     font-weight: 300;
     color: #fdf6e3;
-    margin-bottom: 2rem;
     line-height: 1.1;
+    margin: 0;
   }
 
-  /* ── Section (carte dark) — chaque étape du formulaire ── */
-  .new-story-section {
+  /* "Étape X / N" sous le titre */
+  .wizard-step-label {
+    font-size: 0.78rem;
+    color: #8a8578;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+  }
+
+  /* Rangée de cercles indicateurs */
+  .wizard-indicators {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding-top: 4px;
+  }
+
+  /* Chaque cercle indicateur */
+  .wizard-indicator {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(240, 201, 122, 0.25);
+    background: transparent;
+    color: #8a8578;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+  }
+
+  /* Étape courante — or plein */
+  .wizard-indicator--active {
+    background: #f0c97a;
+    border-color: #f0c97a;
+    color: #0b0e1a;
+    transform: scale(1.1);
+  }
+
+  /* Étape passée — fond indigo + coche */
+  .wizard-indicator--done {
+    background: rgba(240, 201, 122, 0.15);
+    border-color: rgba(240, 201, 122, 0.4);
+    color: #f0c97a;
+  }
+
+  /* Barre de progression mince */
+  .wizard-progress-track {
+    height: 3px;
+    background: rgba(240, 201, 122, 0.1);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .wizard-progress-fill {
+    height: 100%;
+    background: #f0c97a;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* ── Carte de contenu de chaque étape ── */
+  .wizard-card {
     background: #111527;
     border: 1px solid rgba(240, 201, 122, 0.15);
-    border-radius: 16px;
-    padding: 1.75rem;
-    margin-bottom: 1.25rem;
-  }
-  /* Titre de section en Cormorant italic */
-  .new-story-section-title {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-style: italic;
-    font-size: 1.25rem;
-    color: #fdf6e3;
-    font-weight: 600;
-    margin-bottom: 0.3rem;
-  }
-  /* Sous-texte de section */
-  .new-story-section-hint {
-    color: #8a8578;
-    font-size: 0.82rem;
-    margin-bottom: 1rem;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
   }
 
-  /* ── Inputs / Textarea — fond sombre, bordure dorée ── */
-  .new-story-textarea,
-  .new-story-input {
+  /* Titre de l'étape — question principale */
+  .wizard-question {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+    font-weight: 400;
+    color: #fdf6e3;
+    margin-bottom: 0.35rem;
+    line-height: 1.2;
+  }
+
+  /* Sous-titre de l'étape */
+  .wizard-hint {
+    color: #8a8578;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── Sélecteur d'enfant ── */
+  .child-selector {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    color: #d4cfc4;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .child-selector:has(input:checked),
+  .child-selector.selected {
+    border-color: rgba(240, 201, 122, 0.6);
+    background: rgba(240, 201, 122, 0.08);
+  }
+  .child-selector:hover { border-color: rgba(240, 201, 122, 0.35); }
+  .child-selector input { display: none; }
+  .child-name { font-weight: 600; color: #fdf6e3; font-size: 0.95rem; }
+  .child-meta { color: #8a8578; font-size: 0.82rem; }
+
+  /* Avatar enfant dans le sélecteur */
+  .child-selector-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(240, 201, 122, 0.1);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f0c97a;
+    flex-shrink: 0;
+  }
+
+  /* Coche à droite quand sélectionné */
+  .child-selector-check {
+    margin-left: auto;
+    color: #f0c97a;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .child-selector:has(input:checked) .child-selector-check,
+  .child-selector.selected .child-selector-check { opacity: 1; }
+
+  /* ── Textarea aventure ── */
+  .wizard-textarea {
     display: block;
     width: 100%;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(240, 201, 122, 0.2);
-    border-radius: 10px;
+    border-radius: 12px;
     color: #d4cfc4;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.95rem;
-    padding: 0.7rem 1rem;
-    transition: border-color 0.2s ease;
+    padding: 0.85rem 1rem;
     resize: vertical;
+    min-height: 110px;
+    transition: border-color 0.2s ease;
   }
-  .new-story-textarea::placeholder,
-  .new-story-input::placeholder { color: rgba(138, 133, 120, 0.6); }
-  .new-story-textarea:focus,
-  .new-story-input:focus {
+  .wizard-textarea::placeholder { color: rgba(138, 133, 120, 0.55); }
+  .wizard-textarea:focus {
     outline: none;
     border-color: #f0c97a;
     background: rgba(240, 201, 122, 0.03);
     box-shadow: 0 0 0 3px rgba(240, 201, 122, 0.08);
   }
 
-  /* ── Sélecteur d'enfant (child-selector) — pill sombre, selected = bordure dorée ── */
-  /* :has(input:checked) détecte si la checkbox cachée est cochée */
-  .child-selector {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(240, 201, 122, 0.15);
-    border-radius: 12px;
-    padding: 0.85rem 1rem;
-    cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
-    color: #d4cfc4;
-  }
-  /* État sélectionné : bordure dorée + fond mist */
-  .child-selector:has(input:checked) {
-    border-color: rgba(240, 201, 122, 0.5);
-    background: rgba(240, 201, 122, 0.08);
-  }
-  .child-selector:hover { border-color: rgba(240, 201, 122, 0.3); }
-  /* Nom de l'enfant en crème */
-  .child-selector .child-name { font-weight: 600; color: #fdf6e3; font-size: 0.92rem; }
-  /* Méta (âge, genre) en text-dim */
-  .child-selector .child-meta { color: #8a8578; font-size: 0.8rem; }
-
-  /* ── Boutons idées cliquables — pills transparents ── */
+  /* Pill idée cliquable */
   .idea-pill {
     display: inline-flex;
     align-items: center;
-    padding: 0.3rem 0.8rem;
+    padding: 0.3rem 0.75rem;
     background: transparent;
-    border: 1px solid rgba(240, 201, 122, 0.2);
+    border: 1px solid rgba(240, 201, 122, 0.18);
     border-radius: 50px;
     color: #8a8578;
     font-size: 0.78rem;
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: all 0.15s ease;
   }
   .idea-pill:hover {
     background: rgba(240, 201, 122, 0.08);
@@ -119,315 +212,681 @@
     border-color: rgba(240, 201, 122, 0.4);
   }
 
-  /* ── Label section — petit, uppercase, text-dim ── */
-  .new-story-label {
-    display: block;
-    color: #8a8578;
-    font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
+  /* ── Cartes de valeur éducative ── */
+  .value-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
   }
 
-  /* ── Badge-selector (valeur éducative) — pills ── */
-  /* Classe "selected" ajoutée par story-creation#onRadioChange */
-  .badge-selector {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.4rem 1rem;
-    background: transparent;
-    border: 1px solid rgba(240, 201, 122, 0.2);
-    border-radius: 50px;
-    color: #8a8578;
-    font-size: 0.85rem;
+  .value-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1.5px solid rgba(240, 201, 122, 0.15);
+    border-radius: 16px;
+    padding: 1.5rem 1rem;
     cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .badge-selector input { display: none; }
-  /* Sélectionné : fond doré, texte sombre */
-  .badge-selector:has(input:checked),
-  .badge-selector.selected {
-    background: #f0c97a;
-    color: #0b0e1a;
-    border-color: #f0c97a;
-    font-weight: 600;
-  }
-  .badge-selector:hover:not(:has(input:checked)):not(.selected) {
-    border-color: rgba(240, 201, 122, 0.4);
-    color: #d4cfc4;
-    background: rgba(240, 201, 122, 0.06);
-  }
-
-  /* ── Sélecteur de durée — cartes visuelles ── */
-  .duration-selector {
+    transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 1rem 1.25rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(240, 201, 122, 0.15);
-    border-radius: 12px;
-    cursor: pointer;
-    min-width: 90px;
-    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+    gap: 0.75rem;
+    text-align: center;
   }
-  .duration-selector input { display: none; }
-  /* Sélectionné : bordure dorée + fond mist + légère élévation */
-  .duration-selector:has(input:checked),
-  .duration-selector.selected {
-    border-color: rgba(240, 201, 122, 0.55);
+  .value-card input { display: none; }
+  .value-card:has(input:checked),
+  .value-card.selected {
+    border-color: #f0c97a;
     background: rgba(240, 201, 122, 0.08);
-    transform: scale(1.04);
   }
-  .duration-selector:hover { border-color: rgba(240, 201, 122, 0.3); }
-  /* Emoji grande taille */
-  .duration-icon { font-size: 1.6rem; line-height: 1; }
-  /* Label principal */
-  .duration-label { font-size: 0.92rem; font-weight: 600; color: #d4cfc4; margin-top: 4px; }
-  /* Sous-label discret */
-  .duration-sub { font-size: 0.72rem; color: #8a8578; }
+  .value-card:hover:not(:has(input:checked)):not(.selected) {
+    border-color: rgba(240, 201, 122, 0.35);
+    background: rgba(240, 201, 122, 0.04);
+  }
 
-  /* ── Toggle mode interactif — form-switch adapté ── */
-  .new-story-toggle-label { color: #d4cfc4; font-weight: 500; }
-  .new-story-toggle-hint { color: #8a8578; font-size: 0.82rem; }
-  /* Badge "Premium" dans le toggle désactivé */
-  .new-story-premium-badge {
-    display: inline-flex;
-    padding: 0.15rem 0.6rem;
-    background: rgba(240, 201, 122, 0.15);
+  /* Icône de la valeur — cercle doré */
+  .value-icon {
+    width: 48px; height: 48px;
+    background: rgba(240, 201, 122, 0.1);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #f0c97a;
-    border: 1px solid rgba(240, 201, 122, 0.3);
-    border-radius: 50px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    margin-left: 0.4rem;
   }
-  /* Lien "passer en premium" dans le mode interactif désactivé */
-  .new-story-upgrade-link { color: rgba(240, 201, 122, 0.7); }
-  .new-story-upgrade-link:hover { color: #f0c97a; }
+  .value-card:has(input:checked) .value-icon,
+  .value-card.selected .value-icon {
+    background: rgba(240, 201, 122, 0.2);
+    border-color: #f0c97a;
+  }
 
-  /* Override form-check-input pour le toggle cosmique */
-  .new-story-section .form-check-input:checked {
+  .value-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #d4cfc4;
+  }
+  .value-card:has(input:checked) .value-label,
+  .value-card.selected .value-label { color: #f0c97a; font-weight: 600; }
+
+  /* ── Cartes de durée ── */
+  .duration-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .duration-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1.5px solid rgba(240, 201, 122, 0.15);
+    border-radius: 16px;
+    padding: 1.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+  }
+  .duration-card input { display: none; }
+  .duration-card:has(input:checked),
+  .duration-card.selected {
+    border-color: #f0c97a;
+    background: rgba(240, 201, 122, 0.08);
+    transform: scale(1.03);
+  }
+  .duration-card:hover:not(:has(input:checked)):not(.selected) {
+    border-color: rgba(240, 201, 122, 0.35);
+  }
+
+  /* Chiffre grand en Cormorant */
+  .duration-number {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 2.8rem;
+    font-weight: 300;
+    color: #fdf6e3;
+    line-height: 1;
+  }
+  .duration-card:has(input:checked) .duration-number,
+  .duration-card.selected .duration-number { color: #f0c97a; }
+
+  .duration-unit {
+    font-size: 0.78rem;
+    color: #8a8578;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .duration-sub {
+    font-size: 0.72rem;
+    color: rgba(138, 133, 120, 0.7);
+    margin-top: 2px;
+  }
+  .duration-card:has(input:checked) .duration-unit,
+  .duration-card.selected .duration-unit { color: rgba(240, 201, 122, 0.7); }
+
+  /* ── Toggle interactif ── */
+  .wizard-toggle-row {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(240, 201, 122, 0.12);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .wizard-toggle-label { font-size: 0.95rem; color: #d4cfc4; font-weight: 500; }
+  .wizard-toggle-hint { font-size: 0.82rem; color: #8a8578; margin-top: 3px; }
+
+  /* Override form-switch */
+  .wizard-toggle-row .form-check-input:checked {
     background-color: #f0c97a;
     border-color: #f0c97a;
   }
-  .new-story-section .form-check-input:focus {
+  .wizard-toggle-row .form-check-input:focus {
     box-shadow: 0 0 0 3px rgba(240, 201, 122, 0.15);
-    border-color: rgba(240, 201, 122, 0.5);
+  }
+  .wizard-toggle-row .form-check-input {
+    width: 2.5em;
+    height: 1.3em;
   }
 
-  /* ── Message d'erreur enfant manquant ── */
-  .new-story-child-error { color: rgba(220, 100, 100, 0.9); font-size: 0.85rem; }
+  /* Badge Premium inline */
+  .wizard-premium-badge {
+    display: inline-flex;
+    padding: 0.12rem 0.55rem;
+    background: rgba(240, 201, 122, 0.12);
+    color: #f0c97a;
+    border: 1px solid rgba(240, 201, 122, 0.25);
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 0.4rem;
+  }
 
-  /* ── Bouton lien secondaire — outline doré pill ── */
-  .new-story-link-secondary {
+  /* ── Récapitulatif (étape 5) ── */
+  .summary-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(240, 201, 122, 0.12);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 1.25rem;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    gap: 1rem;
+  }
+  .summary-row:last-child { border-bottom: none; }
+
+  .summary-key {
+    font-size: 0.78rem;
+    color: #8a8578;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  .summary-val {
+    font-size: 0.9rem;
+    color: #d4cfc4;
+    text-align: right;
+    font-weight: 500;
+    max-width: 60%;
+  }
+
+  /* ── Navigation : Retour / Suivant ── */
+  .wizard-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  /* Bouton Retour — transparent, outline doré */
+  .wizard-btn-back {
     display: inline-flex;
     align-items: center;
-    padding: 0.35rem 0.9rem;
+    gap: 6px;
+    padding: 0.7rem 1.4rem;
     background: transparent;
     border: 1px solid rgba(240, 201, 122, 0.25);
     border-radius: 50px;
     color: rgba(240, 201, 122, 0.7);
-    font-size: 0.82rem;
-    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
     transition: all 0.15s ease;
+    text-decoration: none;
   }
-  .new-story-link-secondary:hover {
+  .wizard-btn-back:hover {
     border-color: rgba(240, 201, 122, 0.5);
     color: #f0c97a;
     background: rgba(240, 201, 122, 0.06);
-    text-decoration: none;
   }
 
-  /* ── Bouton submit principal ── */
-  .new-story-submit {
+  /* Bouton Suivant — doré plein */
+  .wizard-btn-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.75rem 2rem;
+    background: #f0c97a;
+    color: #0b0e1a;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    margin-left: auto;
+  }
+  .wizard-btn-next:hover { opacity: 0.88; transform: translateY(-1px); }
+  .wizard-btn-next:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Bouton Générer — doré plein, plus grand */
+  .wizard-btn-generate {
     display: block;
     width: 100%;
-    padding: 0.9rem;
+    padding: 1rem;
     background: #f0c97a;
     color: #0b0e1a;
     border: none;
     border-radius: 50px;
     font-family: 'DM Sans', sans-serif;
-    font-weight: 700;
     font-size: 1.05rem;
+    font-weight: 700;
     cursor: pointer;
     transition: opacity 0.2s ease, transform 0.1s ease;
+    margin-top: 1.5rem;
+    text-align: center;
   }
-  .new-story-submit:hover { opacity: 0.88; transform: translateY(-1px); }
-  .new-story-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .wizard-btn-generate:hover { opacity: 0.88; transform: translateY(-1px); }
+  .wizard-btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  /* Animation spin pour le chargement */
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Message d'erreur ── */
+  .wizard-error {
+    color: rgba(220, 100, 100, 0.9);
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 0.75rem;
+  }
+
+  /* Lien secondaire "Nouveau profil" */
+  .wizard-link-secondary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.85rem;
+    background: transparent;
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 50px;
+    color: rgba(240, 201, 122, 0.65);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    margin-top: 0.75rem;
+  }
+  .wizard-link-secondary:hover {
+    border-color: rgba(240, 201, 122, 0.45);
+    color: #f0c97a;
+    text-decoration: none;
+    background: rgba(240, 201, 122, 0.05);
+  }
+
+  /* ── Animations de transition entre étapes ── */
+
+  /* Wrapper — clip les slides qui sortent de l'écran */
+  .wizard-steps-wrapper {
+    position: relative;
+    overflow: hidden; /* coupe ce qui dépasse horizontalement */
+  }
+
+  /* État de base de chaque étape */
+  .wizard-step { width: 100%; }
+
+  /* ── Sortie : la carte part complètement hors écran ── */
+  /* position:absolute pendant la sortie pour ne pas pousser le contenu */
+  .wizard-step--exit-left {
+    position: absolute;
+    top: 0; left: 0; width: 100%;
+    animation: slideOutLeft 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .wizard-step--exit-right {
+    position: absolute;
+    top: 0; left: 0; width: 100%;
+    animation: slideOutRight 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* ── Entrée : la carte arrive depuis hors écran ── */
+  .wizard-step--enter-right {
+    animation: slideInRight 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .wizard-step--enter-left {
+    animation: slideInLeft 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Sortie complète hors de l'écran */
+  @keyframes slideOutLeft {
+    from { transform: translateX(0);     }
+    to   { transform: translateX(-110%); }
+  }
+  @keyframes slideOutRight {
+    from { transform: translateX(0);    }
+    to   { transform: translateX(110%); }
+  }
+
+  /* Entrée depuis hors de l'écran */
+  @keyframes slideInRight {
+    from { transform: translateX(110%); }
+    to   { transform: translateX(0);    }
+  }
+  @keyframes slideInLeft {
+    from { transform: translateX(-110%); }
+    to   { transform: translateX(0);     }
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .value-grid { grid-template-columns: repeat(2, 1fr); }
+    .duration-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .wizard-card { padding: 1.5rem; }
+    .duration-number { font-size: 2rem; }
+    .wizard-header-top { flex-direction: column; gap: 0.75rem; }
+    .wizard-indicators { align-self: flex-end; }
+  }
 </style>
 
-<%# data-action="change" : écoute les radio/checkbox en bubbling %>
-<%# data-action="submit" : valide avant d'envoyer le formulaire %>
-<div class="container new-story-page"
+<%# ── Wrapper principal — data-controller Stimulus ── %>
+<div class="container wizard-page"
      data-controller="story-creation"
      data-action="change->story-creation#onRadioChange submit->story-creation#validateForm">
+
   <div class="row justify-content-center">
-    <div class="col-lg-8">
+    <div class="col-lg-7 col-xl-6">
 
-      <%# En-tête %>
-      <p class="new-story-eyebrow">✦ Nouvelle histoire</p>
-      <h1 class="new-story-title">Crée ton histoire magique</h1>
+      <%# ── En-tête du wizard ── %>
+      <div class="wizard-header">
+        <div class="wizard-header-top">
 
+          <%# Titre + label étape %>
+          <div>
+            <h1 class="wizard-page-title">Crée ton histoire</h1>
+            <p class="wizard-step-label" data-story-creation-target="stepTitle">Étape 1 / 5</p>
+          </div>
+
+          <%# Cercles indicateurs %>
+          <div class="wizard-indicators">
+            <% 5.times do |i| %>
+              <div class="wizard-indicator <%= i == 0 ? 'wizard-indicator--active' : '' %>"
+                   data-story-creation-target="indicator">
+                <%= i + 1 %>
+              </div>
+            <% end %>
+          </div>
+
+        </div>
+
+        <%# Barre de progression %>
+        <div class="wizard-progress-track">
+          <div class="wizard-progress-fill" data-story-creation-target="progressFill"></div>
+        </div>
+      </div>
+
+      <%# ── Formulaire unique — tous les champs soumis ensemble ── %>
       <%= simple_form_for @story, url: stories_path do |f| %>
         <%= f.error_notification %>
 
-        <%# ================================================ %>
-        <%# ÉTAPE 1 — Choix des héros %>
-        <%# ================================================ %>
-        <div class="new-story-section">
-          <h2 class="new-story-section-title">👤 Qui sont les héros ?</h2>
-          <p class="new-story-section-hint">Tu peux sélectionner plusieurs enfants.</p>
+        <%# Wrapper overflow:hidden — nécessaire pour que les slides ne débordent pas %>
+        <div class="wizard-steps-wrapper">
 
-          <% if @children.any? %>
-            <div class="row g-2">
-              <% @children.each do |child| %>
-                <div class="col-sm-6">
-                  <%# data-action="change" déclenche onCheckboxChange pour la validation en temps réel %>
-                  <label class="child-selector w-100 d-flex align-items-center gap-3">
+        <%# ================================================ %>
+        <%# ÉTAPE 1 — Qui sont les héros ? %>
+        <%# ================================================ %>
+        <div class="wizard-step" data-story-creation-target="step" data-step="1">
+          <div class="wizard-card">
+            <h2 class="wizard-question">Qui sont les héros ?</h2>
+            <p class="wizard-hint">Tu peux sélectionner plusieurs enfants.</p>
+
+            <div class="d-flex flex-column gap-2">
+              <% if @children.any? %>
+                <% @children.each do |child| %>
+                  <%# Label-carte cliquable — checkbox cachée à l'intérieur %>
+                  <label class="child-selector">
                     <input type="checkbox"
                            name="story[child_ids][]"
                            value="<%= child.id %>"
-                           class="form-check-input d-none"
                            data-action="change->story-creation#onCheckboxChange">
+
+                    <%# Avatar SVG %>
+                    <div class="child-selector-avatar">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="7" r="4"/>
+                        <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
+                        <% if child.gender == "girl" %>
+                          <path d="M9 7c0-1.1.9-2 2-2 1.5 0 2.5 1 2 3"/>
+                        <% end %>
+                      </svg>
+                    </div>
+
+                    <%# Infos enfant %>
                     <div>
                       <div class="child-name"><%= child.name %></div>
                       <div class="child-meta"><%= child.age %> ans · <%= child.gender == "boy" ? "Garçon" : "Fille" %></div>
                     </div>
+
+                    <%# Coche de sélection %>
+                    <div class="child-selector-check">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
                   </label>
+                <% end %>
+              <% else %>
+                <%# Aucun enfant — invite à en créer un %>
+                <p style="color:#8a8578; font-size:0.88rem;">Aucun profil enfant encore.</p>
+              <% end %>
+            </div>
+
+            <%# Message d'erreur — caché par défaut %>
+            <p class="wizard-error d-none" data-story-creation-target="childError">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Sélectionne au moins un enfant.
+            </p>
+
+            <%= link_to "+ Nouveau profil", new_child_path, class: "wizard-link-secondary" %>
+          </div>
+
+          <%# Navigation %>
+          <div class="wizard-nav">
+            <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
+              Suivant
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <%# ================================================ %>
+        <%# ÉTAPE 2 — Quelle aventure ? %>
+        <%# ================================================ %>
+        <div class="wizard-step d-none" data-story-creation-target="step" data-step="2">
+          <div class="wizard-card">
+            <h2 class="wizard-question">Quelle aventure ?</h2>
+            <p class="wizard-hint">Décris librement — un rêve, un lieu magique, un super-pouvoir…</p>
+
+            <%= f.text_area :custom_theme,
+                  rows: 4,
+                  class: "wizard-textarea",
+                  placeholder: "Ex : Elle veut être une exploratrice qui découvre une île secrète avec des animaux parlants…" %>
+
+            <%# Idées cliquables %>
+            <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+              <span style="font-size:0.72rem; color:#8a8578;">Inspiration :</span>
+              <% [
+                "🚀 Astronaute sur une planète de robots",
+                "🦄 Princesse et sa licorne magique",
+                "🦕 Voyage chez les dinosaures",
+                "🏴‍☠️ Pirate cherchant un trésor",
+                "🌳 Gardien de la forêt enchantée"
+              ].each do |idea| %>
+                <button type="button"
+                        class="idea-pill"
+                        data-action="click->story-creation#insertIdea"
+                        data-idea="<%= idea %>">
+                  <%= idea %>
+                </button>
+              <% end %>
+            </div>
+          </div>
+
+          <%# Navigation %>
+          <div class="wizard-nav">
+            <button type="button" class="wizard-btn-back" data-action="click->story-creation#prevStep">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Retour
+            </button>
+            <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
+              Suivant
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <%# ================================================ %>
+        <%# ÉTAPE 3 — Ce qu'ils vont apprendre %>
+        <%# ================================================ %>
+        <div class="wizard-step d-none" data-story-creation-target="step" data-step="3">
+          <div class="wizard-card">
+            <h2 class="wizard-question">Ce qu'ils vont apprendre</h2>
+            <p class="wizard-hint">Choisir une valeur éducative au cœur de l'histoire.</p>
+
+            <div class="value-grid">
+              <%# Courage %>
+              <label class="value-card <%= 'selected' if @story.educational_value == 'courage' %>">
+                <%= f.radio_button :educational_value, "courage" %>
+                <div class="value-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
                 </div>
-              <% end %>
+                <span class="value-label">Courage</span>
+              </label>
+
+              <%# Partage %>
+              <label class="value-card <%= 'selected' if @story.educational_value == 'sharing' %>">
+                <%= f.radio_button :educational_value, "sharing" %>
+                <div class="value-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                </div>
+                <span class="value-label">Partage</span>
+              </label>
+
+              <%# Gentillesse %>
+              <label class="value-card <%= 'selected' if @story.educational_value == 'kindness' %>">
+                <%= f.radio_button :educational_value, "kindness" %>
+                <div class="value-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </div>
+                <span class="value-label">Gentillesse</span>
+              </label>
+
+              <%# Confiance %>
+              <label class="value-card <%= 'selected' if @story.educational_value == 'confidence' %>">
+                <%= f.radio_button :educational_value, "confidence" %>
+                <div class="value-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                </div>
+                <span class="value-label">Confiance</span>
+              </label>
             </div>
-          <% end %>
+          </div>
 
-          <%# Message d'erreur — caché par défaut %>
-          <p class="new-story-child-error small mt-2 d-none" data-story-creation-target="childError">
-            ⚠️ Sélectionne au moins un enfant pour créer l'histoire.
-          </p>
-
-          <div class="mt-3">
-            <%= link_to "+ Nouveau profil", new_child_path, class: "new-story-link-secondary" %>
+          <%# Navigation %>
+          <div class="wizard-nav">
+            <button type="button" class="wizard-btn-back" data-action="click->story-creation#prevStep">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Retour
+            </button>
+            <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
+              Suivant
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
         </div>
 
         <%# ================================================ %>
-        <%# ÉTAPE 2 — Description libre de l'aventure %>
+        <%# ÉTAPE 4 — Combien de temps ? %>
         <%# ================================================ %>
-        <div class="new-story-section">
-          <h2 class="new-story-section-title">💬 Qu'est-ce qu'il/elle veut vivre aujourd'hui ?</h2>
-          <p class="new-story-section-hint">
-            Décris librement l'aventure — un rêve, un endroit magique, un super-pouvoir...
-          </p>
+        <div class="wizard-step d-none" data-story-creation-target="step" data-step="4">
+          <div class="wizard-card">
+            <h2 class="wizard-question">Combien de temps ?</h2>
+            <p class="wizard-hint">Choisir la durée de l'histoire.</p>
 
-          <%= f.text_area :custom_theme,
-                rows: 4,
-                class: "new-story-textarea",
-                placeholder: "Ex : Elle veut être une exploratrice qui découvre une île secrète avec des animaux parlants..." %>
-
-          <%# Idées cliquables — s'ajoutent au texte existant sans l'écraser %>
-          <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
-            <span class="new-story-section-hint mb-0" style="font-size: 0.75rem;">Inspiration :</span>
-            <% [
-              "🚀 Astronaute qui découvre une planète habitée par des robots gentils",
-              "🦄 Princesse qui part à l'aventure avec sa licorne magique",
-              "🦕 Voyage dans le temps chez les dinosaures",
-              "🏴‍☠️ Pirate qui cherche un trésor caché sous la mer",
-              "🌳 Gardien de la forêt qui sauve les animaux"
-            ].each do |idea| %>
-              <%# data-action="click" → insertIdea() qui ajoute sans écraser %>
-              <%# data-idea stocke le texte pour éviter les problèmes de quotes %>
-              <button type="button"
-                      class="idea-pill"
-                      data-action="click->story-creation#insertIdea"
-                      data-idea="<%= idea %>">
-                <%= idea %>
-              </button>
-            <% end %>
-          </div>
-        </div>
-
-        <%# ================================================ %>
-        <%# ÉTAPE 3 — Paramètres de l'histoire %>
-        <%# ================================================ %>
-        <div class="new-story-section">
-          <h2 class="new-story-section-title" style="margin-bottom: 1.5rem;">⚙️ Paramètres</h2>
-
-          <%# Valeur éducative — courage sélectionné par défaut %>
-          <div class="mb-4">
-            <span class="new-story-label">💫 Valeur à transmettre</span>
-            <div class="d-flex flex-wrap gap-2">
+            <div class="duration-grid">
               <% [
-                { value: "courage",    label: "💪 Courage"     },
-                { value: "sharing",    label: "🤝 Partage"     },
-                { value: "kindness",   label: "❤️ Gentillesse" },
-                { value: "confidence", label: "⭐ Confiance"   }
-              ].each do |val| %>
-                <%# La classe "selected" est gérée par story-creation#onRadioChange %>
-                <label class="badge-selector <%= 'selected' if @story.educational_value == val[:value] %>">
-                  <%= f.radio_button :educational_value, val[:value] %>
-                  <%= val[:label] %>
-                </label>
-              <% end %>
-            </div>
-          </div>
-
-          <%# Durée — cartes visuelles au lieu de simples radio buttons %>
-          <div class="mb-4">
-            <span class="new-story-label">⏱️ Durée de l'histoire</span>
-            <div class="d-flex gap-3 flex-wrap">
-              <% [
-                { mins: 5,  icon: "⚡", label: "5 min",  sub: "Court" },
-                { mins: 10, icon: "📖", label: "10 min", sub: "Moyen" },
-                { mins: 15, icon: "🌟", label: "15 min", sub: "Long"  }
+                { mins: 5,  sub: "Court"  },
+                { mins: 10, sub: "Moyen"  },
+                { mins: 15, sub: "Long"   }
               ].each do |d| %>
-                <%# La classe "selected" est gérée par story-creation#onRadioChange %>
-                <label class="duration-selector <%= 'selected' if @story.duration_minutes == d[:mins] %>">
+                <label class="duration-card <%= 'selected' if @story.duration_minutes == d[:mins] %>">
                   <%= f.radio_button :duration_minutes, d[:mins], checked: d[:mins] == 5 %>
-                  <span class="duration-icon"><%= d[:icon] %></span>
-                  <span class="duration-label"><%= d[:label] %></span>
+                  <span class="duration-number"><%= d[:mins] %></span>
+                  <span class="duration-unit">minutes</span>
                   <span class="duration-sub"><%= d[:sub] %></span>
                 </label>
               <% end %>
             </div>
           </div>
 
-          <%# Mode interactif (Premium uniquement) %>
-          <div>
-            <div class="form-check form-switch">
-              <% if current_user.premium? %>
-                <%# Utilisateur premium — toggle actif %>
-                <%= f.check_box :interactive, class: "form-check-input", id: "interactive-toggle" %>
-                <label class="form-check-label new-story-toggle-label" for="interactive-toggle">
-                  🎮 Activer le mode interactif
-                  <span class="new-story-toggle-hint d-block">
+          <%# Navigation %>
+          <div class="wizard-nav">
+            <button type="button" class="wizard-btn-back" data-action="click->story-creation#prevStep">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Retour
+            </button>
+            <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
+              Suivant
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <%# ================================================ %>
+        <%# ÉTAPE 5 — Les derniers réglages + Générer %>
+        <%# ================================================ %>
+        <div class="wizard-step d-none" data-story-creation-target="step" data-step="5">
+          <div class="wizard-card">
+            <h2 class="wizard-question">Les derniers réglages</h2>
+            <p class="wizard-hint">Mode interactif et récapitulatif.</p>
+
+            <%# Toggle mode interactif %>
+            <div class="wizard-toggle-row">
+              <div>
+                <div class="wizard-toggle-label">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:-2px"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
+                  Mode interactif
+                  <% unless current_user.premium? %>
+                    <span class="wizard-premium-badge">Premium</span>
+                  <% end %>
+                </div>
+                <div class="wizard-toggle-hint">
+                  <% if current_user.premium? %>
                     L'enfant fait des choix qui changent l'histoire
-                  </span>
-                </label>
-              <% else %>
-                <%# Utilisateur gratuit — toggle désactivé %>
-                <input class="form-check-input" type="checkbox" disabled>
-                <label class="form-check-label new-story-toggle-label">
-                  🎮 Mode interactif
-                  <span class="new-story-premium-badge">Premium</span>
-                  <span class="new-story-toggle-hint d-block">
-                    <%= link_to "Passer en Premium", subscription_path, class: "new-story-upgrade-link" %>
-                    pour débloquer les histoires interactives
-                  </span>
-                </label>
-              <% end %>
+                  <% else %>
+                    <%= link_to "Passer en Premium", subscription_path, style: "color:rgba(240,201,122,0.65);" %> pour débloquer
+                  <% end %>
+                </div>
+              </div>
+              <div class="form-check form-switch mb-0">
+                <% if current_user.premium? %>
+                  <%= f.check_box :interactive, class: "form-check-input", id: "interactive-toggle" %>
+                <% else %>
+                  <input class="form-check-input" type="checkbox" disabled>
+                <% end %>
+              </div>
+            </div>
+
+            <%# Récapitulatif %>
+            <div class="summary-card">
+              <div class="summary-row">
+                <span class="summary-key">Héros</span>
+                <span class="summary-val" data-story-creation-target="summaryChildren">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-key">Aventure</span>
+                <span class="summary-val" data-story-creation-target="summaryTheme">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-key">Valeur</span>
+                <span class="summary-val" data-story-creation-target="summaryValue">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-key">Durée</span>
+                <span class="summary-val" data-story-creation-target="summaryDuration">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-key">Interactif</span>
+                <span class="summary-val" data-story-creation-target="summaryInteractive">Désactivé</span>
+              </div>
             </div>
           </div>
 
+          <%# Navigation — Retour + Générer %>
+          <div class="wizard-nav" style="flex-direction:column; gap:0.75rem;">
+            <%= f.submit "✦ Générer l'histoire magique",
+                  class: "wizard-btn-generate",
+                  data: { "story-creation-target": "submitBtn" } %>
+
+            <button type="button" class="wizard-btn-back" style="margin:0 auto;" data-action="click->story-creation#prevStep">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Retour
+            </button>
+          </div>
         </div>
 
-        <%# Bouton de génération — avec feedback visuel géré par story-creation controller %>
-        <%# data-story-creation-target="submitBtn" : le controller le désactive et change son texte %>
-        <%= f.submit "✨ Générer l'histoire magique",
-              class: "new-story-submit",
-              data: { "story-creation-target": "submitBtn" } %>
+        </div><%# /wizard-steps-wrapper %>
 
       <% end %>
     </div>

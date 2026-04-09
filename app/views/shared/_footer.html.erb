@@ -12,42 +12,50 @@
   <%# --- Ligne principale : logo + hibou animé + réseaux sociaux --- %>
   <div class="app-footer__row">
 
-    <%# Logo à gauche %>
+    <%# Logo à gauche — mascotte PNG + nom %>
     <%= link_to root_path, class: "app-footer__logo" do %>
-      <span class="app-footer__logo-icon">🌙</span>
+      <%= image_tag "mascot.png", alt: "Noctilio", width: 50, height: 50,
+            style: "object-fit: contain; flex-shrink: 0;" %>
       <span class="app-footer__logo-name">Noctilio</span>
     <% end %>
-
-    <%# Hibou — se déplace de gauche à droite en planant, plus grand et visible %>
-    <div class="app-footer__owl-track" aria-hidden="true">
-      <span class="app-footer__owl">🦉</span>
-    </div>
 
     <%# Réseaux sociaux à droite — SVG inline, pas d'icônes externes %>
     <div class="app-footer__socials">
 
-      <%# Instagram — placeholder jusqu'à ce que l'URL soit définie %>
-      <button type="button" class="app-footer__social-btn" aria-label="Instagram" title="Instagram (bientôt)">
+      <%# Instagram — lien vers le compte @noctilioapp %>
+      <a href="https://www.instagram.com/noctilioapp"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="app-footer__social-btn"
+         aria-label="Noctilio sur Instagram">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
           <circle cx="12" cy="12" r="4"/>
           <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
         </svg>
-      </button>
+      </a>
 
-      <%# TikTok — placeholder %>
-      <button type="button" class="app-footer__social-btn" aria-label="TikTok" title="TikTok (bientôt)">
+      <%# TikTok — compte @Noctili5 %>
+      <a href="https://www.tiktok.com/@Noctili5"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="app-footer__social-btn"
+         aria-label="Noctilio sur TikTok">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
           <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.95a8.2 8.2 0 0 0 4.78 1.52V7.03a4.85 4.85 0 0 1-1.01-.34z"/>
         </svg>
-      </button>
+      </a>
 
-      <%# Facebook — placeholder %>
-      <button type="button" class="app-footer__social-btn" aria-label="Facebook" title="Facebook (bientôt)">
+      <%# Facebook — page Noctilio %>
+      <a href="https://www.facebook.com/profile.php?id=61575427511719"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="app-footer__social-btn"
+         aria-label="Noctilio sur Facebook">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
         </svg>
-      </button>
+      </a>
 
     </div>
 

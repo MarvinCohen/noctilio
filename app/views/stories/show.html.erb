@@ -9,6 +9,33 @@
   /* ── Wrapper de page ── */
   .story-page { padding: 2rem 0 5rem; }
 
+  /* ── Curseur plume — barre verticale dorée qui clignote ── */
+  /* Injecté par story-quill-controller pendant l'animation */
+  .story-quill-cursor {
+    display: inline;
+    color: #f0c97a;
+    font-weight: 300;
+    font-size: 1em;
+    line-height: 1;
+    animation: quillBlink 0.7s step-end infinite;
+    margin-left: 1px;
+  }
+
+  /* Clignotement — s'arrête net, pas de transition douce */
+  @keyframes quillBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  /* Fin d'animation — le curseur disparaît en fondu */
+  .story-quill-cursor--done {
+    animation: quillFadeOut 0.6s ease forwards;
+  }
+  @keyframes quillFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
   /* ── État "en génération" ── */
   .story-generating { text-align: center; padding: 5rem 1rem; }
   .story-generating-icon { font-size: 5rem; display: block; margin-bottom: 1.5rem; }
@@ -114,6 +141,158 @@
   }
   .story-btn-warning:hover { background: rgba(240, 201, 122, 0.25); }
   .story-btn-warning[type="submit"] { appearance: none; -webkit-appearance: none; }
+
+  /* Bouton "Continuer l'aventure" — doré plein, met en avant l'action principale */
+  .story-btn-continue {
+    display: inline-flex; align-items: center;
+    padding: 0.55rem 1.3rem;
+    background: #f0c97a;        /* Doré plein — action principale */
+    color: #0b0e1a;             /* Texte sombre pour le contraste */
+    border: 1px solid #f0c97a;
+    border-radius: 50px; font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+  }
+  .story-btn-continue:hover {
+    opacity: 0.88; transform: translateY(-1px);
+    color: #0b0e1a; text-decoration: none;
+  }
+  .story-btn-continue[type="submit"] { appearance: none; -webkit-appearance: none; }
+
+  /* Bouton "Recommencer" — outline discret, moins proéminent que "Continuer" */
+  .story-btn-replay {
+    display: inline-flex; align-items: center;
+    padding: 0.55rem 1.3rem;
+    background: transparent;
+    color: rgba(212, 207, 196, 0.7);      /* Crème atténué */
+    border: 1px solid rgba(212, 207, 196, 0.2);
+    border-radius: 50px; font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+  .story-btn-replay:hover {
+    background: rgba(212, 207, 196, 0.08);
+    border-color: rgba(212, 207, 196, 0.4);
+    color: #d4cfc4;
+    text-decoration: none;
+  }
+  .story-btn-replay[type="submit"] { appearance: none; -webkit-appearance: none; }
+
+  /* ── Section timeline alternative ── */
+  /* Wrapper — sépare visuellement chaque choix de son alternative */
+  .alternative-section {
+    margin: 0.75rem 0 1.5rem;
+  }
+
+  /* Bouton "Et si j'avais choisi..." — pill discret, accent mauve/violet */
+  .alternative-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 1rem;
+    background: rgba(130, 100, 220, 0.1);
+    color: rgba(180, 160, 255, 0.85);
+    border: 1px solid rgba(130, 100, 220, 0.25);
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .alternative-btn:hover {
+    background: rgba(130, 100, 220, 0.18);
+    border-color: rgba(130, 100, 220, 0.45);
+    color: rgba(200, 185, 255, 1);
+  }
+
+  /* Panel alternatif — fond légèrement teinté pour distinguer du texte principal */
+  .alternative-panel {
+    margin-top: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    background: rgba(130, 100, 220, 0.06);
+    border: 1px solid rgba(130, 100, 220, 0.18);
+    border-left: 3px solid rgba(130, 100, 220, 0.45);
+    border-radius: 12px;
+  }
+
+  /* En-tête du panel — label "Timeline alternative" en violet discret */
+  .alternative-header {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    color: rgba(180, 160, 255, 0.75);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  /* Spinner — ligne centrée pendant le chargement */
+  .alternative-spinner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(180, 160, 255, 0.6);
+    font-size: 0.82rem;
+    padding: 0.5rem 0;
+  }
+  /* Point qui pulse */
+  .alternative-spinner-dot {
+    width: 8px; height: 8px;
+    background: rgba(130, 100, 220, 0.6);
+    border-radius: 50%;
+    animation: alt-pulse 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes alt-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50%       { opacity: 1;   transform: scale(1.2); }
+  }
+
+  /* Contenu alternatif — même style que story-paragraph mais légèrement atténué */
+  .alternative-content {
+    color: rgba(232, 224, 208, 0.85);
+  }
+
+  /* Pill "Épisode X" dans le fil d'Ariane — accent bleu-violet discret (comme "Interactif") */
+  .story-meta-pill--episode {
+    background: rgba(100, 120, 240, 0.12);
+    border-color: rgba(100, 120, 240, 0.25);
+    color: rgba(160, 180, 255, 0.9);
+  }
+
+  /* Barre de navigation entre épisodes d'une saga */
+  .story-saga-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding: 0.6rem 1rem;
+    background: rgba(240, 201, 122, 0.04);
+    border: 1px solid rgba(240, 201, 122, 0.12);
+    border-radius: 12px;
+  }
+  /* Label central "Épisode X" */
+  .story-saga-label {
+    font-size: 0.8rem;
+    color: rgba(240, 201, 122, 0.6);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  /* Liens précédent/suivant */
+  .story-saga-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.82rem;
+    color: rgba(240, 201, 122, 0.7);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .story-saga-link:hover { color: #f0c97a; text-decoration: none; }
 
   /* ── Fil d'Ariane / retour ── */
   .story-breadcrumb {
@@ -241,7 +420,9 @@
              data-story-status-url-value="<%= status_story_path(@story) %>"
              data-story-status-redirect-value="<%= story_path(@story) %>">
 
-          <span class="story-generating-icon">🌙</span>
+          <span class="story-generating-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+          </span>
           <h1 class="story-generating-title">La magie opère...</h1>
           <p class="story-generating-hint">
             Votre histoire est en cours de création.<br>
@@ -264,7 +445,9 @@
       <%# ================================================ %>
       <% elsif @story.failed? %>
         <div class="story-error">
-          <span class="story-error-icon">😔</span>
+          <span class="story-error-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </span>
           <h1 class="story-error-title">Oups, une erreur s'est produite</h1>
           <p class="story-error-hint">La génération de l'histoire a échoué. Veuillez réessayer.</p>
           <div class="d-flex gap-3 justify-content-center">
@@ -283,14 +466,47 @@
           <%= link_to "← Mes histoires", stories_path, class: "story-back-link" %>
           <span class="story-meta-pill"><%= @story.world_emoji %> <%= @story.world_label %></span>
           <span class="story-meta-pill">Pour <%= @story.child.name %></span>
+          <%# Badge épisode — affiché seulement si l'histoire fait partie d'une saga %>
+          <% if @story.sequel? || @story.has_sequel? %>
+            <span class="story-meta-pill story-meta-pill--episode">
+              Épisode <%= @story.episode_number %>
+            </span>
+          <% end %>
         </div>
 
         <%# Titre de l'histoire — Cormorant Garamond italic %>
         <h1 class="story-title"><%= @story.title || "Mon histoire magique" %></h1>
 
+        <%# Navigation entre épisodes — affiché si l'histoire fait partie d'une saga %>
+        <% if @story.sequel? || @story.has_sequel? %>
+          <div class="story-saga-nav">
+            <%# Lien vers l'épisode précédent %>
+            <% if @story.sequel? %>
+              <%= link_to story_path(@story.parent_story), class: "story-saga-link story-saga-link--prev" do %>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Épisode <%= @story.episode_number - 1 %>
+              <% end %>
+            <% else %>
+              <span></span>
+            <% end %>
+            <%# Indicateur de position dans la saga %>
+            <span class="story-saga-label">Épisode <%= @story.episode_number %></span>
+            <%# Lien vers l'épisode suivant s'il existe %>
+            <% if @story.has_sequel? %>
+              <%= link_to story_path(@story.sequel_stories.order(:created_at).first), class: "story-saga-link story-saga-link--next" do %>
+                Épisode <%= @story.episode_number + 1 %>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              <% end %>
+            <% else %>
+              <span></span>
+            <% end %>
+          </div>
+        <% end %>
+
         <%# ── Contenu de l'histoire ── %>
         <%# data-story-reader-target="text" : utilisé par story_choice_controller pour insérer la continuation %>
-        <div class="story-content-wrapper" data-story-reader-target="text">
+        <div class="story-content-wrapper"
+             data-story-reader-target="text">
           <%# Le texte markdown est rendu via le helper render_story_markdown %>
           <%= render_story_markdown(@story.content) %>
 
@@ -311,7 +527,9 @@
              data-controller="story-reader"
              data-story-id="<%= @story.id %>">
 
-          <div class="audio-player-label">🎙️ Lecture vocale</div>
+          <div class="audio-player-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>Lecture vocale
+          </div>
 
           <div class="audio-player-controls">
             <%# Play — visible quand arrêté ou en pause %>
@@ -358,7 +576,9 @@
                data-story-choice-status-url-value="<%= status_story_path(@story) %>">
 
             <div class="text-center mb-4">
-              <span class="interactive-choice-icon">🤔</span>
+              <span class="interactive-choice-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </span>
               <h3 class="interactive-choice-title">À toi de décider !</h3>
               <p class="interactive-choice-question"><%= @pending_choice.question %></p>
             </div>
@@ -391,19 +611,65 @@
 
           </div>
 
-        <%# Si les choix ont tous été faits — résumé des décisions prises %>
+        <%# Si les choix ont tous été faits — résumé des décisions prises + bouton timeline alternative %>
         <% elsif @story.interactive? && @story.story_choices.resolved.any? %>
           <div class="story-continuation mb-4">
             <% @story.story_choices.resolved.ordered.each do |choice| %>
+
+              <%# Résumé du choix effectué %>
               <div class="choice-result">
-                <div class="choice-result-question">✅ <%= choice.question %></div>
+                <div class="choice-result-question">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;color:#4caf7d"><polyline points="20 6 9 17 4 12"/></svg><%= choice.question %>
+                </div>
                 <div class="choice-result-answer">→ <%= choice.chosen_text %></div>
               </div>
+
+              <%# Continuation de l'histoire avec le choix effectué %>
               <% if choice.context_chosen.present? %>
                 <div class="story-content-wrapper mb-3">
                   <%= simple_format(choice.context_chosen) %>
                 </div>
               <% end %>
+
+              <%# ── TIMELINE ALTERNATIVE ── %>
+              <%# Calcule le label de l'option non choisie pour le bouton %>
+              <% alternative_label = choice.chosen_option == "a" ? choice.option_b : choice.option_a %>
+              <%# data-controller="story-alternative" gère le chargement async %>
+              <div class="alternative-section"
+                   data-controller="story-alternative"
+                   data-story-alternative-url-value="<%= explore_alternative_story_path(@story) %>"
+                   data-story-alternative-choice-id-value="<%= choice.id %>"
+                   data-story-alternative-alternative-label-value="<%= alternative_label %>">
+
+                <%# Bouton — clique pour voir l'autre chemin %>
+                <button class="alternative-btn"
+                        data-story-alternative-target="btn"
+                        data-action="click->story-alternative#toggle"
+                        aria-expanded="false">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6Z"/><path d="M12 12v7"/><path d="M12 19H7"/></svg>Et si j'avais choisi "<%= alternative_label %>" ?
+                </button>
+
+                <%# Panel caché — visible après le clic %>
+                <div class="alternative-panel" data-story-alternative-target="panel">
+
+                  <%# En-tête du panel — indique la timeline alternative %>
+                  <div class="alternative-header">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6Z"/><path d="M12 12v7"/><path d="M12 19H7"/></svg>
+                    <strong>Timeline alternative</strong> — si tu avais choisi "<%= alternative_label %>"
+                  </div>
+
+                  <%# Spinner de chargement — visible pendant la requête IA %>
+                  <div class="alternative-spinner" data-story-alternative-target="spinner" style="display:none">
+                    <div class="alternative-spinner-dot"></div>
+                    <span>L'IA imagine l'autre chemin...</span>
+                  </div>
+
+                  <%# Zone d'insertion du contenu HTML renvoyé par l'API %>
+                  <div class="alternative-content story-paragraph" data-story-alternative-target="content"></div>
+
+                </div>
+              </div>
+
             <% end %>
           </div>
         <% end %>
@@ -445,17 +711,52 @@
 
         <%# ── Navigation de fin ── %>
         <div class="story-nav-footer">
-          <%= link_to "✨ Nouvelle histoire", new_story_path, class: "story-btn-primary" %>
-          <%= link_to "📚 Mes histoires", stories_path, class: "story-btn-secondary" %>
-          <%= link_to "🏆 Trophées", trophy_room_path, class: "story-btn-secondary" %>
+          <%= link_to new_story_path, class: "story-btn-primary" do %>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Nouvelle histoire
+          <% end %>
+          <%= link_to stories_path, class: "story-btn-secondary" do %>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Mes histoires
+          <% end %>
+          <%= link_to trophy_room_path, class: "story-btn-secondary" do %>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 2h12v7a6 6 0 0 1-12 0V2z"/><path d="M12 15v4"/><path d="M8 19h8"/><line x1="8" y1="22" x2="16" y2="22"/></svg>Trophées
+          <% end %>
 
           <%# Bouton sauvegarder — affiché seulement si l'histoire n'est pas encore sauvegardée %>
           <% if @story.saved? %>
-            <span class="story-btn-success">✅ Sauvegardée</span>
+            <span class="story-btn-success">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>Sauvegardée
+            </span>
           <% else %>
-            <%= button_to "💾 Sauvegarder", save_story_story_path(@story),
-                  method: :post,
-                  class: "story-btn-warning" %>
+            <%= button_to save_story_story_path(@story), method: :post, class: "story-btn-warning" do %>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Sauvegarder
+            <% end %>
+          <% end %>
+
+          <%# Bouton "Recommencer" — recrée la même histoire with de nouveaux choix %>
+          <%# Affiché sur toutes les histoires terminées, utile surtout pour les interactives %>
+          <% if @story.completed? %>
+            <%= button_to replay_story_path(@story), method: :post, class: "story-btn-replay",
+                  data: { turbo_confirm: "Recommencer cette histoire pour faire d'autres choix ?" } do %>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Recommencer
+            <% end %>
+          <% end %>
+
+          <%# Bouton "Continuer l'aventure" — affiché si l'histoire est terminée et sans suite %>
+          <%# Si une suite existe déjà, on affiche un lien vers celle-ci %>
+          <% if @story.completed? %>
+            <% if @story.has_sequel? %>
+              <%# Lien vers la suite existante %>
+              <%= link_to story_path(@story.sequel_stories.order(:created_at).first),
+                    class: "story-btn-continue" do %>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="m9 18 6-6-6-6"/></svg>Épisode <%= @story.episode_number + 1 %>
+              <% end %>
+            <% else %>
+              <%# Bouton pour créer la suite — POST vers l'action continue %>
+              <%= button_to continue_story_path(@story), method: :post, class: "story-btn-continue",
+                    data: { turbo_confirm: "Créer l'épisode #{@story.episode_number + 1} de cette aventure ?" } do %>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Continuer l'aventure
+              <% end %>
+            <% end %>
           <% end %>
         </div>
 

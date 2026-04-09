@@ -39,7 +39,9 @@
   <%# Signature typographique centrée — "Noctilio" + chouette en haut du hero %>
   <%# aria-hidden : élément purement décoratif %>
   <div class="db-noctilio-display" aria-hidden="true">
-    <span class="db-owl">🦉</span>
+    <%# Mascotte hibou — remplace l'emoji 🦉 %>
+    <%= image_tag "mascot.svg", alt: "", class: "db-owl-img", width: 110, height: 110,
+          style: "object-fit: contain;" %>
     <div class="db-owl-perch"></div>
     <p class="db-noctilio-word">Noctilio</p>
     <div class="db-noctilio-sparks">

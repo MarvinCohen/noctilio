@@ -261,6 +261,21 @@ class ImageGeneratorService
              "dramatic rim light, motion blur on fast movements, " \
              "all characters visible together in one explosive scene"
 
+    # Si c'est un épisode de suite, on impose la continuité visuelle avec l'épisode précédent.
+    # On extrait les éléments clés du prompt parent (style, couleurs, description des personnages)
+    # et on les ajoute explicitement pour ancrer le modèle sur le même character design.
+    if @story.sequel? && @story.parent_story&.image_prompt.present?
+      parent_prompt = @story.parent_story.image_prompt
+
+      # On prend les 300 premiers caractères du prompt parent — la description des personnages
+      # et le style visuel sont toujours au début, après "epic action scene"
+      parent_style_ref = parent_prompt.truncate(300)
+
+      prompt += ", SAME CHARACTER DESIGN AND ART STYLE AS: #{parent_style_ref}, " \
+                "exact same character appearances, same color palette, same art style, " \
+                "visual consistency with previous episode, same face designs"
+    end
+
     prompt
   end
 

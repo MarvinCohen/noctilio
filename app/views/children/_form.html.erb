@@ -10,7 +10,9 @@
 
   <%# ── Section 1 : Informations de base ── %>
   <div class="ch-form-section mb-0">
-    <h2 class="ch-form-section-title">👤 Informations de base</h2>
+    <h2 class="ch-form-section-title">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Informations de base
+    </h2>
 
     <div class="row g-3">
       <div class="col-md-6">
@@ -44,7 +46,9 @@
 
   <%# ── Section 2 : Apparence (optionnel) ── %>
   <div class="ch-form-section mb-0">
-    <h2 class="ch-form-section-title">🎨 Apparence</h2>
+    <h2 class="ch-form-section-title">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17 10.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8.5"/><path d="m3 15 4-4 4 4 4-4"/></svg>Apparence
+    </h2>
     <p class="ch-form-hint">Ces détails permettent à l'IA de décrire le héros dans l'histoire.</p>
 
     <div class="row g-3">
@@ -74,7 +78,9 @@
 
   <%# ── Section 3 : Personnalité ── %>
   <div class="ch-form-section mb-0">
-    <h2 class="ch-form-section-title">⭐ Personnalité</h2>
+    <h2 class="ch-form-section-title">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Personnalité
+    </h2>
 
     <%# Traits de personnalité — pills checkboxes (badge-check) %>
     <div class="mb-4">
@@ -127,7 +133,7 @@
   <%# ── Boutons d'action ── %>
   <div class="ch-form-actions mt-3">
     <%# Bouton submit — fond doré pill %>
-    <%= f.submit child.new_record? ? "Créer le profil ✨" : "Mettre à jour",
+    <%= f.submit child.new_record? ? "Créer le profil ✦" : "Mettre à jour",
           class: "ch-btn-submit" %>
 
     <%# Bouton annuler — outline doré transparent %>

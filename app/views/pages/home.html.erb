@@ -152,6 +152,7 @@
     width: 120px; height: 120px;
     margin-bottom: 3rem;
     opacity: 0;
+    background: transparent; /* Supprime le fond blanc/carré du canvas */
     /* moonEntry : apparition unique (1 seule fois, non infinite) */
     /* moonBob   : flottement doux infini — démarre après l'entrée, opacity toujours 1 */
     animation: moonEntry 1.5s ease forwards 0.3s, moonBob 4s ease-in-out infinite 1.8s;
@@ -323,10 +324,13 @@
     justify-content: center;
   }
   .avatar:first-child { margin-left: 0; }
-  .avatar-1 { background: #6b8cba; }
-  .avatar-2 { background: #ba8c6b; }
-  .avatar-3 { background: #8cba6b; }
-  .avatar-4 { background: #ba6b8c; }
+  /* Couleurs harmonisées avec la palette nuit de Noctilio */
+  .avatar-1 { background: #2a3a5c; border: 1px solid rgba(240,201,122,0.25); color: #a8c4e8; }
+  .avatar-2 { background: #2a1f3c; border: 1px solid rgba(240,201,122,0.25); color: #c4a8e8; }
+  .avatar-3 { background: #1a2e3c; border: 1px solid rgba(240,201,122,0.25); color: var(--gold); }
+  .avatar-4 { background: #3c2a1a; border: 1px solid rgba(240,201,122,0.25); color: #e8c4a8; }
+  /* Le SVG s'adapte à la taille du conteneur */
+  .avatar svg { width: 16px; height: 16px; }
 
   .counter-text { font-size: 0.8rem; color: var(--text-dim); }
   .counter-text strong { color: var(--gold); font-weight: 500; }
@@ -364,7 +368,25 @@
     transition: background 0.3s ease;
   }
   .feature-card:hover { background: var(--indigo); }
-  .feature-icon { font-size: 1.8rem; margin-bottom: 1rem; display: block; }
+
+  /* Icône SVG — conteneur doré, même style que .db-feature-icon du dashboard */
+  .feature-icon {
+    width: 48px; height: 48px;
+    background: rgba(240, 201, 122, 0.08);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    color: var(--gold);
+    flex-shrink: 0;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  .feature-card:hover .feature-icon {
+    background: rgba(240, 201, 122, 0.14);
+    border-color: rgba(240, 201, 122, 0.35);
+  }
   .feature-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.25rem;
@@ -374,17 +396,6 @@
   }
   .feature-desc { font-size: 0.85rem; line-height: 1.7; color: var(--text-dim); }
 
-  /* FOOTER */
-  footer {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    padding: 2rem;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    border-top: 1px solid rgba(255,255,255,0.04);
-  }
-  footer span { color: var(--gold); }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(18px); }
@@ -402,6 +413,133 @@
     .form-inner { flex-direction: column; border-radius: 20px; padding: 12px; }
     .form-btn { border-radius: 12px; padding: 0.85rem; text-align: center; }
     .features-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ============================================================ */
+  /* FOOTER PARTAGÉ — copie du _footer.scss pour le layout landing */
+  /* Le layout landing n'inclut pas application.css (évite Bootstrap) */
+  /* ============================================================ */
+  .app-footer {
+    background: #080b16;
+    border-top: 1px solid rgba(240, 201, 122, 0.12);
+    padding: 0 2.5rem;
+    position: relative;
+    z-index: 10;
+    overflow: hidden;
+  }
+  .app-footer__stars {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .app-footer__row,
+  .app-footer__bottom { position: relative; z-index: 1; }
+
+  .app-footer__row {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    height: 60px;
+  }
+  .app-footer__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    flex: 1;
+  }
+  .app-footer__logo:hover { text-decoration: none; }
+  .app-footer__logo-icon {
+    font-size: 0.9rem;
+    width: 26px; height: 26px;
+    background: rgba(240, 201, 122, 0.1);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .app-footer__logo-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #f0c97a;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .app-footer__owl-track {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+  .app-footer__owl {
+    font-size: 1.8rem;
+    position: absolute;
+    animation: footer-owl-fly 14s linear infinite;
+    display: block;
+    line-height: 1;
+    will-change: transform;
+  }
+  @keyframes footer-owl-fly {
+    0%     { left: 0%;   transform: translateY(0px)  scaleX(1);  }
+    12%    { left: 20%;  transform: translateY(-7px) scaleX(1);  }
+    25%    { left: 42%;  transform: translateY(0px)  scaleX(1);  }
+    37%    { left: 65%;  transform: translateY(-7px) scaleX(1);  }
+    50%    { left: 95%;  transform: translateY(0px)  scaleX(1);  }
+    50.01% { left: 95%;  transform: translateY(0px)  scaleX(-1); }
+    62%    { left: 72%;  transform: translateY(-7px) scaleX(-1); }
+    75%    { left: 50%;  transform: translateY(0px)  scaleX(-1); }
+    87%    { left: 25%;  transform: translateY(-7px) scaleX(-1); }
+    100%   { left: 0%;   transform: translateY(0px)  scaleX(-1); }
+  }
+  .app-footer__socials {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .app-footer__social-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(240, 201, 122, 0.06);
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    color: rgba(253, 246, 227, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+    padding: 0;
+    text-decoration: none;
+  }
+  .app-footer__social-btn:hover {
+    color: #f0c97a;
+    background: rgba(240, 201, 122, 0.12);
+    border-color: rgba(240, 201, 122, 0.3);
+  }
+  .app-footer__bottom {
+    border-top: 1px solid rgba(240, 201, 122, 0.06);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 0;
+    text-align: center;
+  }
+  .app-footer__copyright {
+    font-size: 0.68rem;
+    color: rgba(253, 246, 227, 0.2);
+    letter-spacing: 0.03em;
+  }
+  @media (max-width: 768px) {
+    .app-footer { padding: 0 1.5rem; }
+    .app-footer__row { gap: 16px; }
   }
 </style>
 
@@ -465,7 +603,7 @@
 
     <%# Message de succès affiché après inscription réussie %>
     <div class="success-msg" id="successMsg">
-      ✨ Merci ! Tu seras parmi les premiers à découvrir Noctilio.
+      ✦ Merci ! Tu seras parmi les premiers à découvrir Noctilio.
     </div>
 
     <p class="form-note">Aucun spam. Juste la magie, au bon moment.</p>
@@ -475,10 +613,22 @@
   <%# On affiche au moins 247 pour que ça soit crédible dès le début %>
   <div class="counter-wrap">
     <div class="counter-avatars">
-      <div class="avatar avatar-1">🌙</div>
-      <div class="avatar avatar-2">⭐</div>
-      <div class="avatar avatar-3">🦉</div>
-      <div class="avatar avatar-4">✨</div>
+      <%# Lune %>
+      <div class="avatar avatar-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+      </div>
+      <%# Étoile %>
+      <div class="avatar avatar-2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+      </div>
+      <%# Hibou %>
+      <div class="avatar avatar-3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 5 5 9c0 2.5 1.2 4.7 3 6.1V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-1.9c1.8-1.4 3-3.6 3-6.1 0-4-3-7-7-7z"/><circle cx="9" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1" fill="currentColor" stroke="none"/><path d="M10 13h4"/></svg>
+      </div>
+      <%# Étincelle %>
+      <div class="avatar avatar-4">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+      </div>
     </div>
     <p class="counter-text">
       <strong id="counter"><%= [@waitlist_count, 247].max %></strong>
@@ -492,28 +642,46 @@
 <%# FEATURES %>
 <section class="features">
   <div class="features-grid">
+    <%# Feature 1 — Personnalisée : icône enfant + étincelles %>
     <div class="feature-card">
-      <span class="feature-icon">🦉</span>
+      <div class="feature-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+        </svg>
+      </div>
       <h3 class="feature-title">Personnalisée</h3>
       <p class="feature-desc">Prénom, personnages favoris, lieu de rêve — chaque histoire est unique et taillée pour ton enfant.</p>
     </div>
+
+    <%# Feature 2 — Racontée : icône micro %>
     <div class="feature-card">
-      <span class="feature-icon">🎙️</span>
+      <div class="feature-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="11" rx="3"/>
+          <path d="M5 10a7 7 0 0 0 14 0"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="9" y1="22" x2="15" y2="22"/>
+        </svg>
+      </div>
       <h3 class="feature-title">Racontée</h3>
       <p class="feature-desc">Une voix douce et naturelle lit l'histoire à voix haute. Parfait pour les soirs où tu n'as plus l'énergie.</p>
     </div>
+
+    <%# Feature 3 — En quelques secondes : icône éclair %>
     <div class="feature-card">
-      <span class="feature-icon">🌙</span>
+      <div class="feature-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      </div>
       <h3 class="feature-title">En quelques secondes</h3>
       <p class="feature-desc">L'histoire est prête avant même que le bain soit fini. La routine du soir devient un moment magique.</p>
     </div>
   </div>
 </section>
 
-<%# FOOTER %>
-<footer>
-  Fait avec <span>♥</span> pour les petits rêveurs — <span>Noctilio</span> © 2026
-</footer>
+<%# FOOTER — partial partagé avec le reste du site %>
+<%= render 'shared/footer' %>
 
 <script>
   // Encapsulé dans load pour garantir que tout le DOM est prêt
@@ -816,11 +984,8 @@ function drawMoonPhase(canvas, phase) {
   ctx.fillStyle = darkColor;
   ctx.fill();
 
-  // Nouvelle lune = disque noir avec halo très léger
-  if (phase < 0.01 || phase > 0.99) {
-    addMoonGlow(ctx, cx, cy, r, 0.05);
-    return;
-  }
+  // Nouvelle lune = disque noir — halo géré par CSS filter, pas de dessin ici
+  if (phase < 0.01 || phase > 0.99) { return; }
 
   // ── 2. Zone éclairée ────────────────────────────────────────────────
   // Technique : demi-cercle (côté éclairé) + ellipse terminateur
@@ -879,19 +1044,11 @@ function drawMoonPhase(canvas, phase) {
   ctx.fill();
   ctx.restore();
 
-  // ── 4. Halo extérieur — proportionnel à l'illumination ───────────────
-  addMoonGlow(ctx, cx, cy, r, illum);
+  // ── 4. Halo extérieur — appliqué via CSS filter (drop-shadow) ───────────
+  // drop-shadow s'applique EN DEHORS du canvas → pas de rectangle visible aux coins
+  const glowSize    = Math.round(illum * 20 + 6);                  // 6px (nouvelle) → 26px (pleine)
+  const glowOpacity = (illum * 0.55).toFixed(2);                   // 0 → 0.55
+  canvas.style.filter = `drop-shadow(0 0 ${glowSize}px rgba(240,201,122,${glowOpacity}))`;
 }
 
-// Halo doré autour de la lune — s'intensifie à la pleine lune
-function addMoonGlow(ctx, cx, cy, r, intensity) {
-  const g = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 2.4);
-  g.addColorStop(0,   `rgba(240,201,122,${(intensity * 0.45).toFixed(3)})`);
-  g.addColorStop(0.4, `rgba(240,201,122,${(intensity * 0.15).toFixed(3)})`);
-  g.addColorStop(1,   'rgba(240,201,122,0)');
-  ctx.beginPath();
-  ctx.arc(cx, cy, r * 2.4, 0, 2 * Math.PI);
-  ctx.fillStyle = g;
-  ctx.fill();
-}
 </script>

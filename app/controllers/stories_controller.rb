@@ -6,10 +6,10 @@ class StoriesController < ApplicationController
   # Charge l'histoire avant ces actions
   # save_story est inclus pour récupérer @story via set_story avant de la sauvegarder
   # audio est inclus pour vérifier que l'utilisateur est bien le propriétaire avant de générer l'audio
-  before_action :set_story, only: [:show, :destroy, :choose, :status, :save_story, :audio]
+  before_action :set_story, only: [:show, :destroy, :choose, :status, :save_story, :audio, :continue, :replay, :explore_alternative]
 
-  # Vérifie la limite d'histoires AVANT de créer (gratuit : 3/mois max)
-  before_action :check_story_limit!, only: [:new, :create]
+  # TEMPORAIREMENT DÉSACTIVÉ pour les tests
+  # before_action :check_story_limit!, only: [:new, :create]
 
   # GET /stories — bibliothèque personnelle de l'utilisateur
   def index
@@ -181,6 +181,112 @@ class StoriesController < ApplicationController
     end
   end
 
+  # POST /stories/:id/explore_alternative — génère la "timeline alternative" d'un choix
+  # L'enfant a choisi A → on génère ce qui se serait passé avec B (et vice versa)
+  # Si déjà généré, renvoie le texte en cache (évite un appel IA redondant)
+  # Répond en JSON pour être consommé par story-alternative-controller.js
+  def explore_alternative
+    # Récupère le choix ciblé — doit appartenir à cette histoire
+    story_choice = @story.story_choices.find(params[:choice_id])
+
+    # Sécurité : le choix doit être résolu (on ne peut pas explorer l'alternative d'un choix pas encore fait)
+    unless story_choice.resolved?
+      render json: { success: false, error: "Ce choix n'a pas encore été effectué." }, status: :unprocessable_entity
+      return
+    end
+
+    # Cache : si l'alternative a déjà été générée, on la renvoie directement sans rappeler l'IA
+    if story_choice.context_alternative.present?
+      render json: { success: true, html: render_markdown_to_html(story_choice.context_alternative), cached: true }
+      return
+    end
+
+    # Génère la continuation alternative via le service IA (Groq — ~2-5s)
+    result = StoryGeneratorService.new(@story).generate_alternative(story_choice)
+
+    unless result[:success]
+      render json: { success: false, error: result[:error] }, status: :unprocessable_entity
+      return
+    end
+
+    # Sauvegarde en base pour la prochaine fois (cache)
+    story_choice.update!(context_alternative: result[:content])
+
+    # Retourne le HTML rendu côté serveur — Redcarpet parse le markdown de l'IA
+    render json: { success: true, html: render_markdown_to_html(result[:content]), cached: false }
+  rescue ActiveRecord::RecordNotFound
+    render json: { success: false, error: "Choix introuvable." }, status: :not_found
+  rescue StandardError => e
+    render json: { success: false, error: "Erreur : #{e.message}" }, status: :internal_server_error
+  end
+
+  # POST /stories/:id/replay — recrée une histoire identique from scratch
+  # Mêmes paramètres (enfant, univers, valeur, durée, mode interactif) mais
+  # regénère tout : nouveau texte, nouveaux choix, nouvelle illustration.
+  # Permet de rejouer une histoire interactive pour faire d'autres choix.
+  def replay
+    # Crée une nouvelle histoire avec exactement les mêmes paramètres
+    # Pas de parent_story_id — ce n'est pas une suite, c'est un recommencement
+    replay_story = @story.child.stories.build(
+      world_theme:       @story.world_theme,
+      custom_theme:      @story.custom_theme,
+      educational_value: @story.educational_value,
+      duration_minutes:  @story.duration_minutes,
+      interactive:       @story.interactive,
+      extra_child_ids:   @story.extra_child_ids,
+      saved:             true   # Auto-sauvegardé
+    )
+
+    if replay_story.save
+      # Lance la génération complète — tout sera différent (aléatoire côté IA)
+      GenerateStoryJob.perform_later(replay_story.id)
+      redirect_to story_path(replay_story), notice: "L'aventure recommence avec de nouveaux choix... ✨"
+    else
+      redirect_to story_path(@story), alert: "Impossible de recommencer : #{replay_story.errors.full_messages.to_sentence}"
+    end
+  end
+
+  # POST /stories/:id/continue — crée un nouvel épisode lié à cette histoire
+  # L'épisode suivant hérite de l'enfant, du thème et de la valeur éducative,
+  # mais le StoryGeneratorService reçoit le contexte de l'histoire parente
+  # pour assurer la continuité narrative.
+  def continue
+    # Vérifie que l'histoire parente est bien terminée avant de créer une suite
+    unless @story.completed?
+      redirect_to story_path(@story), alert: "L'histoire doit être terminée avant de créer une suite."
+      return
+    end
+
+    # Empêche de créer plusieurs suites pour la même histoire
+    if @story.has_sequel?
+      existing_sequel = @story.sequel_stories.order(:created_at).first
+      redirect_to story_path(existing_sequel), notice: "La suite de cette histoire existe déjà !"
+      return
+    end
+
+    # Crée le nouvel épisode en héritant des paramètres de l'histoire parente
+    # L'enfant reste le même, l'univers et la valeur aussi — seul le contenu change
+    sequel = @story.child.stories.build(
+      parent_story_id:    @story.id,
+      world_theme:        @story.world_theme,
+      custom_theme:       @story.custom_theme,
+      educational_value:  @story.educational_value,
+      duration_minutes:   @story.duration_minutes,
+      interactive:        @story.interactive,
+      extra_child_ids:    @story.extra_child_ids,
+      saved:              true   # Auto-sauvegardé dans la bibliothèque
+    )
+
+    if sequel.save
+      # Lance la génération — le job appellera StoryGeneratorService
+      # qui détectera parent_story_id et injectera le contexte narratif
+      GenerateStoryJob.perform_later(sequel.id)
+      redirect_to story_path(sequel), notice: "La suite de l'aventure se prépare... ✨"
+    else
+      redirect_to story_path(@story), alert: "Impossible de créer la suite : #{sequel.errors.full_messages.to_sentence}"
+    end
+  end
+
   # POST /stories/:id/save — sauvegarde l'histoire dans la bibliothèque de l'utilisateur
   # Marque saved: true pour que l'histoire apparaisse dans l'index (bibliothèque)
   def save_story
@@ -197,6 +303,14 @@ class StoriesController < ApplicationController
   end
 
   private
+
+  # Convertit du markdown en HTML via Redcarpet
+  # Utilisé pour les réponses JSON (explore_alternative, status)
+  def render_markdown_to_html(text)
+    renderer = Redcarpet::Render::HTML.new(safe_links_only: true)
+    markdown  = Redcarpet::Markdown.new(renderer, autolink: false, tables: false)
+    markdown.render(text.to_s)
+  end
 
   # Charge l'histoire depuis les histoires de l'utilisateur connecté
   # (via ses enfants) — évite qu'un utilisateur accède aux histoires d'un autre

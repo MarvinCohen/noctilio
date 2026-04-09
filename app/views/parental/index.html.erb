@@ -256,8 +256,16 @@
           <%# Itère sur chaque enfant pour afficher une mini-carte pill %>
           <% @children.each do |child| %>
             <div class="par-child-row">
-              <%# Emoji genré — 👧 pour fille, 🧒 pour garçon par défaut %>
-              <div class="par-child-emoji"><%= child.gender == "girl" ? "👧" : "🧒" %></div>
+              <%# Avatar SVG — silhouette enfant, mèche pour les filles %>
+              <div class="par-child-emoji">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="7" r="4"/>
+                  <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
+                  <% if child.gender == "girl" %>
+                    <path d="M9 7c0-1.1.9-2 2-2 1.5 0 2.5 1 2 3"/>
+                  <% end %>
+                </svg>
+              </div>
 
               <%# Nom et stats de l'enfant %>
               <div class="flex-grow-1">
@@ -319,7 +327,7 @@
         <% if current_user.premium? %>
           <%# Utilisateur premium : badge doré + texte illimité %>
           <div class="d-flex align-items-center gap-3">
-            <span class="par-badge-premium">✨ Premium</span>
+            <span class="par-badge-premium">✦ Premium</span>
             <span style="color: #8a8578; font-size: 0.9rem;">Histoires illimitées</span>
           </div>
 

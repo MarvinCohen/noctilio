@@ -14,8 +14,9 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%# Favicon — lune SVG dans le thème Noctilio (remplace le point rouge Rails par défaut) %>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <%# Favicon — mascotte hibou Noctilio %>
+    <link rel="icon" href="<%= asset_path('mascot.svg') %>" type="image/svg+xml">
+    <link rel="icon" href="<%= asset_path('mascot.png') %>" type="image/png" sizes="32x32">
 
     <%= yield :head %>
   </head>

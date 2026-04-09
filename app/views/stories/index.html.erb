@@ -169,6 +169,13 @@
     color: rgba(160, 180, 255, 0.9);
   }
 
+  /* Badge "Épisode X" — accent turquoise discret pour les sagas */
+  .lib-badge-episode {
+    background: rgba(80, 200, 200, 0.1);
+    border-color: rgba(80, 200, 200, 0.25);
+    color: rgba(120, 220, 220, 0.9);
+  }
+
   /* Titre de l'histoire */
   .lib-card-title {
     font-weight: 600;
@@ -219,7 +226,9 @@
       </p>
     </div>
     <%# CTA pill doré — créer une nouvelle histoire %>
-    <%= link_to "✨ Nouvelle histoire", new_story_path, class: "lib-btn-primary" %>
+    <%= link_to new_story_path, class: "lib-btn-primary" do %>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Nouvelle histoire
+    <% end %>
   </div>
 
   <% if @stories.any? %>
@@ -246,11 +255,19 @@
           <%# Corps : badges, titre, méta %>
           <div class="lib-card-body">
 
-            <%# Badges : univers + mode interactif %>
+            <%# Badges : univers + mode interactif + numéro d'épisode %>
             <div class="lib-badges">
               <span class="lib-badge"><%= story.world_emoji %> <%= story.world_label %></span>
               <% if story.interactive? %>
-                <span class="lib-badge lib-badge-interactive">🎮 Interactif</span>
+                <span class="lib-badge lib-badge-interactive">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/></svg>Interactif
+                </span>
+              <% end %>
+              <%# Badge épisode — affiché si l'histoire fait partie d'une saga %>
+              <% if story.sequel? || story.has_sequel? %>
+                <span class="lib-badge lib-badge-episode">
+                  Ép. <%= story.episode_number %>
+                </span>
               <% end %>
             </div>
 
@@ -280,10 +297,14 @@
   <% else %>
     <%# État vide — aucune histoire %>
     <div class="lib-empty">
-      <span class="lib-empty-emoji">📚</span>
+      <span class="lib-empty-emoji">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </span>
       <h2>Ta bibliothèque est vide</h2>
       <p>Génère ta première histoire magique en quelques secondes !</p>
-      <%= link_to "✨ Créer une histoire", new_story_path, class: "lib-btn-primary" %>
+      <%= link_to new_story_path, class: "lib-btn-primary" do %>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Créer une histoire
+      <% end %>
     </div>
   <% end %>
 

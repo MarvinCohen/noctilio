@@ -65,6 +65,39 @@ class StoryGeneratorService
     { success: false, error: "Erreur inattendue : #{e.message}" }
   end
 
+  # Génère la "timeline alternative" — ce qui se serait passé avec l'autre option
+  # L'enfant a choisi A → on génère ce qui aurait donné B, et inversement
+  # La logique est identique à continue_with_choice mais on inverse le chosen_option
+  def generate_alternative(story_choice)
+    # Crée un objet temporaire (non persisté) avec l'option inverse
+    # Évite de modifier le vrai choix en base — c'est juste pour le prompt
+    alternative_choice = story_choice.dup
+    alternative_choice.chosen_option = story_choice.chosen_option == "a" ? "b" : "a"
+
+    # Appelle le même moteur de continuation avec l'option inversée
+    response = @client.chat(
+      parameters: {
+        model:       MODEL,
+        messages:    build_continuation_messages(alternative_choice),
+        temperature: 0.85,
+        max_tokens:  600,
+        top_p:       0.9
+      }
+    )
+
+    content = response.dig("choices", 0, "message", "content")
+
+    if content.present?
+      { success: true, content: content }
+    else
+      { success: false, error: "La timeline alternative était vide" }
+    end
+  rescue OpenAI::Error => e
+    { success: false, error: "Erreur OpenAI : #{e.message}" }
+  rescue StandardError => e
+    { success: false, error: "Erreur inattendue : #{e.message}" }
+  end
+
   # Génère la suite de l'histoire après qu'un choix a été fait
   # Appelée pour le mode interactif quand l'enfant choisit une option
   def continue_with_choice(story_choice)
@@ -94,18 +127,20 @@ class StoryGeneratorService
   # Construit les messages envoyés à l'API OpenAI
   # Format requis par l'API : tableau de { role:, content: }
   def build_messages
-    [
+    messages = [
       # Message "system" : définit le rôle et le comportement de l'IA
-      {
-        role: "system",
-        content: system_prompt
-      },
+      { role: "system", content: system_prompt },
       # Message "user" : la demande concrète
-      {
-        role: "user",
-        content: user_prompt
-      }
+      { role: "user", content: user_prompt }
     ]
+
+    # Si c'est un épisode de suite, on injecte le contexte de l'histoire parente
+    # pour que l'IA assure la continuité narrative (mêmes personnages, même univers, même ton)
+    if @story.sequel? && @story.parent_story.present?
+      messages << { role: "user", content: parent_context_prompt }
+    end
+
+    messages
   end
 
   # Prompt système — personnage et règles NON-NÉGOCIABLES de l'IA
@@ -283,6 +318,39 @@ class StoryGeneratorService
       # Pas du contenu complet de l'histoire (qui ferait repartir l'IA au début)
       { role: "user", content: continuation_instruction }
     ]
+  end
+
+  # Construit le prompt de contexte pour un épisode de suite
+  # Envoie la fin de l'histoire précédente (1500 derniers caractères)
+  # pour que l'IA enchaîne naturellement sans répéter ce qui s'est passé
+  def parent_context_prompt
+    parent = @story.parent_story
+    episode_num = @story.episode_number
+
+    # On prend les 1500 derniers caractères — assez pour la cohérence narrative
+    # sans surcharger le contexte avec toute l'histoire du début
+    recent_context = parent.content.to_s.last(1500)
+
+    <<~PROMPT
+      IMPORTANT — C'est l'épisode #{episode_num} d'une saga.
+
+      Cette histoire est la SUITE DIRECTE de "#{parent.title}" (épisode #{episode_num - 1}).
+
+      Voici la fin de l'épisode précédent :
+      ---
+      #{recent_context}
+      ---
+
+      RÈGLES POUR LA SUITE :
+      1. Les personnages sont les MÊMES — ne les réintroduis pas comme des inconnus.
+      2. Les descriptions physiques des personnages doivent être IDENTIQUES à l'épisode précédent :
+         mêmes couleurs de cheveux, yeux, vêtements emblématiques, accessoires caractéristiques.
+         L'enfant qui lit doit reconnaître immédiatement ses héros.
+      3. Commence immédiatement APRÈS les événements de l'épisode précédent.
+      4. Fais référence à au moins UN élément de l'épisode précédent (un lieu, un objet, une décision) pour créer la continuité.
+      5. L'enjeu doit être NOUVEAU — une nouvelle aventure, pas une répétition.
+      6. Le titre doit indiquer que c'est l'épisode #{episode_num} (ex: "Titre — Épisode #{episode_num}").
+    PROMPT
   end
 
   # Retourne le libellé français de la valeur éducative

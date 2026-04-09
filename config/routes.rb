@@ -45,6 +45,15 @@ Rails.application.routes.draw do
 
       # POST /stories/:id/audio — génère et retourne l'audio TTS (OpenAI)
       post :audio
+
+      # POST /stories/:id/continue — crée un nouvel épisode suite à cette histoire
+      post :continue
+
+      # POST /stories/:id/replay — recrée la même histoire from scratch pour faire d'autres choix
+      post :replay
+
+      # POST /stories/:id/explore_alternative — génère la timeline alternative d'un choix
+      post :explore_alternative
     end
   end
 

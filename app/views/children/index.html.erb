@@ -38,8 +38,15 @@
 
             <%# Avatar emoji dans un cercle doré semi-transparent %>
             <%# Genre "girl" → 👧, tout autre genre → 🧒 %>
+            <%# Avatar SVG — même silhouette de base, petite mèche pour les filles %>
             <div class="ch-avatar-circle">
-              <%= child.gender == "girl" ? "👧" : "🧒" %>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="7" r="4"/>
+                <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
+                <% if child.gender == "girl" %>
+                  <path d="M9 7c0-1.1.9-2 2-2 1.5 0 2.5 1 2 3"/>
+                <% end %>
+              </svg>
             </div>
 
             <%# Nom en Cormorant Garamond italic %>
@@ -71,7 +78,7 @@
 
             <%# Créer une histoire — CTA principal en pill doré %>
             <%= link_to new_story_path(child_id: child.id), class: "ch-btn-primary" do %>
-              ✨ Créer
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Créer
             <% end %>
 
             <%# Modifier le profil — outline doré %>
@@ -99,7 +106,9 @@
     <%# État vide — affiché quand l'utilisateur n'a aucun profil enfant %>
     <div class="ch-empty-state">
       <%# Emoji central — légèrement transparent pour l'ambiance %>
-      <span class="ch-empty-emoji">🧒</span>
+      <span class="ch-empty-emoji">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </span>
 
       <%# Titre de l'état vide — Cormorant italic %>
       <h2>Aucun héros encore</h2>

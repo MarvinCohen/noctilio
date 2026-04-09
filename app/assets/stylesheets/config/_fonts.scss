@@ -9,8 +9,8 @@
 // Cormorant Garamond : titres h1/h2, italic, poids 300/400/600 — style éditorial luxueux
 // DM Sans : corps de texte moderne et léger, poids 300/400/500
 // Plus Jakarta Sans : ancienne police UI — conservée pour les composants Bootstrap existants
-// Noto Serif : contenu des histoires (lecture), rendu "livre"
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+// Lora : contenu des histoires — serif chaleureuse, conçue pour la lecture, style "livre de contes"
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
 // ============================================================
 // Variables de polices — utilisées dans _bootstrap_variables.scss
@@ -22,5 +22,6 @@ $body-font: "Plus Jakarta Sans", "Helvetica", sans-serif;
 // Police des titres — même que body pour cohérence visuelle Figma
 $headers-font: "Plus Jakarta Sans", "Helvetica", sans-serif;
 
-// Police des histoires — police serif pour un rendu "livre" confortable à la lecture
-$story-font: "Noto Serif", Georgia, serif;
+// Police des histoires — Lora : serif chaleureuse pensée pour la lecture, style "livre de contes"
+// Combinaison avec Cormorant Garamond pour les titres = feeling roman illustré
+$story-font: "Lora", Georgia, serif;

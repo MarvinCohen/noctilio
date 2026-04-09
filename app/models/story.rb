@@ -10,6 +10,12 @@ class Story < ApplicationRecord
   # (supprimés automatiquement si l'histoire est supprimée)
   has_many :story_choices, dependent: :destroy
 
+  # Relation saga — une histoire peut être la suite d'une autre
+  # parent_story : l'épisode précédent (nil si c'est le 1er épisode)
+  belongs_to :parent_story, class_name: "Story", optional: true
+  # sequel_stories : toutes les histoires qui ont été créées comme suite de celle-ci
+  has_many :sequel_stories, class_name: "Story", foreign_key: :parent_story_id, dependent: :nullify
+
   # Image de couverture stockée dans ActiveStorage
   has_one_attached :cover_image
 
@@ -101,6 +107,40 @@ class Story < ApplicationRecord
     interactive? && next_choice.present?
   end
 
+  # ============================================================
+  # Méthodes saga — épisodes liés
+  # ============================================================
+
+  # Retourne true si cette histoire est la suite d'une autre
+  def sequel?
+    parent_story_id.present?
+  end
+
+  # Remonte la chaîne jusqu'au tout premier épisode de la saga
+  # Utile pour regrouper les épisodes dans la bibliothèque
+  def root_story
+    sequel? ? parent_story.root_story : self
+  end
+
+  # Calcule le numéro d'épisode en remontant la chaîne des parents
+  # Épisode 1 = histoire sans parent, Épisode 2 = suite directe, etc.
+  def episode_number
+    sequel? ? parent_story.episode_number + 1 : 1
+  end
+
+  # Retourne tous les épisodes de la saga dans l'ordre chronologique
+  # Commence depuis le 1er épisode et descend jusqu'aux suites
+  def saga_episodes
+    root_story.all_sequels_in_order
+  end
+
+  # Retourne true si une suite a déjà été créée pour cette histoire
+  def has_sequel?
+    sequel_stories.exists?
+  end
+
+  # ============================================================
+
   # Retourne l'URL de l'image de couverture
   # — Si ActiveStorage a l'image : on utilise la version stockée
   # — Sinon : on utilise l'URL temporaire OpenAI (peut expirer)
@@ -110,5 +150,13 @@ class Story < ApplicationRecord
     else
       cover_image_url
     end
+  end
+
+  protected
+
+  # Construit la liste ordonnée de tous les épisodes à partir de celui-ci
+  # Récursif : descend dans les suites jusqu'à la fin de la saga
+  def all_sequels_in_order
+    [self] + sequel_stories.order(:created_at).flat_map(&:all_sequels_in_order)
   end
 end

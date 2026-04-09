@@ -11,7 +11,13 @@
 
     <%# Avatar emoji en cercle doré — variante large pour la page show %>
     <div class="ch-avatar-circle ch-avatar-circle--lg">
-      <%= @child.gender == "girl" ? "👧" : "🧒" %>
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="7" r="4"/>
+        <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
+        <% if @child.gender == "girl" %>
+          <path d="M9 7c0-1.1.9-2 2-2 1.5 0 2.5 1 2 3"/>
+        <% end %>
+      </svg>
     </div>
 
     <%# Nom et âge de l'enfant %>
@@ -24,12 +30,12 @@
     <div class="ch-show-actions">
       <%# Modifier le profil — outline doré %>
       <%= link_to edit_child_path(@child), class: "ch-btn-secondary" do %>
-        ✏️ Modifier
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Modifier
       <% end %>
 
       <%# Créer une histoire pour cet enfant — CTA doré %>
       <%= link_to new_story_path(child_id: @child.id), class: "ch-btn-primary" do %>
-        ✨ Créer une histoire
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Créer une histoire
       <% end %>
     </div>
 

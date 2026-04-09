@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_01_184539) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_08_104609) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -291,6 +291,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_01_184539) do
     t.integer "extra_child_ids", default: [], array: true
     t.text "image_prompt"
     t.boolean "interactive", default: false, null: false
+    t.integer "parent_story_id"
     t.string "reading_level", default: "beginner"
     t.boolean "saved", default: false, null: false
     t.integer "status", default: 0, null: false
@@ -298,11 +299,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_01_184539) do
     t.datetime "updated_at", null: false
     t.string "world_theme"
     t.index ["child_id"], name: "index_stories_on_child_id"
+    t.index ["parent_story_id"], name: "index_stories_on_parent_story_id"
     t.index ["status"], name: "index_stories_on_status"
   end
 
   create_table "story_choices", force: :cascade do |t|
     t.string "chosen_option"
+    t.text "context_alternative"
     t.text "context_chosen"
     t.datetime "created_at", null: false
     t.text "option_a", null: false

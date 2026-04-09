@@ -7,7 +7,9 @@
   <div class="container">
     <%# Logo et nom de l'app %>
     <%= link_to root_path, class: "navbar-brand fw-bold d-flex align-items-center gap-2" do %>
-      <span style="font-size: 1.5rem;">🌙</span>
+      <%# Mascotte hibou — remplace l'icône lune %>
+      <%= image_tag "mascot.svg", alt: "Noctilio", width: 28, height: 28,
+            style: "object-fit: contain;" %>
       <span>Noctilio</span>
     <% end %>
 
@@ -26,19 +28,29 @@
         <%# Navigation principale (utilisateur connecté) %>
         <ul class="navbar-nav me-auto gap-1">
           <li class="nav-item">
-            <%= link_to "🏠 Accueil", dashboard_path, class: "nav-link" %>
+            <%= link_to dashboard_path, class: "nav-link" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil
+            <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "📚 Mes histoires", stories_path, class: "nav-link" %>
+            <%= link_to stories_path, class: "nav-link" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Mes histoires
+            <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "✨ Créer", new_story_path, class: "nav-link" %>
+            <%= link_to new_story_path, class: "nav-link" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Créer
+            <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "🧒 Mes héros", children_path, class: "nav-link" %>
+            <%= link_to children_path, class: "nav-link" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Mes héros
+            <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "🏆 Trophées", trophy_room_path, class: "nav-link" %>
+            <%= link_to trophy_room_path, class: "nav-link" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 2h12v7a6 6 0 0 1-12 0V2z"/><path d="M12 15v4"/><path d="M8 19h8"/><line x1="8" y1="22" x2="16" y2="22"/></svg>Trophées
+            <% end %>
           </li>
         </ul>
 
@@ -47,7 +59,7 @@
           <%# Badge Premium si abonné %>
           <% if current_user.premium? %>
             <li class="nav-item d-flex align-items-center me-2">
-              <span class="badge bg-primary px-2 py-1">✨ Premium</span>
+              <span class="badge bg-primary px-2 py-1">✦ Premium</span>
             </li>
           <% end %>
 
@@ -60,8 +72,12 @@
               <span class="fw-semibold"><%= current_user.first_name %></span>
             </a>
             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-              <%= link_to "👨‍👩‍👧 Dashboard parental", parental_path, class: "dropdown-item" %>
-              <%= link_to "💳 Mon abonnement", subscription_path, class: "dropdown-item" %>
+              <%= link_to parental_path, class: "dropdown-item d-flex align-items-center gap-2" do %>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Dashboard parental
+              <% end %>
+              <%= link_to subscription_path, class: "dropdown-item d-flex align-items-center gap-2" do %>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Mon abonnement
+              <% end %>
               <div class="dropdown-divider"></div>
               <%= link_to "Déconnexion", destroy_user_session_path,
                     data: { turbo_method: :delete },
