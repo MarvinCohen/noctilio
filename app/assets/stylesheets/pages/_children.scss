@@ -484,10 +484,10 @@
   textarea,
   .form-control,
   .form-select {
-    background: rgba(255, 255, 255, 0.04); // Fond quasi-transparent
+    background: rgba(255, 255, 255, 0.04) !important; // Fond sombre — override Bootstrap
     border: 1px solid rgba(240, 201, 122, 0.2);
     border-radius: 10px;
-    color: #d4cfc4;                        // Text
+    color: #d4cfc4 !important;             // Texte crème — override Bootstrap
     font-family: 'DM Sans', sans-serif;
     font-size: 0.95rem;
     padding: 0.6rem 0.9rem;
@@ -496,15 +496,15 @@
 
     // Placeholder — encore plus discret que le texte
     &::placeholder {
-      color: rgba(138, 133, 120, 0.6);
+      color: rgba(138, 133, 120, 0.6) !important;
     }
 
     // Focus — bordure dorée + fond légèrement plus visible
     &:focus {
       outline: none;
-      box-shadow: none;
-      border-color: #f0c97a;               // Gold
-      background: rgba(240, 201, 122, 0.04);
+      box-shadow: none !important;
+      border-color: #f0c97a !important;    // Gold
+      background: rgba(240, 201, 122, 0.04) !important;
     }
   }
 

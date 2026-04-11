@@ -179,6 +179,32 @@ $footer-dim:   rgba(#fdf6e3, 0.35);
   font-size: 0.68rem;
   color: rgba($footer-cream, 0.2);
   letter-spacing: 0.03em;
+  display: block;
+  margin-bottom: 6px;
+}
+
+// Liens CGU / Confidentialité
+.app-footer__legal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-footer__legal-link {
+  font-size: 0.72rem !important;
+  color: rgba($footer-gold, 0.55) !important;
+  text-decoration: none !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba($footer-gold, 0.25);
+  padding-bottom: 1px;
+  transition: color 0.2s, border-color 0.2s;
+
+  &:hover {
+    color: $footer-gold !important;
+    border-color: rgba($footer-gold, 0.6);
+  }
 }
 
 // ============================================================

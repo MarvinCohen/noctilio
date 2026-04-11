@@ -26,6 +26,22 @@ class Users::RegistrationsController < Devise::RegistrationsController
     dashboard_path
   end
 
+  # Suppression du compte — surcharge Devise pour personnaliser la redirection
+  # Toutes les données sont supprimées en cascade (children → stories, user_badges)
+  # conformément au RGPD (droit à l'oubli)
+  def destroy
+    resource.destroy
+    Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name)
+    set_flash_message! :notice, :destroyed
+    yield resource if block_given?
+    respond_with_navigational(resource) { redirect_to after_sign_out_path_for(resource_name), status: :see_other }
+  end
+
+  # Redirige vers la landing page après suppression du compte
+  def after_sign_out_path_for(resource_or_scope)
+    root_path
+  end
+
   protected
 
   # Ajoute first_name et last_name aux paramètres autorisés lors de l'inscription

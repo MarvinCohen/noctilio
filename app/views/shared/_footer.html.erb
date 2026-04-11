@@ -61,11 +61,18 @@
 
   </div>
 
-  <%# --- Barre de copyright — centrée, très fine, en bas --- %>
+  <%# --- Barre de copyright + liens légaux — centrée, en bas --- %>
   <div class="app-footer__bottom">
     <span class="app-footer__copyright">
-      © <%= Date.today.year %> Noctilio · Tous droits réservés · Fait avec ✦ pour les familles
+      © <%= Date.today.year %> Noctilio · Fait avec ✦ pour les familles
     </span>
+    <div class="app-footer__legal">
+      <%= link_to "CGU", cgu_path,
+            style: "font-size:0.72rem; color:rgba(240,201,122,0.55); text-decoration:none; text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid rgba(240,201,122,0.25); padding-bottom:1px;" %>
+      <span style="color:rgba(240,201,122,0.2); margin:0 6px;">·</span>
+      <%= link_to "Confidentialité", privacy_path,
+            style: "font-size:0.72rem; color:rgba(240,201,122,0.55); text-decoration:none; text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid rgba(240,201,122,0.25); padding-bottom:1px;" %>
+    </div>
   </div>
 
 </footer>

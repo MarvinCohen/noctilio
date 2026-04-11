@@ -1,0 +1,142 @@
+<%# ============================================================ %>
+<%# Politique de confidentialité — RGPD %>
+<%# Mention spéciale données d'enfants (mineurs) %>
+<%# ============================================================ %>
+
+<div class="legal-page">
+
+  <div class="legal-container">
+
+    <div class="legal-header">
+      <h1 class="legal-title">Politique de confidentialité</h1>
+      <p class="legal-date">Dernière mise à jour : <%= Date.today.strftime("%d %B %Y") %></p>
+    </div>
+
+    <div class="legal-content">
+
+      <section class="legal-section">
+        <h2>1. Responsable du traitement</h2>
+        <p>Le responsable du traitement des données est <strong>Marvin Cohen</strong>, éditeur de Noctilio. Contact : <strong>contact@noctilio-app.fr</strong></p>
+      </section>
+
+      <section class="legal-section">
+        <h2>2. Données collectées</h2>
+        <p>Noctilio collecte les données suivantes :</p>
+        <ul>
+          <li><strong>Données du compte</strong> : prénom, nom, adresse email (obligatoires à l'inscription)</li>
+          <li><strong>Données de paiement</strong> : gérées exclusivement par Stripe — Noctilio ne stocke aucune donnée bancaire</li>
+          <li><strong>Profils enfants</strong> : prénom, âge, genre, apparence physique, traits de personnalité, loisirs — utilisés uniquement pour personnaliser les histoires</li>
+          <li><strong>Histoires générées</strong> : texte et illustrations créés par l'IA, associés au profil enfant</li>
+          <li><strong>Données d'usage</strong> : nombre d'histoires, badges obtenus, XP — pour les fonctionnalités de gamification</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>3. Données concernant les enfants</h2>
+        <p>⚠️ <strong>Noctilio traite des données relatives à des mineurs.</strong> Ces données sont soumises à une protection renforcée conformément au RGPD et à la loi Informatique et Libertés.</p>
+        <ul>
+          <li>Les profils enfants sont créés par le parent ou tuteur légal titulaire du compte</li>
+          <li>Les données des enfants (prénom, apparence, personnalité) sont utilisées <strong>uniquement</strong> pour générer des histoires personnalisées</li>
+          <li>Ces données ne sont jamais utilisées à des fins publicitaires ni partagées avec des tiers</li>
+          <li>Elles sont transmises à OpenAI (via l'API) uniquement le temps nécessaire à la génération — OpenAI s'engage à ne pas utiliser les données API pour entraîner ses modèles</li>
+          <li>Le parent peut demander la suppression de tous les profils enfants à tout moment</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>4. Finalités du traitement</h2>
+        <ul>
+          <li>Fourniture du service de génération d'histoires</li>
+          <li>Gestion des comptes et de l'authentification</li>
+          <li>Gestion des abonnements et paiements (via Stripe)</li>
+          <li>Envoi d'emails transactionnels (bienvenue, confirmation)</li>
+          <li>Amélioration du service (données anonymisées)</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>5. Base légale</h2>
+        <ul>
+          <li><strong>Exécution du contrat</strong> : pour la fourniture du service</li>
+          <li><strong>Consentement</strong> : pour les emails marketing (si activés)</li>
+          <li><strong>Intérêt légitime</strong> : pour l'amélioration du service (données anonymisées)</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>6. Partage des données</h2>
+        <p>Noctilio ne vend ni ne loue vos données. Les données sont partagées uniquement avec :</p>
+        <ul>
+          <li><strong>OpenAI</strong> (États-Unis) — génération des histoires et illustrations via API. <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener" style="color:rgba(240,201,122,0.7);">Politique de confidentialité OpenAI</a></li>
+          <li><strong>Stripe</strong> (États-Unis) — traitement des paiements. <a href="https://stripe.com/fr/privacy" target="_blank" rel="noopener" style="color:rgba(240,201,122,0.7);">Politique de confidentialité Stripe</a></li>
+          <li><strong>Heroku / Salesforce</strong> — hébergement de l'application</li>
+        </ul>
+        <p>Ces sous-traitants sont soumis aux clauses contractuelles types de la Commission européenne (RGPD).</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>7. Durée de conservation</h2>
+        <ul>
+          <li>Données du compte : jusqu'à la suppression du compte + 3 ans (obligations légales)</li>
+          <li>Profils enfants et histoires : jusqu'à la suppression par l'utilisateur ou la fermeture du compte</li>
+          <li>Données de paiement : conservées par Stripe selon leur politique</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2>8. Vos droits</h2>
+        <p>Conformément au RGPD, vous disposez des droits suivants :</p>
+        <ul>
+          <li><strong>Accès</strong> : obtenir une copie de vos données</li>
+          <li><strong>Rectification</strong> : corriger des données inexactes</li>
+          <li><strong>Suppression</strong> : demander l'effacement de vos données ("droit à l'oubli")</li>
+          <li><strong>Portabilité</strong> : recevoir vos données dans un format structuré</li>
+          <li><strong>Opposition</strong> : vous opposer à certains traitements</li>
+        </ul>
+        <p>Pour exercer ces droits : <strong>contact@noctilio-app.fr</strong>. Réponse sous 30 jours.</p>
+        <p>Vous pouvez également introduire une réclamation auprès de la <strong>CNIL</strong> : <a href="https://www.cnil.fr" target="_blank" rel="noopener" style="color:rgba(240,201,122,0.7);">cnil.fr</a></p>
+      </section>
+
+      <section class="legal-section">
+        <h2>9. Sécurité</h2>
+        <p>Les données sont hébergées sur des serveurs sécurisés. Les communications sont chiffrées via HTTPS. Les mots de passe sont hachés (bcrypt). Noctilio applique les bonnes pratiques de sécurité recommandées par l'OWASP.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>10. Cookies</h2>
+        <p>Noctilio utilise uniquement des cookies techniques nécessaires au fonctionnement du service (session d'authentification). Aucun cookie publicitaire ni traceur tiers n'est utilisé.</p>
+      </section>
+
+    </div>
+
+    <div class="legal-footer">
+      <%= link_to "← Retour", :back, class: "legal-back-btn" %>
+      <%= link_to "CGU →", cgu_path, class: "legal-link" %>
+    </div>
+
+  </div>
+
+</div>
+
+<%# Réutilise le CSS défini dans cgu.html.erb — dupliqué ici pour autonomie %>
+<style>
+  .legal-page {
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    background: var(--bg-app, #0f1021);
+  }
+  .legal-container { max-width: 760px; margin: 0 auto; }
+  .legal-header { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(240, 201, 122, 0.15); }
+  .legal-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 300; font-style: italic; color: #f0c97a; margin: 0 0 0.5rem; }
+  .legal-date { font-size: 0.82rem; color: rgba(138, 133, 120, 0.7); margin: 0; }
+  .legal-section { margin-bottom: 2.5rem; }
+  .legal-section h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.25rem; font-weight: 600; color: #d4cfc4; margin: 0 0 0.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid rgba(240, 201, 122, 0.1); }
+  .legal-content p, .legal-content li { font-family: 'Lora', Georgia, serif; font-size: 0.95rem; color: #a8a29a; line-height: 1.85; margin-bottom: 0.75rem; }
+  .legal-content ul { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+  .legal-content strong { color: #d4cfc4; font-weight: 600; }
+  .legal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(240, 201, 122, 0.1); }
+  .legal-back-btn { font-size: 0.88rem; color: rgba(138, 133, 120, 0.7); text-decoration: none; }
+  .legal-back-btn:hover { color: #f0c97a; }
+  .legal-link { font-size: 0.88rem; color: rgba(240, 201, 122, 0.6); text-decoration: none; }
+  .legal-link:hover { color: #f0c97a; }
+</style>

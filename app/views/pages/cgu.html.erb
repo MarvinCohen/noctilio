@@ -1,0 +1,181 @@
+<%# ============================================================ %>
+<%# CGU — Conditions Générales d'Utilisation %>
+<%# Page publique, layout application (sidebar si connecté, navbar sinon) %>
+<%# ============================================================ %>
+
+<div class="legal-page">
+
+  <div class="legal-container">
+
+    <div class="legal-header">
+      <h1 class="legal-title">Conditions Générales d'Utilisation</h1>
+      <p class="legal-date">Dernière mise à jour : <%= Date.today.strftime("%d %B %Y") %></p>
+    </div>
+
+    <div class="legal-content">
+
+      <section class="legal-section">
+        <h2>1. Présentation du service</h2>
+        <p>Noctilio est une application de génération d'histoires personnalisées pour enfants par intelligence artificielle, accessible à l'adresse <strong>noctilio-app.fr</strong>. Le service est édité par Marvin Cohen, développeur indépendant.</p>
+        <p>Noctilio génère des histoires uniques basées sur le profil de l'enfant (prénom, âge, personnalité) à l'aide de modèles d'intelligence artificielle (GPT-4o pour le texte, DALL-E 3 pour les illustrations).</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>2. Acceptation des CGU</h2>
+        <p>L'utilisation du service implique l'acceptation pleine et entière des présentes CGU. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser Noctilio.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>3. Accès au service</h2>
+        <p>Noctilio est accessible :</p>
+        <ul>
+          <li><strong>Offre gratuite</strong> : 3 histoires par mois, sans mode interactif.</li>
+          <li><strong>Offre Premium (9,99 €/mois)</strong> : histoires illimitées, mode interactif, suites d'épisodes.</li>
+        </ul>
+        <p>Noctilio se réserve le droit de modifier les conditions d'accès à tout moment, avec un préavis de 30 jours pour les utilisateurs Premium.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>4. Création de compte</h2>
+        <p>L'inscription est réservée aux personnes majeures (18 ans ou plus). En créant un compte, vous certifiez être l'adulte responsable de l'enfant pour lequel vous utilisez le service.</p>
+        <p>Vous êtes responsable de la confidentialité de vos identifiants de connexion.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>5. Contenu généré par l'IA</h2>
+        <p>Les histoires générées par Noctilio sont produites automatiquement par intelligence artificielle. Malgré nos précautions (filtres de sécurité, prompts ciblés enfants), Noctilio ne peut garantir que le contenu sera toujours parfaitement adapté.</p>
+        <p>Nous vous encourageons à lire les histoires avec votre enfant. Si vous constatez un contenu inapproprié, signalez-le à <strong>contact@noctilio-app.fr</strong>.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>6. Propriété intellectuelle</h2>
+        <p>Les histoires générées appartiennent à l'utilisateur qui les a commandées. Noctilio se réserve le droit d'utiliser les données de génération (sans données personnelles) pour améliorer ses services.</p>
+        <p>Le nom "Noctilio", le logo, la mascotte hibou et l'interface sont la propriété exclusive de Noctilio. Toute reproduction est interdite sans autorisation.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>7. Abonnement et paiement</h2>
+        <p>L'abonnement Premium est mensuel et reconduit automatiquement. Le paiement est sécurisé via Stripe. Vous pouvez annuler à tout moment depuis votre espace "Mon abonnement" — l'accès Premium reste actif jusqu'à la fin de la période payée.</p>
+        <p>Conformément au droit de rétractation (14 jours), vous pouvez demander le remboursement d'un premier abonnement si vous n'avez pas utilisé le service Premium. Contactez-nous à <strong>contact@noctilio-app.fr</strong>.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>8. Limitation de responsabilité</h2>
+        <p>Noctilio est un service fourni "tel quel". Nous ne pouvons être tenus responsables d'interruptions de service, d'erreurs dans le contenu généré, ou de pertes de données dues à des événements hors de notre contrôle.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>9. Modifications des CGU</h2>
+        <p>Noctilio peut modifier les présentes CGU à tout moment. Les utilisateurs seront informés par email en cas de modification substantielle. La poursuite de l'utilisation du service vaut acceptation des nouvelles CGU.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2>10. Contact</h2>
+        <p>Pour toute question relative aux CGU : <strong>contact@noctilio-app.fr</strong></p>
+      </section>
+
+    </div>
+
+    <div class="legal-footer">
+      <%= link_to "← Retour", :back, class: "legal-back-btn" %>
+      <%= link_to "Politique de confidentialité →", privacy_path, class: "legal-link" %>
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  /* ── Page légale — style dans le thème Noctilio ── */
+  .legal-page {
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    background: var(--bg-app, #0f1021);
+  }
+
+  .legal-container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .legal-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.15);
+  }
+
+  .legal-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    font-style: italic;
+    color: #f0c97a;
+    margin: 0 0 0.5rem;
+  }
+
+  .legal-date {
+    font-size: 0.82rem;
+    color: rgba(138, 133, 120, 0.7);
+    margin: 0;
+  }
+
+  /* Sections */
+  .legal-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .legal-section h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #d4cfc4;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.1);
+  }
+
+  .legal-content p,
+  .legal-content li {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 0.95rem;
+    color: #a8a29a;
+    line-height: 1.85;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-content ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-content strong {
+    color: #d4cfc4;
+    font-weight: 600;
+  }
+
+  /* Footer de la page */
+  .legal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(240, 201, 122, 0.1);
+  }
+
+  .legal-back-btn {
+    font-size: 0.88rem;
+    color: rgba(138, 133, 120, 0.7);
+    text-decoration: none;
+    &:hover { color: #f0c97a; }
+  }
+
+  .legal-link {
+    font-size: 0.88rem;
+    color: rgba(240, 201, 122, 0.6);
+    text-decoration: none;
+    &:hover { color: #f0c97a; }
+  }
+</style>

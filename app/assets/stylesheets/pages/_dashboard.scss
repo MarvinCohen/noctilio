@@ -204,6 +204,88 @@ $text-dim: rgba(#fdf6e3, 0.45);
 // ============================================================
 // CTA — pill doré identique au bouton de la landing
 // ============================================================
+// Onboarding — affiché quand l'utilisateur n'a pas encore de héros
+// ============================================================
+
+.db-onboarding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+// Barre des 3 étapes
+.db-onboarding__steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 0.25rem;
+}
+
+// Ligne de connexion entre les étapes
+.db-onboarding__line {
+  width: 40px;
+  height: 1px;
+  background: rgba(240, 201, 122, 0.15);
+}
+
+// Chaque étape
+.db-onboarding__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.35; // Étapes à venir — atténuées
+}
+
+// Étape active — mise en avant
+.db-onboarding__step--active {
+  opacity: 1;
+
+  .db-onboarding__num {
+    background: rgba(240, 201, 122, 0.15);
+    border-color: rgba(240, 201, 122, 0.5);
+    color: #f0c97a;
+  }
+
+  .db-onboarding__label {
+    color: #f0c97a;
+  }
+}
+
+// Numéro dans un cercle
+.db-onboarding__num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(240, 201, 122, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  color: rgba(240, 201, 122, 0.4);
+}
+
+// Label sous le numéro
+.db-onboarding__label {
+  font-size: 0.7rem;
+  color: rgba(212, 207, 196, 0.4);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+// Texte d'aide sous les étapes
+.db-onboarding__hint {
+  font-size: 0.88rem;
+  color: rgba(212, 207, 196, 0.5);
+  text-align: center;
+  line-height: 1.6;
+  max-width: 340px;
+}
+
+// ============================================================
 
 .db-cta-btn {
   display: inline-flex;

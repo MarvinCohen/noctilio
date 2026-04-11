@@ -21,6 +21,9 @@ module Noctilio
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Langue par défaut de l'application — active les traductions FR pour Devise et les messages Rails
+    config.i18n.default_locale = :fr
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

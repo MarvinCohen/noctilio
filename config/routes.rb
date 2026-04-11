@@ -87,6 +87,12 @@ Rails.application.routes.draw do
   get "/admin/waitlist", to: "admin#waitlist", as: :admin_waitlist
 
   # ============================================================
+  # Pages légales — publiques, pas besoin d'être connecté
+  # ============================================================
+  get "/cgu",                   to: "pages#cgu",     as: :cgu
+  get "/confidentialite",       to: "pages#privacy",  as: :privacy
+
+  # ============================================================
   # Health check — vérifie que l'application fonctionne
   # ============================================================
   get "up" => "rails/health#show", as: :rails_health_check

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenue sur Noctilio</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0f1021; font-family:'Georgia', serif;">
+
+  <%# Wrapper principal — centré, largeur max 600px %>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f1021;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+
+        <%# Carte email — fond légèrement plus clair que le fond %>
+        <table width="600" cellpadding="0" cellspacing="0" border="0"
+               style="background-color:#151728; border-radius:16px; border:1px solid rgba(240,201,122,0.2); max-width:600px; width:100%;">
+
+          <%# Header — logo + nom %>
+          <tr>
+            <td align="center" style="padding: 40px 40px 20px;">
+              <%# Ligne dorée décorative %>
+              <div style="width:60px; height:1px; background:linear-gradient(to right, transparent, #f0c97a, transparent); margin:0 auto 24px;"></div>
+              <%# Nom de l'app %>
+              <p style="margin:0; font-family:'Georgia',serif; font-size:2rem; font-weight:400; letter-spacing:0.2em; color:#f0c97a; text-transform:uppercase;">
+                Noctilio
+              </p>
+              <p style="margin:8px 0 0; font-size:0.78rem; color:rgba(240,201,122,0.5); letter-spacing:0.15em; text-transform:uppercase;">
+                Ce soir, l'aventure commence ✦
+              </p>
+            </td>
+          </tr>
+
+          <%# Corps du message %>
+          <tr>
+            <td style="padding: 10px 40px 30px;">
+
+              <%# Titre de bienvenue %>
+              <h1 style="margin:0 0 20px; font-family:'Georgia',serif; font-size:1.6rem; font-weight:400; font-style:italic; color:#f6ebcd; text-align:center; line-height:1.4;">
+                Bienvenue, <%= @first_name %> !
+              </h1>
+
+              <%# Séparateur %>
+              <div style="width:40px; height:1px; background:rgba(240,201,122,0.3); margin:0 auto 24px;"></div>
+
+              <%# Message principal %>
+              <p style="margin:0 0 16px; font-size:1rem; color:#d4cfc4; line-height:1.8; text-align:center;">
+                Ton compte Noctilio est prêt. Chaque soir, des histoires uniques générées par l'IA, personnalisées pour ton enfant.
+              </p>
+
+              <p style="margin:0 0 28px; font-size:1rem; color:#d4cfc4; line-height:1.8; text-align:center;">
+                Pour commencer, crée le profil de ton héros — prénom, apparence, personnalité. L'IA s'en souviendra à chaque histoire.
+              </p>
+
+              <%# CTA principal — Créer un héros %>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding-bottom:16px;">
+                    <a href="<%= @hero_url %>"
+                       style="display:inline-block; background:#f0c97a; color:#0f1021; font-family:'Georgia',serif; font-size:0.95rem; font-weight:600; letter-spacing:0.08em; text-decoration:none; padding:14px 36px; border-radius:30px;">
+                      ✦ Créer mon héros
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <%# Lien secondaire — dashboard %>
+              <p style="margin:0; text-align:center;">
+                <a href="<%= @dashboard_url %>"
+                   style="font-size:0.85rem; color:rgba(240,201,122,0.55); text-decoration:none;">
+                  Accéder au tableau de bord →
+                </a>
+              </p>
+
+            </td>
+          </tr>
+
+          <%# Bloc "ce que tu peux faire" %>
+          <tr>
+            <td style="padding: 0 40px 30px;">
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(240,201,122,0.1); border-radius:12px; padding:24px;">
+                <p style="margin:0 0 16px; font-size:0.78rem; color:rgba(240,201,122,0.6); text-transform:uppercase; letter-spacing:0.12em;">
+                  Avec Noctilio tu peux
+                </p>
+                <%# Item %>
+                <p style="margin:0 0 10px; font-size:0.92rem; color:#c8c2b4; line-height:1.6;">
+                  📖 &nbsp;Générer des histoires uniques en 30 secondes
+                </p>
+                <p style="margin:0 0 10px; font-size:0.92rem; color:#c8c2b4; line-height:1.6;">
+                  🎮 &nbsp;Activer le mode interactif — ton enfant fait des choix
+                </p>
+                <p style="margin:0 0 10px; font-size:0.92rem; color:#c8c2b4; line-height:1.6;">
+                  🏆 &nbsp;Débloquer des trophées au fil des aventures
+                </p>
+                <p style="margin:0; font-size:0.92rem; color:#c8c2b4; line-height:1.6;">
+                  📚 &nbsp;Continuer une histoire le lendemain — épisode 2, 3…
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <%# Footer de l'email %>
+          <tr>
+            <td style="padding: 20px 40px 40px; border-top:1px solid rgba(255,255,255,0.05);">
+              <p style="margin:0; font-size:0.78rem; color:rgba(138,133,120,0.6); text-align:center; line-height:1.8;">
+                Tu reçois cet email car tu viens de créer un compte sur
+                <a href="https://noctilio-app.fr" style="color:rgba(240,201,122,0.5); text-decoration:none;">noctilio-app.fr</a>.<br>
+                © <%= Date.today.year %> Noctilio · Fait avec ✦ pour les familles
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

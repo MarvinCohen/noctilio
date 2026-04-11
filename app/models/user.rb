@@ -27,6 +27,14 @@ class User < ApplicationRecord
   has_many :badges, through: :user_badges
 
   # ============================================================
+  # Callbacks
+  # ============================================================
+
+  # Envoie l'email de bienvenue après la création du compte
+  # after_commit garantit que l'envoi se fait une fois l'utilisateur bien sauvegardé en base
+  after_commit :send_welcome_email, on: :create
+
+  # ============================================================
   # Validations
   # ============================================================
   validates :first_name, presence: true, length: { maximum: 50 }
@@ -76,5 +84,13 @@ class User < ApplicationRecord
   # Règle : 100 XP par histoire terminée + 50 XP par badge obtenu
   def xp_points
     (stories.completed.count * 100) + (user_badges.count * 50)
+  end
+
+  private
+
+  # Envoie l'email de bienvenue en arrière-plan via Solid Queue
+  # deliver_later évite de bloquer l'inscription si le SMTP est lent
+  def send_welcome_email
+    WelcomeMailer.welcome_email(self).deliver_later
   end
 end

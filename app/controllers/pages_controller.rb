@@ -1,10 +1,15 @@
 class PagesController < ApplicationController
-  # La page d'accueil est publique — pas besoin d'être connecté
-  skip_before_action :authenticate_user!, only: [:home]
+  # Pages publiques — pas besoin d'être connecté
+  skip_before_action :authenticate_user!, only: [:home, :cgu, :privacy]
 
-  # Utilise le layout "landing" — pas de sidebar ni de navbar Rails
-  # La landing page a son propre design autonome
+  # Layout landing pour la home, layout application pour les pages légales
   layout "landing", only: [:home]
+
+  # Page CGU — conditions générales d'utilisation
+  def cgu; end
+
+  # Page politique de confidentialité
+  def privacy; end
 
   def home
     # Si l'utilisateur est déjà connecté, on le redirige directement

@@ -1,0 +1,20 @@
+fr:
+  devise:
+    registrations:
+      destroyed: "Votre compte a bien été supprimé. À bientôt peut-être ✦"
+      updated: "Votre compte a bien été mis à jour."
+      signed_up: "Bienvenue ! Votre compte a été créé avec succès."
+    sessions:
+      signed_in: "Connexion réussie."
+      signed_out: "Vous avez été déconnecté."
+    passwords:
+      send_instructions: "Vous recevrez un email avec les instructions de réinitialisation dans quelques minutes."
+      updated: "Votre mot de passe a bien été modifié. Vous êtes maintenant connecté."
+    confirmations:
+      send_instructions: "Vous allez recevoir un email avec les instructions de confirmation dans quelques minutes."
+      confirmed: "Votre compte a bien été confirmé. Vous êtes maintenant connecté."
+    failure:
+      invalid: "Email ou mot de passe incorrect."
+      not_found_in_database: "Email ou mot de passe incorrect."
+      unauthenticated: "Vous devez vous connecter pour continuer."
+      unconfirmed: "Vous devez confirmer votre adresse email avant de continuer."
