@@ -214,24 +214,59 @@
 
   /* ── Responsive mobile ── */
   @media (max-width: 600px) {
-    /* Grille — 1 colonne sur mobile, minmax sécurisé */
-    .lib-grid {
-      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
-      gap: 1rem;
+    /* Page — moins de padding vertical */
+    .lib-page { padding: 1.5rem 0 3rem; }
+
+    /* En-tête — titre + bouton s'empilent verticalement */
+    .lib-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
     }
 
     /* Titre — réduit la taille min du clamp */
     .lib-title { font-size: clamp(1.6rem, 6vw, 3rem); }
 
-    /* Page — moins de padding vertical */
-    .lib-page { padding: 1.5rem 0 3rem; }
+    /* Bouton "Nouvelle histoire" — pleine largeur sur mobile, plus facile à tapper */
+    .lib-btn-primary {
+      width: 100%;
+      justify-content: center;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+    }
 
-    /* En-tête — marges réduites */
-    .lib-header { margin-bottom: 1.5rem; }
+    /* Grille — 1 colonne, une carte occupe toute la largeur */
+    .lib-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
 
-    /* Image de couverture — un peu moins haute */
+    /* Image de couverture — moins haute pour ne pas dominer l'écran */
     .lib-card-img,
-    .lib-card-img-fallback { height: 150px; }
+    .lib-card-img-fallback { height: 130px; }
+
+    /* Pied de carte — boutons plus grands, faciles à tapper */
+    .lib-card-footer {
+      padding: 0.75rem 1rem 1rem;
+      gap: 0.6rem;
+    }
+
+    /* Bouton "Lire" — moitié de la largeur disponible */
+    .lib-btn-secondary {
+      flex: 1;
+      justify-content: center;
+      padding: 0.6rem 0.5rem;
+      font-size: 0.88rem;
+    }
+
+    /* Bouton "Supprimer" — moitié de la largeur disponible */
+    .lib-btn-danger {
+      flex: 1;
+      justify-content: center;
+      padding: 0.6rem 0.5rem;
+      font-size: 0.88rem;
+    }
   }
 </style>
 
