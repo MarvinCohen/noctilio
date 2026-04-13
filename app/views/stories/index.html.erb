@@ -228,12 +228,11 @@
     /* Titre — réduit la taille min du clamp */
     .lib-title { font-size: clamp(1.6rem, 6vw, 3rem); }
 
-    /* Bouton "Nouvelle histoire" — pleine largeur sur mobile, plus facile à tapper */
+    /* Bouton "Nouvelle histoire" — largeur auto, taille compacte sur mobile */
     .lib-btn-primary {
-      width: 100%;
-      justify-content: center;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
+      width: auto;
+      padding: 0.5rem 1.1rem;
+      font-size: 0.85rem;
     }
 
     /* Grille — 1 colonne, une carte occupe toute la largeur */
@@ -248,7 +247,7 @@
     /* Image de couverture — moins haute, centrée sur le sujet principal */
     .lib-card-img {
       height: 130px;
-      object-position: center center; /* Centre l'image verticalement et horizontalement */
+      object-position: center top; /* Cadre sur le haut de l'image où se trouve le visage */
     }
     .lib-card-img-fallback { height: 130px; }
 
