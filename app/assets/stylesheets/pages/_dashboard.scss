@@ -911,12 +911,6 @@ $text-dim: rgba(#fdf6e3, 0.45);
   .db-section { padding: 36px 24px; }
   .db-hero { padding: 36px 24px 48px; }
 
-  // Fonctionnalités — 2 colonnes sur tablette au lieu de 3
-  // Chaque carte reste lisible à ~50% de largeur
-  .db-features-grid { grid-template-columns: repeat(2, 1fr); }
-
-  // Témoignages — 2 colonnes sur tablette au lieu de 3
-  .db-testimonials-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 // Mobile — ajustements principaux
@@ -1004,18 +998,6 @@ $text-dim: rgba(#fdf6e3, 0.45);
   // Padding réduit sur les cartes d'étapes
   .db-step-card { padding: 24px 20px; }
 
-  // Section "Fonctionnalités magiques" — 1 colonne
-  // 3 colonnes sur 360px = ~107px par carte, trop étroit pour le contenu
-  .db-features-grid { grid-template-columns: 1fr; }
-
-  // Padding réduit sur les cartes de features
-  .db-feature-card { padding: 24px 20px; }
-
-  // Section "Ce qu'ils en disent" — 1 colonne
-  .db-testimonials-grid { grid-template-columns: 1fr; }
-
-  // Padding réduit sur les cartes de témoignages
-  .db-testimonial-card { padding: 24px 20px; }
 }
 
 // Badge gagné — orbe doré avec halo pulsant
@@ -1469,4 +1451,35 @@ $text-dim: rgba(#fdf6e3, 0.45);
   &:hover   { background-color: darken($gold-light, 6%); color: $gold-dark; transform: translateY(-1px); }
   &:active  { transform: translateY(0); }
   &:focus   { box-shadow: 0 0 0 0.25rem rgba($gold-light, 0.5); color: $gold-dark; }
+}
+
+// ============================================================
+// Responsive features + témoignages — placé APRÈS les définitions
+// des composants pour que la cascade CSS fonctionne correctement
+// (une règle plus tardive dans le fichier écrase une règle antérieure)
+// ============================================================
+
+// Tablette — 2 colonnes pour features et témoignages
+@media (max-width: 768px) {
+  // Fonctionnalités — 2 colonnes au lieu de 3
+  .db-features-grid { grid-template-columns: repeat(2, 1fr); }
+
+  // Témoignages — 2 colonnes au lieu de 3
+  .db-testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+// Mobile — 1 colonne pour features et témoignages
+@media (max-width: 600px) {
+  // Fonctionnalités — 1 colonne pleine largeur
+  // 3 colonnes sur 360px = ~107px par carte, trop étroit
+  .db-features-grid { grid-template-columns: 1fr; }
+
+  // Padding réduit pour gagner de l'espace sur mobile
+  .db-feature-card { padding: 24px 20px; }
+
+  // Témoignages — 1 colonne pleine largeur
+  .db-testimonials-grid { grid-template-columns: 1fr; }
+
+  // Padding réduit sur les témoignages
+  .db-testimonial-card { padding: 24px 20px; }
 }
