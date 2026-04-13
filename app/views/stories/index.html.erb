@@ -242,8 +242,14 @@
       gap: 1rem;
     }
 
-    /* Image de couverture — moins haute pour ne pas dominer l'écran */
-    .lib-card-img,
+    /* En-tête — légère marge horizontale pour aérer le titre et le sous-titre */
+    .lib-header > div { padding-left: 0.25rem; }
+
+    /* Image de couverture — moins haute, centrée sur le sujet principal */
+    .lib-card-img {
+      height: 130px;
+      object-position: center center; /* Centre l'image verticalement et horizontalement */
+    }
     .lib-card-img-fallback { height: 130px; }
 
     /* Pied de carte — boutons plus grands, faciles à tapper */
