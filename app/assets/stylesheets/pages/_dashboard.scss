@@ -86,6 +86,7 @@ $text-dim: rgba(#fdf6e3, 0.45);
 .dashboard-page {
   position: relative;
   z-index: 3;
+  overflow-x: hidden; // Empêche tout élément enfant de créer un scroll horizontal
 }
 
 // ============================================================
@@ -929,10 +930,11 @@ $text-dim: rgba(#fdf6e3, 0.45);
     height: 56px;
   }
 
-  // Nébuleuse — réduit sa taille pour éviter tout overflow horizontal
+  // Nébuleuse — 100% du parent au lieu de 100vw pour éviter l'overflow horizontal
+  // 100vw inclut la largeur de la scrollbar et déborde du conteneur sur mobile
   .db-hero-nebula {
-    width: 100vw;
-    height: 100vw;
+    width: 100%;
+    height: 100%;
   }
 
   // Mot "Noctilio" — réduit la taille min du clamp
