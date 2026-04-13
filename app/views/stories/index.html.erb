@@ -211,6 +211,28 @@
     margin-bottom: 0.75rem;
   }
   .lib-empty p { color: #8a8578; margin-bottom: 2rem; }
+
+  /* ── Responsive mobile ── */
+  @media (max-width: 600px) {
+    /* Grille — 1 colonne sur mobile, minmax sécurisé */
+    .lib-grid {
+      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+      gap: 1rem;
+    }
+
+    /* Titre — réduit la taille min du clamp */
+    .lib-title { font-size: clamp(1.6rem, 6vw, 3rem); }
+
+    /* Page — moins de padding vertical */
+    .lib-page { padding: 1.5rem 0 3rem; }
+
+    /* En-tête — marges réduites */
+    .lib-header { margin-bottom: 1.5rem; }
+
+    /* Image de couverture — un peu moins haute */
+    .lib-card-img,
+    .lib-card-img-fallback { height: 150px; }
+  }
 </style>
 
 <div class="container lib-page">

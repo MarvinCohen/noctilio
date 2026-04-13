@@ -157,6 +157,21 @@
     border-top: 1px solid rgba(240,201,122,0.08);
     margin: 2.5rem 0;
   }
+
+  /* ── Responsive mobile ── */
+  @media (max-width: 600px) {
+    /* Page — moins de padding vertical */
+    .tr-page { padding: 1.5rem 0 3rem; }
+
+    /* Titre — réduit la taille min du clamp */
+    .tr-page-title { font-size: clamp(1.6rem, 6vw, 3.2rem); }
+
+    /* Hero card — moins de padding */
+    .tr-hero-card { padding: 1.5rem 1.25rem; }
+
+    /* Galerie — images un peu moins hautes */
+    .tr-gallery-img { height: 140px; }
+  }
 </style>
 
 <div class="container tr-page">

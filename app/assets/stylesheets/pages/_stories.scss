@@ -364,3 +364,24 @@
     .audio-player-timer   { font-size: 0.7rem; }
   }
 }
+
+// ============================================================
+// Responsive — Mobile (lecture et formulaire d'histoire)
+// ============================================================
+
+@media (max-width: 600px) {
+  // Illustration — réduit la hauteur min pour ne pas dominer l'écran
+  .story-illustration-wrapper { min-height: 200px; }
+
+  // Image — réduit la hauteur max sur mobile
+  .story-illustration-img { max-height: 300px; }
+
+  // Titres de chapitres — légèrement plus petits
+  .story-chapter { font-size: 1.2rem !important; }
+
+  // Paragraphes — légèrement plus petits pour une meilleure densité mobile
+  .story-paragraph { font-size: 1rem; }
+
+  // Durée — min-width réduit pour tenir à 3 en ligne sur petits écrans
+  .duration-selector { min-width: 70px; padding: 10px 8px; }
+}

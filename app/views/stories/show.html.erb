@@ -404,6 +404,44 @@
     flex-wrap: wrap;
     margin-top: 2.5rem;
   }
+
+  /* ── Responsive mobile ── */
+  @media (max-width: 600px) {
+    /* Wrapper de page — moins de padding vertical */
+    .story-page { padding: 1.5rem 0 4rem; }
+
+    /* Titre de l'histoire — réduit la taille min du clamp */
+    .story-title {
+      font-size: clamp(1.6rem, 6vw, 3.2rem);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Contenu — réduit le padding pour plus d'espace texte */
+    .story-content-wrapper { padding: 1.25rem; border-radius: 12px; }
+
+    /* Choix interactifs — réduit le padding */
+    .interactive-choice { padding: 1.25rem; border-radius: 12px; }
+    .choice-option-btn  { padding: 1rem; }
+
+    /* Fil d'Ariane — les pills peuvent aller à la ligne */
+    .story-breadcrumb { gap: 0.5rem; margin-bottom: 1rem; }
+
+    /* Navigation épisodes — plus compacte */
+    .story-saga-nav { padding: 0.5rem 0.75rem; }
+
+    /* Boutons de navigation de fin — pleine largeur */
+    .story-nav-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+    }
+    .story-nav-footer .story-btn-primary,
+    .story-nav-footer .story-btn-secondary,
+    .story-nav-footer .story-btn-warning {
+      justify-content: center;
+      text-align: center;
+    }
+  }
 </style>
 
 <div class="container story-page">

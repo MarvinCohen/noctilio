@@ -210,8 +210,25 @@ $footer-dim:   rgba(#fdf6e3, 0.35);
 // ============================================================
 // Responsive — mobile
 // ============================================================
+
 @media (max-width: 768px) {
   .app-footer { padding: 0 1.5rem; }
-
   .app-footer__row { gap: 16px; }
+}
+
+@media (max-width: 480px) {
+  .app-footer { padding: 0 1rem; }
+
+  // Passe à min-height pour éviter le débordement si le contenu s'étale
+  .app-footer__row {
+    height: auto;
+    min-height: 56px;
+    gap: 8px;
+  }
+
+  // Cache le nom "Noctilio" — seule la mascotte reste, plus compact
+  .app-footer__logo-name { display: none; }
+
+  // Réduit légèrement les icônes sociales
+  .app-footer__social-btn { width: 28px; height: 28px; }
 }

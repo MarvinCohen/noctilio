@@ -684,3 +684,53 @@
     border-color: rgba(220, 80, 80, 0.5) !important;
   }
 }
+
+
+// ============================================================
+// Responsive — Mobile
+// ============================================================
+
+// Tablette — 2 colonnes au lieu de 3
+@media (max-width: 768px) {
+  .ch-grid {
+    // Force 2 colonnes sur tablette si la minmax 260px ne suffit pas
+    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+  }
+}
+
+// Mobile — 1 colonne, paddings réduits
+@media (max-width: 600px) {
+  // Grille : 1 colonne sur mobile — les cartes prennent toute la largeur
+  .ch-grid { grid-template-columns: 1fr; }
+
+  // Titre de page — réduit la taille min du clamp
+  .ch-page-title { font-size: clamp(1.6rem, 6vw, 2.8rem); }
+
+  // Sections du formulaire — moins de padding sur mobile
+  .ch-form-section { padding: 1.25rem; }
+
+  // Header de la page show — s'empile verticalement sur mobile
+  // Avatar + nom + boutons ne tiennent pas sur une ligne étroite
+  .ch-show-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+
+    // Boutons d'action — reviennent à gauche (plus besoin de margin-left: auto)
+    .ch-show-actions { margin-left: 0; }
+  }
+
+  // Lignes d'histoire dans la page show — réduire le padding
+  .ch-story-row { padding: 0.65rem 0.75rem; }
+
+  // Boutons du formulaire — pleine largeur sur mobile
+  .ch-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+
+    .ch-btn-submit, .ch-btn-cancel {
+      justify-content: center;
+      text-align: center;
+    }
+  }
+}

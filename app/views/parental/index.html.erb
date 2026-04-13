@@ -189,6 +189,22 @@
     border-top: 1px solid rgba(240,201,122,0.08);
     margin: 2rem 0;
   }
+
+  /* ── Responsive mobile ── */
+  @media (max-width: 600px) {
+    /* Page — moins de padding vertical */
+    .par-page { padding: 1.5rem 0 3rem; }
+
+    /* Titre — réduit la taille min du clamp */
+    .par-page-title { font-size: clamp(1.5rem, 6vw, 2.8rem); }
+
+    /* Cartes stats — chiffre plus petit pour tenir dans une colonne */
+    .par-stat-number { font-size: 2.8rem; }
+    .par-stat-card { padding: 1.5rem 1rem; }
+
+    /* Lignes enfant — réduit le padding */
+    .par-child-row { padding: 0.6rem 0.75rem; }
+  }
 </style>
 
 <div class="container par-page">

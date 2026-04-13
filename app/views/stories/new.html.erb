@@ -551,14 +551,48 @@
     to   { transform: translateX(0);     }
   }
 
-  /* Mobile */
+  /* Mobile — 600px */
   @media (max-width: 600px) {
-    .value-grid { grid-template-columns: repeat(2, 1fr); }
+    /* Carte de chaque étape — réduit le padding horizontal */
+    .wizard-card { padding: 1.25rem; }
+
+    /* Grilles — restent en 2 colonnes (value) et 3 colonnes (duration) */
+    .value-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
     .duration-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-    .wizard-card { padding: 1.5rem; }
+
+    /* Chiffre durée — plus petit sur mobile */
     .duration-number { font-size: 2rem; }
+
+    /* En-tête wizard — titre à gauche, indicateurs en dessous */
     .wizard-header-top { flex-direction: column; gap: 0.75rem; }
     .wizard-indicators { align-self: flex-end; }
+
+    /* Wizard page — moins de padding vertical */
+    .wizard-page { padding: 1rem 0 3rem; }
+
+    /* Boutons de navigation — pleine largeur */
+    .wizard-nav { flex-direction: column-reverse; gap: 0.5rem; }
+    .wizard-btn-next { width: 100%; justify-content: center; margin-left: 0; }
+    .wizard-btn-back { width: 100%; justify-content: center; }
+
+    /* Toggle interactif — empile le label et le switch */
+    .wizard-toggle-row { padding: 1rem; gap: 0.75rem; }
+
+    /* Résumé — clé et valeur peuvent passer sur deux lignes */
+    .summary-val { max-width: 55%; font-size: 0.85rem; }
+  }
+
+  /* Mobile compact — 400px */
+  @media (max-width: 400px) {
+    /* Indicateurs du wizard — plus petits sur très petit écran */
+    .wizard-indicator { width: 26px; height: 26px; font-size: 0.7rem; }
+    .wizard-indicators { gap: 4px; }
+
+    /* Carte — padding minimum */
+    .wizard-card { padding: 1rem; }
+
+    /* Value grid — 1 colonne si vraiment trop étroit */
+    .value-grid { grid-template-columns: 1fr; }
   }
 </style>
 

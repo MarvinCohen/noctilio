@@ -901,6 +901,90 @@ $text-dim: rgba(#fdf6e3, 0.45);
   transition: transform 0.25s ease;
 }
 
+// ============================================================
+// Responsive — Mobile
+// ============================================================
+
+// Tablette — ajustements généraux
+@media (max-width: 768px) {
+  // Sections — réduit le padding horizontal généreux du desktop
+  .db-section { padding: 36px 24px; }
+  .db-hero { padding: 36px 24px 48px; }
+}
+
+// Mobile — ajustements principaux
+@media (max-width: 600px) {
+  // Hero — réduit les paddings pour maximiser l'espace contenu
+  .db-hero {
+    padding: 24px 16px 36px;
+    gap: 20px;
+  }
+
+  // Lune — repositionne en haut à droite mais moins en bord d'écran
+  .db-hero-moon {
+    right: 16px;
+    top: 20px;
+    width: 56px;  // Réduit la taille CSS du canvas (le dessin s'adapte)
+    height: 56px;
+  }
+
+  // Nébuleuse — réduit sa taille pour éviter tout overflow horizontal
+  .db-hero-nebula {
+    width: 100vw;
+    height: 100vw;
+  }
+
+  // Mot "Noctilio" — réduit la taille min du clamp
+  .db-noctilio-word {
+    font-size: clamp(2.8rem, 12vw, 5rem);
+  }
+
+  // Titre hero — réduit la taille min du clamp
+  .db-hero-title {
+    font-size: clamp(1.8rem, 6vw, 3.8rem);
+    margin-bottom: 1rem;
+  }
+
+  // Description — plus petite
+  .db-hero-desc { font-size: 0.9rem; }
+
+  // Étapes onboarding — s'empilent verticalement sur mobile
+  // Horizontal avec 3 cercles + connecteurs = trop large sur 320px
+  .db-onboarding__steps {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  // Connecteurs — deviennent verticaux (rotation de la ligne horizontale)
+  .db-onboarding__line {
+    width: 1px;
+    height: 16px;
+  }
+
+  // Labels sous les cercles — ré-activés en colonne (lisibles)
+  .db-onboarding__label { white-space: normal; text-align: center; }
+
+  // Sections — padding réduit au minimum
+  .db-section { padding: 28px 16px; }
+
+  // Bande d'histoires — items plus petits pour en afficher 2 visibles
+  .db-story-item { width: 130px; }
+  .db-story-cover { width: 130px; height: 165px; }
+
+  // Rangée badges — espacement réduit
+  .db-badges-row { gap: 20px; }
+  .db-badge-emoji { width: 52px; height: 52px; font-size: 1.4rem; }
+
+  // Section head — titre + lien "Voir tout" s'empilent
+  .db-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+}
+
 // Badge gagné — orbe doré avec halo pulsant
 .db-badge-orb--earned {
   .db-badge-emoji {

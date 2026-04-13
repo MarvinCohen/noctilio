@@ -237,6 +237,8 @@ $cream-nav:  #fdf6e3;
 // ============================================================
 // Responsive — sur mobile la nav se simplifie
 // ============================================================
+
+// Tablette — labels de nav remplacés par icônes seules
 @media (max-width: 900px) {
   .app-sidebar { padding: 0 1.5rem; }
 
@@ -248,7 +250,44 @@ $cream-nav:  #fdf6e3;
   .sidebar-xp { display: none; }
 }
 
+// Mobile large — cache le nom du logo
 @media (max-width: 600px) {
-  // Cache le nom du logo aussi
   .sidebar-logo-name { display: none; }
+
+  // Réduit les marges de .page-card pour maximiser l'espace contenu sur mobile
+  // Sur 375px : 24px × 2 = 48px perdus → passe à 10px × 2 = 20px perdus
+  .page-card {
+    margin: 10px;
+    border-radius: 14px;
+    padding: 4px 0;
+  }
+}
+
+// Mobile compact — simplifie au maximum la barre de navigation
+@media (max-width: 480px) {
+  // Réduit le padding horizontal de la nav pour économiser l'espace
+  .app-sidebar { padding: 0 0.75rem; }
+
+  // Logo plus petit — 80px native → réduit à 44px via CSS pour tenir dans la nav
+  .sidebar-brand {
+    margin-right: 0.75rem; // Réduit depuis 3rem
+    img { width: 44px !important; height: 44px !important; }
+  }
+
+  // Nav items encore plus compacts
+  .sidebar-nav { gap: 0; }
+  .sidebar-nav-item { padding: 6px 8px; }
+
+  // CTA "Créer" — réduit la taille du texte pour gagner de la place
+  .sidebar-cta-btn {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    gap: 4px;
+  }
+
+  // Avatar + logout — réduit les gaps
+  .sidebar-user { gap: 6px; }
+
+  // Réduit encore plus les marges de page-card
+  .page-card { margin: 6px; border-radius: 12px; }
 }
