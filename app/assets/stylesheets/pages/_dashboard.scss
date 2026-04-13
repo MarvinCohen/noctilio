@@ -910,6 +910,13 @@ $text-dim: rgba(#fdf6e3, 0.45);
   // Sections — réduit le padding horizontal généreux du desktop
   .db-section { padding: 36px 24px; }
   .db-hero { padding: 36px 24px 48px; }
+
+  // Fonctionnalités — 2 colonnes sur tablette au lieu de 3
+  // Chaque carte reste lisible à ~50% de largeur
+  .db-features-grid { grid-template-columns: repeat(2, 1fr); }
+
+  // Témoignages — 2 colonnes sur tablette au lieu de 3
+  .db-testimonials-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 // Mobile — ajustements principaux
@@ -983,6 +990,32 @@ $text-dim: rgba(#fdf6e3, 0.45);
     gap: 4px;
     margin-bottom: 20px;
   }
+
+  // Section "Comment ça marche" — étapes en colonne verticale
+  // 3 cards + 2 connecteurs côte à côte = trop large sur 360px
+  .db-steps-grid {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  // Connecteurs horizontaux ✦ — cachés en mobile (inutiles en colonne)
+  .db-step-connector { display: none; }
+
+  // Padding réduit sur les cartes d'étapes
+  .db-step-card { padding: 24px 20px; }
+
+  // Section "Fonctionnalités magiques" — 1 colonne
+  // 3 colonnes sur 360px = ~107px par carte, trop étroit pour le contenu
+  .db-features-grid { grid-template-columns: 1fr; }
+
+  // Padding réduit sur les cartes de features
+  .db-feature-card { padding: 24px 20px; }
+
+  // Section "Ce qu'ils en disent" — 1 colonne
+  .db-testimonials-grid { grid-template-columns: 1fr; }
+
+  // Padding réduit sur les cartes de témoignages
+  .db-testimonial-card { padding: 24px 20px; }
 }
 
 // Badge gagné — orbe doré avec halo pulsant
