@@ -693,8 +693,8 @@
 // Tablette — 2 colonnes au lieu de 3
 @media (max-width: 768px) {
   .ch-grid {
-    // Force 2 colonnes sur tablette si la minmax 260px ne suffit pas
-    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+    // 2 colonnes fixes sur tablette — évite les débordements horizontaux
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
