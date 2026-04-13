@@ -58,7 +58,7 @@ gem "ruby-openai", "~> 7.0"
 
 # Stockage cloud des images générées (ActiveStorage)
 # Nécessaire sur Heroku car le filesystem est éphémère
-gem "cloudinary", "~> 1.29"
+gem "cloudinary", "~> 2.4"
 gem "activestorage-cloudinary-service"
 
 # Abonnements Stripe — gère les paiements et plans premium
