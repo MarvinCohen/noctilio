@@ -214,10 +214,10 @@
 
   /* ── Responsive mobile ── */
   @media (max-width: 600px) {
-    /* Page — moins de padding vertical */
-    .lib-page { padding: 1.5rem 0 3rem; }
+    /* Page — padding horizontal ajouté pour aérer du bord */
+    .lib-page { padding: 1.5rem 0.75rem 3rem; }
 
-    /* En-tête — titre + bouton s'empilent verticalement */
+    /* En-tête — titre + bouton s'empilent verticalement, marge basse réduite */
     .lib-header {
       flex-direction: column;
       align-items: flex-start;
@@ -228,28 +228,29 @@
     /* Titre — réduit la taille min du clamp */
     .lib-title { font-size: clamp(1.6rem, 6vw, 3rem); }
 
-    /* Bouton "Nouvelle histoire" — largeur auto, taille compacte sur mobile */
+    /* Sous-titre — ajoute un peu d'espace sous le titre */
+    .lib-subtitle { margin-top: 0.2rem; }
+
+    /* Bouton "Nouvelle histoire" — largeur auto, taille compacte */
     .lib-btn-primary {
       width: auto;
       padding: 0.5rem 1.1rem;
       font-size: 0.85rem;
     }
 
-    /* Grille — 1 colonne, une carte occupe toute la largeur */
+    /* Grille — 1 colonne pleine largeur */
     .lib-grid {
       grid-template-columns: 1fr;
       gap: 1rem;
     }
 
-    /* En-tête — légère marge horizontale pour aérer le titre et le sous-titre */
-    .lib-header > div { padding-left: 0.25rem; }
-
-    /* Image de couverture — moins haute, centrée sur le sujet principal */
+    /* Image de couverture — hauteur augmentée pour mieux voir le personnage */
+    /* object-position à 20% du haut pour cadrer sur le visage sans couper */
     .lib-card-img {
-      height: 130px;
-      object-position: center top; /* Cadre sur le haut de l'image où se trouve le visage */
+      height: 170px;
+      object-position: center 20%;
     }
-    .lib-card-img-fallback { height: 130px; }
+    .lib-card-img-fallback { height: 170px; }
 
     /* Pied de carte — boutons plus grands, faciles à tapper */
     .lib-card-footer {
@@ -257,15 +258,8 @@
       gap: 0.6rem;
     }
 
-    /* Bouton "Lire" — moitié de la largeur disponible */
-    .lib-btn-secondary {
-      flex: 1;
-      justify-content: center;
-      padding: 0.6rem 0.5rem;
-      font-size: 0.88rem;
-    }
-
-    /* Bouton "Supprimer" — moitié de la largeur disponible */
+    /* Boutons "Lire" et "Supprimer" — partagent la largeur à égalité */
+    .lib-btn-secondary,
     .lib-btn-danger {
       flex: 1;
       justify-content: center;
