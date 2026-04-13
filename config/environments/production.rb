@@ -25,11 +25,14 @@ Rails.application.configure do
   # On utilise Cloudinary pour stocker les images générées de façon permanente.
   config.active_storage.service = :cloudinary
 
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # config.assume_ssl = true
+  # Heroku termine le SSL au niveau du reverse proxy avant de transmettre à Rails
+  # assume_ssl indique à Rails de considérer toutes les requêtes comme HTTPS
+  # sans ça, Rails peut créer des cookies non sécurisés ou boucler sur des redirections
+  config.assume_ssl = true
 
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  # Force toutes les requêtes HTTP → HTTPS et active le header HSTS
+  # HSTS dit au navigateur de ne jamais contacter le site en HTTP
+  config.force_ssl = true
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
@@ -92,12 +95,11 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Domaines autorisés — protection contre les attaques DNS rebinding
+  # Rails rejette toute requête dont l'en-tête Host ne correspond pas à ces valeurs
+  config.hosts << "noctilio-app.fr"
+  config.hosts << "www.noctilio-app.fr"
+
+  # Le health check Heroku (/up) doit rester accessible quel que soit le Host
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

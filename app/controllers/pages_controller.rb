@@ -1,6 +1,7 @@
 class PagesController < ApplicationController
   # Pages publiques — pas besoin d'être connecté
-  skip_before_action :authenticate_user!, only: [:home, :cgu, :privacy]
+  # :legal ajouté pour que les mentions légales soient accessibles sans compte
+  skip_before_action :authenticate_user!, only: [:home, :cgu, :privacy, :legal]
 
   # Layout landing pour la home, layout application pour les pages légales
   layout "landing", only: [:home]
@@ -10,6 +11,9 @@ class PagesController < ApplicationController
 
   # Page politique de confidentialité
   def privacy; end
+
+  # Page mentions légales — obligatoires en France (LCEN 2004)
+  def legal; end
 
   def home
     # Si l'utilisateur est déjà connecté, on le redirige directement

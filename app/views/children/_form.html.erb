@@ -45,33 +45,177 @@
   <div class="ch-divider"></div>
 
   <%# ── Section 2 : Apparence (optionnel) ── %>
+  <%# Les swatches sont des radio buttons stylisés — la valeur stockée est le nom français %>
+  <%# Ex : "blond", "ébène", "vert" — directement utilisé dans les prompts IA %>
   <div class="ch-form-section mb-0">
     <h2 class="ch-form-section-title">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17 10.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8.5"/><path d="m3 15 4-4 4 4 4-4"/></svg>Apparence
     </h2>
-    <p class="ch-form-hint">Ces détails permettent à l'IA de décrire le héros dans l'histoire.</p>
+    <p class="ch-form-hint">Ces détails permettent à l'IA d'illustrer le héros fidèlement.</p>
 
-    <div class="row g-3">
-      <div class="col-md-4">
-        <%= f.input :hair_color,
-              label: "Cheveux",
-              placeholder: "Ex: châtain, blond...",
-              input_html: { class: "form-control" } %>
-      </div>
-      <div class="col-md-4">
-        <%= f.input :eye_color,
-              label: "Yeux",
-              placeholder: "Ex: bleus, verts...",
-              input_html: { class: "form-control" } %>
-      </div>
-      <div class="col-md-4">
-        <%= f.input :skin_tone,
-              label: "Teinte de peau",
-              placeholder: "Ex: claire, dorée...",
-              input_html: { class: "form-control" } %>
+    <%# ── Cheveux ── %>
+    <div class="color-picker-group mb-4">
+      <span class="color-picker-label">Cheveux</span>
+      <div class="color-swatches">
+        <%# Chaque swatch = radio button caché + cercle coloré + tooltip au survol %>
+        <% [
+          ["noir",         "#1a1108"],
+          ["châtain foncé","#3d2314"],
+          ["châtain",      "#6b3a22"],
+          ["blond foncé",  "#9c6f2a"],
+          ["blond",        "#c9a84c"],
+          ["blond clair",  "#e8d5a3"],
+          ["roux",         "#8b3a0f"],
+          ["blanc",        "#e8e4d8"]
+        ].each do |label, color| %>
+          <label class="color-swatch-wrap" title="<%= label.capitalize %>">
+            <input type="radio"
+                   name="child[hair_color]"
+                   value="<%= label %>"
+                   class="color-swatch-radio"
+                   <% if child.hair_color == label %>checked<% end %>>
+            <span class="color-swatch" style="background: <%= color %>;"></span>
+            <span class="color-swatch-name"><%= label %></span>
+          </label>
+        <% end %>
       </div>
     </div>
+
+    <%# ── Yeux ── %>
+    <div class="color-picker-group mb-4">
+      <span class="color-picker-label">Yeux</span>
+      <div class="color-swatches">
+        <% [
+          ["marron foncé", "#2d1200"],
+          ["marron",       "#6b3a2a"],
+          ["noisette",     "#8b6520"],
+          ["vert foncé",   "#2d5a27"],
+          ["vert",         "#3a8c4a"],
+          ["vert clair",   "#52b788"],
+          ["bleu foncé",   "#1a3a6b"],
+          ["bleu",         "#2d6aab"],
+          ["bleu clair",   "#74b3ce"],
+          ["gris",         "#7a7a8a"]
+        ].each do |label, color| %>
+          <label class="color-swatch-wrap" title="<%= label.capitalize %>">
+            <input type="radio"
+                   name="child[eye_color]"
+                   value="<%= label %>"
+                   class="color-swatch-radio"
+                   <% if child.eye_color == label %>checked<% end %>>
+            <span class="color-swatch" style="background: <%= color %>;"></span>
+            <span class="color-swatch-name"><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <%# ── Teinte de peau ── %>
+    <div class="color-picker-group">
+      <span class="color-picker-label">Teinte de peau</span>
+      <div class="color-swatches">
+        <% [
+          ["ébène",      "#2d1b0e"],
+          ["brun foncé", "#4a2c12"],
+          ["brun",       "#7c4a1e"],
+          ["caramel",    "#c68a4a"],
+          ["doré",       "#d4a853"],
+          ["olive",      "#c4a882"],
+          ["beige",      "#e8c99a"],
+          ["clair",      "#f5deb3"],
+          ["très clair", "#fef0e7"]
+        ].each do |label, color| %>
+          <label class="color-swatch-wrap" title="<%= label.capitalize %>">
+            <input type="radio"
+                   name="child[skin_tone]"
+                   value="<%= label %>"
+                   class="color-swatch-radio"
+                   <% if child.skin_tone == label %>checked<% end %>>
+            <span class="color-swatch" style="background: <%= color %>; <%= color == '#fef0e7' ? 'border: 1px solid rgba(255,255,255,0.15);' : '' %>"></span>
+            <span class="color-swatch-name"><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
   </div>
+
+  <style>
+    /* ── Sélecteur de couleur — groupe label + swatches ── */
+    .color-picker-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Label de catégorie (Cheveux, Yeux, Peau) */
+    .color-picker-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(212, 207, 196, 0.55);
+    }
+
+    /* Conteneur des cercles */
+    .color-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    /* Wrapper cliquable — contient le radio + le cercle + le nom */
+    .color-swatch-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      cursor: pointer;
+    }
+
+    /* Radio button caché — la sélection se fait via le cercle */
+    .color-swatch-radio {
+      display: none;
+    }
+
+    /* Cercle coloré */
+    .color-swatch {
+      display: block;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+
+    /* Survol — légère élévation */
+    .color-swatch-wrap:hover .color-swatch {
+      transform: scale(1.12);
+    }
+
+    /* Sélectionné — anneau doré autour du cercle */
+    .color-swatch-radio:checked + .color-swatch {
+      transform: scale(1.15);
+      box-shadow: 0 0 0 2px #0f1021, 0 0 0 4px #f0c97a;
+    }
+
+    /* Nom de la couleur sous le cercle — visible uniquement si sélectionné */
+    .color-swatch-name {
+      font-size: 0.62rem;
+      color: rgba(212, 207, 196, 0);  /* Invisible par défaut */
+      text-align: center;
+      max-width: 48px;
+      line-height: 1.2;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+
+    /* Affiche le nom sous le cercle sélectionné */
+    .color-swatch-radio:checked ~ .color-swatch-name {
+      color: rgba(240, 201, 122, 0.8);
+    }
+  </style>
 
   <%# Séparateur visuel %>
   <div class="ch-divider"></div>

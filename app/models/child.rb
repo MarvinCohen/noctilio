@@ -32,32 +32,69 @@ class Child < ApplicationRecord
   def avatar_description
     parts = ["#{name}, #{gender_label} de #{age} ans"]
 
+    # Ajoute les attributs physiques explicites — indispensables pour la cohérence des illustrations
+    parts << "cheveux #{hair_color}"   if hair_color.present?
+    parts << "yeux #{eye_color}"       if eye_color.present?
+    parts << "peau #{skin_tone}"       if skin_tone.present?
+
     # Ajoute les traits de personnalité si définis
-    if personality_traits.present?
-      parts << "#{personality_traits.join(', ')}"
-    end
+    parts << personality_traits.join(", ") if personality_traits.present?
 
     # Ajoute les hobbies si définis
-    if hobbies.present?
-      parts << "qui adore #{hobbies.join(' et ')}"
+    parts << "qui adore #{hobbies.join(' et ')}" if hobbies.present?
+
+    # Ajoute la description libre (accessoires, vêtements, détails uniques)
+    parts << child_description if child_description.present?
+
+    parts.join(", ")
+  end
+
+  # Description physique précise pour le prompt image — en anglais pour FLUX/DALL-E
+  # Les modèles de diffusion répondent mieux aux descriptions physiques en anglais
+  def image_description
+    parts = ["#{name}, #{age} year old #{gender_label_en}"]
+
+    # Caractéristiques physiques — placées EN PREMIER car les modèles leur donnent plus de poids
+    parts << "blonde hair"                        if hair_color&.match?(/blond/i)
+    parts << "#{hair_color} hair"                 if hair_color.present? && !hair_color.match?(/blond/i)
+    parts << "green eyes"                         if eye_color&.match?(/vert/i)
+    parts << "#{eye_color} eyes"                  if eye_color.present? && !eye_color.match?(/vert/i)
+    # Traduit la couleur de peau en anglais précis pour le modèle de diffusion
+    if skin_tone.present?
+      parts << case skin_tone.downcase
+               when /éb[eè]ne|noir|très.?foncé/ then "very dark black ebony skin"
+               when /foncé|brun.?foncé/          then "dark brown skin"
+               when /métis|mixed|caramel|doré/   then "warm golden brown mixed skin"
+               when /olive|mat|mediterran/        then "olive mediterranean skin"
+               when /clair|fair|blanc/            then "fair light skin"
+               when /rose|pale/                   then "pale rosy skin"
+               else "#{skin_tone} skin"
+               end
     end
 
-    # Ajoute la description physique si définie
-    if child_description.present?
-      parts << child_description
-    end
+    # Accessoires et vêtements caractéristiques depuis la description libre
+    parts << child_description if child_description.present?
 
     parts.join(", ")
   end
 
   private
 
-  # Retourne le genre en français pour la description
+  # Retourne le genre en français pour la description narrative
   def gender_label
     case gender
     when "boy"   then "garçon"
     when "girl"  then "fille"
     else "enfant"
+    end
+  end
+
+  # Retourne le genre en anglais pour les prompts image
+  def gender_label_en
+    case gender
+    when "boy"   then "boy"
+    when "girl"  then "girl"
+    else "child"
     end
   end
 end

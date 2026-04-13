@@ -1,1 +1,29 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# robots.txt — instructions pour les robots des moteurs de recherche
+# Les robots respectueux (Google, Bing…) lisent ce fichier avant d'explorer le site
+# Disallow : pages à ne pas indexer | Allow : pages autorisées
+#
+# Note : la landing page (/) est temporaire — quand elle sera remplacée par
+# le dashboard, toute l'app sera privée et on pourra passer à Disallow: /
+
+User-agent: *
+
+# Pages privées — accessibles uniquement après connexion, inutiles dans Google
+Disallow: /dashboard
+Disallow: /stories
+Disallow: /children
+Disallow: /parental
+Disallow: /trophees
+Disallow: /abonnement
+
+# Authentification Devise — pas d'intérêt SEO
+Disallow: /users
+
+# Admin — jamais indexé
+Disallow: /admin
+
+# Pages publiques autorisées à l'indexation (landing + pages légales)
+# TODO : quand la landing disparaît, remplacer Allow: / par Disallow: /
+Allow: /
+Allow: /cgu
+Allow: /confidentialite
+Allow: /mentions-legales

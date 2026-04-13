@@ -26,6 +26,14 @@ class Users::RegistrationsController < Devise::RegistrationsController
     dashboard_path
   end
 
+  # Redirection quand l'utilisateur s'inscrit mais ne peut pas être connecté
+  # automatiquement (ex : si Devise tente une confirmation email alors qu'on
+  # n'utilise pas :confirmable — évite la route /confirmation-en-attente).
+  # On redirige vers la page de connexion avec un message clair.
+  def after_inactive_sign_up_path_for(resource)
+    new_user_session_path
+  end
+
   # Suppression du compte — surcharge Devise pour personnaliser la redirection
   # Toutes les données sont supprimées en cascade (children → stories, user_badges)
   # conformément au RGPD (droit à l'oubli)

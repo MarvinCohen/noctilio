@@ -91,6 +91,8 @@ Rails.application.routes.draw do
   # ============================================================
   get "/cgu",                   to: "pages#cgu",     as: :cgu
   get "/confidentialite",       to: "pages#privacy",  as: :privacy
+  # Mentions légales — obligatoires en France pour tout site web commercial
+  get "/mentions-legales",      to: "pages#legal",    as: :legal_notice
 
   # ============================================================
   # Health check — vérifie que l'application fonctionne

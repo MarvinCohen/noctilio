@@ -10,6 +10,33 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 
+    <%# ── Balises SEO de base ── %>
+    <%# description : résumé affiché par Google sous le titre dans les résultats de recherche %>
+    <meta name="description" content="Noctilio génère des histoires personnalisées pour ton enfant en quelques secondes — avec son prénom, ses personnages et son univers préféré. Propulsé par l'IA.">
+
+    <%# ── Open Graph (Facebook, WhatsApp, LinkedIn, iMessage…) ── %>
+    <%# Ces balises définissent l'aperçu affiché quand quelqu'un partage le lien %>
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="https://noctilio-app.fr">
+    <meta property="og:title"       content="Noctilio — Des histoires magiques pour ton enfant">
+    <meta property="og:description" content="Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant.">
+    <%# og:image : l'image affichée dans l'aperçu — idéalement 1200×630px %>
+    <%# On utilise image_url (pas image_path) pour obtenir l'URL absolue, obligatoire pour OG %>
+    <meta property="og:image"       content="<%= image_url('hero-illustration.png') %>">
+    <meta property="og:image:width"  content="1536">
+    <meta property="og:image:height" content="1024">
+    <meta property="og:image:alt"    content="Noctilio — histoires personnalisées pour enfants">
+    <meta property="og:locale"       content="fr_FR">
+    <meta property="og:site_name"    content="Noctilio">
+
+    <%# ── Twitter Card (X) ── %>
+    <%# summary_large_image : affiche une grande image dans le tweet %>
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="Noctilio — Des histoires magiques pour ton enfant">
+    <meta name="twitter:description" content="Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant.">
+    <meta name="twitter:image"       content="<%= image_url('hero-illustration.png') %>">
+    <meta name="twitter:image:alt"   content="Noctilio — histoires personnalisées pour enfants">
+
     <%# CSRF meta tags — nécessaires pour les requêtes fetch() vers l'API Rails %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>

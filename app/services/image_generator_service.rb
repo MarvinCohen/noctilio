@@ -43,8 +43,12 @@ class ImageGeneratorService
     bondit frappe combat affronte attaque charge plonge s'élance surgit
     jaillit fend tranche transperce explose éclate rugit hurle tonne
     fonce tourbillonne s'envole bataille affrontement éclair flamme
-    tempête choc impact lame épée coup poursuite fuir sauter courir
+    tempête blizzard bourrasque avalanche tornade ouragan foudre orage
+    choc impact lame épée coup poursuite fuir sauter courir
     vaincre terrasse renverse déchire saisit arrache défend protège
+    danger péril menaçant terrifiant soudain fracas tonitruant grondement
+    s'écroule s'effondre déferle emporte engouffre précipice abîme
+    dévale fonce à toute vitesse ralentit perd contrôle glisse trébuche
   ].freeze
 
   # ----------------------------------------------------------------
@@ -57,6 +61,7 @@ class ImageGeneratorService
   # proportions réalistes (pas super-déformés), décors ultra-détaillés, lumière
   # atmosphérique et couleurs vibrantes.
   # ----------------------------------------------------------------
+  # Style de base — utilisé quand aucun héros n'a la peau ébène
   VISUAL_STYLE = "semi-realistic anime illustration, " \
                  "Makoto Shinkai and Studio Ghibli cinematic style, " \
                  "expressive characters with realistic proportions, " \
@@ -64,7 +69,29 @@ class ImageGeneratorService
                  "dramatic volumetric lighting with god rays, " \
                  "vibrant saturated colors with deep shadows, " \
                  "cinematic widescreen composition, " \
-                 "child-safe, no violence, magical and emotional atmosphere"
+                 "child-safe, no blood, no gore, action-focused, magical and emotional atmosphere"
+
+  # Style alternatif pour les héros à peau foncée — évite les références Ghibli/Shinkai
+  # qui ont un biais fort vers les tons de peau clairs (personnages est-asiatiques)
+  # On utilise des références qui représentent naturellement des personnages à peau foncée
+  VISUAL_STYLE_DARK_SKIN = "semi-realistic animation illustration, " \
+                            "Spider-Man Into the Spider-Verse and Disney modern animation style, " \
+                            "Black protagonist with dark ebony skin, expressive face, " \
+                            "highly detailed painterly backgrounds, " \
+                            "dramatic volumetric lighting with god rays, " \
+                            "vibrant saturated colors with deep shadows, " \
+                            "cinematic widescreen composition, " \
+                            "child-safe, no blood, no gore, action-focused, magical and emotional atmosphere"
+
+  # Mots-clés indiquant que le héros PILOTE ou MONTE quelque chose
+  # Si détectés dans l'histoire, le héros n'est pas directement dans la mêlée —
+  # il faut montrer le véhicule/monture au premier plan, le héros visible dedans/dessus
+  PILOT_KEYWORDS = %w[
+    pilote pilotait commandes cockpit robot mecha vaisseau
+    spaceship avion dragon cheval monture surf skateboard traineau
+    sous-marin voiture bolide moto bicyclette cerf-volant
+    conduisait chevauchait montait surfait voguait naviguait
+  ].freeze
 
   def initialize(story)
     @story = story
@@ -129,13 +156,31 @@ class ImageGeneratorService
     request["Authorization"] = "Key #{ENV['FAL_API_KEY']}"  # Auth fal.ai
     request["Content-Type"]  = "application/json"
 
+    # Construit le negative_prompt selon la couleur de peau de chaque héros
+    # On bloque l'opposé de la couleur spécifiée pour forcer le modèle à la respecter
+    skin_negatives = @story.all_children.filter_map do |child|
+      next unless child.skin_tone.present?
+      tone = child.skin_tone.downcase
+      if tone.match?(/éb[eè]ne|noir|très.?foncé|dark/)
+        "light skin, white skin, pale skin, fair skin"
+      elsif tone.match?(/clair|blanc|fair|pale/)
+        "dark skin, black skin, brown skin, tanned skin"
+      elsif tone.match?(/métis|mixed|doré|olive|mat/)
+        "very dark skin, very pale skin"
+      end
+    end.uniq
+
+    negative = "blurry, low quality, deformed, ugly, bad anatomy, watermark, text"
+    negative += ", #{skin_negatives.join(', ')}" if skin_negatives.any?
+
     request.body = {
-      prompt: prompt,
+      prompt:              prompt,
+      negative_prompt:     negative,         # Bloque les peaux claires si le héros est à peau ébène
       image_size:          "landscape_4_3",  # Format paysage — idéal pour couverture de livre
-      num_inference_steps: 24,               # 24 = meilleur compromis qualité/vitesse pour FLUX Dev
-      guidance_scale:      4.0,              # 4.0 = créatif mais fidèle (recommandé FLUX illustrations)
-      num_images:          1,                # Une seule image par histoire
-      enable_safety_checker: true            # Filtre de sécurité — obligatoire pour app enfants
+      num_inference_steps: 28,               # 28 = meilleure qualité (vs 24), acceptable pour FLUX Dev
+      guidance_scale:      5.0,              # 5.0 = plus fidèle aux contraintes (skin tone, accessoires)
+      num_images:          1,
+      enable_safety_checker: true
     }.to_json
 
     # Exécute la requête et parse la réponse JSON
@@ -223,54 +268,107 @@ class ImageGeneratorService
   # ============================================================
   # FLUX fonctionne en langage naturel narratif, pas en liste de mots-clés.
   # Structure optimale : sujet+action → environnement → lumière → style → mood
-  # Longueur idéale : 40-60 mots (assez précis sans noyer le modèle)
+  # Longueur idéale : 80-120 mots (assez précis sans noyer le modèle)
+  #
+  # Ordre de priorité :
+  #   1. image_scene_prompt → prompt COMPLET généré par Groq (StoryGeneratorService)
+  #      Groq connaît l'histoire + l'apparence physique → gère tous les cas (pilote, héros, etc.)
+  #      Dans ce cas, on retourne le prompt directement sans modification
+  #   2. Fallback algorithmique → extract_key_moment + descriptions physiques manuelles
   def build_image_prompt
+    # ── Priorité 1 : prompt complet généré par Groq ─────────────────────────
+    # generate_image_scene_prompt (StoryGeneratorService) a déjà produit un prompt
+    # de 80-120 mots qui intègre la scène, l'apparence physique, le style, la lumière.
+    # On le retourne DIRECTEMENT — ne pas l'enrober dans une autre structure
+    # (ce serait doubler les descriptions et produire un prompt trop long et incohérent).
+    if @story.image_scene_prompt.present?
+      prompt = @story.image_scene_prompt
+
+      # Pour les suites d'épisodes : ancre le character design sur l'épisode précédent
+      if @story.sequel? && @story.parent_story&.image_prompt.present?
+        parent_style_ref = @story.parent_story.image_prompt.truncate(300)
+        prompt += ", SAME CHARACTER DESIGN AND ART STYLE AS: #{parent_style_ref}, " \
+                  "exact same character appearances, same color palette, same art style, " \
+                  "visual consistency with previous episode"
+      end
+
+      return prompt
+    end
+
+    # ── Priorité 2 : fallback algorithmique (si Groq a échoué) ──────────────
+    # Construit le prompt manuellement à partir des attributs physiques de l'enfant
+    # et du moment d'action extrait du texte.
+    Rails.logger.warn("ImageGeneratorService — image_scene_prompt absent pour story ##{@story.id}, utilisation du fallback algorithmique")
+
     # Extrait la scène clé du climax de l'histoire (2/3 du texte)
     key_moment = extract_key_moment
 
-    # Description physique précise de chaque héros pour la cohérence visuelle
-    # FLUX intègre bien les caractéristiques physiques (lunettes, couleur des cheveux, etc.)
-    hero_parts = @story.all_children.map do |child|
-      desc = "#{child.name} (#{child.age} years old"
-      desc += ", #{child.child_description}" if child.child_description.present?
-      desc += ")"
-      desc
-    end
+    # Description physique précise de chaque héros
+    # image_description retourne les attributs en anglais avec les physiques EN PREMIER
+    hero_parts = @story.all_children.map(&:image_description)
     heroes_str = hero_parts.join(" and ")
 
-    # Construit le prompt en langage naturel narratif — optimisé FLUX
-    # Priorité : custom_theme (thème de l'aventure) > scène extraite > fallback générique
-    # Le custom_theme donne l'univers visuel exact voulu par le parent
-    adventure_context = if @story.custom_theme.present?
-      # Utilise le thème de l'aventure défini par le parent — donne l'univers visuel exact
-      @story.custom_theme.truncate(100)
-    elsif key_moment.present?
-      # Utilise la scène extraite du texte comme contexte visuel
-      key_moment.truncate(100)
+    # Emphase physique — répétée pour forcer FLUX à la respecter
+    physical_emphasis = @story.all_children.map do |child|
+      attrs = []
+      attrs << "blonde hair"                          if child.hair_color&.match?(/blond/i)
+      attrs << "#{child.hair_color} hair"             if child.hair_color.present? && !child.hair_color.match?(/blond/i)
+      attrs << "bright green eyes"                    if child.eye_color&.match?(/vert/i)
+      attrs << "#{child.eye_color} eyes"              if child.eye_color.present? && !child.eye_color.match?(/vert/i)
+      # Couleur de peau : 2 formulations pour renforcer l'attention du modèle
+      if child.skin_tone.present?
+        skin_en = case child.skin_tone.downcase
+                  when /éb[eè]ne|noir|très.?foncé/ then "very dark black ebony skin"
+                  when /foncé|brun.?foncé/          then "dark brown skin"
+                  when /métis|mixed|caramel|doré/   then "warm golden brown skin"
+                  when /olive|mat/                  then "olive toned skin"
+                  when /clair|fair|blanc/            then "fair light skin"
+                  else "#{child.skin_tone} skin"
+                  end
+        attrs << skin_en
+        attrs << skin_en  # Répétition volontaire pour renforcer l'attention du modèle
+      end
+      attrs << child.child_description if child.child_description.present?
+      "#{child.name}: #{attrs.join(', ')}" if attrs.any?
+    end.compact.join(". ")
+
+    # Scène dramatique extraite algorithmiquement (fallback)
+    scene = key_moment.present? ? key_moment.truncate(150) : (@story.custom_theme.presence || "epic adventure scene")
+
+    # Détecte si le héros est PILOTE ou CAVALIER de quelque chose
+    story_text = @story.content.to_s.downcase
+    is_pilot   = PILOT_KEYWORDS.any? { |w| story_text.include?(w) }
+
+    # Extrait le nom du véhicule/robot depuis le texte (pattern : "son robot « NOM »")
+    vehicle_name = story_text.match(/(?:son|sa)\s+(?:robot|vaisseau|dragon|cheval|mech[a]?)\s+[«""]([^»""]+)[»""]/i)
+                             &.captures&.first&.capitalize
+
+    # Choisit le style visuel selon la couleur de peau des héros
+    has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé|brun.?foncé/i) }
+    visual_style  = has_dark_skin ? VISUAL_STYLE_DARK_SKIN : VISUAL_STYLE
+    skin_first    = has_dark_skin ? "BLACK CHILD WITH VERY DARK EBONY SKIN as main character. " : ""
+
+    # Construction du prompt selon le rôle du héros
+    prompt = if is_pilot
+      # Pilote : le combat du véhicule prime sur l'apparence du héros
+      vehicle_desc = vehicle_name ? "a giant robot named #{vehicle_name}" : "a giant mecha robot"
+      "TWO GIANT ROBOTS IN EPIC BATTLE in the foreground — #{vehicle_desc} vs enemy robot, " \
+      "massive scale mechanical combat, sparks flying, dynamic clash, " \
+      "small cockpit window showing #{@story.all_children.map(&:name).join(' and ')} (#{physical_emphasis}) piloting inside. " \
+      "SCENE: #{scene}. #{visual_style}, dramatic rim light, motion blur, giant robots battling"
     else
-      "an epic magical adventure"
+      # Héros direct : l'apparence prime
+      "#{skin_first}" \
+      "MANDATORY CHARACTER APPEARANCE: #{heroes_str}. " \
+      "#{heroes_str}, #{physical_emphasis}, in dynamic action pose. " \
+      "SCENE: #{scene}. " \
+      "Dramatic action moment, intense atmosphere, cinematic composition. " \
+      "#{visual_style}, dramatic rim light, motion blur"
     end
 
-    # Prompt final : scène d'action épique → héros → style → lumière
-    # "action scene", "dynamic pose", "motion blur" ancrent l'image dans le mouvement
-    prompt = "epic action scene, #{adventure_context}, " \
-             "#{heroes_str} as the main characters in dynamic combat or heroic pose, " \
-             "intense motion and energy, characters in the heat of the action, " \
-             "anime-style character design with detailed expressive faces, " \
-             "#{VISUAL_STYLE}, " \
-             "dramatic rim light, motion blur on fast movements, " \
-             "all characters visible together in one explosive scene"
-
-    # Si c'est un épisode de suite, on impose la continuité visuelle avec l'épisode précédent.
-    # On extrait les éléments clés du prompt parent (style, couleurs, description des personnages)
-    # et on les ajoute explicitement pour ancrer le modèle sur le même character design.
+    # Pour les suites d'épisodes : ancre le character design sur l'épisode précédent
     if @story.sequel? && @story.parent_story&.image_prompt.present?
-      parent_prompt = @story.parent_story.image_prompt
-
-      # On prend les 300 premiers caractères du prompt parent — la description des personnages
-      # et le style visuel sont toujours au début, après "epic action scene"
-      parent_style_ref = parent_prompt.truncate(300)
-
+      parent_style_ref = @story.parent_story.image_prompt.truncate(300)
       prompt += ", SAME CHARACTER DESIGN AND ART STYLE AS: #{parent_style_ref}, " \
                 "exact same character appearances, same color palette, same art style, " \
                 "visual consistency with previous episode, same face designs"

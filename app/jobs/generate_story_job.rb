@@ -40,13 +40,21 @@ class GenerateStoryJob < ApplicationJob
     end
 
     # 4. Parser et sauvegarder le contenu généré
-    content = text_result[:content]
-    title   = extract_title(content)
+    content        = text_result[:content]
+    title          = extract_title(content)
+    generator      = StoryGeneratorService.new(story)
 
     story.update!(
       content: content,
-      title: title
+      title:   title
     )
+
+    # 4b. Générer un prompt image précis via un second appel Groq
+    # Groq demande à l'IA de décrire la scène la plus épique en anglais (50-70 mots)
+    # Stocké dans image_scene_prompt pour que ImageGeneratorService l'utilise en priorité
+    image_scene = generator.generate_image_scene_prompt
+    story.update_column(:image_scene_prompt, image_scene) if image_scene.present?
+    Rails.logger.info("GenerateStoryJob — scène image générée : #{image_scene}")
 
     # 5. En mode interactif : extraire et créer le choix depuis le texte
     if story.interactive?

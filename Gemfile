@@ -65,6 +65,10 @@ gem "activestorage-cloudinary-service"
 gem "pay", "~> 7.0"
 gem "stripe", "~> 12.0"
 
+# Protection contre le brute-force et l'abus de requêtes
+# Bloque les IP qui spamment la connexion ou les endpoints coûteux (OpenAI)
+gem "rack-attack"
+
 group :development, :test do
   gem "dotenv-rails"
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

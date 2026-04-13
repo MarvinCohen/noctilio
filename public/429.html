@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Noctilio — Une erreur est survenue</title>
+  <title>Noctilio — Trop de tentatives</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
   <style>
@@ -25,6 +25,7 @@
       position: relative;
     }
 
+    /* Canvas étoiles — couvre toute la page, fixe derrière tout le contenu */
     #stars-canvas {
       position: fixed;
       inset: 0;
@@ -39,6 +40,7 @@
       width: 100%;
     }
 
+    /* Logo Noctilio en haut */
     .logo {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: 1rem;
@@ -51,6 +53,7 @@
       display: block;
     }
 
+    /* Grand code erreur en filigrane — discret, en arrière-plan visuel */
     .error-code {
       font-family: 'Cormorant Garamond', Georgia, serif;
       font-size: clamp(5rem, 15vw, 9rem);
@@ -61,13 +64,17 @@
       margin-bottom: 0.5rem;
     }
 
+    /* Wrapper pour positionner la mascotte à cheval sur la barre */
     .divider-wrap {
       position: relative;
       margin: 2rem auto 2rem;
+      /* Hauteur = hauteur de la mascotte, la barre est au fond */
       height: 120px;
       width: 100%;
     }
 
+    /* Mascotte centrée horizontalement, pattes par-dessus la barre */
+    /* z-index: 2 garantit que la mascotte passe au-dessus de la barre dorée */
     .owl {
       display: block;
       position: absolute;
@@ -77,6 +84,7 @@
       z-index: 2;
     }
 
+    /* La barre passe derrière la mascotte */
     .divider {
       position: absolute;
       bottom: 0;
@@ -103,6 +111,7 @@
       margin-bottom: 2.5rem;
     }
 
+    /* Bouton retour — même style que la 404 */
     .btn {
       display: inline-block;
       background: transparent;
@@ -126,28 +135,32 @@
 </head>
 <body>
 
+  <!-- Canvas étoiles — même animation que le dashboard -->
   <canvas id="stars-canvas" aria-hidden="true"></canvas>
 
   <div class="container">
     <a href="/" class="logo">✦ Noctilio</a>
 
-    <div class="error-code">500</div>
+    <div class="error-code">429</div>
 
+    <!-- Barre dorée avec la mascotte posée dessus — pattes sur la ligne -->
     <div class="divider-wrap">
       <img src="mascot.svg" alt="Noctilio" class="owl" width="120" height="120">
       <div class="divider"></div>
     </div>
 
-    <h1>Quelque chose s'est mal passé...</h1>
+    <h1>Le hibou a besoin d'un moment...</h1>
     <p>
-      Le hibou a rencontré un souci technique inattendu.<br>
-      Réessaie dans quelques instants.
+      Tu as fait trop de tentatives en peu de temps.<br>
+      Patiente quelques instants, puis réessaie.
     </p>
 
     <a href="/" class="btn">← Retour à l'accueil</a>
   </div>
 
   <script>
+    // Étoiles scintillantes — copie exacte du canvas du dashboard
+    // 250 étoiles dorées (rgba 240,201,122) avec scintillement sinusoïdal
     (function() {
       const canvas = document.getElementById('stars-canvas');
       const ctx    = canvas.getContext('2d');
@@ -191,6 +204,7 @@
       createStars();
       requestAnimationFrame(drawStars);
 
+      // Recalcule si la fenêtre change de taille
       let lastW = window.innerWidth, rTimer;
       window.addEventListener('resize', function() {
         clearTimeout(rTimer);

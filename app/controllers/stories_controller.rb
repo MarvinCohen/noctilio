@@ -8,7 +8,8 @@ class StoriesController < ApplicationController
   # audio est inclus pour vérifier que l'utilisateur est bien le propriétaire avant de générer l'audio
   before_action :set_story, only: [:show, :destroy, :choose, :status, :save_story, :audio, :continue, :replay, :explore_alternative]
 
-  # TEMPORAIREMENT DÉSACTIVÉ pour les tests
+  # Vérifie que l'utilisateur n'a pas dépassé sa limite mensuelle avant de créer
+  # DÉSACTIVÉ pendant les tests — à réactiver avant le lancement
   # before_action :check_story_limit!, only: [:new, :create]
 
   # GET /stories — bibliothèque personnelle de l'utilisateur
@@ -323,6 +324,17 @@ class StoriesController < ApplicationController
   # Paramètres autorisés pour la création d'une histoire
   # child_ids: [] = tableau d'IDs (sélection multiple d'enfants)
   # extra_child_ids: [] = géré manuellement dans create, pas directement via permit
+  # Vérifie que l'utilisateur peut encore créer une histoire ce mois-ci
+  # — Premium : illimité (can_create_story? retourne true)
+  # — Gratuit  : bloqué à 3 histoires/mois
+  # Redirige vers la page d'abonnement avec un message explicatif si limite atteinte
+  def check_story_limit!
+    unless current_user.can_create_story?
+      redirect_to subscription_path,
+        alert: "Tu as atteint ta limite de 3 histoires ce mois-ci. Passe en Premium pour des histoires illimitées !"
+    end
+  end
+
   def story_params
     params.require(:story).permit(
       :child_id,

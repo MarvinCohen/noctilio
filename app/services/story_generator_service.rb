@@ -65,6 +65,87 @@ class StoryGeneratorService
     { success: false, error: "Erreur inattendue : #{e.message}" }
   end
 
+  # Génère le prompt image COMPLET via Groq — délègue toute la logique à l'IA
+  # Groq connaît l'histoire ET l'apparence physique des héros → il gère tous les cas :
+  # pilote de robot, cavalier, héros direct, groupe, etc.
+  # Retourne un prompt en anglais (80-120 mots) prêt à envoyer à FLUX/DALL-E
+  def generate_image_scene_prompt
+    # Construit la description physique de chaque héros pour l'injecter dans le prompt
+    heroes_physical = @story.all_children.map do |child|
+      parts = ["#{child.name}, #{child.age} year old #{child.gender == 'boy' ? 'boy' : 'girl'}"]
+      parts << "blonde hair"              if child.hair_color&.match?(/blond/i)
+      parts << "#{child.hair_color} hair" if child.hair_color.present? && !child.hair_color.match?(/blond/i)
+      parts << "green eyes"               if child.eye_color&.match?(/vert/i)
+      parts << "#{child.eye_color} eyes"  if child.eye_color.present? && !child.eye_color.match?(/vert/i)
+      if child.skin_tone.present?
+        parts << case child.skin_tone.downcase
+                 when /éb[eè]ne|noir|très.?foncé/ then "very dark black ebony skin"
+                 when /foncé|brun/                then "dark brown skin"
+                 when /métis|caramel|doré/        then "warm golden brown skin"
+                 when /olive|mat/                 then "olive skin"
+                 when /clair|blanc/               then "fair light skin"
+                 else "#{child.skin_tone} skin"
+                 end
+      end
+      parts << child.child_description if child.child_description.present?
+      parts.join(", ")
+    end.join(" | ")
+
+    # Détecte si un héros a la peau foncée pour adapter la référence de style
+    has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé|brun/i) }
+    style_ref = has_dark_skin \
+      ? "Spider-Man Into the Spider-Verse and modern Disney animation style, Black protagonist" \
+      : "Makoto Shinkai and Studio Ghibli cinematic animation style"
+
+    response = @client.chat(
+      parameters: {
+        model:       MODEL,
+        messages:    [
+          {
+            role:    "system",
+            content: <<~SYSTEM
+              You are an expert at writing image generation prompts for FLUX and DALL-E.
+              Your prompts are vivid, specific, and always produce dramatic action scenes.
+              You always write in English. You STRICTLY respect character physical descriptions.
+              Output ONLY the prompt text, no explanation, no preamble.
+            SYSTEM
+          },
+          {
+            role:    "user",
+            content: <<~PROMPT
+              Write a COMPLETE image generation prompt for the most DRAMATIC and ACTION-PACKED scene of this story.
+
+              HERO PHYSICAL DESCRIPTION (MANDATORY — never change these):
+              #{heroes_physical}
+
+              STORY (read to find the most epic visual moment):
+              ---
+              #{@story.content.to_s.first(3000)}
+              ---
+
+              RULES:
+              1. Pick the single most visually explosive moment (climax, battle, chase, storm...)
+              2. If the hero PILOTS something (robot, spaceship, dragon...): show the vehicle/robot in EPIC BATTLE in the foreground, hero's face visible through cockpit — DO NOT show the child standing next to the robot
+              3. If the hero acts directly: show them in full dynamic action
+              4. STRICTLY include the exact physical traits: skin color, hair, eyes, accessories
+              5. Style: #{style_ref}, highly detailed, cinematic widescreen, dramatic lighting, motion blur, child-safe, no blood
+              6. End with: "vibrant colors, dramatic rim lighting, motion blur, cinematic composition"
+
+              Write 80-120 words. ONLY the prompt, nothing else.
+            PROMPT
+          }
+        ],
+        temperature: 0.4,  # Basse température — on veut de la précision, pas de créativité
+        max_tokens:  200
+      }
+    )
+
+    response.dig("choices", 0, "message", "content")&.strip
+  rescue StandardError => e
+    Rails.logger.warn("StoryGeneratorService — échec generate_image_scene_prompt : #{e.message}")
+    nil  # En cas d'échec, ImageGeneratorService utilisera le fallback existant
+  end
+
   # Génère la "timeline alternative" — ce qui se serait passé avec l'autre option
   # L'enfant a choisi A → on génère ce qui aurait donné B, et inversement
   # La logique est identique à continue_with_choice mais on inverse le chosen_option
@@ -174,6 +255,11 @@ class StoryGeneratorService
 
       6. VOCABULAIRE ADAPTÉ : Adapté à l'âge, mais jamais simplet.
          Les enfants aiment les grands mots quand le contexte les rend compréhensibles.
+
+      7. FIN OBLIGATOIRE : L'histoire doit TOUJOURS se terminer complètement.
+         Ne t'arrête JAMAIS en plein milieu d'une phrase ou d'une scène.
+         Si tu approches de la limite de tokens, écris l'épilogue immédiatement.
+         Une histoire sans fin est un échec — la conclusion est non-négociable.
     PROMPT
   end
 
@@ -213,14 +299,30 @@ class StoryGeneratorService
       — Finale mémorable avec leçon vécue, pas expliquée
     PROMPT
 
-    # Instructions de format
+    # Instructions de format — structure obligatoire avec début et fin explicites
     prompt += <<~FORMAT
 
-      Format de l'histoire :
-      - Commence par un titre accrocheur sur la première ligne (sans "Titre :")
-      - Divise l'histoire en 3 chapitres courts avec des titres
-      - Utilise des dialogues et des descriptions visuelles
-      - Termine par une belle morale ou leçon douce
+      FORMAT OBLIGATOIRE — respecte cette structure à la lettre :
+
+      [LIGNE 1] Titre accrocheur (sans "Titre :" ni "#")
+
+      ## Chapitre 1 — [titre court]
+      (Début : pose le décor, présente les héros EN ACTION, établit l'enjeu clairement)
+
+      ## Chapitre 2 — [titre court]
+      (Développement : obstacles, retournements, montée de tension, alliance)
+
+      ## Chapitre 3 — [titre court]
+      (Climax : moment de tension maximale, le héros fait face à son défi)
+
+      ## Épilogue
+      (OBLIGATOIRE — résolution complète, retour au calme, leçon vécue naturellement)
+      (Cette section DOIT exister et DOIT conclure l'histoire de façon satisfaisante)
+      (Termine TOUJOURS par une phrase de conclusion mémorable — jamais en plein milieu d'une phrase)
+
+      RÈGLE ABSOLUE : l'histoire doit avoir une FIN COMPLÈTE.
+      Ne t'arrête JAMAIS en plein milieu d'une phrase ou d'un paragraphe.
+      Si tu approches de la limite, rédige l'épilogue immédiatement.
     FORMAT
 
     # Mode interactif : nombre de choix selon la durée de l'histoire
@@ -364,10 +466,11 @@ class StoryGeneratorService
   end
 
   # Calcule le nombre de tokens selon la durée souhaitée
-  # 200 mots/min × durée × ~1.5 tokens/mot (français) + marge titres/choix
-  # Pas de plafond arbitraire — Groq supporte jusqu'à 8000 tokens
+  # 200 mots/min × durée × ~1.5 tokens/mot (français) + marge confortable
+  # On triple la marge pour que la fin de l'histoire ne soit jamais coupée
+  # Groq (Llama 3.3 70B) supporte jusqu'à 8000 tokens de contexte
   def tokens_for_duration
-    { 5 => 2000, 10 => 3500, 15 => 5500 }.fetch(@story.duration_minutes.to_i, 2000)
+    { 5 => 3500, 10 => 6000, 15 => 8000 }.fetch(@story.duration_minutes.to_i, 3500)
   end
 
   # Retourne le nombre de choix interactifs selon la durée

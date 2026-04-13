@@ -1,0 +1,259 @@
+<%# ============================================================ %>
+<%# Mentions légales — obligatoires en France (loi pour la confiance %>
+<%# dans l'économie numérique du 21 juin 2004) %>
+<%# Contient : éditeur, hébergeur, propriété intellectuelle %>
+<%# Page publique, pas besoin d'être connecté %>
+<%# ============================================================ %>
+
+<div class="legal-page">
+
+  <div class="legal-container">
+
+    <div class="legal-header">
+      <h1 class="legal-title">Mentions légales</h1>
+      <p class="legal-date">Dernière mise à jour : <%= Date.today.strftime("%d %B %Y") %></p>
+    </div>
+
+    <div class="legal-content">
+
+      <%# ── 1. Éditeur du site ── %>
+      <%# Obligatoire : nom, contact, SIREN/SIRET de l'éditeur %>
+      <section class="legal-section">
+        <h2>1. Éditeur du site</h2>
+        <p>Le site <strong>noctilio-app.fr</strong> est édité par :</p>
+        <ul>
+          <li><strong>Nom :</strong> Marvin Cohen</li>
+          <li><strong>Statut :</strong> Développeur indépendant — immatriculation en cours</li>
+          <li><strong>Email :</strong> <a href="mailto:contact@noctilio-app.fr" class="legal-email">contact@noctilio-app.fr</a></li>
+          <li><strong>SIREN :</strong> En cours d'immatriculation</li>
+        </ul>
+        <p class="legal-note">
+          Conformément à l'article 6 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique,
+          le numéro SIREN sera mis à jour dès l'immatriculation obtenue.
+        </p>
+      </section>
+
+      <%# ── 2. Hébergeur ── %>
+      <%# Obligatoire : nom et coordonnées de l'hébergeur %>
+      <section class="legal-section">
+        <h2>2. Hébergeur</h2>
+        <p>Le site est hébergé par :</p>
+        <ul>
+          <li><strong>Société :</strong> Heroku (Salesforce, Inc.)</li>
+          <li><strong>Adresse :</strong> 415 Mission Street, Suite 300, San Francisco, CA 94105, États-Unis</li>
+          <li><strong>Site web :</strong> <a href="https://www.heroku.com" target="_blank" rel="noopener noreferrer" class="legal-email">heroku.com</a></li>
+        </ul>
+        <p>Les images générées (illustrations des histoires) sont stockées par :</p>
+        <ul>
+          <li><strong>Société :</strong> Cloudinary Ltd.</li>
+          <li><strong>Adresse :</strong> 3400 Central Expressway, Suite 110, Santa Clara, CA 95051, États-Unis</li>
+          <li><strong>Site web :</strong> <a href="https://cloudinary.com" target="_blank" rel="noopener noreferrer" class="legal-email">cloudinary.com</a></li>
+        </ul>
+      </section>
+
+      <%# ── 3. Propriété intellectuelle ── %>
+      <%# Protection du nom, logo et mascotte Noctilio %>
+      <section class="legal-section">
+        <h2>3. Propriété intellectuelle</h2>
+        <p>
+          L'ensemble des éléments du site <strong>noctilio-app.fr</strong> — nom, logo, mascotte hibou, interface graphique,
+          textes et code source — sont la propriété exclusive de Marvin Cohen, éditeur de Noctilio.
+        </p>
+        <p>
+          Toute reproduction, représentation, modification ou exploitation, totale ou partielle, de ces éléments
+          sans autorisation écrite préalable est interdite et constituerait une contrefaçon sanctionnée par les
+          articles L.335-2 et suivants du Code de la propriété intellectuelle.
+        </p>
+        <p>
+          Les histoires générées par l'intelligence artificielle à la demande d'un utilisateur appartiennent à cet utilisateur.
+          Noctilio ne revendique aucun droit sur le contenu personnalisé produit pour un compte.
+        </p>
+      </section>
+
+      <%# ── 4. Cookies et traceurs ── %>
+      <%# Informer sur l'usage ou non-usage de cookies %>
+      <section class="legal-section">
+        <h2>4. Cookies</h2>
+        <p>
+          Noctilio utilise uniquement des cookies techniques strictement nécessaires au fonctionnement du service :
+          cookie de session pour maintenir la connexion, et token CSRF pour sécuriser les formulaires.
+        </p>
+        <p>
+          Aucun cookie publicitaire, tracker tiers ou outil d'analyse comportementale n'est déposé sur votre appareil.
+        </p>
+      </section>
+
+      <%# ── 5. Intelligence artificielle ── %>
+      <%# Transparence sur les sous-traitants IA — bonne pratique RGPD %>
+      <section class="legal-section">
+        <h2>5. Services d'intelligence artificielle</h2>
+        <p>Noctilio utilise les services d'OpenAI pour générer les histoires et illustrations :</p>
+        <ul>
+          <li><strong>GPT-4o</strong> — génération du texte des histoires</li>
+          <li><strong>DALL-E 3</strong> — génération des illustrations</li>
+        </ul>
+        <p>
+          Ces services sont fournis par <strong>OpenAI, LLC</strong> (3180 18th Street, San Francisco, CA 94110, États-Unis).
+          Les données transmises à OpenAI sont limitées au strict nécessaire (thème, univers, niveau de lecture)
+          et ne comprennent pas les données personnelles identifiantes de l'enfant ou du parent.
+        </p>
+      </section>
+
+      <%# ── 6. Responsabilité ── %>
+      <section class="legal-section">
+        <h2>6. Limitation de responsabilité</h2>
+        <p>
+          Noctilio s'efforce d'assurer l'exactitude et la mise à jour des informations diffusées sur ce site.
+          Toutefois, l'éditeur ne peut garantir l'exhaustivité ou l'absence d'erreur dans les contenus générés automatiquement.
+        </p>
+        <p>
+          L'éditeur ne saurait être tenu responsable des dommages directs ou indirects résultant de l'accès
+          ou de l'utilisation du site, notamment en cas d'interruption de service, d'intrusion extérieure ou
+          de la présence de virus.
+        </p>
+      </section>
+
+      <%# ── 7. Contact ── %>
+      <section class="legal-section">
+        <h2>7. Contact</h2>
+        <p>
+          Pour toute question relative aux présentes mentions légales ou au fonctionnement du site :
+          <a href="mailto:contact@noctilio-app.fr" class="legal-email">contact@noctilio-app.fr</a>
+        </p>
+      </section>
+
+    </div>
+
+    <%# Navigation entre pages légales %>
+    <div class="legal-footer">
+      <%= link_to "← Retour", :back, class: "legal-back-btn" %>
+      <div class="legal-footer-links">
+        <%= link_to "CGU", cgu_path, class: "legal-link" %>
+        <span class="legal-separator">·</span>
+        <%= link_to "Confidentialité", privacy_path, class: "legal-link" %>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  /* ── Réutilise le style des autres pages légales ── */
+  /* Note : si ce style est dupliqué, envisager un partial SCSS partagé */
+
+  .legal-page {
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    background: var(--bg-app, #0f1021);
+  }
+
+  .legal-container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .legal-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.15);
+  }
+
+  .legal-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    font-style: italic;
+    color: #f0c97a;
+    margin: 0 0 0.5rem;
+  }
+
+  .legal-date {
+    font-size: 0.82rem;
+    color: rgba(138, 133, 120, 0.7);
+    margin: 0;
+  }
+
+  .legal-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .legal-section h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #d4cfc4;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.1);
+  }
+
+  .legal-content p,
+  .legal-content li {
+    font-size: 0.95rem;
+    color: #a8a29a;
+    line-height: 1.85;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-content ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-content strong {
+    color: #d4cfc4;
+    font-weight: 600;
+  }
+
+  /* Lien email/web dans le texte légal */
+  .legal-email {
+    color: rgba(240, 201, 122, 0.75);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    &:hover { color: #f0c97a; }
+  }
+
+  /* Note explicative (italique, plus discrète) */
+  .legal-note {
+    font-style: italic;
+    font-size: 0.88rem !important;
+    color: rgba(138, 133, 120, 0.6) !important;
+  }
+
+  /* Footer de navigation entre pages légales */
+  .legal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(240, 201, 122, 0.1);
+  }
+
+  .legal-footer-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .legal-back-btn {
+    font-size: 0.88rem;
+    color: rgba(138, 133, 120, 0.7);
+    text-decoration: none;
+    &:hover { color: #f0c97a; }
+  }
+
+  .legal-link {
+    font-size: 0.88rem;
+    color: rgba(240, 201, 122, 0.6);
+    text-decoration: none;
+    &:hover { color: #f0c97a; }
+  }
+
+  .legal-separator {
+    color: rgba(138, 133, 120, 0.4);
+    font-size: 0.88rem;
+  }
+</style>

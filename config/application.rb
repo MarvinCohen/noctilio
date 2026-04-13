@@ -24,6 +24,10 @@ module Noctilio
     # Langue par défaut de l'application — active les traductions FR pour Devise et les messages Rails
     config.i18n.default_locale = :fr
 
+    # Active Rack::Attack comme middleware de protection contre le brute-force
+    # Il doit être inséré tôt dans la pile pour intercepter les requêtes avant Rails
+    config.middleware.use Rack::Attack
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
