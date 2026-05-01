@@ -68,12 +68,10 @@ Rails.application.routes.draw do
   get "/trophees",    to: "trophy_room#index",   as: :trophy_room
 
   # ============================================================
-  # Pay::Engine — gère automatiquement les webhooks Stripe
-  # ============================================================
-  # Monte le moteur Pay sur /pay
+  # Pay::Engine — PAS besoin de monter manuellement !
+  # Pay 7 se monte automatiquement via son initializer.
   # Les webhooks Stripe arrivent sur : /pay/webhooks/stripe
   # Configure cette URL dans ton dashboard Stripe (section Webhooks) !
-  mount Pay::Engine, at: "/pay"
 
   # ============================================================
   # Abonnements — page de tarification et gestion Stripe
