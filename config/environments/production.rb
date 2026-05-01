@@ -100,6 +100,10 @@ Rails.application.configure do
   config.hosts << "noctilio-app.fr"
   config.hosts << "www.noctilio-app.fr"
 
+  # Domaine Railway (production et previews)
+  # up.railway.app est le domaine généré automatiquement par Railway
+  config.hosts << /.*\.up\.railway\.app/
+
   # Le health check Heroku (/up) doit rester accessible quel que soit le Host
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
