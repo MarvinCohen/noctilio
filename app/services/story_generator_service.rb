@@ -91,11 +91,31 @@ class StoryGeneratorService
       parts.join(", ")
     end.join(" | ")
 
-    # Détecte si un héros a la peau foncée pour adapter la référence de style
+    # Détecte si un héros a la peau foncée — utilisé comme signal de fallback
+    # pour garantir une bonne représentation quand aucun style n'est choisi
     has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé|brun/i) }
-    style_ref = has_dark_skin \
-      ? "Spider-Man Into the Spider-Verse and modern Disney animation style, Black protagonist" \
-      : "Makoto Shinkai and Studio Ghibli cinematic animation style"
+
+    # Sélectionne le style visuel pour le prompt image :
+    #   1. Si l'utilisateur a choisi un style → on l'applique (en tenant compte de la peau si Comics)
+    #   2. Sinon → fallback automatique selon la couleur de peau du héros
+    style_ref = case @story.image_style
+                when "ghibli"
+                  "Makoto Shinkai and Studio Ghibli cinematic animation style, soft watercolor pastels, dreamy atmosphere"
+                when "comics"
+                  # Comics + peau foncée → Spider-Verse est la référence la plus représentative
+                  has_dark_skin \
+                    ? "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors, Black protagonist" \
+                    : "Marvel Comics and Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors"
+                when "pixar"
+                  "Pixar and Disney 3D animation style, warm cinematic lighting, highly detailed CGI, expressive characters"
+                when "watercolor"
+                  "vintage children's book illustration style, soft watercolor textures, warm hand-painted look, storybook fairy tale"
+                else
+                  # Fallback automatique : Spider-Verse pour peau foncée, Ghibli sinon
+                  has_dark_skin \
+                    ? "Spider-Man Into the Spider-Verse and modern Disney animation style, Black protagonist" \
+                    : "Makoto Shinkai and Studio Ghibli cinematic animation style"
+                end
 
     response = @client.chat(
       parameters: {
@@ -247,8 +267,15 @@ class StoryGeneratorService
          - Acte 2 (60%) : montée de tension, obstacles, retournements, alliance
          - Acte 3 (20%) : climax intense, résolution satisfaisante, leçon subtile
 
-      4. CARACTÉRISTIQUES PHYSIQUES : Intègre naturellement les détails physiques
-         des héros (lunettes, couleur des cheveux, des yeux, etc.) dans les scènes.
+      4. CARACTÉRISTIQUES PHYSIQUES : Ne décris JAMAIS un héros comme une fiche
+         d'identité ("Léo, un garçon de 7 ans aux cheveux blonds et aux yeux verts").
+         Glisse les détails physiques UN PAR UN, au fil de l'action, quand c'est
+         pertinent et naturel :
+         ✓ "Sa tignasse rousse disparut dans la fumée."
+         ✓ "Ses lunettes rondes captèrent un reflet de lumière."
+         ✗ "Léo, un garçon de 7 ans aux cheveux roux et aux yeux verts."
+         La couleur des yeux en particulier est rarement nécessaire — ne la mentionne
+         que si la scène l'exige vraiment (ex: regard intense face à un adversaire).
 
       5. VALEUR ÉDUCATIVE SUBTILE : La leçon morale se vit dans l'histoire —
          jamais expliquée, jamais moralisatrice. L'enfant la ressent, pas la subit.

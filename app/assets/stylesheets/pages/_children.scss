@@ -637,6 +637,93 @@
 
 
 // ============================================================
+// COLOR FIELD — sélection de couleur par pills (cheveux, yeux, peau)
+// ============================================================
+// Approche : label.color-badge avec radio caché + point coloré + texte
+// Pure CSS — :has(input:checked) gère l'état sélectionné sans JavaScript
+// display:inline-flex !important sur .color-badge override la règle
+// globale ".ch-form-section label { display: block }" définie plus haut
+// ============================================================
+
+// Groupe entier (label catégorie + rangée de pills)
+.color-field {
+  margin-bottom: 1.25rem;
+
+  // Dernier groupe : pas de marge basse
+  &:last-child { margin-bottom: 0; }
+}
+
+// Label de catégorie — ex: "CHEVEUX", "YEUX", "TEINTE DE PEAU"
+.color-field-label {
+  display:        block;
+  font-size:      0.72rem;
+  font-weight:    600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color:          rgba(212, 207, 196, 0.45);
+  margin-bottom:  0.6rem;
+}
+
+// Conteneur flex des pills — wrap pour revenir à la ligne si besoin
+.color-field-options {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       0.45rem;
+}
+
+// Pill individuelle — reprend le pattern badge-check mais avec un point coloré
+// display:inline-flex !important : contourne la règle `.ch-form-section label { display:block }`
+.color-badge {
+  display:     inline-flex !important;  // Override du global label { display:block }
+  align-items: center;
+  gap:         7px;
+  padding:     0.28rem 0.85rem 0.28rem 0.45rem;
+  border:      1px solid rgba(240, 201, 122, 0.15);
+  border-radius: 50px;
+  cursor:      pointer;
+  font-size:   0.82rem;
+  font-weight: 500;
+  color:       #8a8578;               // Text-dim au repos
+  background:  rgba(255, 255, 255, 0.02);
+  user-select: none;
+  transition:  background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  // Le radio est caché — c'est CSS (:has) qui gère la sélection
+  input[type="radio"] { display: none; }
+
+  // ── État sélectionné — detecté via :has(input:checked) ──
+  // Border dorée, texte or, fond mist doré
+  &:has(input:checked) {
+    border-color: rgba(240, 201, 122, 0.55);
+    color:        #f0c97a;                        // Gold
+    background:   rgba(240, 201, 122, 0.1);
+
+    // Le point coloré reçoit un halo doré pour signaler la sélection
+    .color-badge-dot {
+      box-shadow: 0 0 0 2px rgba(240, 201, 122, 0.5);
+      transform:  scale(1.1);
+    }
+  }
+
+  // ── Survol quand NON sélectionné ──
+  &:hover:not(:has(input:checked)) {
+    border-color: rgba(240, 201, 122, 0.3);
+    color:        #d4cfc4;                        // Text — légèrement plus visible
+    background:   rgba(240, 201, 122, 0.05);
+  }
+}
+
+// Petit cercle coloré à gauche du texte — couleur injectée via style inline
+.color-badge-dot {
+  width:         18px;
+  height:        18px;
+  border-radius: 50%;
+  flex-shrink:   0;                              // Ne rétrécit pas si le texte est long
+  box-shadow:    0 1px 4px rgba(0, 0, 0, 0.45); // Ombre pour les couleurs claires
+  transition:    box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+// ============================================================
 // SÉPARATEUR VERTICAL DORÉ — comme le dashboard
 // ============================================================
 // Utilisé entre le header et le contenu dans certaines pages

@@ -8,23 +8,52 @@ class ParentalController < ApplicationController
   def index
     @children = current_user.children.ordered
 
+    # IDs des enfants — réutilisés dans plusieurs requêtes pour éviter les doublons
+    child_ids = @children.pluck(:id)
+
     # Temps de lecture total (approximation : durée choisie à la création)
     @total_reading_minutes = current_user.stories
                                          .completed
                                          .sum(:duration_minutes)
 
-    # Histoires par semaine pour le graphique (7 derniers jours)
-    @weekly_stories = stories_per_day(7)
+    # 5 dernières histoires terminées — pour le bloc "Activité récente"
+    # includes(:child) pour éviter le N+1 lors de l'affichage du nom de l'enfant
+    @recent_stories = current_user.stories
+                                  .completed
+                                  .recent
+                                  .limit(5)
+                                  .includes(:child)
 
-    # Thèmes favoris (world_theme le plus choisi)
-    @favorite_themes = current_user.stories
-                                   .completed
-                                   .group(:world_theme)
-                                   .order("count_all DESC")
-                                   .limit(3)
-                                   .count
+    # Dernière histoire complétée par enfant (hash { child_id => story })
+    # Utilisé dans la liste des héros pour afficher la date de dernière activité
+    last_completed = Story.completed
+                          .where(child_id: child_ids)
+                          .order(created_at: :desc)
+    @last_story_by_child = last_completed.group_by(&:child_id).transform_values(&:first)
 
-    # Total d'histoires créées ce mois-ci (pour afficher la limite)
+    # IDs des enfants ayant au moins un choix interactif en attente
+    # Un choix est "en attente" si chosen_option est nil (l'enfant n'a pas encore choisi)
+    @children_with_pending = Story
+                               .joins(:story_choices)
+                               .where(child_id: child_ids,
+                                      story_choices: { chosen_option: nil })
+                               .distinct
+                               .pluck(:child_id)
+
+    # Valeurs éducatives explorées — regroupées par valeur, triées par fréquence
+    # Exclut les histoires sans valeur éducative définie
+    @educational_values = current_user.stories
+                                      .completed
+                                      .where.not(educational_value: [nil, ""])
+                                      .group(:educational_value)
+                                      .order("count_all DESC")
+                                      .count
+
+    # Histoires par jour sur les 30 derniers jours — pour la grille d'activité
+    # stories_per_day retourne un hash { Date => count }, ex: { 2026-04-07 => 2, ... }
+    @weekly_stories = stories_per_day(30)
+
+    # Total d'histoires créées ce mois-ci (pour afficher la limite d'abonnement)
     @stories_this_month = current_user.stories_this_month
   end
 

@@ -1,6 +1,6 @@
 <%# ============================================================ %>
-<%# Page abonnement Premium — DA cosmique %>
-<%# Version temporaire en attendant Stripe — bouton disabled %>
+<%# Page abonnement Premium %>
+<%# Affiche : état premium si déjà abonné, sinon le CTA Stripe %>
 <%# ============================================================ %>
 
 <style nonce="<%= content_security_policy_nonce %>">
@@ -67,21 +67,80 @@
   .sub-feature-icon { color: #f0c97a; font-size: 0.8rem; flex-shrink: 0; margin-top: 3px; }
   .sub-feature-label strong { color: #fdf6e3; }
 
-  /* Bouton CTA "Bientôt disponible" — doré, pill, disabled */
+  /* Bouton CTA principal — doré, pill */
   .sub-btn-cta {
     display: block;
     width: 100%;
     padding: 0.85rem;
-    background: rgba(240, 201, 122, 0.3);  /* Moins intense car disabled */
-    color: rgba(11, 14, 26, 0.6);
+    background: #f0c97a;
+    color: #0b0e1a;
     border: none;
     border-radius: 50px;
     font-weight: 700;
     font-size: 1rem;
-    cursor: not-allowed;
+    cursor: pointer;
     text-align: center;
+    text-decoration: none;
     margin-bottom: 1rem;
+    transition: background 0.15s ease, transform 0.1s ease;
   }
+  .sub-btn-cta:hover { background: #f5d898; color: #0b0e1a; text-decoration: none; transform: translateY(-1px); }
+  .sub-btn-cta:active { transform: translateY(0); }
+
+  /* Badge "Premium actif" — vert doux */
+  .sub-badge-active {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(80, 200, 120, 0.15);
+    color: #50c878;
+    border: 1px solid rgba(80, 200, 120, 0.3);
+    border-radius: 50px;
+    padding: 0.4rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Bouton annulation — discret, texte seulement */
+  .sub-btn-cancel {
+    display: block;
+    width: 100%;
+    padding: 0.6rem;
+    background: transparent;
+    color: #8a8578;
+    border: 1px solid rgba(138, 133, 120, 0.3);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 1rem;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .sub-btn-cancel:hover { color: #fdf6e3; border-color: rgba(138, 133, 120, 0.6); }
+
+  /* Jauge histoires gratuites */
+  .sub-quota {
+    background: rgba(240, 201, 122, 0.05);
+    border: 1px solid rgba(240, 201, 122, 0.1);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+  .sub-quota-label { color: #8a8578; font-size: 0.82rem; margin-bottom: 0.5rem; }
+  .sub-quota-bar {
+    background: rgba(255,255,255,0.07);
+    border-radius: 50px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .sub-quota-fill {
+    height: 100%;
+    background: #f0c97a;
+    border-radius: 50px;
+    transition: width 0.3s ease;
+  }
+  .sub-quota-count { color: #d4cfc4; font-size: 0.82rem; margin-top: 0.4rem; text-align: right; }
 
   /* Note sous le bouton */
   .sub-note { text-align: center; color: #8a8578; font-size: 0.82rem; }
@@ -101,53 +160,110 @@
 
 <div class="container sub-page">
 
-  <%# ── Hero — icône + titre + sous-titre ── %>
+  <%# ── Hero — icône + titre ── %>
   <div class="sub-hero">
     <span class="sub-hero-icon">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
     </span>
     <h1 class="sub-hero-title">Abonnement Premium</h1>
-    <p class="sub-hero-subtitle">
-      Le paiement sera disponible prochainement.<br>
-      Pour l'instant, profitez de l'application gratuitement !
-    </p>
+    <% if @is_premium %>
+      <p class="sub-hero-subtitle">Tu bénéficies de toutes les fonctionnalités premium.</p>
+    <% else %>
+      <p class="sub-hero-subtitle">Histoires illimitées, mode interactif et bien plus.</p>
+    <% end %>
   </div>
 
-  <%# ── Carte Premium ── %>
+  <%# ── Carte principale ── %>
   <div class="sub-card">
 
-    <%# Prix — 9,99€/mois en Cormorant doré %>
-    <div class="sub-price">
-      <div class="sub-price-amount">9,99€</div>
-      <div class="sub-price-period">par mois · sans engagement</div>
-    </div>
+    <%# ── Cas 1 : l'utilisateur est déjà premium ── %>
+    <% if @is_premium %>
 
-    <%# Liste des features incluses %>
-    <ul class="sub-features">
-      <li class="sub-feature-item">
-        <span class="sub-feature-icon">✦</span>
-        <span class="sub-feature-label">Histoires <strong>illimitées</strong></span>
-      </li>
-      <li class="sub-feature-item">
-        <span class="sub-feature-icon">✦</span>
-        <span class="sub-feature-label">Mode <strong>interactif</strong> — l'enfant fait des choix</span>
-      </li>
-      <li class="sub-feature-item">
-        <span class="sub-feature-icon">✦</span>
-        <span class="sub-feature-label">Dashboard parental <strong>avancé</strong></span>
-      </li>
-      <li class="sub-feature-item">
-        <span class="sub-feature-icon">✦</span>
-        <span class="sub-feature-label">Accès <strong>prioritaire</strong> aux nouveaux univers</span>
-      </li>
-    </ul>
+      <%# Badge "Premium actif" en vert %>
+      <div class="text-center mb-3">
+        <span class="sub-badge-active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Premium actif
+        </span>
+      </div>
 
-    <%# Bouton CTA — disabled en attendant Stripe %>
-    <button class="sub-btn-cta" disabled>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>Bientôt disponible
-    </button>
+      <%# Liste des avantages inclus %>
+      <ul class="sub-features">
+        <li class="sub-feature-item">
+          <span class="sub-feature-icon">✦</span>
+          <span class="sub-feature-label">Histoires <strong>illimitées</strong></span>
+        </li>
+        <li class="sub-feature-item">
+          <span class="sub-feature-icon">✦</span>
+          <span class="sub-feature-label">Mode <strong>interactif</strong> — l'enfant fait des choix</span>
+        </li>
+        <li class="sub-feature-item">
+          <span class="sub-feature-icon">✦</span>
+          <span class="sub-feature-label">Dashboard parental <strong>avancé</strong></span>
+        </li>
+        <li class="sub-feature-item">
+          <span class="sub-feature-icon">✦</span>
+          <span class="sub-feature-label">Accès <strong>prioritaire</strong> aux nouveaux univers</span>
+        </li>
+      </ul>
 
-    <p class="sub-note">Stripe en cours de configuration. On vous prévient dès l'ouverture !</p>
+      <%# Bouton annulation — discret, en bas de carte %>
+      <%= button_to "Résilier l'abonnement",
+            subscription_cancel_path,
+            method: :post,
+            class: "sub-btn-cancel",
+            data: { confirm: "Ton accès premium sera maintenu jusqu'à la fin de la période en cours. Confirmes-tu ?" } %>
+
+    <%# ── Cas 2 : utilisateur gratuit — afficher le CTA ── %>
+    <% else %>
+
+      <%# Prix — 9,99€/mois %>
+      <div class="sub-price">
+        <div class="sub-price-amount">9,99€</div>
+        <div class="sub-price-period">par mois · sans engagement</div>
+      </div>
+
+      <%# Jauge histoires gratuites (max 3/mois) %>
+      <div class="sub-quota">
+        <div class="sub-quota-label">Histoires gratuites ce mois-ci</div>
+        <div class="sub-quota-bar">
+          <%# Calcul du pourcentage utilisé sur 3 histoires max %>
+          <% pct = [(@stories_this_month.to_f / 3 * 100).round, 100].min %>
+          <div class="sub-quota-fill" style="width: <%= pct %>%"></div>
+        </div>
+        <div class="sub-quota-count"><%= @stories_this_month %> / 3 utilisées</div>
+      </div>
+
+      <%# Liste des features incluses en premium %>
+      <ul class="sub-features">
+        <li class="sub-feature-item">
+          <span class="sub-feature-icon">✦</span>
+          <span class="sub-feature-label">Histoires <strong>illimitées</strong></span>
+        </li>
+        <li class="sub-feature-item">
+          <span class="sub-feature-icon">✦</span>
+          <span class="sub-feature-label">Mode <strong>interactif</strong> — l'enfant fait des choix</span>
+        </li>
+        <li class="sub-feature-item">
+          <span class="sub-feature-icon">✦</span>
+          <span class="sub-feature-label">Dashboard parental <strong>avancé</strong></span>
+        </li>
+        <li class="sub-feature-item">
+          <span class="sub-feature-icon">✦</span>
+          <span class="sub-feature-label">Accès <strong>prioritaire</strong> aux nouveaux univers</span>
+        </li>
+      </ul>
+
+      <%# Bouton CTA — soumet le formulaire de checkout Stripe %>
+      <%# button_to génère un formulaire POST directement %>
+      <%= button_to "S'abonner — 9,99€/mois",
+            subscription_checkout_path,
+            method: :post,
+            class: "sub-btn-cta" %>
+
+      <p class="sub-note">Paiement sécurisé par Stripe · Résiliable à tout moment</p>
+
+    <% end %>
 
   </div>
 

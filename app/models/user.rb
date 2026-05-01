@@ -45,12 +45,14 @@ class User < ApplicationRecord
   # ============================================================
 
   # Retourne true si l'utilisateur a un abonnement premium actif
-  # TODO Stripe : quand l'intégration sera prête, remplacer false par : subscribed?
+  # subscribed? est fourni par le gem Pay — vérifie en base si l'abonnement Stripe est actif
   def premium?
     # Les admins sont toujours premium — accès illimité pour tester l'app
     return true if admin?
 
-    false
+    # Vérifie si l'utilisateur a un abonnement Pay actif (Stripe)
+    # Pay met à jour ce statut automatiquement via les webhooks Stripe
+    payment_processor.present? && payment_processor.subscribed?
   end
 
   # Retourne true si l'utilisateur est administrateur de l'application

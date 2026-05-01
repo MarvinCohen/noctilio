@@ -68,17 +68,20 @@ Rails.application.routes.draw do
   get "/trophees",    to: "trophy_room#index",   as: :trophy_room
 
   # ============================================================
-  # Webhooks Stripe — reçoit les événements de paiement
+  # Pay::Engine — gère automatiquement les webhooks Stripe
   # ============================================================
-  namespace :webhooks do
-    post "stripe", to: "stripe#create"
-  end
+  # Monte le moteur Pay sur /pay
+  # Les webhooks Stripe arrivent sur : /pay/webhooks/stripe
+  # Configure cette URL dans ton dashboard Stripe (section Webhooks) !
+  mount Pay::Engine, at: "/pay"
 
   # ============================================================
   # Abonnements — page de tarification et gestion Stripe
   # ============================================================
-  get "/abonnement",  to: "subscriptions#index", as: :subscription
+  get  "/abonnement",          to: "subscriptions#index",   as: :subscription
   post "/abonnement/checkout", to: "subscriptions#checkout", as: :subscription_checkout
+  get  "/abonnement/success",  to: "subscriptions#success",  as: :subscription_success
+  post "/abonnement/cancel",   to: "subscriptions#cancel",   as: :subscription_cancel
 
   # ============================================================
   # Admin — pages privées accessibles uniquement par marvincohen95@gmail.com

@@ -1,48 +1,40 @@
 <%# ============================================================ %>
 <%# Dashboard parental — statistiques et suivi de lecture %>
 <%# DA cosmique : fond sombre #111527, accents dorés #f0c97a %>
-<%# Style inline temporaire — à externaliser dans parental.scss %>
 <%# ============================================================ %>
 
-<%# ---------------------------------------------------------------- %>
-<%# Styles inline — DA cosmique (temporaire, à externaliser) %>
-<%# ---------------------------------------------------------------- %>
 <style nonce="<%= content_security_policy_nonce %>">
   /* ── Page wrapper ── */
   .par-page { padding: 2.5rem 0 4rem; }
 
   /* ── En-tête de page ── */
-  /* Titre Cormorant Garamond italic, crème — identique au reste de la DA */
   .par-page-title {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-style:  italic;
     font-size:   clamp(1.8rem, 4vw, 2.8rem);
-    color:       #fdf6e3; /* Cream */
+    color:       #fdf6e3;
     margin-bottom: 0.2rem;
     line-height:   1.1;
   }
   .par-page-subtitle { color: #8a8578; font-size: 0.95rem; }
 
-  /* ── Cards stats (grandes, chiffre en Cormorant doré) ── */
-  /* Trois cartes côte à côte : minutes, histoires, enfants */
+  /* ── Cards stats ── */
   .par-stat-card {
-    background:    #111527; /* Deep */
+    background:    #111527;
     border:        1px solid rgba(240,201,122,0.15);
     border-radius: 16px;
     padding:       2rem 1.5rem;
     text-align:    center;
     height:        100%;
   }
-  /* Chiffre principal — Cormorant Garamond italic, doré, très grand */
   .par-stat-number {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-style:  italic;
     font-size:   3.5rem;
-    color:       #f0c97a; /* Gold */
+    color:       #f0c97a;
     line-height: 1;
     margin-bottom: 0.4rem;
   }
-  /* Label sous le chiffre — discret */
   .par-stat-label { color: #8a8578; font-size: 0.88rem; }
 
   /* ── Section titre ── */
@@ -55,7 +47,6 @@
   }
 
   /* ── Card générique sombre ── */
-  /* Conteneur réutilisable pour les blocs : enfants, thèmes, abonnement */
   .par-card {
     background:    #111527;
     border:        1px solid rgba(240,201,122,0.15);
@@ -64,10 +55,9 @@
     margin-bottom: 1.5rem;
   }
 
-  /* ── Ligne enfant — mini-carte pill dans la liste ── */
-  /* Fond légèrement plus clair que la carte parente pour créer de la profondeur */
+  /* ── Ligne enfant ── */
   .par-child-row {
-    background:    rgba(240,201,122,0.05); /* Mist */
+    background:    rgba(240,201,122,0.05);
     border:        1px solid rgba(240,201,122,0.08);
     border-radius: 12px;
     padding:       0.75rem 1rem;
@@ -76,11 +66,27 @@
     margin-bottom: 0.6rem;
     gap:           0.75rem;
   }
-  .par-child-emoji  { font-size: 1.8rem; flex-shrink: 0; }
-  .par-child-name   { color: #fdf6e3; font-weight: 600; font-size: 0.95rem; }
-  .par-child-meta   { color: #8a8578; font-size: 0.8rem; }
+  .par-child-icon  { flex-shrink: 0; color: #f0c97a; }
+  .par-child-name  { color: #fdf6e3; font-weight: 600; font-size: 0.95rem; }
+  .par-child-meta  { color: #8a8578; font-size: 0.8rem; margin-top: 0.1rem; }
 
-  /* Bouton secondaire — contour doré, fond transparent, pill */
+  /* Badge "Choix en attente" — orange doux pour alerter sans alarmer */
+  .par-pending-badge {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           0.25rem;
+    background:    rgba(255,160,60,0.12);
+    color:         #ffaa3c;
+    border:        1px solid rgba(255,160,60,0.25);
+    border-radius: 50px;
+    font-size:     0.68rem;
+    font-weight:   600;
+    padding:       0.15rem 0.55rem;
+    white-space:   nowrap;
+    margin-top:    0.25rem;
+  }
+
+  /* ── Bouton outline doré ── */
   .par-btn-outline {
     border:        1px solid rgba(240,201,122,0.35);
     color:         #f0c97a;
@@ -98,37 +104,79 @@
     color:         #f0c97a;
   }
 
-  /* ── Lien "Créer le premier profil" ── */
+  /* ── Lien vide ── */
   .par-empty-link { color: #f0c97a; text-decoration: none; }
   .par-empty-link:hover { text-decoration: underline; }
   .par-empty-text { color: #8a8578; text-align: center; padding: 1rem 0; }
 
-  /* ── Progress bars univers ── */
-  /* Fond mist, remplissage doré — identique aux autres barres de la DA */
-  .par-theme-row {
+  /* ── Bloc activité récente — ligne par histoire ── */
+  .par-activity-row {
     display:       flex;
     align-items:   center;
-    gap:           0.6rem;
-    margin-bottom: 0.75rem;
+    gap:           0.75rem;
+    padding:       0.6rem 0;
+    border-bottom: 1px solid rgba(240,201,122,0.06);
+    text-decoration: none;
+    transition:    background 0.15s;
   }
-  .par-theme-emoji { font-size: 1.3rem; flex-shrink: 0; }
-  .par-theme-bar-wrap {
-    flex-grow:     1;
-    background:    rgba(240,201,122,0.10); /* Mist */
-    border-radius: 50px;
-    height:        7px;
+  .par-activity-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .par-activity-row:hover .par-activity-title { color: #f0c97a; }
+
+  /* Vignette image de couverture — petite, ronde */
+  .par-activity-thumb {
+    width:         40px;
+    height:        40px;
+    border-radius: 8px;
+    object-fit:    cover;
+    flex-shrink:   0;
+    background:    #1a1f3c;
+    display:       flex;
+    align-items:   center;
+    justify-content: center;
+    font-size:     1.3rem;
+  }
+  .par-activity-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover; border-radius: 8px;
+  }
+  .par-activity-title {
+    color:       #d4cfc4;
+    font-size:   0.88rem;
+    font-weight: 600;
+    transition:  color 0.15s;
+    /* Tronque le titre sur une ligne */
+    white-space:   nowrap;
     overflow:      hidden;
+    text-overflow: ellipsis;
+    max-width:     180px;
   }
-  .par-theme-bar-fill {
-    height:        100%;
-    background:    #f0c97a; /* Gold */
+  .par-activity-meta { color: #8a8578; font-size: 0.75rem; margin-top: 0.1rem; }
+
+  /* ── Valeurs éducatives — pills colorées ── */
+  .par-values-wrap { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .par-value-pill {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           0.3rem;
+    background:    rgba(80,160,200,0.10);
+    color:         rgba(140,210,255,0.85);
+    border:        1px solid rgba(80,160,200,0.20);
     border-radius: 50px;
-    transition:    width 0.6s ease;
+    font-size:     0.78rem;
+    font-weight:   500;
+    padding:       0.3rem 0.8rem;
   }
-  .par-theme-count { color: #8a8578; font-size: 0.8rem; flex-shrink: 0; min-width: 1.5rem; text-align: right; }
+  /* Compteur dans la pill — fond légèrement plus sombre */
+  .par-value-count {
+    background:    rgba(80,160,200,0.15);
+    border-radius: 50px;
+    font-size:     0.7rem;
+    font-weight:   700;
+    padding:       0.05rem 0.35rem;
+    color:         rgba(140,210,255,0.9);
+  }
 
   /* ── Abonnement ── */
-  /* Pill premium doré / pill gratuit discret */
   .par-badge-premium {
     display:       inline-flex;
     align-items:   center;
@@ -151,9 +199,7 @@
     font-size:     0.85rem;
     padding:       0.35rem 1rem;
   }
-  /* Label quota histoires */
   .par-quota-text { color: #d4cfc4; font-size: 0.9rem; margin: 0.6rem 0 0.3rem; }
-  /* Bouton CTA primaire — fond doré, texte sombre, pill */
   .par-btn-primary {
     display:       inline-block;
     background:    #f0c97a;
@@ -168,8 +214,6 @@
     margin-top:    0.75rem;
   }
   .par-btn-primary:hover { opacity: 0.88; color: #0b0e1a; }
-
-  /* Progress bar quota — plus fine, même style */
   .par-quota-bar {
     background:    rgba(240,201,122,0.10);
     border-radius: 50px;
@@ -183,6 +227,110 @@
     border-radius: 50px;
   }
 
+  /* ── Grille d'activité 30 jours (style GitHub contributions) ── */
+  .par-chart-card {
+    background:    #111527;
+    border:        1px solid rgba(240,201,122,0.15);
+    border-radius: 16px;
+    padding:       1.5rem 1.75rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .par-chart-header {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     baseline;
+    margin-bottom:   1.25rem;
+  }
+  .par-chart-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style:  italic;
+    font-size:   1.3rem;
+    color:       #fdf6e3;
+    margin:      0;
+  }
+  .par-chart-total { color: #8a8578; font-size: 0.82rem; }
+
+  /* Grille 30 carrés — 10 colonnes × 3 lignes */
+  /* On affiche 30 jours en lisant de gauche à droite, du plus ancien au plus récent */
+  .par-grid-30 {
+    display:               grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows:    repeat(3, 1fr);
+    gap:                   5px;
+  }
+
+  /* Un carré = 1 jour */
+  .par-grid-day {
+    aspect-ratio:  1;
+    border-radius: 4px;
+    background:    rgba(240,201,122,0.08);
+    position:      relative;
+    cursor:        default;
+    transition:    background 0.15s, transform 0.15s;
+    display:       flex;
+    flex-direction: column;
+    align-items:   center;
+    justify-content: center;
+    gap:           1px;
+    overflow:      hidden;
+  }
+  .par-grid-day:hover { transform: scale(1.12); z-index: 2; }
+
+  /* Numéro du jour — gros, lisible */
+  .par-grid-day-num {
+    font-size:   0.65rem;
+    font-weight: 700;
+    line-height: 1;
+    color:       rgba(253,246,227,0.35); /* Discret sur case vide */
+  }
+  /* Nom du jour — très petit, en dessous */
+  .par-grid-day-name {
+    font-size:  0.5rem;
+    line-height: 1;
+    color:      rgba(253,246,227,0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  /* Sur case active — texte plus lisible, foncé sur fond doré */
+  .par-grid-day--1 .par-grid-day-num,
+  .par-grid-day--2 .par-grid-day-num { color: rgba(11,14,26,0.7); }
+  .par-grid-day--3 .par-grid-day-num  { color: rgba(11,14,26,0.85); }
+  .par-grid-day--1 .par-grid-day-name,
+  .par-grid-day--2 .par-grid-day-name { color: rgba(11,14,26,0.5); }
+  .par-grid-day--3 .par-grid-day-name  { color: rgba(11,14,26,0.6); }
+  /* Aujourd'hui — texte blanc vif pour ressortir */
+  .par-grid-day--today .par-grid-day-num  { color: #fdf6e3; }
+  .par-grid-day--today .par-grid-day-name { color: rgba(253,246,227,0.7); }
+
+  /* Actif — 1 histoire : doré à 40% */
+  .par-grid-day--1 { background: rgba(240,201,122,0.40); }
+  /* Actif — 2 histoires : doré à 70% */
+  .par-grid-day--2 { background: rgba(240,201,122,0.70); }
+  /* Actif — 3+ histoires : doré plein */
+  .par-grid-day--3 { background: #f0c97a; }
+
+  /* Aujourd'hui — contour doré pour le distinguer */
+  .par-grid-day--today {
+    outline:        2px solid rgba(240,201,122,0.8);
+    outline-offset: 1px;
+  }
+
+  /* Légende sous la grille */
+  .par-grid-legend {
+    display:     flex;
+    align-items: center;
+    gap:         0.4rem;
+    margin-top:  0.9rem;
+    font-size:   0.7rem;
+    color:       #8a8578;
+  }
+  .par-grid-legend-swatch {
+    width:         10px;
+    height:        10px;
+    border-radius: 2px;
+    flex-shrink:   0;
+  }
+
   /* ── Séparateur ── */
   .par-divider {
     border: none;
@@ -192,39 +340,30 @@
 
   /* ── Responsive mobile ── */
   @media (max-width: 600px) {
-    /* Page — moins de padding vertical */
-    .par-page { padding: 1.5rem 0 3rem; }
-
-    /* Titre — réduit la taille min du clamp */
-    .par-page-title { font-size: clamp(1.5rem, 6vw, 2.8rem); }
-
-    /* Cartes stats — chiffre plus petit pour tenir dans une colonne */
+    .par-page        { padding: 1.5rem 0 3rem; }
+    .par-page-title  { font-size: clamp(1.5rem, 6vw, 2.8rem); }
     .par-stat-number { font-size: 2.8rem; }
-    .par-stat-card { padding: 1.5rem 1rem; }
-
-    /* Lignes enfant — réduit le padding */
-    .par-child-row { padding: 0.6rem 0.75rem; }
+    .par-stat-card   { padding: 1.5rem 1rem; }
+    .par-child-row   { padding: 0.6rem 0.75rem; }
+    .par-activity-title { max-width: 130px; }
   }
 </style>
 
 <div class="container par-page">
 
   <%# ============================================================ %>
-  <%# EN-TÊTE — titre et sous-titre %>
+  <%# EN-TÊTE %>
   <%# ============================================================ %>
   <div class="mb-4">
-    <%# Titre Cormorant Garamond italic, crème %>
     <h1 class="par-page-title">Tableau de Bord Parental</h1>
     <p class="par-page-subtitle">Suivi des lectures et de l'activité de vos enfants</p>
   </div>
 
   <%# ============================================================ %>
-  <%# STATS GLOBALES — 3 grandes cartes : minutes / histoires / enfants %>
-  <%# Chiffre en Cormorant doré, label en text-dim %>
+  <%# STATS GLOBALES — 3 grandes cartes %>
   <%# ============================================================ %>
   <div class="row g-3 mb-4">
 
-    <%# Stat 1 : minutes de lecture totales %>
     <div class="col-md-4">
       <div class="par-stat-card">
         <div class="par-stat-number"><%= @total_reading_minutes %></div>
@@ -232,7 +371,6 @@
       </div>
     </div>
 
-    <%# Stat 2 : nombre d'histoires complétées — requête depuis le current_user %>
     <div class="col-md-4">
       <div class="par-stat-card">
         <div class="par-stat-number"><%= current_user.stories.completed.count %></div>
@@ -240,7 +378,6 @@
       </div>
     </div>
 
-    <%# Stat 3 : nombre de profils enfants %>
     <div class="col-md-4">
       <div class="par-stat-card">
         <div class="par-stat-number"><%= @children.count %></div>
@@ -250,31 +387,78 @@
 
   </div>
 
+  <%# ============================================================ %>
+  <%# GRILLE D'ACTIVITÉ — 30 derniers jours, style GitHub contributions %>
+  <%# Chaque carré = 1 jour, intensité dorée selon le nombre d'histoires %>
+  <%# ============================================================ %>
+  <div class="par-chart-card">
+    <div class="par-chart-header">
+      <h2 class="par-chart-title">Activité du mois</h2>
+      <% total_month = @weekly_stories.values.sum %>
+      <span class="par-chart-total">
+        <%= total_month %> histoire<%= "s" if total_month != 1 %> ces 30 derniers jours
+      </span>
+    </div>
+
+    <%# Grille 10 × 3 = 30 cases, du jour J-29 au jour J %>
+    <div class="par-grid-30">
+      <% today          = Date.today %>
+      <% day_names_short = %w[Dim Lun Mar Mer Jeu Ven Sam] %>
+
+      <% 29.downto(0).each do |days_ago| %>
+        <% date      = today - days_ago %>
+        <% count     = @weekly_stories[date].to_i %>
+        <% is_today  = date == today %>
+        <% intensity       = count == 0 ? 0 : [count, 3].min %>
+        <% intensity_class = "par-grid-day--#{intensity}" %>
+        <% today_class     = is_today ? "par-grid-day--today" : "" %>
+
+        <div class="par-grid-day <%= intensity_class %> <%= today_class %>"
+             title="<%= date.strftime('%d/%m/%Y') %> — <%= count %> histoire<%= 's' if count != 1 %>">
+          <%# Numéro du jour — ex: "13" %>
+          <span class="par-grid-day-num"><%= date.day %></span>
+          <%# Nom abrégé — ex: "Lun" %>
+          <span class="par-grid-day-name"><%= day_names_short[date.wday] %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Légende — explique les niveaux d'intensité %>
+    <div class="par-grid-legend">
+      <span>Moins</span>
+      <%# 4 swatches : vide → plein %>
+      <div class="par-grid-legend-swatch" style="background: rgba(240,201,122,0.08)"></div>
+      <div class="par-grid-legend-swatch" style="background: rgba(240,201,122,0.40)"></div>
+      <div class="par-grid-legend-swatch" style="background: rgba(240,201,122,0.70)"></div>
+      <div class="par-grid-legend-swatch" style="background: #f0c97a"></div>
+      <span>Plus</span>
+    </div>
+  </div>
+
   <hr class="par-divider">
 
   <%# ============================================================ %>
-  <%# COLONNES — enfants (gauche) + thèmes & abonnement (droite) %>
+  <%# COLONNES — 3 colonnes égales %>
+  <%# Héros | Activité récente | Valeurs + Abonnement %>
   <%# ============================================================ %>
   <div class="row g-4">
 
-    <%# ── Colonne gauche : profils enfants ── %>
-    <div class="col-lg-6">
+    <%# ── Colonne 1 : profils enfants ── %>
+    <div class="col-lg-4">
       <div class="par-card">
 
-        <%# En-tête du bloc : titre + bouton Ajouter %>
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h2 class="par-section-title mb-0">Mes Héros</h2>
-          <%# Lien secondaire — contour doré, pill %>
           <%= link_to "+ Ajouter", new_child_path, class: "par-btn-outline" %>
         </div>
 
         <% if @children.any? %>
-          <%# Itère sur chaque enfant pour afficher une mini-carte pill %>
           <% @children.each do |child| %>
             <div class="par-child-row">
-              <%# Avatar SVG — silhouette enfant, mèche pour les filles %>
-              <div class="par-child-emoji">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+
+              <%# Icône enfant — silhouette SVG, mèche si fille %>
+              <div class="par-child-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="7" r="4"/>
                   <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
                   <% if child.gender == "girl" %>
@@ -283,21 +467,34 @@
                 </svg>
               </div>
 
-              <%# Nom et stats de l'enfant %>
-              <div class="flex-grow-1">
+              <%# Infos de l'enfant %>
+              <div class="flex-grow-1 min-width-0">
                 <div class="par-child-name"><%= child.name %></div>
                 <div class="par-child-meta">
+                  <%# Age + nombre d'histoires %>
                   <%= child.age %> ans ·
                   <%= child.stories.completed.count %> histoire<%= "s" if child.stories.completed.count != 1 %>
+                  <%# Date de la dernière histoire si elle existe %>
+                  <% last = @last_story_by_child[child.id] %>
+                  <% if last %>
+                    · dernière le <%= last.created_at.strftime("%d/%m") %>
+                  <% end %>
                 </div>
+                <%# Badge d'alerte si un choix interactif est en attente pour cet enfant %>
+                <% if @children_with_pending.include?(child.id) %>
+                  <span class="par-pending-badge">
+                    <%# Icône point d'exclamation en SVG %>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Choix en attente
+                  </span>
+                <% end %>
               </div>
 
-              <%# Lien "Voir" — bouton secondaire pill %>
+              <%# Lien vers la fiche enfant %>
               <%= link_to "Voir →", child_path(child), class: "par-btn-outline" %>
             </div>
           <% end %>
         <% else %>
-          <%# Message vide si aucun enfant n'a encore été créé %>
           <p class="par-empty-text">
             <%= link_to "Créer le premier profil →", new_child_path, class: "par-empty-link" %>
           </p>
@@ -306,65 +503,101 @@
       </div>
     </div>
 
-    <%# ── Colonne droite : thèmes favoris + statut abonnement ── %>
-    <div class="col-lg-6">
+    <%# ── Colonne 2 : activité récente ── %>
+    <div class="col-lg-4">
 
-      <%# Univers favoris — barre de progression par thème %>
-      <%# Affiché uniquement si au moins un thème a été utilisé %>
-      <% if @favorite_themes.any? %>
-        <div class="par-card">
-          <h2 class="par-section-title">Univers Favoris</h2>
+      <%# Activité récente — 5 dernières histoires -%>
+      <div class="par-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="par-section-title mb-0">Activité récente</h2>
+          <%# Lien vers la bibliothèque complète %>
+          <%= link_to "Tout voir →", stories_path, class: "par-btn-outline" %>
+        </div>
 
-          <% @favorite_themes.each do |theme, count| %>
-            <%# Table de correspondance thème → emoji %>
-            <% emoji = { "space" => "🚀", "dinos" => "🦕", "princesses" => "👸",
-                         "pirates" => "🏴‍☠️", "animals" => "🦁" }.fetch(theme, "✨") %>
+        <% if @recent_stories.any? %>
+          <% @recent_stories.each do |story| %>
+            <%# Toute la ligne est cliquable — mène à l'histoire %>
+            <%= link_to story_path(story), class: "par-activity-row" do %>
 
-            <div class="par-theme-row">
-              <%# Emoji du thème %>
-              <span class="par-theme-emoji"><%= emoji %></span>
-
-              <%# Barre de progression — largeur max 100%, 20% par histoire (5 histoires = 100%) %>
-              <div class="par-theme-bar-wrap">
-                <div class="par-theme-bar-fill" style="width: <%= [count * 20, 100].min %>%"></div>
+              <%# Vignette : image ActiveStorage, URL externe ou emoji de l'univers %>
+              <div class="par-activity-thumb">
+                <% if story.cover_image.attached? %>
+                  <%= image_tag story.cover_image, alt: story.title %>
+                <% elsif story.cover_image_url.present? %>
+                  <%= image_tag story.cover_image_url, alt: story.title %>
+                <% else %>
+                  <%= story.world_emoji %>
+                <% end %>
               </div>
 
-              <%# Compteur numérique à droite de la barre %>
-              <span class="par-theme-count"><%= count %></span>
-            </div>
+              <%# Titre + enfant + date %>
+              <div class="flex-grow-1 min-width-0">
+                <div class="par-activity-title"><%= story.title %></div>
+                <div class="par-activity-meta">
+                  Pour <%= story.child.name %> · <%= story.created_at.strftime("%d/%m/%Y") %>
+                </div>
+              </div>
+
+            <% end %>
           <% end %>
+        <% else %>
+          <p class="par-empty-text">Aucune histoire pour l'instant.</p>
+        <% end %>
+
+      </div>
+
+    </div>
+
+    <%# ── Colonne 3 : valeurs explorées + abonnement ── %>
+    <div class="col-lg-4">
+
+      <%# Valeurs éducatives explorées — affiché si au moins une valeur existe -%>
+      <% if @educational_values.any? %>
+        <div class="par-card">
+          <h2 class="par-section-title">Valeurs explorées</h2>
+
+          <%# Table de correspondance valeur → emoji + libellé français %>
+          <% value_labels = {
+              "courage"    => { emoji: "🦁", label: "Courage" },
+              "sharing"    => { emoji: "🤝", label: "Partage" },
+              "kindness"   => { emoji: "💛", label: "Gentillesse" },
+              "confidence" => { emoji: "⭐", label: "Confiance en soi" }
+             } %>
+
+          <div class="par-values-wrap">
+            <% @educational_values.each do |value, count| %>
+              <% info = value_labels.fetch(value, { emoji: "✨", label: value.to_s.capitalize }) %>
+              <%# Pill bleue avec emoji + libellé + compteur d'occurrences %>
+              <span class="par-value-pill">
+                <%= info[:emoji] %> <%= info[:label] %>
+                <span class="par-value-count"><%= count %>×</span>
+              </span>
+            <% end %>
+          </div>
+
         </div>
       <% end %>
 
-      <%# Statut abonnement — Premium ou Gratuit avec quota %>
+      <%# Statut abonnement -%>
       <div class="par-card">
         <h2 class="par-section-title">Mon Abonnement</h2>
 
         <% if current_user.premium? %>
-          <%# Utilisateur premium : badge doré + texte illimité %>
           <div class="d-flex align-items-center gap-3">
             <span class="par-badge-premium">✦ Premium</span>
             <span style="color: #8a8578; font-size: 0.9rem;">Histoires illimitées</span>
           </div>
 
         <% else %>
-          <%# Utilisateur gratuit : quota + barre de progression + CTA %>
           <div>
-            <%# Badge "Gratuit" discret %>
             <span class="par-badge-free">Gratuit</span>
-
-            <%# Quota : nombre d'histoires créées ce mois sur 3 %>
             <p class="par-quota-text">
               <%= @stories_this_month %>/3 histoires ce mois-ci
             </p>
-
-            <%# Barre de progression du quota — se remplit au fil des créations %>
             <div class="par-quota-bar">
               <div class="par-quota-fill"
                    style="width: <%= (@stories_this_month / 3.0 * 100).round %>%"></div>
             </div>
-
-            <%# CTA vers la page abonnement %>
             <%= link_to "Passer en Premium →", subscription_path, class: "par-btn-primary" %>
           </div>
         <% end %>

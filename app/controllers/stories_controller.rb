@@ -343,6 +343,7 @@ class StoriesController < ApplicationController
       :duration_minutes,
       :custom_theme,
       :interactive,
+      :image_style,     # Style visuel de l'illustration (ghibli, comics, pixar, watercolor)
       child_ids: []     # Tableau d'IDs pour la sélection multiple d'enfants
     )
   end

@@ -364,7 +364,93 @@
     margin-left: 0.4rem;
   }
 
-  /* ── Récapitulatif (étape 5) ── */
+  /* ── Grille de sélection de style illustration (étape 5) ── */
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  /* Tuile de style — même base que value-card */
+  .style-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1.5px solid rgba(240, 201, 122, 0.15);
+    border-radius: 16px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .style-card input { display: none; }
+  .style-card:has(input:checked),
+  .style-card.selected {
+    border-color: #f0c97a;
+    background: rgba(240, 201, 122, 0.08);
+  }
+  .style-card:hover:not(:has(input:checked)):not(.selected) {
+    border-color: rgba(240, 201, 122, 0.35);
+    background: rgba(240, 201, 122, 0.04);
+  }
+
+  /* Contenu intérieur de la tuile */
+  .style-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  /* Bande de couleurs représentant la palette du style */
+  .style-preview {
+    display: flex;
+    gap: 5px;
+    height: 28px;
+  }
+  .style-preview span {
+    flex: 1;
+    border-radius: 6px;
+  }
+
+  /* Palette Ghibli — verts doux, bleu ciel, beige chaud */
+  .style-preview--ghibli span:nth-child(1) { background: #a8d5a2; }
+  .style-preview--ghibli span:nth-child(2) { background: #87ceeb; }
+  .style-preview--ghibli span:nth-child(3) { background: #f5deb3; }
+
+  /* Palette Comics — rouge vif, noir, jaune flash */
+  .style-preview--comics span:nth-child(1) { background: #e63946; }
+  .style-preview--comics span:nth-child(2) { background: #1d1d1d; }
+  .style-preview--comics span:nth-child(3) { background: #ffd60a; }
+
+  /* Palette Pixar — orange lumineux, bleu Pixar, blanc doux */
+  .style-preview--pixar span:nth-child(1) { background: #ff9f1c; }
+  .style-preview--pixar span:nth-child(2) { background: #2ec4b6; }
+  .style-preview--pixar span:nth-child(3) { background: #f8f7f4; }
+
+  /* Palette Watercolor — rose poudré, ocre, vert sauge */
+  .style-preview--watercolor span:nth-child(1) { background: #e8b4b8; }
+  .style-preview--watercolor span:nth-child(2) { background: #c9a96e; }
+  .style-preview--watercolor span:nth-child(3) { background: #8fbc8f; }
+
+  /* Nom du style */
+  .style-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #d4cfc4;
+  }
+  .style-card:has(input:checked) .style-name,
+  .style-card.selected .style-name { color: #f0c97a; }
+
+  /* Description courte */
+  .style-desc {
+    font-size: 0.75rem;
+    color: #8a8578;
+    line-height: 1.35;
+  }
+
+  /* Mobile — 1 colonne sur petit écran */
+  @media (max-width: 480px) {
+    .style-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Récapitulatif (étape 6) ── */
   .summary-card {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(240, 201, 122, 0.12);
@@ -614,9 +700,9 @@
             <p class="wizard-step-label" data-story-creation-target="stepTitle">Étape 1 / 5</p>
           </div>
 
-          <%# Cercles indicateurs %>
+          <%# Cercles indicateurs — 6 étapes désormais %>
           <div class="wizard-indicators">
-            <% 5.times do |i| %>
+            <% 6.times do |i| %>
               <div class="wizard-indicator <%= i == 0 ? 'wizard-indicator--active' : '' %>"
                    data-story-creation-target="indicator">
                 <%= i + 1 %>
@@ -848,9 +934,98 @@
         </div>
 
         <%# ================================================ %>
-        <%# ÉTAPE 5 — Les derniers réglages + Générer %>
+        <%# ÉTAPE 5 — Style de l'illustration %>
         <%# ================================================ %>
         <div class="wizard-step d-none" data-story-creation-target="step" data-step="5">
+          <div class="wizard-card">
+            <h2 class="wizard-question">Style de l'illustration</h2>
+            <p class="wizard-hint">Choisis l'ambiance visuelle de l'image générée pour l'histoire.</p>
+
+            <%# Grille de 4 tuiles — une par style visuel %>
+            <div class="style-grid">
+
+              <%# Ghibli — aquarelle douce %>
+              <label class="style-card <%= 'selected' if @story.image_style == 'ghibli' %>">
+                <%= f.radio_button :image_style, "ghibli" %>
+                <div class="style-card-inner">
+                  <%# Aperçu visuel — cercles de couleurs représentant la palette %>
+                  <div class="style-preview style-preview--ghibli">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="style-card-text">
+                    <div class="style-name">Studio Ghibli</div>
+                    <div class="style-desc">Aquarelle douce, tons pastels, atmosphère onirique</div>
+                  </div>
+                </div>
+              </label>
+
+              <%# Comics — Spider-Verse %>
+              <label class="style-card <%= 'selected' if @story.image_style == 'comics' %>">
+                <%= f.radio_button :image_style, "comics" %>
+                <div class="style-card-inner">
+                  <div class="style-preview style-preview--comics">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="style-card-text">
+                    <div class="style-name">Comics</div>
+                    <div class="style-desc">Traits forts, couleurs vives, style Spider-Verse</div>
+                  </div>
+                </div>
+              </label>
+
+              <%# Pixar — rendu 3D %>
+              <label class="style-card <%= 'selected' if @story.image_style == 'pixar' %>">
+                <%= f.radio_button :image_style, "pixar" %>
+                <div class="style-card-inner">
+                  <div class="style-preview style-preview--pixar">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="style-card-text">
+                    <div class="style-name">Pixar / Disney</div>
+                    <div class="style-desc">Rendu 3D lumineux, chaleureux, expressif</div>
+                  </div>
+                </div>
+              </label>
+
+              <%# Conte illustré — aquarelle vintage %>
+              <label class="style-card <%= 'selected' if @story.image_style == 'watercolor' %>">
+                <%= f.radio_button :image_style, "watercolor" %>
+                <div class="style-card-inner">
+                  <div class="style-preview style-preview--watercolor">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="style-card-text">
+                    <div class="style-name">Conte illustré</div>
+                    <div class="style-desc">Aquarelle vintage, livre d'images, tons chauds</div>
+                  </div>
+                </div>
+              </label>
+
+            </div>
+
+            <%# Note : si aucun style choisi, le service applique le fallback automatique %>
+            <p style="font-size:0.75rem; color:#8a8578; margin-top:1rem; text-align:center;">
+              Laisse vide pour un style adapté automatiquement.
+            </p>
+          </div>
+
+          <%# Navigation %>
+          <div class="wizard-nav">
+            <button type="button" class="wizard-btn-back" data-action="click->story-creation#prevStep">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Retour
+            </button>
+            <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
+              Suivant
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <%# ================================================ %>
+        <%# ÉTAPE 6 — Les derniers réglages + Générer %>
+        <%# ================================================ %>
+        <div class="wizard-step d-none" data-story-creation-target="step" data-step="6">
           <div class="wizard-card">
             <h2 class="wizard-question">Les derniers réglages</h2>
             <p class="wizard-hint">Mode interactif et récapitulatif.</p>
@@ -903,6 +1078,11 @@
               <div class="summary-row">
                 <span class="summary-key">Interactif</span>
                 <span class="summary-val" data-story-creation-target="summaryInteractive">Désactivé</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-key">Illustration</span>
+                <%# Mis à jour dynamiquement par le Stimulus controller %>
+                <span class="summary-val" data-story-creation-target="summaryStyle">Automatique</span>
               </div>
             </div>
           </div>

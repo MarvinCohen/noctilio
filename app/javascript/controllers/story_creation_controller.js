@@ -21,12 +21,13 @@ export default class extends Controller {
     "indicator",       // Chaque cercle indicateur (.wizard-indicator)
     "progressFill",    // Barre de progression dorée
     "stepTitle",       // Titre "Étape X / N" dans l'en-tête
-    // Récap étape 5
+    // Récap étape 6
     "summaryChildren", // Résumé : nom(s) des enfants
     "summaryTheme",    // Résumé : thème libre
     "summaryValue",    // Résumé : valeur éducative
     "summaryDuration", // Résumé : durée
-    "summaryInteractive" // Résumé : mode interactif
+    "summaryInteractive", // Résumé : mode interactif
+    "summaryStyle"     // Résumé : style illustration
   ]
 
   // Nombre total d'étapes — mis à jour dans connect()
@@ -41,6 +42,14 @@ export default class extends Controller {
     sharing:    "Partage",
     kindness:   "Gentillesse",
     confidence: "Confiance"
+  }
+
+  // Libellés des styles d'illustration pour le récap
+  styleLabels = {
+    ghibli:     "Studio Ghibli",
+    comics:     "Comics",
+    pixar:      "Pixar / Disney",
+    watercolor: "Conte illustré"
   }
 
   // ============================================================
@@ -304,6 +313,14 @@ export default class extends Controller {
     if (this.hasSummaryInteractiveTarget) {
       const checkbox = this.element.querySelector('input[name="story[interactive]"][type="checkbox"]')
       this.summaryInteractiveTarget.textContent = checkbox?.checked ? "Activé" : "Désactivé"
+    }
+
+    // Style illustration — affiche le libellé français du style choisi, ou "Automatique" si aucun
+    if (this.hasSummaryStyleTarget) {
+      const radio = this.element.querySelector('input[name="story[image_style]"]:checked')
+      this.summaryStyleTarget.textContent = radio
+        ? (this.styleLabels[radio.value] || radio.value)
+        : "Automatique"
     }
   }
 
