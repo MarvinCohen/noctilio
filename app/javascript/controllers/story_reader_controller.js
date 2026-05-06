@@ -19,7 +19,7 @@ export default class extends Controller {
   // - "track"       : barre de progression cliquable (conteneur)
   // - "currentTime" : span temps écoulé (ex: "1:23")
   // - "totalTime"   : span durée totale (ex: "6:12")
-  static targets = ["text", "playBtn", "pauseBtn", "stopBtn", "progressBar", "track", "currentTime", "totalTime"]
+  static targets = ["text", "playBtn", "pauseBtn", "stopBtn", "progressBar", "track", "currentTime", "totalTime", "preparingBadge"]
 
   connect() {
     // Objet Audio HTML5 courant
@@ -31,9 +31,78 @@ export default class extends Controller {
     // Indique si l'utilisateur était en train d'écouter (pour la continuation)
     this.playing = false
 
+    // Intervalle du pré-polling (stocké pour pouvoir l'arrêter)
+    this.preCheckInterval = null
+
     // Écoute la continuation interactive pour reprendre la lecture si elle était active
     this.onContinuationReady = (event) => this.resumeAfterContinuation(event)
     document.addEventListener("story:continuation-ready", this.onContinuationReady)
+
+    // Si le badge "En préparation" est présent, l'audio n'est pas encore prêt :
+    // on démarre un pré-polling en arrière-plan pour détecter quand audio_url est dispo.
+    // Quand c'est prêt → on cache le badge et on pulse le bouton Play.
+    if (this.hasPreparingBadgeTarget) {
+      this.startPreCheck()
+    }
+  }
+
+  // ============================================================
+  // startPreCheck — poll /status en arrière-plan dès l'arrivée
+  // ============================================================
+  // N'attend pas que l'utilisateur clique sur Play — détecte la disponibilité
+  // de l'audio dès que GenerateAudioJob termine (~25s après création).
+  startPreCheck() {
+    const storyId    = this.element.dataset.storyId
+    const maxChecks  = 40   // 40 × 3s = 2 minutes max
+    let   checkCount = 0
+
+    this.preCheckInterval = setInterval(async () => {
+      checkCount++
+
+      try {
+        const response = await fetch(`/stories/${storyId}/status`, {
+          headers: { "Accept": "application/json" }
+        })
+        if (!response.ok) return
+
+        const data = await response.json()
+
+        if (data.audio_url) {
+          // Audio prêt — on arrête le polling et on signale visuellement
+          clearInterval(this.preCheckInterval)
+          this.preCheckInterval = null
+          this.markReady()
+        } else if (checkCount >= maxChecks) {
+          // Timeout — on arrête silencieusement, l'utilisateur peut toujours cliquer
+          clearInterval(this.preCheckInterval)
+          this.preCheckInterval = null
+        }
+      } catch (e) {
+        // Erreur réseau — on continue à poller sans crasher
+      }
+    }, 3000)
+  }
+
+  // ============================================================
+  // markReady — signale visuellement que l'audio est prêt
+  // ============================================================
+  // Cache le badge "En préparation" et déclenche une animation
+  // dorée sur le bouton Play pour attirer l'attention.
+  markReady() {
+    // Cache le badge "En préparation..."
+    if (this.hasPreparingBadgeTarget) {
+      this.preparingBadgeTarget.classList.add("d-none")
+    }
+
+    // Pulse doré sur le bouton Play — 3 anneaux qui s'élargissent
+    // L'animation CSS audioReadyPulse est définie dans _stories.scss
+    if (this.hasPlayBtnTarget) {
+      this.playBtnTarget.classList.add("audio-bar-play--ready")
+      // Retire la classe après la fin des 3 pulses (3 × 0.75s = 2.25s)
+      setTimeout(() => {
+        this.playBtnTarget.classList.remove("audio-bar-play--ready")
+      }, 2500)
+    }
   }
 
   // ============================================================
@@ -221,6 +290,11 @@ export default class extends Controller {
     if (this.audioUrl) {
       URL.revokeObjectURL(this.audioUrl)
       this.audioUrl = null
+    }
+    // Arrête le pré-polling si l'utilisateur quitte la page avant que l'audio soit prêt
+    if (this.preCheckInterval) {
+      clearInterval(this.preCheckInterval)
+      this.preCheckInterval = null
     }
     document.removeEventListener("story:continuation-ready", this.onContinuationReady)
   }

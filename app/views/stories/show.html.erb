@@ -558,49 +558,68 @@
           <% end %>
         </div>
 
-        <%# ── LECTEUR AUDIO STICKY — fixé en bas à droite ── %>
-        <%# Visible uniquement sur la page d'histoire terminée %>
-        <%# Les styles .audio-player-* sont définis dans _stories.scss %>
-        <div class="audio-player-sticky"
+        <%# ── LECTEUR AUDIO — barre flottante centrée en bas ── %>
+        <%# DA cosmique : glassmorphism sombre, accents dorés, icônes SVG %>
+        <%# Les styles .audio-bar-* sont définis dans _stories.scss %>
+        <div class="audio-bar"
              data-controller="story-reader"
              data-story-id="<%= @story.id %>">
 
-          <div class="audio-player-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>Lecture vocale
-          </div>
+          <%# Ligne 1 : contrôles — Play/Pause à gauche, Stop à droite %>
+          <div class="audio-bar-controls">
 
-          <div class="audio-player-controls">
-            <%# Play — visible quand arrêté ou en pause %>
+            <%# Bouton Play — cercle doré plein %>
             <button data-story-reader-target="playBtn"
                     data-action="click->story-reader#play"
-                    class="audio-btn audio-btn-play"
-                    title="Écouter">▶</button>
+                    class="audio-bar-play"
+                    title="Écouter l'histoire">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
 
-            <%# Pause — visible uniquement pendant la lecture %>
+            <%# Bouton Pause — même taille, masqué par défaut %>
             <button data-story-reader-target="pauseBtn"
                     data-action="click->story-reader#pause"
-                    class="audio-btn audio-btn-pause d-none"
-                    title="Pause">⏸</button>
+                    class="audio-bar-play d-none"
+                    title="Pause">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
 
-            <%# Stop — toujours visible %>
+            <%# Label "Lecture vocale" — petit texte entre les boutons %>
+            <span class="audio-bar-label">Lecture vocale</span>
+
+            <%# Bouton Stop — discret, à droite %>
             <button data-story-reader-target="stopBtn"
                     data-action="click->story-reader#stop"
-                    class="audio-btn audio-btn-stop"
-                    title="Arrêter">⏹</button>
+                    class="audio-bar-stop"
+                    title="Arrêter">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </button>
+
           </div>
 
-          <%# Barre de progression cliquable %>
-          <div class="audio-player-track"
-               data-story-reader-target="track"
-               data-action="click->story-reader#seek">
-            <div class="audio-player-fill" data-story-reader-target="progressBar"></div>
-          </div>
+          <%# Badge "En préparation" — visible tant que l'audio n'est pas généré %>
+          <%# story_reader_controller le cache dès que audio_url apparaît dans /status %>
+          <%# Si l'audio est déjà prêt au chargement de la page, on ne l'affiche pas du tout %>
+          <% unless @story.audio_file.attached? %>
+            <div class="audio-bar-preparing" data-story-reader-target="preparingBadge">
+              <span class="audio-bar-preparing-dots">
+                <span></span><span></span><span></span>
+              </span>
+              <span>En préparation</span>
+            </div>
+          <% end %>
 
-          <%# Timer : temps écoulé / durée totale %>
-          <div class="audio-player-timer">
-            <span data-story-reader-target="currentTime">0:00</span>
-            <span class="audio-timer-sep">/</span>
-            <span data-story-reader-target="totalTime">--:--</span>
+          <%# Ligne 2 : barre de progression + timers %>
+          <div class="audio-bar-center">
+            <span data-story-reader-target="currentTime" class="audio-bar-time">0:00</span>
+
+            <div class="audio-bar-track"
+                 data-story-reader-target="track"
+                 data-action="click->story-reader#seek">
+              <div class="audio-bar-fill" data-story-reader-target="progressBar"></div>
+            </div>
+
+            <span data-story-reader-target="totalTime" class="audio-bar-time">--:--</span>
           </div>
 
         </div>
@@ -665,7 +684,8 @@
               <%# Continuation de l'histoire avec le choix effectué %>
               <% if choice.context_chosen.present? %>
                 <div class="story-content-wrapper mb-3">
-                  <%= simple_format(choice.context_chosen) %>
+                  <%# h() échappe les balises HTML avant affichage — protège contre les injections XSS %>
+                  <%= simple_format(h(choice.context_chosen)) %>
                 </div>
               <% end %>
 
@@ -725,13 +745,40 @@
                 <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
                 <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
               </div>
+              <%# L'image démarre cachée — un script nonce l'affiche après chargement %>
+              <%# On utilise un script nonce (au lieu de onload inline) car la CSP bloque %>
+              <%# les handlers inline (onload=, onerror=) sans 'unsafe-inline' %>
               <%= image_tag image_src,
-                    alt:     "Illustration de #{@story.title}",
-                    class:   "story-illustration-img",
-                    style:   "display:none",
-                    onload:  "this.style.display='block'; document.getElementById('story-illustration-skeleton').style.display='none';",
-                    onerror: "document.getElementById('story-illustration-skeleton').innerHTML='<p style=\"color:#8a8578;font-size:0.8rem;\">Illustration non disponible</p>';" %>
+                    alt:   "Illustration de #{@story.title}",
+                    class: "story-illustration-img",
+                    id:    "story-cover-img-#{@story.id}",
+                    style: "display:none" %>
             </div>
+            <script nonce="<%= content_security_policy_nonce %>">
+              (function() {
+                // Récupère l'image et le skeleton par leur ID unique (évite les conflits si plusieurs histoires)
+                var img      = document.getElementById('story-cover-img-<%= @story.id %>');
+                var skeleton = document.getElementById('story-illustration-skeleton');
+                if (!img) return;
+
+                // Quand l'image est chargée : l'affiche et cache le skeleton
+                img.addEventListener('load', function() {
+                  img.style.display = 'block';
+                  if (skeleton) skeleton.style.display = 'none';
+                });
+
+                // Si l'image est déjà chargée (cache navigateur), déclenche manuellement
+                if (img.complete && img.naturalWidth > 0) {
+                  img.style.display = 'block';
+                  if (skeleton) skeleton.style.display = 'none';
+                }
+
+                // En cas d'erreur : affiche un message discret dans le skeleton
+                img.addEventListener('error', function() {
+                  if (skeleton) skeleton.innerHTML = '<p style="color:#8a8578;font-size:0.8rem;">Illustration non disponible</p>';
+                });
+              })();
+            </script>
 
           <%# CAS 2 : l'image n'est pas encore prête — story_image_controller poll /status %>
           <% else %>

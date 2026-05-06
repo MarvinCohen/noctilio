@@ -44,13 +44,14 @@ gem "image_processing", "~> 1.2"
 
 gem "sprockets-rails"
 gem "bootstrap", "~> 5.3"
-gem "devise"
+gem "devise", "~> 5.0"
 # Convertit le markdown (généré par l'IA) en HTML propre côté serveur
 # Plus fiable que parser le markdown manuellement en JavaScript
-gem "redcarpet"
-gem "autoprefixer-rails"
+gem "redcarpet", "~> 3.6"
+gem "autoprefixer-rails", "~> 10.4"
 gem "font-awesome-sass", "~> 6.1"
-gem "simple_form", github: "heartcombo/simple_form"
+# Version officielle Rubygems — plus stable que le HEAD GitHub
+gem "simple_form", "~> 5.4"
 gem "sassc-rails"
 
 # Intelligence artificielle — génération d'histoires et d'images
@@ -67,7 +68,7 @@ gem "stripe", "~> 12.0"
 
 # Protection contre le brute-force et l'abus de requêtes
 # Bloque les IP qui spamment la connexion ou les endpoints coûteux (OpenAI)
-gem "rack-attack"
+gem "rack-attack", "~> 6.8"
 
 group :development, :test do
   gem "dotenv-rails"

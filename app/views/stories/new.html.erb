@@ -371,12 +371,12 @@
     gap: 0.75rem;
   }
 
-  /* Tuile de style — même base que value-card */
+  /* Tuile de style — sans padding pour que l'image touche les bords */
   .style-card {
     background: rgba(255, 255, 255, 0.02);
     border: 1.5px solid rgba(240, 201, 122, 0.15);
     border-radius: 16px;
-    padding: 1rem;
+    overflow: hidden;   /* L'image ne déborde pas des coins arrondis */
     cursor: pointer;
     transition: all 0.2s ease;
   }
@@ -385,6 +385,8 @@
   .style-card.selected {
     border-color: #f0c97a;
     background: rgba(240, 201, 122, 0.08);
+    /* Halo doré quand la carte est sélectionnée */
+    box-shadow: 0 0 0 1px rgba(240, 201, 122, 0.3), 0 4px 20px rgba(240, 201, 122, 0.1);
   }
   .style-card:hover:not(:has(input:checked)):not(.selected) {
     border-color: rgba(240, 201, 122, 0.35);
@@ -395,39 +397,54 @@
   .style-card-inner {
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
   }
 
-  /* Bande de couleurs représentant la palette du style */
-  .style-preview {
+  /* Image d'exemple — remplace les cercles de couleurs */
+  /* Affiche l'enfant dans le style correspondant (générée via rails styles:generate_examples) */
+  .style-card-img {
+    width: 100%;
+    aspect-ratio: 4 / 3;   /* Même ratio que les illustrations générées dans l'app */
+    object-fit: cover;      /* Recadre sans déformer */
+    display: block;
+    /* Fondu vers le bas pour que le texte s'intègre naturellement */
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+
+  /* Fallback si l'image n'est pas encore générée — affiche la palette de couleurs */
+  .style-card-img-placeholder {
     display: flex;
-    gap: 5px;
-    height: 28px;
+    gap: 0px;
+    height: 90px;
+    overflow: hidden;
   }
-  .style-preview span {
+  .style-card-img-placeholder span {
     flex: 1;
-    border-radius: 6px;
   }
+  /* Palettes de couleurs en fallback par style */
+  .style-card-img-placeholder--ghibli span:nth-child(1) { background: #a8d5a2; }
+  .style-card-img-placeholder--ghibli span:nth-child(2) { background: #87ceeb; }
+  .style-card-img-placeholder--ghibli span:nth-child(3) { background: #f5deb3; }
+  .style-card-img-placeholder--comics span:nth-child(1) { background: #e63946; }
+  .style-card-img-placeholder--comics span:nth-child(2) { background: #1d1d1d; }
+  .style-card-img-placeholder--comics span:nth-child(3) { background: #ffd60a; }
+  .style-card-img-placeholder--pixar span:nth-child(1) { background: #ff9f1c; }
+  .style-card-img-placeholder--pixar span:nth-child(2) { background: #2ec4b6; }
+  .style-card-img-placeholder--pixar span:nth-child(3) { background: #f8f7f4; }
+  .style-card-img-placeholder--watercolor span:nth-child(1) { background: #e8b4b8; }
+  .style-card-img-placeholder--watercolor span:nth-child(2) { background: #c9a96e; }
+  .style-card-img-placeholder--watercolor span:nth-child(3) { background: #8fbc8f; }
 
-  /* Palette Ghibli — verts doux, bleu ciel, beige chaud */
-  .style-preview--ghibli span:nth-child(1) { background: #a8d5a2; }
-  .style-preview--ghibli span:nth-child(2) { background: #87ceeb; }
-  .style-preview--ghibli span:nth-child(3) { background: #f5deb3; }
-
-  /* Palette Comics — rouge vif, noir, jaune flash */
-  .style-preview--comics span:nth-child(1) { background: #e63946; }
-  .style-preview--comics span:nth-child(2) { background: #1d1d1d; }
-  .style-preview--comics span:nth-child(3) { background: #ffd60a; }
-
-  /* Palette Pixar — orange lumineux, bleu Pixar, blanc doux */
-  .style-preview--pixar span:nth-child(1) { background: #ff9f1c; }
-  .style-preview--pixar span:nth-child(2) { background: #2ec4b6; }
-  .style-preview--pixar span:nth-child(3) { background: #f8f7f4; }
-
-  /* Palette Watercolor — rose poudré, ocre, vert sauge */
-  .style-preview--watercolor span:nth-child(1) { background: #e8b4b8; }
-  .style-preview--watercolor span:nth-child(2) { background: #c9a96e; }
-  .style-preview--watercolor span:nth-child(3) { background: #8fbc8f; }
+  /* Zone de texte sous l'image */
+  .style-card-text {
+    padding: 0.65rem 0.85rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    /* Fond légèrement teinté pour lisibilité du texte */
+    background: rgba(11, 14, 26, 0.6);
+    margin-top: -1px;  /* Supprime le micro-écart entre image et texte */
+  }
 
   /* Nom du style */
   .style-name {
@@ -741,6 +758,7 @@
                     <input type="checkbox"
                            name="story[child_ids][]"
                            value="<%= child.id %>"
+                           data-gender="<%= child.gender %>"
                            data-action="change->story-creation#onCheckboxChange">
 
                     <%# Avatar SVG %>
@@ -944,62 +962,52 @@
             <%# Grille de 4 tuiles — une par style visuel %>
             <div class="style-grid">
 
-              <%# Ghibli — aquarelle douce %>
-              <label class="style-card <%= 'selected' if @story.image_style == 'ghibli' %>">
-                <%= f.radio_button :image_style, "ghibli" %>
-                <div class="style-card-inner">
-                  <%# Aperçu visuel — cercles de couleurs représentant la palette %>
-                  <div class="style-preview style-preview--ghibli">
-                    <span></span><span></span><span></span>
-                  </div>
-                  <div class="style-card-text">
-                    <div class="style-name">Studio Ghibli</div>
-                    <div class="style-desc">Aquarelle douce, tons pastels, atmosphère onirique</div>
-                  </div>
-                </div>
-              </label>
+              <%# ── Boucle sur les 4 styles ── %>
+              <%# data-style permet au JS de trouver l'image à mettre à jour %>
+              <%# L'image affichée (_girl ou _boy) change selon le genre de l'enfant sélectionné %>
 
-              <%# Comics — Spider-Verse %>
-              <label class="style-card <%= 'selected' if @story.image_style == 'comics' %>">
-                <%= f.radio_button :image_style, "comics" %>
-                <div class="style-card-inner">
-                  <div class="style-preview style-preview--comics">
-                    <span></span><span></span><span></span>
-                  </div>
-                  <div class="style-card-text">
-                    <div class="style-name">Comics</div>
-                    <div class="style-desc">Traits forts, couleurs vives, style Spider-Verse</div>
-                  </div>
-                </div>
-              </label>
+              <% [
+                   { key: "ghibli",     name: "Studio Ghibli",  desc: "Aquarelle douce, tons pastels, atmosphère onirique" },
+                   { key: "comics",     name: "Comics",          desc: "Traits forts, couleurs vives, style Spider-Verse" },
+                   { key: "pixar",      name: "Pixar / Disney",  desc: "Rendu 3D lumineux, chaleureux, expressif" },
+                   { key: "watercolor", name: "Conte illustré",  desc: "Aquarelle vintage, livre d'images, tons chauds" }
+                 ].each do |style| %>
 
-              <%# Pixar — rendu 3D %>
-              <label class="style-card <%= 'selected' if @story.image_style == 'pixar' %>">
-                <%= f.radio_button :image_style, "pixar" %>
-                <div class="style-card-inner">
-                  <div class="style-preview style-preview--pixar">
-                    <span></span><span></span><span></span>
-                  </div>
-                  <div class="style-card-text">
-                    <div class="style-name">Pixar / Disney</div>
-                    <div class="style-desc">Rendu 3D lumineux, chaleureux, expressif</div>
-                  </div>
-                </div>
-              </label>
+                <label class="style-card <%= 'selected' if @story.image_style == style[:key] %>">
+                  <%= f.radio_button :image_style, style[:key] %>
+                  <div class="style-card-inner">
 
-              <%# Conte illustré — aquarelle vintage %>
-              <label class="style-card <%= 'selected' if @story.image_style == 'watercolor' %>">
-                <%= f.radio_button :image_style, "watercolor" %>
-                <div class="style-card-inner">
-                  <div class="style-preview style-preview--watercolor">
-                    <span></span><span></span><span></span>
+                    <%# Image d'exemple — src mise à jour par JS selon le genre de l'enfant %>
+                    <%# Par défaut on charge _girl ; si garçon sélectionné, JS bascule vers _boy %>
+                    <% girl_path = "public/images/style_examples/#{style[:key]}_girl.jpg" %>
+                    <% boy_path  = "public/images/style_examples/#{style[:key]}_boy.jpg"  %>
+                    <% has_girl  = File.exist?(Rails.root.join(girl_path)) %>
+                    <% has_boy   = File.exist?(Rails.root.join(boy_path))  %>
+
+                    <% if has_girl || has_boy %>
+                      <%# data-style-key : identifie le style pour que le JS puisse swapper le src %>
+                      <%# data-girl-src / data-boy-src : URLs des deux versions %>
+                      <img src="/images/style_examples/<%= style[:key] %>_girl.jpg"
+                           alt="Exemple style <%= style[:name] %>"
+                           class="style-card-img"
+                           data-style-key="<%= style[:key] %>"
+                           data-girl-src="/images/style_examples/<%= style[:key] %>_girl.jpg"
+                           data-boy-src="/images/style_examples/<%= style[:key] %>_boy.jpg">
+                    <% else %>
+                      <%# Fallback palette de couleurs si aucune image n'est encore générée %>
+                      <div class="style-card-img-placeholder style-card-img-placeholder--<%= style[:key] %>">
+                        <span></span><span></span><span></span>
+                      </div>
+                    <% end %>
+
+                    <div class="style-card-text">
+                      <div class="style-name"><%= style[:name] %></div>
+                      <div class="style-desc"><%= style[:desc] %></div>
+                    </div>
                   </div>
-                  <div class="style-card-text">
-                    <div class="style-name">Conte illustré</div>
-                    <div class="style-desc">Aquarelle vintage, livre d'images, tons chauds</div>
-                  </div>
-                </div>
-              </label>
+                </label>
+
+              <% end %>
 
             </div>
 

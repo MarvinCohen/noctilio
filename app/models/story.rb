@@ -39,6 +39,59 @@ class Story < ApplicationRecord
   validates :status,       presence: true
   validates :duration_minutes, inclusion: { in: [5, 10, 15] }, allow_nil: true
 
+  # Limite la longueur de custom_theme pour éviter qu'un utilisateur envoie un texte
+  # énorme qui serait injecté dans les prompts IA (explosion du nombre de tokens)
+  validates :custom_theme, length: { maximum: 500 }, allow_blank: true
+
+  # Vérifie que educational_value est une valeur connue — empêche un attaquant d'envoyer
+  # une valeur arbitraire via une requête HTTP forgée (le formulaire est côté client)
+  validates :educational_value, inclusion: {
+    in: %w[courage sharing kindness confidence],
+    message: "n'est pas une valeur éducative reconnue"
+  }, allow_nil: true
+
+  # Vérifie que image_style est un style connu — même raison que educational_value
+  validates :image_style, inclusion: {
+    in: %w[ghibli comics pixar watercolor],
+    message: "n'est pas un style d'illustration reconnu"
+  }, allow_nil: true
+
+  # ============================================================
+  # Méthodes de construction — Fat Model / Skinny Controller
+  # ============================================================
+  # Ces méthodes construisent de nouvelles histoires à partir de celle-ci.
+  # On les met dans le modèle (pas dans le controller) pour pouvoir les tester
+  # unitairement et garder le controller léger.
+
+  # Construit une histoire identique pour recommencer from scratch
+  # Utilisé par StoriesController#replay
+  def build_replay
+    child.stories.build(
+      world_theme:       world_theme,
+      custom_theme:      custom_theme,
+      educational_value: educational_value,
+      duration_minutes:  duration_minutes,
+      interactive:       interactive,
+      extra_child_ids:   extra_child_ids,
+      saved:             true  # Auto-sauvegardée dans la bibliothèque
+    )
+  end
+
+  # Construit un nouvel épisode lié à cette histoire (suite de saga)
+  # Utilisé par StoriesController#continue
+  def build_sequel
+    child.stories.build(
+      parent_story_id:   id,
+      world_theme:       world_theme,
+      custom_theme:      custom_theme,
+      educational_value: educational_value,
+      duration_minutes:  duration_minutes,
+      interactive:       interactive,
+      extra_child_ids:   extra_child_ids,
+      saved:             true  # Auto-sauvegardée dans la bibliothèque
+    )
+  end
+
   # ============================================================
   # Scopes
   # ============================================================

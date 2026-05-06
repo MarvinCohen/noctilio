@@ -34,18 +34,28 @@ class GenerateAudioJob < ApplicationJob
     client = OpenAI::Client.new(access_token: ENV.fetch("OPENAI_API_KEY"))
 
     # Découpe le texte en chunks de max TTS_CHUNK_SIZE caractères
-    # et génère un MP3 par chunk, puis les concatène
-    chunks     = tts_split_text(text)
-    audio_data = chunks.map do |chunk|
-      client.audio.speech(
-        parameters: {
-          model:           "tts-1",
-          input:           chunk,
-          voice:           "nova",
-          response_format: "mp3"
-        }
-      )
-    end.join
+    chunks = tts_split_text(text)
+
+    # Génère tous les chunks EN PARALLÈLE via des threads Ruby.
+    # Chaque thread fait un appel OpenAI TTS indépendant.
+    # On utilise each_with_index pour préserver l'ordre des chunks dans le résultat final.
+    # threads.map(&:value) attend la fin de chaque thread et récupère son résultat.
+    threads = chunks.each_with_index.map do |chunk, index|
+      Thread.new do
+        Rails.logger.info("GenerateAudioJob — chunk #{index + 1}/#{chunks.length} en cours")
+        client.audio.speech(
+          parameters: {
+            model:           "tts-1",
+            input:           chunk,
+            voice:           "nova",
+            response_format: "mp3"
+          }
+        )
+      end
+    end
+
+    # Attend tous les threads et concatène les MP3 dans l'ordre
+    audio_data = threads.map(&:value).join
 
     # Attache le MP3 à l'histoire ou au choix selon la source
     if source == "continuation" && choice_id

@@ -1,11 +1,3 @@
-GIT
-  remote: https://github.com/heartcombo/simple_form.git
-  revision: f28f208c2e429a7d094f4594e600b575e9181346
-  specs:
-    simple_form (5.4.1)
-      actionpack (>= 7.0)
-      activemodel (>= 7.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -400,6 +392,9 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    simple_form (5.4.1)
+      actionpack (>= 7.0)
+      activemodel (>= 7.0)
     solid_cable (3.0.12)
       actioncable (>= 7.2)
       activejob (>= 7.2)
@@ -483,7 +478,7 @@ PLATFORMS
 
 DEPENDENCIES
   activestorage-cloudinary-service
-  autoprefixer-rails
+  autoprefixer-rails (~> 10.4)
   bootsnap
   bootstrap (~> 5.3)
   brakeman
@@ -491,7 +486,7 @@ DEPENDENCIES
   capybara
   cloudinary (~> 1.29)
   debug
-  devise
+  devise (~> 5.0)
   dotenv-rails
   font-awesome-sass (~> 6.1)
   image_processing (~> 1.2)
@@ -501,14 +496,14 @@ DEPENDENCIES
   pay (~> 7.0)
   pg (~> 1.1)
   puma (>= 5.0)
-  rack-attack
+  rack-attack (~> 6.8)
   rails (~> 8.1.2)
-  redcarpet
+  redcarpet (~> 3.6)
   rubocop-rails-omakase
   ruby-openai (~> 7.0)
   sassc-rails
   selenium-webdriver
-  simple_form!
+  simple_form (~> 5.4)
   solid_cable
   solid_cache
   solid_queue
@@ -676,7 +671,7 @@ CHECKSUMS
   sassc-rails (2.1.2) sha256=5f4fdf3881fc9bdc8e856ffbd9850d70a2878866feae8114aa45996179952db5
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
   selenium-webdriver (4.41.0) sha256=cdc1173cd55cf186022cea83156cc2d0bec06d337e039b02ad25d94e41bedd22
-  simple_form (5.4.1)
+  simple_form (5.4.1) sha256=58c3d229034c7e5545035c3271b6f030ef730c340b9d7d8eb730e0a385b20808
   solid_cable (3.0.12) sha256=a168a54731a455d5627af48d8441ea3b554b8c1f6e6cd6074109de493e6b0460
   solid_cache (1.0.10) sha256=bc05a2fb3ac78a6f43cbb5946679cf9db67dd30d22939ededc385cb93e120d41
   solid_queue (1.4.0) sha256=e6a18d196f0b27cb6e3c77c5b31258b05fb634f8ed64fb1866ed164047216c2a

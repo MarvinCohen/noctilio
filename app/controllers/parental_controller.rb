@@ -26,9 +26,11 @@ class ParentalController < ApplicationController
 
     # Dernière histoire complétée par enfant (hash { child_id => story })
     # Utilisé dans la liste des héros pour afficher la date de dernière activité
+    # .limit borne la requête — sans ça, tous les objets seraient chargés en mémoire
     last_completed = Story.completed
                           .where(child_id: child_ids)
                           .order(created_at: :desc)
+                          .limit(child_ids.size * 10)
     @last_story_by_child = last_completed.group_by(&:child_id).transform_values(&:first)
 
     # IDs des enfants ayant au moins un choix interactif en attente

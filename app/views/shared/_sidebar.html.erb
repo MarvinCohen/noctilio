@@ -78,6 +78,30 @@
       <%= current_user.xp_points %> XP
     </div>
 
+    <%# ---------------------------------------------------------------- %>
+    <%# Bouton "Installer l'app" — PWA install prompt %>
+    <%# Caché par défaut (display:none) — le Stimulus controller le montre %>
+    <%# uniquement quand le navigateur signale que l'app est installable %>
+    <%# Il disparaît automatiquement une fois l'app installée %>
+    <%# data-controller : active le pwa_install_controller.js %>
+    <%# data-action : déclenche install() au clic %>
+    <%# ---------------------------------------------------------------- %>
+    <button
+      class="sidebar-install-btn"
+      style="display:none"
+      data-controller="pwa-install"
+      data-action="click->pwa-install#install"
+      title="Installer Noctilio sur votre appareil"
+    >
+      <%# Icône téléchargement / flèche vers le bas %>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span class="sidebar-install-label">Installer</span>
+    </button>
+
     <%# CTA Créer — bouton pill doré %>
     <%= link_to new_story_path, class: "sidebar-cta-btn" do %>
       <span>✦</span> Créer

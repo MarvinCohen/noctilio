@@ -218,7 +218,10 @@ class StoriesController < ApplicationController
   rescue ActiveRecord::RecordNotFound
     render json: { success: false, error: "Choix introuvable." }, status: :not_found
   rescue StandardError => e
-    render json: { success: false, error: "Erreur : #{e.message}" }, status: :internal_server_error
+    # On logue le détail complet côté serveur pour le debug
+    # Mais on renvoie un message générique au client — évite de fuiter des infos d'infrastructure
+    Rails.logger.error("StoriesController error: #{e.class} — #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+    render json: { success: false, error: "Une erreur est survenue, veuillez réessayer." }, status: :internal_server_error
   end
 
   # POST /stories/:id/replay — recrée une histoire identique from scratch
@@ -226,17 +229,8 @@ class StoriesController < ApplicationController
   # regénère tout : nouveau texte, nouveaux choix, nouvelle illustration.
   # Permet de rejouer une histoire interactive pour faire d'autres choix.
   def replay
-    # Crée une nouvelle histoire avec exactement les mêmes paramètres
-    # Pas de parent_story_id — ce n'est pas une suite, c'est un recommencement
-    replay_story = @story.child.stories.build(
-      world_theme:       @story.world_theme,
-      custom_theme:      @story.custom_theme,
-      educational_value: @story.educational_value,
-      duration_minutes:  @story.duration_minutes,
-      interactive:       @story.interactive,
-      extra_child_ids:   @story.extra_child_ids,
-      saved:             true   # Auto-sauvegardé
-    )
+    # Délègue la construction au modèle — logique métier dans Story, pas dans le controller
+    replay_story = @story.build_replay
 
     if replay_story.save
       # Lance la génération complète — tout sera différent (aléatoire côté IA)
@@ -265,18 +259,8 @@ class StoriesController < ApplicationController
       return
     end
 
-    # Crée le nouvel épisode en héritant des paramètres de l'histoire parente
-    # L'enfant reste le même, l'univers et la valeur aussi — seul le contenu change
-    sequel = @story.child.stories.build(
-      parent_story_id:    @story.id,
-      world_theme:        @story.world_theme,
-      custom_theme:       @story.custom_theme,
-      educational_value:  @story.educational_value,
-      duration_minutes:   @story.duration_minutes,
-      interactive:        @story.interactive,
-      extra_child_ids:    @story.extra_child_ids,
-      saved:              true   # Auto-sauvegardé dans la bibliothèque
-    )
+    # Délègue la construction au modèle — logique métier dans Story, pas dans le controller
+    sequel = @story.build_sequel
 
     if sequel.save
       # Lance la génération — le job appellera StoryGeneratorService

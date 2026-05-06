@@ -170,6 +170,42 @@ $cream-nav:  #fdf6e3;
   white-space: nowrap;
 }
 
+// ============================================================
+// Bouton "Installer l'app" — PWA install, style ghost discret
+// Caché par défaut, affiché via JS quand l'app est installable
+// ============================================================
+.sidebar-install-btn {
+  display: inline-flex; // Overridé par style="display:none" au départ
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: transparent;                    // Ghost — pas de fond
+  color: rgba($gold-nav, 0.7);               // Or discret, pas aussi vif que le CTA
+  border: 1px solid rgba($gold-nav, 0.3);    // Bordure dorée subtile
+  border-radius: 100px;                       // Pill — cohérence avec les autres boutons
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+
+  // Pas de style "button" par défaut (outline, background gris)
+  outline: none;
+
+  &:hover {
+    color: $gold-nav;                         // Or plein au survol
+    border-color: rgba($gold-nav, 0.6);
+    background: rgba($gold-nav, 0.08);        // Léger fond doré
+  }
+}
+
+// Cache le label texte sur tablette (comme les labels de nav)
+@media (max-width: 900px) {
+  .sidebar-install-label { display: none; }
+  .sidebar-install-btn   { padding: 6px 10px; }
+}
+
 // Bouton CTA "Créer" — pill doré compact
 .sidebar-cta-btn {
   display: inline-flex;

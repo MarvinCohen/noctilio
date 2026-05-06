@@ -128,7 +128,7 @@ export default class extends Controller {
   }
 
   // ============================================================
-  // onCheckboxChange — validation en temps réel des enfants
+  // onCheckboxChange — validation + mise à jour des images de style
   // ============================================================
   onCheckboxChange() {
     // Cache l'erreur dès qu'un enfant est sélectionné
@@ -136,6 +136,42 @@ export default class extends Controller {
     if (this.hasChildErrorTarget) {
       this.childErrorTarget.classList.toggle("d-none", checked.length > 0)
     }
+
+    // Met à jour les images d'exemple selon le genre du/des enfant(s) sélectionné(s)
+    this.updateStyleImages()
+  }
+
+  // ============================================================
+  // updateStyleImages — affiche la série fille ou garçon dans les cards de style
+  // ============================================================
+  // Lit le data-gender de chaque checkbox cochée, détermine le genre majoritaire,
+  // puis met à jour le src de chaque image de style (data-style-key) en conséquence.
+  // Si aucun enfant sélectionné → conserve les images actuelles
+  // Si plusieurs genres différents → on prend le genre du premier enfant sélectionné
+  updateStyleImages() {
+    const checked = this.element.querySelectorAll('input[name="story[child_ids][]"]:checked')
+    if (checked.length === 0) return
+
+    // Compte les garçons et les filles parmi les enfants cochés
+    let boys  = 0
+    let girls = 0
+    checked.forEach(input => {
+      if (input.dataset.gender === "boy") boys++
+      else girls++
+    })
+
+    // Genre majoritaire (égalité → fille par défaut)
+    const gender = boys > girls ? "boy" : "girl"
+
+    // Met à jour le src de toutes les images de style présentes dans la page
+    const styleImgs = this.element.querySelectorAll("img[data-style-key]")
+    styleImgs.forEach(img => {
+      // Récupère l'URL correspondant au genre déterminé
+      const newSrc = gender === "boy" ? img.dataset.boySrc : img.dataset.girlSrc
+      if (newSrc && img.src !== location.origin + newSrc) {
+        img.src = newSrc
+      }
+    })
   }
 
   // ============================================================

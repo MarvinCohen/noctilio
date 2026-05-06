@@ -14,11 +14,12 @@ class AdminController < ApplicationController
   # triés du plus récent au plus ancien
   # ============================================================
   def waitlist
-    # Charge tous les inscrits, du plus récent au plus ancien
-    @entries = WaitlistEntry.order(created_at: :desc)
+    # Charge tous les inscrits en mémoire en une seule requête SQL
+    # .to_a force l'exécution immédiate — évite 3 requêtes séparées (count, any?, each)
+    @entries = WaitlistEntry.order(created_at: :desc).limit(500).to_a
 
-    # Compte total pour l'affichage du résumé
-    @total = @entries.count
+    # Calcul en Ruby sur le tableau déjà chargé — pas de requête SQL supplémentaire
+    @total = @entries.size
   end
 
   private

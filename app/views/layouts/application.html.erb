@@ -11,8 +11,12 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%# ---------------------------------------------------------------- %>
+    <%# PWA Manifest — déclare l'app comme installable sur mobile/desktop %>
+    <%# Permet l'icône sur l'écran d'accueil + mode plein écran standalone %>
+    <%# La route /manifest est définie dans config/routes.rb %>
+    <%# ---------------------------------------------------------------- %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
     <%# Favicon — mascotte hibou Noctilio %>
     <%= favicon_link_tag image_path('mascot.svg'), type: 'image/svg+xml' %>
@@ -176,6 +180,36 @@
           });
         }
       })();
+    </script>
+
+    <%# ---------------------------------------------------------------- %>
+    <%# Enregistrement du Service Worker PWA %>
+    <%# Le service worker tourne en arrière-plan et gère le cache offline %>
+    <%# Il s'enregistre une seule fois et met à jour automatiquement %>
+    <%# nonce= obligatoire pour respecter la Content Security Policy (CSP) %>
+    <%# ---------------------------------------------------------------- %>
+    <script nonce="<%= content_security_policy_nonce %>">
+      // On vérifie que le navigateur supporte les Service Workers
+      // (tous les navigateurs modernes le supportent, sauf IE11)
+      if ("serviceWorker" in navigator) {
+        // On attend que la page soit complètement chargée
+        // pour ne pas ralentir le chargement initial
+        window.addEventListener("load", function() {
+          navigator.serviceWorker
+            .register("<%= pwa_service_worker_path %>", {
+              // scope : le service worker contrôle tout le site "/"
+              scope: "/"
+            })
+            .then(function(registration) {
+              // Enregistrement réussi — le SW est actif en arrière-plan
+              console.log("[PWA] Service worker enregistré :", registration.scope);
+            })
+            .catch(function(error) {
+              // Échec silencieux — l'app continue de fonctionner normalement
+              console.warn("[PWA] Échec enregistrement service worker :", error);
+            });
+        });
+      }
     </script>
 
   </body>

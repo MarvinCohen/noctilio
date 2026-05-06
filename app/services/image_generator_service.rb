@@ -162,7 +162,9 @@ class ImageGeneratorService
       next unless child.skin_tone.present?
       tone = child.skin_tone.downcase
       if tone.match?(/éb[eè]ne|noir|très.?foncé|dark/)
-        "light skin, white skin, pale skin, fair skin"
+        # Négatif renforcé pour peau ébène : liste exhaustive des tons clairs à bloquer
+        # FLUX tend à ignorer la peau foncée si le prompt contient des éléments "européens"
+        "light skin, white skin, pale skin, fair skin, tan skin, tanned, caucasian, asian skin, light complexion, european features"
       elsif tone.match?(/clair|blanc|fair|pale/)
         "dark skin, black skin, brown skin, tanned skin"
       elsif tone.match?(/métis|mixed|doré|olive|mat/)
@@ -170,7 +172,8 @@ class ImageGeneratorService
       end
     end.uniq
 
-    negative = "blurry, low quality, deformed, ugly, bad anatomy, watermark, text"
+    # Base : artefacts visuels communs + hoodie non demandé (FLUX l'hallucine souvent)
+    negative = "blurry, low quality, deformed, ugly, bad anatomy, watermark, text, hoodie, sweatshirt"
     negative += ", #{skin_negatives.join(', ')}" if skin_negatives.any?
 
     request.body = {
@@ -275,16 +278,55 @@ class ImageGeneratorService
   #      Groq connaît l'histoire + l'apparence physique → gère tous les cas (pilote, héros, etc.)
   #      Dans ce cas, on retourne le prompt directement sans modification
   #   2. Fallback algorithmique → extract_key_moment + descriptions physiques manuelles
+  # ── Mots-clés par style — pour détecter si Groq a inclus le style dans son prompt ──
+  STYLE_KEYWORDS = {
+    "ghibli"     => %w[ghibli shinkai],
+    "comics"     => ["spider-verse", "spider verse", "comics", "halftone"],
+    "pixar"      => %w[pixar disney],
+    "watercolor" => %w[watercolor storybook hand-painted]
+  }.freeze
+
+  # ── Référence de style à injecter si Groq l'a omise ──────────────────────────────
+  STYLE_REFS = {
+    "ghibli"     => "Makoto Shinkai and Studio Ghibli cinematic animation style, soft watercolor pastels, dreamy atmosphere",
+    "comics"     => "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors",
+    "pixar"      => "Pixar and Disney 3D animation style, warm cinematic lighting, highly detailed CGI, expressive characters",
+    "watercolor" => "vintage children's book illustration style, soft watercolor textures, warm hand-painted look, storybook fairy tale"
+  }.freeze
+
   def build_image_prompt
     # ── Priorité 1 : prompt complet généré par Groq ─────────────────────────
-    # generate_image_scene_prompt (StoryGeneratorService) a déjà produit un prompt
-    # de 80-120 mots qui intègre la scène, l'apparence physique, le style, la lumière.
-    # On le retourne DIRECTEMENT — ne pas l'enrober dans une autre structure
-    # (ce serait doubler les descriptions et produire un prompt trop long et incohérent).
+    # generate_image_scene_prompt (StoryGeneratorService) produit un prompt de 80-120 mots.
+    # On l'utilise comme base, mais on y ajoute TOUJOURS deux garanties :
+    #   1. La couleur de peau foncée en tête de prompt (FLUX ignore sinon)
+    #   2. La référence de style si Groq ne l'a pas incluse
     if @story.image_scene_prompt.present?
       prompt = @story.image_scene_prompt
 
-      # Pour les suites d'épisodes : ancre le character design sur l'épisode précédent
+      # ── Garantie 1 : peau foncée toujours en TÊTE de prompt ────────────────
+      # FLUX accorde plus de poids aux premiers tokens.
+      # Si le héros a la peau ébène et que Groq ne l'a pas mis en premier,
+      # on préfixe avec une emphase forte en majuscules.
+      has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé/i) }
+      if has_dark_skin && !prompt.downcase.start_with?("black child")
+        prompt = "BLACK CHILD WITH VERY DARK EBONY SKIN as main character. #{prompt}"
+      end
+
+      # ── Garantie 2 : style visuel toujours présent ─────────────────────────
+      # Groq suit les règles la plupart du temps, mais oublie parfois d'inclure
+      # la référence de style (ex: écrit "dreamy atmosphere" mais pas "Ghibli").
+      # On détecte l'absence et on ajoute la référence en fin de prompt.
+      chosen_style = @story.image_style.presence || "ghibli"
+      keywords     = STYLE_KEYWORDS[chosen_style] || []
+      prompt_lower = prompt.downcase
+
+      unless keywords.any? { |kw| prompt_lower.include?(kw) }
+        style_ref = STYLE_REFS[chosen_style] || STYLE_REFS["ghibli"]
+        prompt += ", #{style_ref}"
+        Rails.logger.info("ImageGeneratorService — style '#{chosen_style}' absent du prompt Groq, ajouté en suffixe")
+      end
+
+      # Pour les suites d'épisodes : cohérence visuelle avec l'épisode précédent
       if @story.sequel? && @story.parent_story&.image_prompt.present?
         parent_style_ref = @story.parent_story.image_prompt.truncate(300)
         prompt += ", SAME CHARACTER DESIGN AND ART STYLE AS: #{parent_style_ref}, " \
@@ -426,6 +468,11 @@ class ImageGeneratorService
   # Télécharge l'image depuis une URL distante et l'attache à l'histoire.
   # Utilisé par fal.ai et DALL-E (pas Pollinations qui bloque les requêtes serveur)
   def attach_image_from_url(url, extension = "png")
+    # Sécurité : on vérifie que l'URL est bien HTTPS avant de l'ouvrir
+    # URI.open peut lire des fichiers locaux si l'URL commence par file:// (SSRF)
+    # Une URL malveillante retournée par une API compromise pourrait lire /etc/passwd
+    raise ArgumentError, "URL invalide : seules les URLs HTTPS sont autorisées (reçu : #{url})" unless url.to_s.start_with?("https://")
+
     # Ouvre l'URL avec un timeout pour éviter de bloquer le job trop longtemps
     downloaded_file = URI.open(url, read_timeout: 60, open_timeout: 30)
 

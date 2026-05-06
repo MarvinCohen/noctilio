@@ -99,4 +99,13 @@ Rails.application.routes.draw do
   # Health check — vérifie que l'application fonctionne
   # ============================================================
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # ============================================================
+  # PWA — manifest et service worker
+  # ============================================================
+  # Le manifest.json déclare l'app comme installable (nom, icône, couleurs)
+  # Le service-worker.js gère le cache offline et les notifications push
+  # Ces deux routes sont servies par le controller intégré Rails 8 (rails/pwa)
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 end

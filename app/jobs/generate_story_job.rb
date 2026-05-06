@@ -49,13 +49,6 @@ class GenerateStoryJob < ApplicationJob
       title:   title
     )
 
-    # 4b. Générer un prompt image précis via un second appel Groq
-    # Groq demande à l'IA de décrire la scène la plus épique en anglais (50-70 mots)
-    # Stocké dans image_scene_prompt pour que ImageGeneratorService l'utilise en priorité
-    image_scene = generator.generate_image_scene_prompt
-    story.update_column(:image_scene_prompt, image_scene) if image_scene.present?
-    Rails.logger.info("GenerateStoryJob — scène image générée : #{image_scene}")
-
     # 5. En mode interactif : extraire et créer le choix depuis le texte
     if story.interactive?
       create_story_choice_from_content(story, content)
@@ -63,24 +56,51 @@ class GenerateStoryJob < ApplicationJob
 
     # 6. Marquer l'histoire comme terminée DÈS QUE LE TEXTE EST PRÊT
     # → le Stimulus story_status_controller redirige immédiatement vers la page de lecture
-    # → l'utilisateur peut lire et écouter l'histoire pendant que l'image se génère
+    # → l'utilisateur peut lire pendant que le prompt image et l'illustration se génèrent
+    # IMPORTANT : on ne fait plus le 2ème appel Groq (image_scene_prompt) avant ce point
+    # pour éviter ~5s de délai inutile avant que l'utilisateur puisse lire.
     story.update!(status: :completed)
 
     # 7. Vérifier si l'utilisateur mérite de nouveaux badges (texte disponible = histoire comptée)
     Badge.check_and_award(story.child.user)
 
-    # 8. Générer l'audio TTS en arrière-plan via Solid Queue
-    # Évite le timeout Heroku de 30s — l'audio sera disponible quelques secondes après la page
-    GenerateAudioJob.perform_later(story.id)
+    # 8. Lancer l'audio ET l'image EN PARALLÈLE dans deux threads Ruby distincts.
+    #
+    # Pourquoi des threads et non perform_later ?
+    # Avec perform_later, le job audio est mis en file d'attente — il peut démarrer
+    # immédiatement sur un thread libre de Solid Queue, mais rien ne le garantit.
+    # Avec Thread.new, le travail commence IMMÉDIATEMENT dans ce processus.
+    #
+    # Les deux tâches (audio ~25s, image ~35-60s) tournent en parallèle :
+    # → l'audio sera prêt AVANT que l'image soit terminée
+    # → quand GenerateStoryJob se termine, les deux sont garantis finis
+    # → l'utilisateur peut lire ET cliquer "Lire" dès qu'il arrive sur la page
 
-    # Génère l'illustration via DALL-E 3 (ou fal.ai selon la config de ImageGeneratorService)
-    # On rescue StandardError pour ne pas bloquer la complétion de l'histoire si l'image échoue
+    # Thread 1 : génération audio TTS (OpenAI nova)
+    audio_thread = Thread.new do
+      # On instancie un nouveau job et on l'exécute directement (sans passer par la file)
+      GenerateAudioJob.new.perform(story.id)
+    rescue StandardError => e
+      Rails.logger.error("GenerateStoryJob — échec audio thread : #{e.message}")
+    end
+
+    # Thread 2 (thread principal) : prompt image + illustration
+    # On génère d'abord le prompt image via Groq (~3-5s), puis l'illustration (~30-60s)
     begin
+      story.reload  # S'assure que story.content est bien chargé depuis la base
+      image_scene = generator.generate_image_scene_prompt
+      story.update_column(:image_scene_prompt, image_scene) if image_scene.present?
+      Rails.logger.info("GenerateStoryJob — scène image générée : #{image_scene}")
+
       ImageGeneratorService.new(story).call
       Rails.logger.info("GenerateStoryJob — image générée pour story ##{story_id}")
     rescue StandardError => e
       Rails.logger.error("GenerateStoryJob — échec image pour story ##{story_id} : #{e.message}")
     end
+
+    # Attend que le thread audio soit terminé avant de clore le job
+    # (en pratique il est déjà fini car l'image prend plus longtemps)
+    audio_thread.join
 
     Rails.logger.info("GenerateStoryJob — histoire ##{story_id} générée avec succès")
   rescue ActiveRecord::RecordNotFound

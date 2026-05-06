@@ -96,24 +96,25 @@ class StoryGeneratorService
     has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé|brun/i) }
 
     # Sélectionne le style visuel pour le prompt image :
-    #   1. Si l'utilisateur a choisi un style → on l'applique (en tenant compte de la peau si Comics)
+    #   1. Si l'utilisateur a choisi un style → on l'applique
     #   2. Sinon → fallback automatique selon la couleur de peau du héros
+    # IMPORTANT : on n'inclut plus "Black protagonist" car cela écrase les traits
+    # physiques individuels du personnage (ex: cheveux blonds ignorés)
     style_ref = case @story.image_style
                 when "ghibli"
                   "Makoto Shinkai and Studio Ghibli cinematic animation style, soft watercolor pastels, dreamy atmosphere"
                 when "comics"
-                  # Comics + peau foncée → Spider-Verse est la référence la plus représentative
-                  has_dark_skin \
-                    ? "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors, Black protagonist" \
-                    : "Marvel Comics and Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors"
+                  # Spider-Verse pour tous les styles comics — description physique primer sur l'ethnicité
+                  "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors"
                 when "pixar"
                   "Pixar and Disney 3D animation style, warm cinematic lighting, highly detailed CGI, expressive characters"
                 when "watercolor"
                   "vintage children's book illustration style, soft watercolor textures, warm hand-painted look, storybook fairy tale"
                 else
-                  # Fallback automatique : Spider-Verse pour peau foncée, Ghibli sinon
+                  # Fallback : Spider-Verse pour peau foncée (style dynamique adapté), Ghibli sinon
+                  # On ne précise pas l'ethnicité ici — la description physique du héros s'en charge
                   has_dark_skin \
-                    ? "Spider-Man Into the Spider-Verse and modern Disney animation style, Black protagonist" \
+                    ? "Spider-Man Into the Spider-Verse and modern Disney animation style, bold outlines, vibrant saturated colors" \
                     : "Makoto Shinkai and Studio Ghibli cinematic animation style"
                 end
 
@@ -135,7 +136,7 @@ class StoryGeneratorService
             content: <<~PROMPT
               Write a COMPLETE image generation prompt for the most DRAMATIC and ACTION-PACKED scene of this story.
 
-              HERO PHYSICAL DESCRIPTION (MANDATORY — never change these):
+              HERO PHYSICAL DESCRIPTION (MANDATORY — copy these traits EXACTLY into your prompt, word for word):
               #{heroes_physical}
 
               STORY (read to find the most epic visual moment):
@@ -144,12 +145,14 @@ class StoryGeneratorService
               ---
 
               RULES:
-              1. Pick the single most visually explosive moment (climax, battle, chase, storm...)
-              2. If the hero PILOTS something (robot, spaceship, dragon...): show the vehicle/robot in EPIC BATTLE in the foreground, hero's face visible through cockpit — DO NOT show the child standing next to the robot
-              3. If the hero acts directly: show them in full dynamic action
-              4. STRICTLY include the exact physical traits: skin color, hair, eyes, accessories
-              5. Style: #{style_ref}, highly detailed, cinematic widescreen, dramatic lighting, motion blur, child-safe, no blood
-              6. End with: "vibrant colors, dramatic rim lighting, motion blur, cinematic composition"
+              1. START the prompt with the hero's exact physical description (skin, hair, eyes) — this is the most important part
+              2. Pick the single most visually explosive moment (climax, battle, chase, storm...)
+              3. If the hero PILOTS something (robot, spaceship, dragon...): show the vehicle/robot in EPIC BATTLE in the foreground, hero's face visible through cockpit — DO NOT show the child standing next to the robot
+              4. If the hero acts directly: show them in full dynamic action
+              5. STRICTLY include the exact physical traits: skin color, hair color, eye color — DO NOT change or omit any of them
+              6. ONLY add clothing/accessories explicitly mentioned in the story — DO NOT invent extra clothing items (no hoodie unless stated)
+              7. Style: #{style_ref}, highly detailed, cinematic widescreen, dramatic lighting, motion blur, child-safe, no blood
+              8. END the prompt by repeating the hero's hair color and eye color — example: "blonde hair, green eyes, vibrant colors, dramatic rim lighting, motion blur, cinematic composition"
 
               Write 80-120 words. ONLY the prompt, nothing else.
             PROMPT

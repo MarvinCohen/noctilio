@@ -31,40 +31,49 @@ class Badge < ApplicationRecord
   def self.check_and_award(user)
     total_stories = user.stories.completed.count
 
+    # Précharge tous les IDs de badges déjà obtenus en UNE seule requête SQL
+    # Évite le N+1 : sans ça, user.badges.include?(badge) fait 1 SELECT par badge vérifié
+    earned_badge_ids = user.user_badges.pluck(:badge_id)
+
     # Badge : Première histoire
-    award_if_not_earned(user, FIRST_STORY) if total_stories >= 1
+    award_if_not_earned(user, FIRST_STORY, earned_badge_ids) if total_stories >= 1
 
     # Badge : 5 histoires
-    award_if_not_earned(user, FIVE_STORIES) if total_stories >= 5
+    award_if_not_earned(user, FIVE_STORIES, earned_badge_ids) if total_stories >= 5
 
     # Badge : 10 histoires
-    award_if_not_earned(user, TEN_STORIES) if total_stories >= 10
+    award_if_not_earned(user, TEN_STORIES, earned_badge_ids) if total_stories >= 10
 
     # Badge : Hibou nocturne — histoire créée entre 21h et 6h
-    if user.stories.completed.any? { |s| s.created_at.hour >= 21 || s.created_at.hour < 6 }
-      award_if_not_earned(user, NIGHT_OWL)
+    # Utilise SQL EXTRACT pour filtrer en base au lieu de charger tous les objets en Ruby
+    if user.stories.completed
+           .where("EXTRACT(HOUR FROM stories.created_at) >= 21 OR EXTRACT(HOUR FROM stories.created_at) < 6")
+           .exists?
+      award_if_not_earned(user, NIGHT_OWL, earned_badge_ids)
     end
 
     # Badge : Cœur généreux — valeur "kindness" choisie 3 fois
     if user.stories.where(educational_value: "kindness").count >= 3
-      award_if_not_earned(user, KIND_HEART)
+      award_if_not_earned(user, KIND_HEART, earned_badge_ids)
     end
 
     # Badge : Grand lecteur — avoir 10 histoires complétées sauvegardées
     # Mesure l'engagement à long terme : l'enfant a relu et gardé 10 histoires
     if user.stories.completed.where(saved: true).count >= 10
-      award_if_not_earned(user, BOOKWORM)
+      award_if_not_earned(user, BOOKWORM, earned_badge_ids)
     end
   end
 
   private
 
   # Attribue un badge à l'utilisateur s'il ne l'a pas encore
-  # Trouve le badge par condition_key, puis crée l'association
-  def self.award_if_not_earned(user, condition_key)
+  # earned_badge_ids : liste des IDs déjà chargés en mémoire — évite un SELECT supplémentaire
+  def self.award_if_not_earned(user, condition_key, earned_badge_ids)
     badge = find_by(condition_key: condition_key)
     return unless badge
-    return if user.badges.include?(badge)
+
+    # Vérifie en mémoire (pas en base) si le badge est déjà obtenu
+    return if earned_badge_ids.include?(badge.id)
 
     user.user_badges.create!(badge: badge, earned_at: Time.current)
   end

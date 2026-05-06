@@ -18,6 +18,8 @@ export default class extends Controller {
 
   // connect() est appelé automatiquement par Stimulus quand le controller est attaché au DOM
   connect() {
+    // Compteur de tentatives — évite de poller indéfiniment si l'image échoue
+    this.attempts = 0
     // Lance le polling immédiatement
     this.startPolling()
   }
@@ -38,6 +40,16 @@ export default class extends Controller {
   // checkImage() — requête JSON vers /stories/:id/status
   // ============================================================
   async checkImage() {
+    // Limite à 40 tentatives (40 × 3s = 2 minutes max)
+    // Si l'image n'est pas là après 2 minutes, on arrête le spinner
+    this.attempts++
+    if (this.attempts > 40) {
+      this.stopPolling()
+      const skeleton = this.element.querySelector(".story-illustration-skeleton")
+      if (skeleton) skeleton.style.display = "none"
+      return
+    }
+
     try {
       const response = await fetch(this.statusUrlValue, {
         headers: { "Accept": "application/json" }
