@@ -20,9 +20,9 @@ Rails.application.routes.draw do
   post "/waitlist", to: "waitlist#create", as: :waitlist
 
   # ============================================================
-  # Dashboard principal — page d'accueil après connexion
+  # Home — page d'accueil après connexion (anciennement /dashboard)
   # ============================================================
-  get "/dashboard",   to: "dashboard#index",     as: :dashboard
+  get "/home",   to: "dashboard#index",     as: :dashboard
 
   # ============================================================
   # Enfants — CRUD complet pour gérer les profils enfants
