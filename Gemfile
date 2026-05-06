@@ -55,7 +55,7 @@ gem "simple_form", "~> 5.4"
 gem "sassc-rails"
 
 # Intelligence artificielle — génération d'histoires et d'images
-gem "ruby-openai", "~> 7.0"
+gem "ruby-openai", "~> 8.3"
 
 # Stockage cloud des images générées (ActiveStorage)
 # Nécessaire sur Heroku car le filesystem est éphémère
