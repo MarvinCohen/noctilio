@@ -6,8 +6,11 @@
 
 <%# Notice — confirmation (connexion réussie, création OK, etc.) %>
 <%# alert-info → bordure dorée dans la DA cosmique %>
+<%# data-controller="flash-autohide" : ferme automatiquement après 4s %>
 <% if notice %>
-  <div class="alert alert-info alert-dismissible fade show" role="alert">
+  <div class="alert alert-info alert-dismissible fade show"
+       role="alert"
+       data-controller="flash-autohide">
     <%= notice %>
     <%# Bouton de fermeture Bootstrap — coloré en doré via _alert.scss %>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
@@ -16,8 +19,11 @@
 
 <%# Alert — avertissement ou erreur (mauvais mot de passe, quota, etc.) %>
 <%# alert-warning → bordure rouge dans la DA cosmique %>
+<%# data-controller="flash-autohide" : ferme automatiquement après 4s %>
 <% if alert %>
-  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <div class="alert alert-warning alert-dismissible fade show"
+       role="alert"
+       data-controller="flash-autohide">
     <%= alert %>
     <%# Bouton de fermeture Bootstrap — coloré en rouge via _alert.scss %>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
