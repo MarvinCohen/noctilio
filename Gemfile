@@ -64,7 +64,7 @@ gem "activestorage-cloudinary-service"
 
 # Abonnements Stripe — gère les paiements et plans premium
 gem "pay", "~> 7.0"
-gem "stripe", "~> 12.0"
+gem "stripe", "~> 19.1"
 
 # Protection contre le brute-force et l'abus de requêtes
 # Bloque les IP qui spamment la connexion ou les endpoints coûteux (OpenAI)
