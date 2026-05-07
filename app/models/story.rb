@@ -34,7 +34,15 @@ class Story < ApplicationRecord
   # ============================================================
   # Validations
   # ============================================================
-  # world_theme est optionnel — la description libre du parent remplace l'univers prédéfini
+  # Vérifie que world_theme est une valeur connue — empêche un attaquant d'envoyer
+  # une valeur arbitraire injectée dans les prompts IA via une requête HTTP forgée
+  # allow_nil: true car le mode "description libre" n'a pas d'univers prédéfini
+  VALID_WORLD_THEMES = %w[space dinos princesses pirates animals].freeze
+  validates :world_theme, inclusion: {
+    in: VALID_WORLD_THEMES,
+    message: "n'est pas un univers reconnu"
+  }, allow_nil: true
+
   validates :child_id,     presence: true
   validates :status,       presence: true
   validates :duration_minutes, inclusion: { in: [5, 10, 15] }, allow_nil: true
@@ -171,14 +179,17 @@ class Story < ApplicationRecord
 
   # Remonte la chaîne jusqu'au tout premier épisode de la saga
   # Utile pour regrouper les épisodes dans la bibliothèque
+  # @memoized — évite de refaire la récursion si appelée plusieurs fois sur le même objet
+  # Sur une saga de 5 épisodes, sans memoïzation = 5 SELECT en cascade par appel
   def root_story
-    sequel? ? parent_story.root_story : self
+    @root_story ||= sequel? ? parent_story.root_story : self
   end
 
   # Calcule le numéro d'épisode en remontant la chaîne des parents
   # Épisode 1 = histoire sans parent, Épisode 2 = suite directe, etc.
+  # @memoized — même raison que root_story
   def episode_number
-    sequel? ? parent_story.episode_number + 1 : 1
+    @episode_number ||= sequel? ? parent_story.episode_number + 1 : 1
   end
 
   # Retourne tous les épisodes de la saga dans l'ordre chronologique

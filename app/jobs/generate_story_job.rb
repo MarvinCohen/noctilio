@@ -64,27 +64,23 @@ class GenerateStoryJob < ApplicationJob
     # 7. Vérifier si l'utilisateur mérite de nouveaux badges (texte disponible = histoire comptée)
     Badge.check_and_award(story.child.user)
 
-    # 8. Lancer l'audio ET l'image EN PARALLÈLE dans deux threads Ruby distincts.
+    # 8. Lancer l'audio via un job séparé, puis générer l'image dans ce job.
     #
-    # Pourquoi des threads et non perform_later ?
-    # Avec perform_later, le job audio est mis en file d'attente — il peut démarrer
-    # immédiatement sur un thread libre de Solid Queue, mais rien ne le garantit.
-    # Avec Thread.new, le travail commence IMMÉDIATEMENT dans ce processus.
-    #
-    # Les deux tâches (audio ~25s, image ~35-60s) tournent en parallèle :
-    # → l'audio sera prêt AVANT que l'image soit terminée
-    # → quand GenerateStoryJob se termine, les deux sont garantis finis
-    # → l'utilisateur peut lire ET cliquer "Lire" dès qu'il arrive sur la page
+    # Pourquoi perform_later plutôt que Thread.new ?
+    # Thread.new dans un background job est dangereux :
+    #   — partage la connexion Active Record du job parent (non thread-safe)
+    #   — les exceptions dans le thread sont silencieusement avalées
+    #   — crée des fuites mémoire si le thread ne se termine pas proprement
+    # perform_later délègue à Solid Queue qui gère les connexions et les erreurs
+    # correctement. L'audio (~25s) et l'image (~35-60s) peuvent se chevaucher
+    # si Solid Queue a plusieurs workers configurés.
 
-    # Thread 1 : génération audio TTS (OpenAI nova)
-    audio_thread = Thread.new do
-      # On instancie un nouveau job et on l'exécute directement (sans passer par la file)
-      GenerateAudioJob.new.perform(story.id)
-    rescue StandardError => e
-      Rails.logger.error("GenerateStoryJob — échec audio thread : #{e.message}")
-    end
+    # Lance le job audio en arrière-plan via Solid Queue
+    # Il s'exécutera dès qu'un worker sera disponible
+    GenerateAudioJob.perform_later(story.id)
+    Rails.logger.info("GenerateStoryJob — job audio lancé pour story ##{story_id}")
 
-    # Thread 2 (thread principal) : prompt image + illustration
+    # Génère l'image dans ce job (thread principal)
     # On génère d'abord le prompt image via Groq (~3-5s), puis l'illustration (~30-60s)
     begin
       story.reload  # S'assure que story.content est bien chargé depuis la base
@@ -97,10 +93,6 @@ class GenerateStoryJob < ApplicationJob
     rescue StandardError => e
       Rails.logger.error("GenerateStoryJob — échec image pour story ##{story_id} : #{e.message}")
     end
-
-    # Attend que le thread audio soit terminé avant de clore le job
-    # (en pratique il est déjà fini car l'image prend plus longtemps)
-    audio_thread.join
 
     Rails.logger.info("GenerateStoryJob — histoire ##{story_id} générée avec succès")
   rescue ActiveRecord::RecordNotFound

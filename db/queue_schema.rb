@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_20_143800) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_074045) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -300,12 +300,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_20_143800) do
     t.integer "duration_minutes", default: 5
     t.string "educational_value"
     t.integer "extra_child_ids", default: [], array: true
-    t.text "image_prompt"
     t.text "image_scene_prompt"
     t.string "image_style"
     t.boolean "interactive", default: false, null: false
     t.integer "parent_story_id"
-    t.string "reading_level", default: "beginner"
     t.boolean "saved", default: false, null: false
     t.integer "status", default: 0, null: false
     t.string "title"

@@ -19,7 +19,6 @@ export default class extends Controller {
 
   connect() {
     // Démarre le polling avec un délai initial de 2 secondes
-    console.log("StoryStatus: démarrage du polling...")
     // Délai courant en ms — commence à 2s, double à chaque tentative (max 16s)
     this.currentDelay = 2000
     this.scheduleNextPoll()
@@ -73,12 +72,10 @@ export default class extends Controller {
       }
 
       const data = await response.json()
-      console.log("StoryStatus:", data.status)
 
       // Si l'histoire est terminée, on arrête le polling et on redirige
       if (data.completed) {
         this.stopPolling()
-        console.log("StoryStatus: histoire prête ! Redirection...")
         window.location.href = this.redirectValue
         return
       }
@@ -93,7 +90,6 @@ export default class extends Controller {
       // Histoire encore en cours : augmente le délai et planifie le prochain poll
       // Backoff exponentiel : 2s → 4s → 8s → 16s max
       this.increaseDelay()
-      console.log(`StoryStatus: ${data.status} — prochain poll dans ${this.currentDelay / 1000}s`)
       this.scheduleNextPoll()
 
     } catch (error) {

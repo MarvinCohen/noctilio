@@ -7,10 +7,16 @@ class DashboardController < ApplicationController
   # GET /dashboard — page d'accueil de l'utilisateur connecté
   def index
     # Dernières histoires terminées (max 5 pour la section "Reprendre")
-    @recent_stories = current_user.stories.completed_recent.limit(5)
+    # includes(:child) précharge l'enfant associé en une requête — évite le N+1
+    # quand la vue affiche le nom ou l'avatar de l'enfant pour chaque histoire
+    @recent_stories = current_user.stories.completed_recent.includes(:child).limit(5)
 
-    # Histoires en cours de génération (affiche une alerte si en cours)
-    @pending_stories = current_user.stories.where(status: [:pending, :generating])
+    # Histoires en cours de génération — bornées à 10 pour éviter une requête non bornée
+    # includes(:child) pour les mêmes raisons que @recent_stories
+    @pending_stories = current_user.stories
+                                   .where(status: [:pending, :generating])
+                                   .includes(:child)
+                                   .limit(10)
 
     # Profils enfants de l'utilisateur
     @children = current_user.children.ordered

@@ -107,14 +107,36 @@ class StoriesController < ApplicationController
       return
     end
 
-    # Enregistre le choix
-    pending_choice.update!(chosen_option: chosen)
+    # with_lock pose un verrou en base (SELECT FOR UPDATE) sur ce choix
+    # Garantit qu'un seul thread/processus peut modifier ce choix à la fois
+    # Évite la race condition si l'utilisateur double-clique ou envoie 2 requêtes en parallèle
+    already_chosen = false
+    pending_choice.with_lock do
+      # Recharge le choix depuis la base DANS le verrou
+      # Si chosen_option est déjà rempli, quelqu'un nous a devancé — on sort
+      if pending_choice.chosen_option.present?
+        already_chosen = true
+        next
+      end
 
-    # Marque l'histoire comme "en génération" pour la suite
-    @story.update!(status: :generating)
+      # Enregistre le choix de façon atomique (dans le verrou)
+      pending_choice.update!(chosen_option: chosen)
 
-    # Lance le job pour générer la suite de l'histoire
-    GenerateStoryContinuationJob.perform_later(@story.id, pending_choice.id)
+      # Marque l'histoire comme "en génération" pour la suite
+      @story.update!(status: :generating)
+
+      # Lance le job pour générer la suite de l'histoire
+      GenerateStoryContinuationJob.perform_later(@story.id, pending_choice.id)
+    end
+
+    # Si le choix était déjà fait (double requête), on redirige sans relancer le job
+    if already_chosen
+      respond_to do |format|
+        format.json { render json: { success: true, already_chosen: true } }
+        format.html { redirect_to story_path(@story) }
+      end
+      return
+    end
 
     # Répond en JSON (requête AJAX depuis story_choice_controller.js)
     # ou en HTML (fallback si JavaScript désactivé)
@@ -300,7 +322,15 @@ class StoriesController < ApplicationController
   # Charge l'histoire depuis les histoires de l'utilisateur connecté
   # (via ses enfants) — évite qu'un utilisateur accède aux histoires d'un autre
   def set_story
-    @story = current_user.stories.find(params[:id])
+    # includes précharge toutes les associations utilisées dans show/choose/status
+    # en une seule requête JOIN — évite les N+1 :
+    #   :story_choices  → affichage des choix interactifs
+    #   :parent_story   → navigation saga (épisode précédent)
+    #   :sequel_stories → navigation saga (épisode suivant)
+    #   child: :user    → données de l'enfant + son parent pour les badges
+    @story = current_user.stories
+                         .includes(:story_choices, :parent_story, :sequel_stories, child: :user)
+                         .find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to stories_path, alert: "Histoire introuvable."
   end

@@ -21,9 +21,10 @@ class UserTest < ActiveSupport::TestCase
     # Act
     user.valid?
 
-    # Assert
-    assert_includes user.errors[:first_name], "can't be blank",
-                    "first_name devrait être obligatoire"
+    # Assert — on vérifie qu'il y a au moins une erreur sur first_name
+    # On évite de vérifier le libellé exact du message car il dépend de la locale
+    # (l'app est en français mais les messages Rails peuvent varier)
+    assert user.errors[:first_name].any?, "first_name devrait être obligatoire"
   end
 
   # Vérifie qu'un utilisateur sans nom de famille est invalide
@@ -38,7 +39,8 @@ class UserTest < ActiveSupport::TestCase
     user.valid?
 
     # Assert
-    assert_includes user.errors[:last_name], "can't be blank"
+    # Même approche : on vérifie la présence d'une erreur, pas le libellé traduit
+    assert user.errors[:last_name].any?, "last_name devrait être obligatoire"
   end
 
   # Vérifie qu'un prénom trop long est rejeté

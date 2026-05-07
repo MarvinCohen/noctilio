@@ -70,26 +70,10 @@ class StoryGeneratorService
   # pilote de robot, cavalier, héros direct, groupe, etc.
   # Retourne un prompt en anglais (80-120 mots) prêt à envoyer à FLUX/DALL-E
   def generate_image_scene_prompt
-    # Construit la description physique de chaque héros pour l'injecter dans le prompt
-    heroes_physical = @story.all_children.map do |child|
-      parts = ["#{child.name}, #{child.age} year old #{child.gender == 'boy' ? 'boy' : 'girl'}"]
-      parts << "blonde hair"              if child.hair_color&.match?(/blond/i)
-      parts << "#{child.hair_color} hair" if child.hair_color.present? && !child.hair_color.match?(/blond/i)
-      parts << "green eyes"               if child.eye_color&.match?(/vert/i)
-      parts << "#{child.eye_color} eyes"  if child.eye_color.present? && !child.eye_color.match?(/vert/i)
-      if child.skin_tone.present?
-        parts << case child.skin_tone.downcase
-                 when /éb[eè]ne|noir|très.?foncé/ then "very dark black ebony skin"
-                 when /foncé|brun/                then "dark brown skin"
-                 when /métis|caramel|doré/        then "warm golden brown skin"
-                 when /olive|mat/                 then "olive skin"
-                 when /clair|blanc/               then "fair light skin"
-                 else "#{child.skin_tone} skin"
-                 end
-      end
-      parts << child.child_description if child.child_description.present?
-      parts.join(", ")
-    end.join(" | ")
+    # Utilise Child#image_description (méthode du modèle) pour construire la description
+    # physique de chaque héros — évite la duplication de la logique de traduction
+    # (couleurs de peau, yeux, cheveux) qui existait en double ici et dans child.rb
+    heroes_physical = @story.all_children.map(&:image_description).join(" | ")
 
     # Détecte si un héros a la peau foncée — utilisé comme signal de fallback
     # pour garantir une bonne représentation quand aucun style n'est choisi

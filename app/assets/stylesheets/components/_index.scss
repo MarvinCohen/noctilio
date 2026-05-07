@@ -3,5 +3,7 @@
 @import "avatar";
 @import "form_legend_clear";
 @import "navbar";
-@import "sidebar"; // Sidebar navigation pour les utilisateurs connectés
-@import "footer";  // Footer global affiché sur toutes les pages
+@import "sidebar";     // Sidebar navigation pour les utilisateurs connectés
+@import "footer";      // Footer global affiché sur toutes les pages
+@import "story_show";  // Styles de la page de lecture d'une histoire (extraits du inline)
+@import "story_new";   // Styles du formulaire de création d'histoire (extraits du inline)

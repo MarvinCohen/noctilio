@@ -65,7 +65,23 @@ class Rack::Attack
   end
 
   # ──────────────────────────────────────────────────────────
-  # 5. Spam sur la liste d'attente
+  # 5. Spam sur les endpoints IA secondaires (audio + alternative)
+  # ──────────────────────────────────────────────────────────
+  # Ces deux endpoints appellent des APIs payantes (OpenAI TTS et Groq).
+  # On les limite séparément de la création d'histoire car ils peuvent
+  # être appelés plusieurs fois sur la même histoire.
+  # audio : 20 appels / heure par IP (environ 1 audio toutes les 3min)
+  # explore_alternative : 15 appels / heure par IP
+  throttle("audio/ip", limit: 20, period: 1.hour) do |req|
+    req.ip if req.path.end_with?("/audio") && req.post?
+  end
+
+  throttle("explore_alternative/ip", limit: 15, period: 1.hour) do |req|
+    req.ip if req.path.end_with?("/explore_alternative") && req.post?
+  end
+
+  # ──────────────────────────────────────────────────────────
+  # 6. Spam sur la liste d'attente
   # ──────────────────────────────────────────────────────────
   # Évite qu'un bot remplisse la waitlist avec de faux emails.
   throttle("waitlist/ip", limit: 5, period: 1.hour) do |req|

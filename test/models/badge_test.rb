@@ -22,7 +22,7 @@ class BadgeTest < ActiveSupport::TestCase
     badge.valid?
 
     # Assert
-    assert_includes badge.errors[:name], "can't be blank"
+    assert badge.errors[:name].any?, "name devrait être obligatoire"
   end
 
   # Vérifie qu'un badge sans condition_key est invalide
@@ -36,7 +36,7 @@ class BadgeTest < ActiveSupport::TestCase
     badge.valid?
 
     # Assert
-    assert_includes badge.errors[:condition_key], "can't be blank"
+    assert badge.errors[:condition_key].any?, "condition_key devrait être obligatoire"
   end
 
   # Vérifie que deux badges ne peuvent pas avoir la même condition_key

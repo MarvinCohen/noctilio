@@ -35,41 +35,47 @@ class Badge < ApplicationRecord
     # Évite le N+1 : sans ça, user.badges.include?(badge) fait 1 SELECT par badge vérifié
     earned_badge_ids = user.user_badges.pluck(:badge_id)
 
+    # Précharge TOUS les badges en une seule requête SQL et les index par condition_key
+    # Permet d'accéder à chaque badge en O(1) sans nouveau SELECT dans award_if_not_earned
+    all_badges = Badge.all.index_by(&:condition_key)
+
     # Badge : Première histoire
-    award_if_not_earned(user, FIRST_STORY, earned_badge_ids) if total_stories >= 1
+    award_if_not_earned(user, FIRST_STORY, earned_badge_ids, all_badges) if total_stories >= 1
 
     # Badge : 5 histoires
-    award_if_not_earned(user, FIVE_STORIES, earned_badge_ids) if total_stories >= 5
+    award_if_not_earned(user, FIVE_STORIES, earned_badge_ids, all_badges) if total_stories >= 5
 
     # Badge : 10 histoires
-    award_if_not_earned(user, TEN_STORIES, earned_badge_ids) if total_stories >= 10
+    award_if_not_earned(user, TEN_STORIES, earned_badge_ids, all_badges) if total_stories >= 10
 
     # Badge : Hibou nocturne — histoire créée entre 21h et 6h
     # Utilise SQL EXTRACT pour filtrer en base au lieu de charger tous les objets en Ruby
     if user.stories.completed
            .where("EXTRACT(HOUR FROM stories.created_at) >= 21 OR EXTRACT(HOUR FROM stories.created_at) < 6")
            .exists?
-      award_if_not_earned(user, NIGHT_OWL, earned_badge_ids)
+      award_if_not_earned(user, NIGHT_OWL, earned_badge_ids, all_badges)
     end
 
     # Badge : Cœur généreux — valeur "kindness" choisie 3 fois
     if user.stories.where(educational_value: "kindness").count >= 3
-      award_if_not_earned(user, KIND_HEART, earned_badge_ids)
+      award_if_not_earned(user, KIND_HEART, earned_badge_ids, all_badges)
     end
 
     # Badge : Grand lecteur — avoir 10 histoires complétées sauvegardées
     # Mesure l'engagement à long terme : l'enfant a relu et gardé 10 histoires
     if user.stories.completed.where(saved: true).count >= 10
-      award_if_not_earned(user, BOOKWORM, earned_badge_ids)
+      award_if_not_earned(user, BOOKWORM, earned_badge_ids, all_badges)
     end
   end
 
   private
 
   # Attribue un badge à l'utilisateur s'il ne l'a pas encore
-  # earned_badge_ids : liste des IDs déjà chargés en mémoire — évite un SELECT supplémentaire
-  def self.award_if_not_earned(user, condition_key, earned_badge_ids)
-    badge = find_by(condition_key: condition_key)
+  # all_badges       : Hash { condition_key => badge } préchargé — zéro requête SQL ici
+  # earned_badge_ids : Array d'IDs préchargé — vérification en mémoire O(1)
+  def self.award_if_not_earned(user, condition_key, earned_badge_ids, all_badges)
+    # Accès O(1) dans le Hash — pas de SELECT en base
+    badge = all_badges[condition_key]
     return unless badge
 
     # Vérifie en mémoire (pas en base) si le badge est déjà obtenu
