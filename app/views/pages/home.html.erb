@@ -115,14 +115,12 @@
     letter-spacing: 0.15em;
     text-transform: uppercase;
   }
-  /* Mascotte dans la nav — petite, ronde, légèrement agrandie au survol */
+  /* Mascotte dans la nav — petite, nette à toutes les résolutions */
   .nav-mascot {
-    width: 32px;
-    height: 32px;
+    width: 48px;
+    height: 48px;
     object-fit: contain;
-    transition: transform 0.3s ease;
   }
-  .nav-logo:hover .nav-mascot { transform: rotate(-10deg) scale(1.1); }
   .nav-actions { display: flex; align-items: center; gap: 1rem; }
   .nav-badge {
     font-size: 0.7rem;
@@ -567,7 +565,7 @@
 <%# NAV %>
 <nav>
   <div class="nav-logo">
-    <%# Mascotte hibou — SVG pour la netteté à toutes les tailles %>
+    <%# Mascotte hibou — SVG pour la netteté à toutes les résolutions %>
     <%= image_tag "mascot.svg", class: "nav-mascot", alt: "Noctilio" %>
     Noctilio
   </div>
