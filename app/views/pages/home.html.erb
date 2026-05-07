@@ -105,6 +105,9 @@
     background: linear-gradient(to bottom, rgba(11,14,26,0.9), transparent);
   }
   .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.3rem;
     font-weight: 400;
@@ -112,6 +115,14 @@
     letter-spacing: 0.15em;
     text-transform: uppercase;
   }
+  /* Mascotte dans la nav — petite, ronde, légèrement agrandie au survol */
+  .nav-mascot {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+  .nav-logo:hover .nav-mascot { transform: rotate(-10deg) scale(1.1); }
   .nav-actions { display: flex; align-items: center; gap: 1rem; }
   .nav-badge {
     font-size: 0.7rem;
@@ -555,7 +566,11 @@
 
 <%# NAV %>
 <nav>
-  <div class="nav-logo">Noctilio</div>
+  <div class="nav-logo">
+    <%# Mascotte hibou — SVG pour la netteté à toutes les tailles %>
+    <%= image_tag "mascot.svg", class: "nav-mascot", alt: "Noctilio" %>
+    Noctilio
+  </div>
   <div class="nav-actions">
     <div class="nav-badge">Bientôt disponible</div>
   </div>
@@ -769,24 +784,33 @@
       x:     e.clientX,
       y:     e.clientY,
       r:     Math.random() * 2 + 1,   // rayon aléatoire entre 1 et 3px
-      alpha: 1                         // opacité de départ : pleine
+      alpha: 0.7                       // opacité de départ
     });
     // On garde au maximum 40 particules pour ne pas surcharger
     if (trailParticles.length > 40) trailParticles.shift();
   });
 
-  // Dessine le sillage à chaque frame — les particules les plus anciennes sont plus petites et transparentes
+  // Dessine le sillage à chaque frame
+  // Quand la souris s'arrête, chaque particule perd de l'opacité progressivement
+  // jusqu'à disparaître complètement — le sillage s'efface naturellement
   function drawTrail() {
     trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+
+    // Diminue l'opacité de chaque particule à chaque frame (vitesse d'estompage)
+    // 0.03 = disparition en ~23 frames (~380ms à 60fps) — ajuste pour accélérer/ralentir
+    trailParticles.forEach(p => { p.alpha -= 0.03; });
+
+    // Supprime les particules dont l'opacité est tombée à zéro ou en dessous
+    trailParticles = trailParticles.filter(p => p.alpha > 0);
+
     trailParticles.forEach((p, i) => {
-      // Plus la particule est ancienne (petit index), plus elle est transparente et petite
-      const progress = i / trailParticles.length;
-      const alpha    = progress * 0.7;
+      // Plus la particule est ancienne (petit index), plus elle est petite
+      const progress = i / Math.max(trailParticles.length, 1);
       const radius   = p.r * progress;
 
       trailCtx.beginPath();
       trailCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-      trailCtx.fillStyle = `rgba(240, 201, 122, ${alpha})`;
+      trailCtx.fillStyle = `rgba(240, 201, 122, ${p.alpha})`;
       trailCtx.fill();
     });
     requestAnimationFrame(drawTrail);
