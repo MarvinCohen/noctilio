@@ -683,7 +683,7 @@
 <%# FOOTER — partial partagé avec le reste du site %>
 <%= render 'shared/footer' %>
 
-<script>
+<script nonce="<%= content_security_policy_nonce %>">
   // Encapsulé dans load pour garantir que tout le DOM est prêt
   window.addEventListener('load', function() {
     try {
