@@ -45,6 +45,8 @@ gem "image_processing", "~> 1.2"
 gem "sprockets-rails"
 gem "bootstrap", "~> 5.3"
 gem "devise", "~> 5.0"
+# Traductions françaises pour les helpers Rails (time_ago_in_words, etc.)
+gem "rails-i18n", "~> 8.0"
 # Convertit le markdown (généré par l'IA) en HTML propre côté serveur
 # Plus fiable que parser le markdown manuellement en JavaScript
 gem "redcarpet", "~> 3.6"
