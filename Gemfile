@@ -48,7 +48,7 @@ gem "devise", "~> 5.0"
 # Connexion via Google OAuth2 — permet aux utilisateurs de s'inscrire/connecter avec leur compte Google
 gem "omniauth-google-oauth2", "~> 1.1"
 # Protection CSRF pour OmniAuth — obligatoire avec Rails (bloque les attaques de type CSRF sur le callback OAuth)
-gem "omniauth-rails_csrf_protection", "~> 1.0"
+gem "omniauth-rails_csrf_protection", "~> 2.0"
 # Traductions françaises pour les helpers Rails (time_ago_in_words, etc.)
 gem "rails-i18n", "~> 8.0"
 # Convertit le markdown (généré par l'IA) en HTML propre côté serveur
