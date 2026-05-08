@@ -88,7 +88,8 @@
 
       <% else %>
         <%# Navigation publique (non connecté) %>
-        <ul class="navbar-nav ms-auto gap-2">
+        <%# align-items-center aligne verticalement le lien et le bouton sur la même ligne %>
+        <ul class="navbar-nav ms-auto gap-2 align-items-center">
           <li class="nav-item">
             <%= link_to "Se connecter", new_user_session_path, class: "nav-link" %>
           </li>

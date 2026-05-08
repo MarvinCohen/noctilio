@@ -3,7 +3,10 @@ class User < ApplicationRecord
   # Devise — gère l'authentification (connexion, mot de passe...)
   # ============================================================
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable,
+         # omniauthable permet à Devise de gérer les connexions via fournisseurs externes
+         # providers: liste des fournisseurs autorisés (on peut en ajouter d'autres plus tard)
+         :omniauthable, omniauth_providers: [:google_oauth2]
 
   # ============================================================
   # Pay — gère l'abonnement Stripe
@@ -86,6 +89,30 @@ class User < ApplicationRecord
   # Règle : 100 XP par histoire terminée + 50 XP par badge obtenu
   def xp_points
     (stories.completed.count * 100) + (user_badges.count * 50)
+  end
+
+  # ============================================================
+  # Méthode de classe — connexion / création via Google OAuth
+  # ============================================================
+  # Appelée par OmniauthCallbacksController après le retour de Google.
+  # auth est le hash OmniAuth renvoyé par Google, qui contient :
+  #   auth.provider   → "google_oauth2"
+  #   auth.uid        → identifiant unique Google de l'utilisateur
+  #   auth.info.email → email Google
+  #   auth.info.first_name / auth.info.last_name → prénom/nom
+  def self.from_omniauth(auth)
+    # find_or_create_by : cherche un utilisateur avec ce provider + uid
+    # Si trouvé → on le retourne, sinon → on en crée un nouveau
+    # Le bloc `do |user|` n'est exécuté QUE lors de la CRÉATION
+    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
+      user.email      = auth.info.email
+      user.first_name = auth.info.first_name.presence || auth.info.email.split("@").first
+      user.last_name  = auth.info.last_name.presence  || "-"
+      # password_confirmation n'est pas nécessaire ici car on n'utilise pas de mot de passe
+      # skip_confirmation! est inutile avec :validatable seul (Devise confirmable non activé)
+      # On génère un mot de passe aléatoire fort — l'utilisateur Google n'en aura jamais besoin
+      user.password = Devise.friendly_token[0, 20]
+    end
   end
 
   private

@@ -69,35 +69,13 @@
     </p>
 
     <% if @children.empty? %>
-      <%# ── Onboarding — aucun héros créé ── %>
-      <%# Le nouvel utilisateur doit d'abord créer un profil enfant %>
-      <div class="db-onboarding">
-        <div class="db-onboarding__steps">
-          <%# Étape 1 — active %>
-          <div class="db-onboarding__step db-onboarding__step--active">
-            <span class="db-onboarding__num">1</span>
-            <span class="db-onboarding__label">Créer un héros</span>
-          </div>
-          <div class="db-onboarding__line"></div>
-          <%# Étape 2 — à venir %>
-          <div class="db-onboarding__step">
-            <span class="db-onboarding__num">2</span>
-            <span class="db-onboarding__label">Générer une histoire</span>
-          </div>
-          <div class="db-onboarding__line"></div>
-          <%# Étape 3 — à venir %>
-          <div class="db-onboarding__step">
-            <span class="db-onboarding__num">3</span>
-            <span class="db-onboarding__label">Bonne nuit ✦</span>
-          </div>
-        </div>
-        <p class="db-onboarding__hint">
-          Commence par créer le profil de ton héros — l'IA s'en souviendra à chaque histoire.
-        </p>
-        <%= link_to new_child_path, class: "db-cta-btn" do %>
-          <span class="db-cta-star">✦</span> Créer mon héros
-        <% end %>
-      </div>
+      <%# Aucun héros créé — invite à créer le premier profil enfant %>
+      <p class="db-onboarding__hint">
+        Commence par créer le profil de ton héros — l'IA s'en souviendra à chaque histoire.
+      </p>
+      <%= link_to new_child_path, class: "db-cta-btn" do %>
+        <span class="db-cta-star">✦</span> Créer mon héros
+      <% end %>
 
     <% else %>
       <%# CTA normal — pill doré, même style que landing %>

@@ -24,7 +24,8 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
+  # Expéditeur affiché dans les emails Devise (réinitialisation mot de passe, confirmation, etc.)
+  config.mailer_sender = 'Noctilio <contact@noctilio-app.fr>'
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
@@ -272,9 +273,18 @@ Devise.setup do |config|
   config.sign_out_via = :delete
 
   # ==> OmniAuth
-  # Add a new OmniAuth provider. Check the wiki for more information on setting
-  # up on your models and hooks.
-  # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
+  # Configuration du provider Google OAuth2
+  # Les credentials sont stockés dans les variables d'environnement (jamais en dur dans le code)
+  # Configuration Google OAuth2 — uniquement si les variables sont présentes
+  # Sans ce guard, OmniAuth plante au boot si GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET
+  # sont absents (ex: premier déploiement Railway avant ajout des variables)
+  if ENV["GOOGLE_CLIENT_ID"].present? && ENV["GOOGLE_CLIENT_SECRET"].present?
+    config.omniauth :google_oauth2,
+      ENV["GOOGLE_CLIENT_ID"],
+      ENV["GOOGLE_CLIENT_SECRET"],
+      # scope : données demandées à Google (email + profil de base)
+      scope: "email,profile"
+  end
 
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or

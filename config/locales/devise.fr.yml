@@ -13,6 +13,11 @@ fr:
     confirmations:
       send_instructions: "Vous allez recevoir un email avec les instructions de confirmation dans quelques minutes."
       confirmed: "Votre compte a bien été confirmé. Vous êtes maintenant connecté."
+    # Messages pour la connexion via OAuth (Google, etc.)
+    omniauth_callbacks:
+      # %{kind} est remplacé par "Google"
+      success: "Connecté avec succès via %{kind}."
+      failure: "Impossible de vous connecter via %{kind} : %{reason}"
     failure:
       invalid: "Email ou mot de passe incorrect."
       not_found_in_database: "Email ou mot de passe incorrect."

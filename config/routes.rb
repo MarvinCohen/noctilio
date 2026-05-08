@@ -5,7 +5,9 @@ Rails.application.routes.draw do
   # controllers: indique à Devise d'utiliser notre controller personnalisé
   # pour les inscriptions (qui autorise first_name et last_name)
   devise_for :users, controllers: {
-    registrations: "users/registrations"
+    registrations:      "users/registrations",
+    # omniauth_callbacks : notre controller qui gère le retour de Google
+    omniauth_callbacks: "users/omniauth_callbacks"
   }
 
   # ============================================================

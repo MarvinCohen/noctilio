@@ -73,16 +73,16 @@ Rails.application.configure do
   # Remonte les erreurs SMTP en production pour faciliter le debug
   config.action_mailer.raise_delivery_errors = true
 
-  # Config SMTP Zimbra OVH — les identifiants sont dans les variables d'environnement Heroku
-  # Pour les définir : heroku config:set SMTP_PASSWORD="..." --app noctilio
+  # Config SMTP OVH Zimbra
+  # Port 465 + tls:true (SSL direct) — le port 587 est bloqué par Railway
   config.action_mailer.smtp_settings = {
-    address:              ENV.fetch("SMTP_ADDRESS", "ssl0.ovh.net"),
-    port:                 ENV.fetch("SMTP_PORT", 587).to_i,
-    domain:               "noctilio-app.fr",
-    user_name:            ENV.fetch("SMTP_USER", "contact@noctilio-app.fr"),
-    password:             ENV["SMTP_PASSWORD"],
-    authentication:       :login,
-    enable_starttls_auto: true
+    address:        ENV.fetch("SMTP_ADDRESS", "ssl0.ovh.net"),
+    port:           ENV.fetch("SMTP_PORT", 465).to_i,
+    domain:         "noctilio-app.fr",
+    user_name:      ENV.fetch("SMTP_USER", "contact@noctilio-app.fr"),
+    password:       ENV["SMTP_PASSWORD"],
+    authentication: :login,
+    tls:            true
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
