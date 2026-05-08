@@ -73,16 +73,16 @@ Rails.application.configure do
   # Remonte les erreurs SMTP en production pour faciliter le debug
   config.action_mailer.raise_delivery_errors = true
 
-  # Config SMTP OVH Zimbra
-  # Port 465 + tls:true (SSL direct) — le port 587 est bloqué par Railway
+  # Config SMTP Brevo (smtp-relay.brevo.com)
+  # Brevo est un service email transactionnel fiable depuis Railway
   config.action_mailer.smtp_settings = {
-    address:        ENV.fetch("SMTP_ADDRESS", "ssl0.ovh.net"),
-    port:           ENV.fetch("SMTP_PORT", 465).to_i,
-    domain:         "noctilio-app.fr",
-    user_name:      ENV.fetch("SMTP_USER", "contact@noctilio-app.fr"),
-    password:       ENV["SMTP_PASSWORD"],
-    authentication: :login,
-    tls:            true
+    address:              ENV.fetch("SMTP_ADDRESS", "smtp-relay.brevo.com"),
+    port:                 ENV.fetch("SMTP_PORT", 587).to_i,
+    domain:               "noctilio-app.fr",
+    user_name:            ENV["SMTP_USER"],
+    password:             ENV["SMTP_PASSWORD"],
+    authentication:       :login,
+    enable_starttls_auto: true
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
