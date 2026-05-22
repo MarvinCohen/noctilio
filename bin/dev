@@ -1,2 +1,9 @@
 #!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+# bin/dev — lance tous les processus de développement via foreman
+#
+# Démarre en parallèle :
+#   - web    : rails server (port 3000)
+#   - worker : solid_queue:start (jobs background — génération histoires + images)
+#
+# Usage : bin/dev
+exec "foreman", "start", "-f", "Procfile.dev", *ARGV

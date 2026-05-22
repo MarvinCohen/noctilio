@@ -1,0 +1,8 @@
+# Procfile.dev — processus à lancer en développement avec `bin/dev`
+#
+# web    : serveur Rails (Puma) sur le port 3000
+# worker : Solid Queue — traite les jobs background (génération histoires + images)
+#          Sans ce processus, les jobs restent en attente et l'histoire "tourne dans le vide"
+
+web: bin/rails server -p 3000
+worker: bin/rails solid_queue:start
