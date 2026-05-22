@@ -67,21 +67,17 @@ Rails.application.configure do
   # Expéditeur par défaut pour tous les emails envoyés par l'app
   config.action_mailer.default_options = { from: "Noctilio <contact@noctilio-app.fr>" }
 
-  # Active la livraison réelle des emails en production
+  # Livraison via Brevo SMTP sur le port 2525
+  # Le port 587 est bloqué par Railway, le 2525 est l'alternative Brevo pour contourner les firewalls
   config.action_mailer.delivery_method = :smtp
-
-  # Remonte les erreurs SMTP en production pour faciliter le debug
   config.action_mailer.raise_delivery_errors = true
-
-  # Config SMTP Brevo (smtp-relay.brevo.com)
-  # Brevo est un service email transactionnel fiable depuis Railway
   config.action_mailer.smtp_settings = {
     address:              ENV.fetch("SMTP_ADDRESS", "smtp-relay.brevo.com"),
-    port:                 ENV.fetch("SMTP_PORT", 587).to_i,
+    port:                 2525,
     domain:               "noctilio-app.fr",
     user_name:            ENV["SMTP_USER"],
     password:             ENV["SMTP_PASSWORD"],
-    authentication:       :login,
+    authentication:       :plain,
     enable_starttls_auto: true
   }
 
