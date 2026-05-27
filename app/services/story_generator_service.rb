@@ -102,6 +102,27 @@ class StoryGeneratorService
                     : "Makoto Shinkai and Studio Ghibli cinematic animation style"
                 end
 
+    # ── Règles de composition adaptées au style ─────────────────────────────
+    # Pour le style "watercolor" (conte illustré) : on cherche un moment magique,
+    # pas une scène d'action explosive. Les descripteurs cinématiques (motion blur,
+    # dramatic lighting) écrasent le style aquarelle et produisent un rendu anime.
+    # Pour les autres styles : on garde l'approche action/dramatique habituelle.
+    if @story.image_style == "watercolor"
+      scene_instruction  = "Pick a MAGICAL and ENCHANTING moment from this story (a wonder, a discovery, a gentle encounter, a key emotional scene)"
+      style_suffix       = "soft warm light, enchanting atmosphere, no motion blur, no anime, no cinematic, child-safe"
+      scene_rules        = "2. Pick the single most MAGICAL and VISUALLY BEAUTIFUL moment — NOT an action scene\n" \
+                           "3. Show the hero in a CALM, EXPRESSIVE pose in a richly detailed enchanted environment\n" \
+                           "4. NO anime style, NO motion blur, NO dramatic cinematic lighting — this is a WATERCOLOR ILLUSTRATION\n"
+      ending_example     = "blonde hair, blue eyes, soft warm light, hand-painted watercolor, storybook illustration"
+    else
+      scene_instruction  = "Write a COMPLETE image generation prompt for the most DRAMATIC and ACTION-PACKED scene of this story"
+      style_suffix       = "highly detailed, cinematic widescreen, dramatic lighting, motion blur, child-safe, no blood"
+      scene_rules        = "2. Pick the single most visually explosive moment (climax, battle, chase, storm...)\n" \
+                           "3. If the hero PILOTS something (robot, spaceship, dragon...): show the vehicle/robot in EPIC BATTLE in the foreground, hero's face visible through cockpit — DO NOT show the child standing next to the robot\n" \
+                           "4. If the hero acts directly: show them in full dynamic action\n"
+      ending_example     = "blonde hair, green eyes, vibrant colors, dramatic rim lighting, motion blur, cinematic composition"
+    end
+
     response = @client.chat(
       parameters: {
         model:       MODEL,
@@ -110,33 +131,30 @@ class StoryGeneratorService
             role:    "system",
             content: <<~SYSTEM
               You are an expert at writing image generation prompts for FLUX and DALL-E.
-              Your prompts are vivid, specific, and always produce dramatic action scenes.
-              You always write in English. You STRICTLY respect character physical descriptions.
+              You always write in English. You STRICTLY respect character physical descriptions AND the requested art style.
               Output ONLY the prompt text, no explanation, no preamble.
             SYSTEM
           },
           {
             role:    "user",
             content: <<~PROMPT
-              Write a COMPLETE image generation prompt for the most DRAMATIC and ACTION-PACKED scene of this story.
+              #{scene_instruction}.
 
               HERO PHYSICAL DESCRIPTION (MANDATORY — copy these traits EXACTLY into your prompt, word for word):
               #{heroes_physical}
 
-              STORY (read to find the most epic visual moment):
+              STORY (read to find the best visual moment):
               ---
               #{@story.content.to_s.first(3000)}
               ---
 
               RULES:
               1. START the prompt with the hero's exact physical description (skin, hair, eyes) — this is the most important part
-              2. Pick the single most visually explosive moment (climax, battle, chase, storm...)
-              3. If the hero PILOTS something (robot, spaceship, dragon...): show the vehicle/robot in EPIC BATTLE in the foreground, hero's face visible through cockpit — DO NOT show the child standing next to the robot
-              4. If the hero acts directly: show them in full dynamic action
+              #{scene_rules}
               5. STRICTLY include the exact physical traits: skin color, hair color, eye color — DO NOT change or omit any of them
               6. ONLY add clothing/accessories explicitly mentioned in the story — DO NOT invent extra clothing items (no hoodie unless stated)
-              7. Style: #{style_ref}, highly detailed, cinematic widescreen, dramatic lighting, motion blur, child-safe, no blood
-              8. END the prompt by repeating the hero's hair color and eye color — example: "blonde hair, green eyes, vibrant colors, dramatic rim lighting, motion blur, cinematic composition"
+              7. Style: #{style_ref}, #{style_suffix}
+              8. END the prompt by repeating the hero's hair color and eye color — example: "#{ending_example}"
 
               Write 80-120 words. ONLY the prompt, nothing else.
             PROMPT

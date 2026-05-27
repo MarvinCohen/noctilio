@@ -356,55 +356,64 @@
         </div>
 
         <%# ── Navigation de fin ── %>
+        <%# Ligne 1 : Continuer l'aventure + Sauvegarder côte à côte %>
+        <%# Ligne 2 : Nouvelle histoire (pleine largeur) %>
+        <%# Ligne 3 : Mes histoires (pleine largeur) %>
+        <%# Ligne 4 : Recommencer — UNIQUEMENT si l'histoire est interactive (avec choix) %>
         <div class="story-nav-footer">
+
+          <%# ── Ligne 1 : CTA principale + Sauvegarder ── %>
+          <% if @story.completed? %>
+            <div class="story-nav-footer-top">
+
+              <%# Continuer l'aventure (ou lien épisode suivant si déjà créé) %>
+              <% if @story.has_sequel? %>
+                <%= link_to story_path(@story.sequel_stories.order(:created_at).first),
+                      class: "story-btn-continue" do %>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="m9 18 6-6-6-6"/></svg>Épisode <%= @story.episode_number + 1 %>
+                <% end %>
+              <% else %>
+                <%= button_to continue_story_path(@story), method: :post, class: "story-btn-continue",
+                      data: { turbo_confirm: "Créer l'épisode #{@story.episode_number + 1} de cette aventure ?" } do %>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Continuer l'aventure
+                <% end %>
+              <% end %>
+
+              <%# Sauvegarder côte à côte avec Continuer l'aventure %>
+              <% if @story.saved? %>
+                <span class="story-btn-success">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>Sauvegardée
+                </span>
+              <% else %>
+                <%= button_to save_story_story_path(@story), method: :post, class: "story-btn-warning" do %>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Sauvegarder
+                <% end %>
+              <% end %>
+
+            </div>
+          <% end %>
+
+          <%# ── Ligne 2 : Nouvelle histoire ── %>
           <%= link_to new_story_path, class: "story-btn-primary" do %>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Nouvelle histoire
           <% end %>
+
+          <%# ── Ligne 3 : Mes histoires ── %>
           <%= link_to stories_path, class: "story-btn-secondary" do %>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Mes histoires
           <% end %>
-          <%= link_to trophy_room_path, class: "story-btn-secondary" do %>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 2h12v7a6 6 0 0 1-12 0V2z"/><path d="M12 15v4"/><path d="M8 19h8"/><line x1="8" y1="22" x2="16" y2="22"/></svg>Trophées
-          <% end %>
 
-          <%# Bouton sauvegarder — affiché seulement si l'histoire n'est pas encore sauvegardée %>
-          <% if @story.saved? %>
-            <span class="story-btn-success">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>Sauvegardée
-            </span>
-          <% else %>
-            <%= button_to save_story_story_path(@story), method: :post, class: "story-btn-warning" do %>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Sauvegarder
-            <% end %>
-          <% end %>
-
-          <%# Bouton "Recommencer" — recrée la même histoire with de nouveaux choix %>
-          <%# Affiché sur toutes les histoires terminées, utile surtout pour les interactives %>
-          <% if @story.completed? %>
+          <%# ── Ligne 4 : Recommencer — seulement pour les histoires interactives avec choix ── %>
+          <%# Inutile pour une histoire standard sans choix : l'utilisateur relit la même chose %>
+          <% if @story.completed? && @story.interactive? %>
             <%= button_to replay_story_path(@story), method: :post, class: "story-btn-replay",
                   data: { turbo_confirm: "Recommencer cette histoire pour faire d'autres choix ?" } do %>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Recommencer
             <% end %>
           <% end %>
 
-          <%# Bouton "Continuer l'aventure" — affiché si l'histoire est terminée et sans suite %>
-          <%# Si une suite existe déjà, on affiche un lien vers celle-ci %>
-          <% if @story.completed? %>
-            <% if @story.has_sequel? %>
-              <%# Lien vers la suite existante %>
-              <%= link_to story_path(@story.sequel_stories.order(:created_at).first),
-                    class: "story-btn-continue" do %>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="m9 18 6-6-6-6"/></svg>Épisode <%= @story.episode_number + 1 %>
-              <% end %>
-            <% else %>
-              <%# Bouton pour créer la suite — POST vers l'action continue %>
-              <%= button_to continue_story_path(@story), method: :post, class: "story-btn-continue",
-                    data: { turbo_confirm: "Créer l'épisode #{@story.episode_number + 1} de cette aventure ?" } do %>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Continuer l'aventure
-              <% end %>
-            <% end %>
-          <% end %>
         </div>
+
 
       <% end %>
     </div>

@@ -1,5 +1,6 @@
   /* ── Wrapper de page ── */
-  .story-page { padding: 2rem 0 5rem; }
+  /* padding horizontal pour que le breadcrumb et le titre ne collent pas au bord */
+  .story-page { padding: 2rem 1rem 5rem; }
 
   /* ── Curseur plume — barre verticale dorée qui clignote ── */
   /* Injecté par story-quill-controller pendant l'animation */
@@ -88,16 +89,26 @@
   .story-error-hint { color: #8a8578; margin-bottom: 2rem; }
 
   /* ── Boutons (primaire + secondaire) ── */
+  /* Option B choisie : gradient doré animé (shimmer) */
   .story-btn-primary {
     display: inline-flex; align-items: center;
     padding: 0.6rem 1.5rem;
-    background: #f0c97a; color: #0b0e1a;
+    background: linear-gradient(135deg, #f0c97a 0%, #e8975a 40%, #f5d68a 70%, #f0c97a 100%);
+    background-size: 250% 250%;
+    animation: story-btn-shimmer 2.5s ease infinite;
+    color: #0b0e1a;
     border: none; border-radius: 50px;
-    font-weight: 600; font-size: 0.9rem;
+    font-weight: 700; font-size: 0.9rem;
     text-decoration: none;
-    transition: opacity 0.2s ease, transform 0.1s ease;
+    transition: transform 0.1s ease, opacity 0.2s ease;
   }
-  .story-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); color: #0b0e1a; text-decoration: none; }
+  .story-btn-primary:hover { transform: translateY(-1px); opacity: 0.92; color: #0b0e1a; text-decoration: none; }
+  /* Animation shimmer partagée par primary et continue */
+  @keyframes story-btn-shimmer {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
   .story-btn-secondary {
     display: inline-flex; align-items: center;
     padding: 0.55rem 1.3rem;
@@ -134,21 +145,23 @@
   .story-btn-warning:hover { background: rgba(240, 201, 122, 0.25); }
   .story-btn-warning[type="submit"] { appearance: none; -webkit-appearance: none; }
 
-  /* Bouton "Continuer l'aventure" — doré plein, met en avant l'action principale */
+  /* Bouton "Continuer l'aventure" — même style gradient animé que primary */
   .story-btn-continue {
     display: inline-flex; align-items: center;
     padding: 0.55rem 1.3rem;
-    background: #f0c97a;        /* Doré plein — action principale */
-    color: #0b0e1a;             /* Texte sombre pour le contraste */
-    border: 1px solid #f0c97a;
+    background: linear-gradient(135deg, #f0c97a 0%, #e8975a 40%, #f5d68a 70%, #f0c97a 100%);
+    background-size: 250% 250%;
+    animation: story-btn-shimmer 2.5s ease infinite;
+    color: #0b0e1a;
+    border: none;
     border-radius: 50px; font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
-    transition: opacity 0.2s ease, transform 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.2s ease;
   }
   .story-btn-continue:hover {
-    opacity: 0.88; transform: translateY(-1px);
+    transform: translateY(-1px); opacity: 0.92;
     color: #0b0e1a; text-decoration: none;
   }
   .story-btn-continue[type="submit"] { appearance: none; -webkit-appearance: none; }
@@ -397,10 +410,28 @@
     margin-top: 2.5rem;
   }
 
+  /* Ligne du haut : Continuer l'aventure + Sauvegarder côte à côte */
+  /* flex-wrap permet de passer en colonne si les boutons sont trop larges */
+  .story-nav-footer-top {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* Continuer l'aventure prend le plus d'espace, Sauvegarder s'adapte */
+  .story-nav-footer-top .story-btn-continue,
+  .story-nav-footer-top form { flex: 1; }
+  .story-nav-footer-top .story-btn-continue { justify-content: center; text-align: center; }
+  /* Les boutons dans un <form> (button_to) doivent aussi être centrés */
+  .story-nav-footer-top form button { width: 100%; justify-content: center; }
+
   /* ── Responsive mobile ── */
   @media (max-width: 600px) {
-    /* Wrapper de page — moins de padding vertical */
-    .story-page { padding: 1.5rem 0 4rem; }
+    /* Wrapper de page — padding-bottom augmenté pour que le contenu ne passe pas
+       sous la barre audio fixe en bas (hauteur ~70px + marge) */
+    .story-page { padding: 1.5rem 0 5rem; }
 
     /* Titre de l'histoire — réduit la taille min du clamp */
     .story-title {
@@ -421,16 +452,31 @@
     /* Navigation épisodes — plus compacte */
     .story-saga-nav { padding: 0.5rem 0.75rem; }
 
-    /* Boutons de navigation de fin — pleine largeur */
+    /* Navigation de fin — réorganisée sur mobile :
+       - CTAs principaux (Continuer, Nouvelle histoire) : pleine largeur
+       - Boutons secondaires : grille 2 colonnes */
     .story-nav-footer {
       flex-direction: column;
       align-items: stretch;
       gap: 0.5rem;
     }
+
+    /* Tous les boutons centrés */
     .story-nav-footer .story-btn-primary,
     .story-nav-footer .story-btn-secondary,
-    .story-nav-footer .story-btn-warning {
+    .story-nav-footer .story-btn-warning,
+    .story-nav-footer .story-btn-success,
+    .story-nav-footer .story-btn-replay,
+    .story-nav-footer .story-btn-continue {
       justify-content: center;
       text-align: center;
     }
+
+    /* Grille 2 colonnes pour les boutons secondaires */
+    .story-nav-footer-secondary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
   }
+

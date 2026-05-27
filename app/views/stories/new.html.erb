@@ -128,24 +128,42 @@
                   class: "wizard-textarea",
                   placeholder: "Ex : Elle veut être une exploratrice qui découvre une île secrète avec des animaux parlants…" %>
 
-            <%# Idées cliquables %>
-            <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
-              <span style="font-size:0.72rem; color:#8a8578;">Inspiration :</span>
-              <% [
-                "🚀 Astronaute sur une planète de robots",
-                "🦄 Princesse et sa licorne magique",
-                "🦕 Voyage chez les dinosaures",
-                "🏴‍☠️ Pirate cherchant un trésor",
-                "🌳 Gardien de la forêt enchantée"
-              ].each do |idea| %>
-                <button type="button"
-                        class="idea-pill"
-                        data-action="click->story-creation#insertIdea"
-                        data-idea="<%= idea %>">
-                  <%= idea %>
-                </button>
-              <% end %>
-            </div>
+            <%# Idées cliquables — cachées derrière un bouton "Inspire moi" %>
+            <%# <details>/<summary> : ouverture/fermeture native, zéro JS %>
+            <details class="wizard-inspire-details">
+
+              <%# Le bouton visible — clique pour dérouler les inspirations %>
+              <summary class="wizard-inspire-btn">
+                ✦ Inspire moi
+              </summary>
+
+              <%# Grille de chips — emoji + label court, le texte complet est inséré au clic %>
+              <div class="wizard-inspire-grid">
+                <% [
+                  { emoji: "🚀", label: "Espace",       idea: "Astronaute sur une planète de robots" },
+                  { emoji: "🦄", label: "Licorne",       idea: "Princesse et sa licorne magique" },
+                  { emoji: "🦕", label: "Dinosaures",    idea: "Voyage chez les dinosaures" },
+                  { emoji: "🏴‍☠️", label: "Pirates",    idea: "Pirate cherchant un trésor" },
+                  { emoji: "🌳", label: "Forêt",         idea: "Gardien de la forêt enchantée" },
+                  { emoji: "🧙", label: "Sorcier",       idea: "Apprenti sorcier à l'école de magie" },
+                  { emoji: "🐉", label: "Dragon",        idea: "Un enfant qui apprivoise un dragon" },
+                  { emoji: "🌊", label: "Océan",         idea: "Plongée dans un royaume sous-marin" },
+                  { emoji: "🦸", label: "Super-héros",   idea: "Super-héros qui découvre ses pouvoirs" },
+                  { emoji: "🌙", label: "Lune",          idea: "Voyage sur la Lune en pyjama" },
+                  { emoji: "🤖", label: "Robot",         idea: "Un robot qui apprend à ressentir des émotions" },
+                  { emoji: "⏳", label: "Temps",         idea: "Aventure dans le temps avec une machine bizarre" }
+                ].each do |item| %>
+                  <button type="button"
+                          class="idea-chip"
+                          data-action="click->story-creation#insertIdea"
+                          data-idea="<%= item[:idea] %>">
+                    <span class="idea-chip-emoji"><%= item[:emoji] %></span>
+                    <span class="idea-chip-label"><%= item[:label] %></span>
+                  </button>
+                <% end %>
+              </div>
+
+            </details>
           </div>
 
           <%# Navigation %>

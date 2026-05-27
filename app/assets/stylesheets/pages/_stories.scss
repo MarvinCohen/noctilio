@@ -439,15 +439,30 @@
   &:active { transform: scale(0.92); }
 }
 
-// Sur mobile — pleine largeur collé en bas
+// Sur mobile — barre compacte collée en bas, pleine largeur
+// IMPORTANT : réinitialiser top et right hérités du desktop —
+// sinon l'élément s'étire de top:140px jusqu'en bas et couvre tout le contenu.
 @media (max-width: 576px) {
   .audio-bar {
+    top: auto;         // Annule top:140px du desktop
+    right: auto;       // Annule right:60px du desktop
     bottom: 0;
-    width: calc(100vw - 24px);
-    border-radius: 16px 16px 0 0;
+    left: 0;           // Colle au bord gauche (pas de marge latérale)
+    width: 100vw;
+    border-radius: 0;  // Rectangle plat — pas de pill sur mobile
+    border-left: none;
+    border-right: none;
     border-bottom: none;
-    padding: 10px 14px 18px;
+    padding: 8px 16px 12px; // Plus compact qu'avant (était 10px 14px 18px)
+    gap: 6px;               // Espace réduit entre les lignes de contrôles
   }
+
+  // Masque les timers (0:00 / --:--) sur mobile pour gagner de la hauteur
+  // La barre de progression seule suffit pour indiquer l'avancement
+  .audio-bar-time { display: none; }
+
+  // Réduit le bouton play légèrement pour la barre compacte
+  .audio-bar-play { width: 34px; height: 34px; }
 }
 
 // ============================================================

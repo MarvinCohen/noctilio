@@ -174,6 +174,15 @@ class ImageGeneratorService
 
     # Base : artefacts visuels communs + hoodie non demandé (FLUX l'hallucine souvent)
     negative = "blurry, low quality, deformed, ugly, bad anatomy, watermark, text, hoodie, sweatshirt"
+
+    # Négatifs spécifiques au style choisi
+    # Pour watercolor : on bloque explicitement les styles anime/CGI qui dominent sinon
+    chosen_style = @story.image_style.presence
+    if chosen_style == "watercolor"
+      negative += ", anime, manga, 3D render, CGI, Ghibli, cinematic, motion blur, " \
+                  "photorealistic, digital painting sharp, neon, dark background, dramatic shadows"
+    end
+
     negative += ", #{skin_negatives.join(', ')}" if skin_negatives.any?
 
     request.body = {

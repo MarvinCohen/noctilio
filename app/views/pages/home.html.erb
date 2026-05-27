@@ -19,7 +19,8 @@
     --text-dim: #8a8578;
   }
 
-  html { scroll-behavior: smooth; }
+  /* overflow-x sur html ET body — sur mobile, html peut scroller indépendamment */
+  html { scroll-behavior: smooth; overflow-x: hidden; }
 
   body {
     background-color: var(--night);

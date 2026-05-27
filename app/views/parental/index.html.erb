@@ -338,14 +338,100 @@
     margin: 2rem 0;
   }
 
+  /* ── Bande d'avatars héros — visible uniquement sur mobile ── */
+  /* Format compact : cercles scrollables avec initiale + prénom + âge */
+  .par-heroes-strip {
+    display:    flex;
+    gap:        16px;
+    overflow-x: auto;
+    padding:    4px 0 12px;
+    scrollbar-width: none;
+  }
+  .par-heroes-strip::-webkit-scrollbar { display: none; }
+
+  /* Une carte avatar — lien cliquable centré */
+  .par-hero-avatar-card {
+    flex-shrink:    0;
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            5px;
+    text-decoration: none;
+    min-width:      56px;
+  }
+  .par-hero-avatar-card:hover { text-decoration: none; }
+
+  /* Cercle doré avec l'initiale */
+  .par-hero-circle {
+    width:         52px;
+    height:        52px;
+    border-radius: 50%;
+    background:    rgba(240,201,122,0.10);
+    border:        1.5px solid rgba(240,201,122,0.35);
+    display:       flex;
+    align-items:   center;
+    justify-content: center;
+    font-family:   'Cormorant Garamond', Georgia, serif;
+    font-size:     1.4rem;
+    color:         #f0c97a;
+    transition:    background 0.2s, border-color 0.2s;
+  }
+  .par-hero-avatar-card:hover .par-hero-circle {
+    background:   rgba(240,201,122,0.18);
+    border-color: rgba(240,201,122,0.6);
+  }
+
+  /* Prénom sous le cercle */
+  .par-hero-name {
+    font-size:   0.72rem;
+    color:       #d4cfc4;
+    font-weight: 600;
+    text-align:  center;
+    max-width:   56px;
+    white-space: nowrap;
+    overflow:    hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Âge sous le prénom */
+  .par-hero-age {
+    font-size:  0.62rem;
+    color:      #8a8578;
+    text-align: center;
+    margin-top: -3px;
+  }
+
   /* ── Responsive mobile ── */
   @media (max-width: 600px) {
-    .par-page        { padding: 1.5rem 0 3rem; }
-    .par-page-title  { font-size: clamp(1.5rem, 6vw, 2.8rem); }
-    .par-stat-number { font-size: 2.8rem; }
-    .par-stat-card   { padding: 1.5rem 1rem; }
-    .par-child-row   { padding: 0.6rem 0.75rem; }
-    .par-activity-title { max-width: 130px; }
+    .par-page       { padding: 1.25rem 1rem 3rem; }
+    .par-page-title { font-size: clamp(1.4rem, 6vw, 2.8rem); }
+
+    /* Stats — 3 en ligne horizontale compacte au lieu de 3 cards empilées */
+    .par-stats-row {
+      display: flex !important;
+      gap:     8px;
+    }
+    .par-stats-row .col-md-4 { flex: 1; padding: 0; }
+    .par-stat-card  { padding: 12px 8px; }
+    .par-stat-number { font-size: 1.8rem; }
+    .par-stat-label  { font-size: 0.65rem; line-height: 1.3; }
+
+    /* Héros desktop (par-child-row) — cachés sur mobile, remplacés par le strip */
+    .par-heroes-desktop { display: none; }
+
+    /* Activité du mois — padding réduit */
+    .par-chart-card { padding: 1rem; margin-bottom: 1rem; }
+
+    /* Séparateur — réduit */
+    .par-divider { margin: 1rem 0; }
+
+    /* Activité récente — titre tronqué plus court */
+    .par-activity-title { max-width: 140px; }
+  }
+
+  /* Desktop — le strip mobile est caché */
+  @media (min-width: 601px) {
+    .par-heroes-mobile { display: none; }
   }
 </style>
 
@@ -360,9 +446,36 @@
   </div>
 
   <%# ============================================================ %>
+  <%# HÉROS — en premier sur mobile, format avatars scrollables %>
+  <%# Sur desktop ce bloc est caché (les héros sont dans la col-lg-4 plus bas) %>
+  <%# ============================================================ %>
+  <div class="par-heroes-mobile mb-4">
+    <div class="mb-3">
+      <h2 class="par-section-title mb-0">Mes Héros</h2>
+    </div>
+
+    <%# Banderole d'avatars — cercle initiale + prénom + âge %>
+    <div class="par-heroes-strip">
+      <% @children.each do |child| %>
+        <%= link_to child_path(child), class: "par-hero-avatar-card" do %>
+          <%# Cercle avec l'initiale du prénom %>
+          <div class="par-hero-circle"><%= child.name[0].upcase %></div>
+          <span class="par-hero-name"><%= child.name %></span>
+          <span class="par-hero-age"><%= child.age %> ans</span>
+        <% end %>
+      <% end %>
+      <%# Bouton "+" pour ajouter un héros %>
+      <%= link_to new_child_path, class: "par-hero-avatar-card" do %>
+        <div class="par-hero-circle" style="font-size:1.8rem; font-family:'DM Sans',sans-serif; font-weight:300; color:rgba(240,201,122,0.35); border-style:dashed;">+</div>
+        <span class="par-hero-name" style="color:rgba(212,207,196,0.35);">Ajouter</span>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
   <%# STATS GLOBALES — 3 grandes cartes %>
   <%# ============================================================ %>
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 par-stats-row">
 
     <div class="col-md-4">
       <div class="par-stat-card">
@@ -443,8 +556,8 @@
   <%# ============================================================ %>
   <div class="row g-4">
 
-    <%# ── Colonne 1 : profils enfants ── %>
-    <div class="col-lg-4">
+    <%# ── Colonne 1 : profils enfants — cachée sur mobile (remplacée par par-heroes-mobile) ── %>
+    <div class="col-lg-4 par-heroes-desktop">
       <div class="par-card">
 
         <div class="d-flex justify-content-between align-items-center mb-3">

@@ -584,6 +584,7 @@ $text-dim: rgba(#fdf6e3, 0.45);
 // Séparateur vertical doré — identique à la landing page
 // ============================================================
 
+
 .db-divider {
   width: 1px;
   height: 70px;
@@ -916,11 +917,18 @@ $text-dim: rgba(#fdf6e3, 0.45);
 
 // Mobile — ajustements principaux
 @media (max-width: 600px) {
-  // Hero — réduit les paddings pour maximiser l'espace contenu
+  // Hero — réduit les paddings et supprime la hauteur minimum
+  // min-height: calc(100vh - 72px) sur desktop = plein écran, mais sur mobile
+  // ça crée un grand vide sous le contenu quand il est court
   .db-hero {
-    padding: 24px 16px 36px;
+    padding: 24px 16px 28px; // padding-bottom aligné avec .db-section pour cohérence
     gap: 20px;
+    min-height: unset; // Hauteur naturelle — plus de grand vide blanc sous le hero
   }
+
+  // Séparateur vertical — réduit sur mobile pour que l'espace inter-sections
+  // soit identique partout (hero→section = section→section)
+  .db-divider { height: 40px; }
 
   // Lune — repositionne en haut à droite mais moins en bord d'écran
   .db-hero-moon {
@@ -987,18 +995,9 @@ $text-dim: rgba(#fdf6e3, 0.45);
     margin-bottom: 20px;
   }
 
-  // Section "Comment ça marche" — étapes en colonne verticale
-  // 3 cards + 2 connecteurs côte à côte = trop large sur 360px
-  .db-steps-grid {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  // Connecteurs horizontaux ✦ — cachés en mobile (inutiles en colonne)
-  .db-step-connector { display: none; }
-
-  // Padding réduit sur les cartes d'étapes
-  .db-step-card { padding: 24px 20px; }
+  // Les styles mobile des étapes "Comment ça marche" sont déclarés
+  // APRÈS les règles desktop dans ce fichier (voir bas de fichier)
+  // pour éviter que la cascade CSS les écrase.
 
 }
 
@@ -1470,18 +1469,144 @@ $text-dim: rgba(#fdf6e3, 0.45);
   .db-testimonials-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-// Mobile — 1 colonne pour features et témoignages
+// Mobile — features et témoignages
 @media (max-width: 600px) {
-  // Fonctionnalités — 1 colonne pleine largeur
-  // 3 colonnes sur 360px = ~107px par carte, trop étroit
-  .db-features-grid { grid-template-columns: 1fr; }
 
-  // Padding réduit pour gagner de l'espace sur mobile
-  .db-feature-card { padding: 24px 20px; }
+  // Fonctionnalités — 2 colonnes × 3 lignes
+  // Chaque card n'affiche que l'icône + le titre (description cachée)
+  .db-features-grid { grid-template-columns: repeat(2, 1fr); }
 
-  // Témoignages — 1 colonne pleine largeur
-  .db-testimonials-grid { grid-template-columns: 1fr; }
+  // Card compacte — moins de padding, centrée
+  .db-feature-card {
+    padding: 16px 12px;
+    text-align: center;
+    align-items: center;  // Centre l'icône et le titre
+    display: flex;
+    flex-direction: column;
+  }
 
-  // Padding réduit sur les témoignages
-  .db-testimonial-card { padding: 24px 20px; }
+  // Icône — légèrement plus petite pour les petits écrans
+  .db-feature-icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+  }
+
+  // Titre — taille réduite mais lisible
+  .db-feature-title { font-size: 0.88rem; margin-bottom: 0; }
+
+  // Description — cachée sur mobile pour garder les cards compactes
+  .db-feature-desc { display: none; }
+
+  // Témoignages — carrousel horizontal scrollable
+  // Les 3 cards défilent côte à côte au lieu de s'empiler verticalement
+  // Même principe que la bande d'histoires — compact et naturel sur mobile
+  .db-testimonials-grid {
+    display: flex;              // Remplace le grid par un flex horizontal
+    grid-template-columns: unset;
+    overflow-x: auto;           // Scroll horizontal
+    gap: 12px;
+    padding-bottom: 12px;       // Espace pour éviter que l'ombre soit coupée
+    // Cache la scrollbar — look propre
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  // Chaque card — largeur fixe pour que 1.5 carte soit visible (invite au scroll)
+  .db-testimonial-card {
+    flex-shrink: 0;             // Ne rétrécit pas — garde la largeur fixe
+    width: 75vw;                // ~75% de l'écran = 1.5 carte visible
+    max-width: 280px;
+    padding: 20px 16px;
+  }
+}
+
+// ============================================================
+// Mobile — "Comment ça marche" : cercles + titres + connecteurs
+// Ce bloc est APRÈS les définitions desktop pour que la cascade
+// CSS fonctionne correctement (dernier déclaré = prioritaire)
+// ============================================================
+@media (max-width: 600px) {
+
+  // Grille en rangée, items alignés en haut (pas d'étirement)
+  .db-steps-grid {
+    flex-direction: row;
+    gap: 0;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  // Cards — sans bordure ni fond, juste le cercle + titre
+  .db-step-card {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 4px 12px;
+    gap: 10px;
+    height: auto;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    justify-content: flex-start;
+
+    // Désactive le hover translateY sur mobile (pas de souris)
+    &:hover { transform: none; }
+  }
+
+  // Numéro stylisé en orbe/cercle doré
+  // Override le style desktop (grand chiffre fantôme)
+  .db-step-number {
+    width: 44px;
+    height: 44px;
+    min-width: unset;
+    border-radius: 50%;
+    border: 1px solid rgba(240, 201, 122, 0.35);
+    background: rgba(240, 201, 122, 0.06);
+    font-size: 1.3rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    color: rgba(240, 201, 122, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0;
+    line-height: 1;
+    // Annule le margin-bottom négatif du desktop
+    margin-bottom: 0 !important;
+  }
+
+  // Titre — compact et centré sous le cercle
+  .db-step-title {
+    font-size: 0.7rem;
+    text-align: center;
+    line-height: 1.3;
+    // display:block override le flex du desktop
+    display: block;
+    margin: 0;
+  }
+
+  // Icône SVG — cachée (les cercles des numéros suffisent)
+  // !important nécessaire : règle desktop .db-step-icon { display: flex } vient avant
+  .db-step-icon { display: none !important; }
+
+  // Description — cachée sur mobile
+  .db-step-desc { display: none; }
+
+  // Connecteur — fine ligne dorée horizontale entre les cercles
+  // align-self: flex-start = aligne en haut
+  // margin-top: 22px = centre vertical des cercles (44px / 2)
+  .db-step-connector {
+    display: block;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 22px;
+    width: 16px;
+    height: 1px;
+    background: rgba(240, 201, 122, 0.3);
+    // Cache le caractère ✦ original sans supprimer l'élément
+    font-size: 0;
+    color: transparent;
+    overflow: hidden;
+  }
+
 }
