@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_22_084427) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_27_161040) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -310,8 +310,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_22_084427) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.string "world_theme"
+    t.index ["child_id", "status"], name: "index_stories_on_child_id_and_status"
     t.index ["child_id"], name: "index_stories_on_child_id"
+    t.index ["created_at"], name: "index_stories_on_created_at"
     t.index ["parent_story_id"], name: "index_stories_on_parent_story_id"
+    t.index ["saved"], name: "index_stories_on_saved"
     t.index ["status"], name: "index_stories_on_status"
   end
 

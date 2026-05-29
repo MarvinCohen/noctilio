@@ -94,6 +94,10 @@ class StoryGeneratorService
                   "Pixar and Disney 3D animation style, warm cinematic lighting, highly detailed CGI, expressive characters"
                 when "watercolor"
                   "vintage children's book illustration style, soft watercolor textures, warm hand-painted look, storybook fairy tale"
+                when "cinematic"
+                  # Cinématique : on ne force aucun style dessin animé — gpt-image-1 génère
+                  # son rendu naturel (type poster de film, CGI réaliste, concept art de blockbuster)
+                  "cinematic movie concept art, photorealistic CGI, dramatic film poster style, epic blockbuster"
                 else
                   # Fallback : Spider-Verse pour peau foncée (style dynamique adapté), Ghibli sinon
                   # On ne précise pas l'ethnicité ici — la description physique du héros s'en charge
@@ -143,7 +147,7 @@ class StoryGeneratorService
               HERO PHYSICAL DESCRIPTION (MANDATORY — copy these traits EXACTLY into your prompt, word for word):
               #{heroes_physical}
 
-              STORY (read to find the best visual moment):
+              #{@story.custom_theme.present? ? "⚠️ MANDATORY SCENE CONCEPT — YOU MUST RESPECT THIS EXACTLY:\n#{@story.custom_theme}\n\nKey visual rules from this concept:\n- If a ROBOT / MECH / VEHICLE is mentioned: it MUST be the dominant visual element (large, in the foreground). The hero is INSIDE or ON it — NOT standing separately next to it.\n- If an ENEMY (dinosaur, monster...) is mentioned: it is the THREAT the robot faces, NOT something the hero rides or befriends.\n- DO NOT swap the roles of hero/robot/enemy.\n\n" : ""}STORY (read to find the best visual moment):
               ---
               #{@story.content.to_s.first(3000)}
               ---

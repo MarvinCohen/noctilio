@@ -6,6 +6,10 @@ class StoryChoice < ApplicationRecord
   # Un choix appartient à une histoire
   belongs_to :story
 
+  # Fichier audio de la continuation générée après ce choix
+  # Stocké séparément de story.audio_file pour ne pas écraser l'audio principal
+  has_one_attached :audio_file
+
   # ============================================================
   # Validations
   # ============================================================

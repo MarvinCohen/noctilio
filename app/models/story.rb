@@ -60,7 +60,7 @@ class Story < ApplicationRecord
 
   # Vérifie que image_style est un style connu — même raison que educational_value
   validates :image_style, inclusion: {
-    in: %w[ghibli comics pixar watercolor],
+    in: %w[ghibli comics pixar watercolor cinematic],
     message: "n'est pas un style d'illustration reconnu"
   }, allow_nil: true
 
@@ -201,6 +201,12 @@ class Story < ApplicationRecord
   # Retourne true si une suite a déjà été créée pour cette histoire
   def has_sequel?
     sequel_stories.exists?
+  end
+
+  # Retourne le premier épisode suivant dans la saga (nil si aucun)
+  # Utilisé dans les vues pour éviter d'exposer du SQL dans les templates
+  def next_sequel
+    sequel_stories.order(:created_at).first
   end
 
   # ============================================================

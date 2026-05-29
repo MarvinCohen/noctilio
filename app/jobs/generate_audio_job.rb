@@ -59,14 +59,17 @@ class GenerateAudioJob < ApplicationJob
 
     # Attache le MP3 à l'histoire ou au choix selon la source
     if source == "continuation" && choice_id
+      # IMPORTANT : on attache à choice.audio_file, PAS à story.audio_file
+      # has_one_attached écrase — si on attachait à story, l'audio principal de
+      # l'histoire serait perdu dès le premier choix interactif
       choice = StoryChoice.find_by(id: choice_id)
-      # On stocke l'URL en base pour pouvoir la servir rapidement
-      # Pour simplifier, on attache à la story avec un nom distinct
-      story.audio_file.attach(
-        io:           StringIO.new(audio_data),
-        filename:     "histoire_#{story_id}_continuation_#{choice_id}.mp3",
-        content_type: "audio/mpeg"
-      )
+      if choice
+        choice.audio_file.attach(
+          io:           StringIO.new(audio_data),
+          filename:     "histoire_#{story_id}_continuation_#{choice_id}.mp3",
+          content_type: "audio/mpeg"
+        )
+      end
     else
       # Audio principal de l'histoire
       story.audio_file.attach(

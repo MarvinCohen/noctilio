@@ -15,8 +15,16 @@ class StoriesController < ApplicationController
   # GET /stories — bibliothèque personnelle de l'utilisateur
   def index
     # N'affiche que les histoires terminées ET sauvegardées par l'utilisateur
-    # Une histoire doit être explicitement sauvegardée pour apparaître ici
-    @stories = current_user.stories.completed_recent.saved_stories
+    # includes précharge les associations utilisées dans la vue (évite les N+1) :
+    #   :child               → story.child.name dans les méta de chaque carte
+    #   :parent_story        → story.sequel? vérifie parent_story_id
+    #   :sequel_stories      → story.has_sequel? vérifie l'existence d'une suite
+    #   cover_image_attachment: :blob → story.cover_image.attached? sans requête extra
+    @stories = current_user.stories
+                           .completed_recent
+                           .saved_stories
+                           .includes(:child, :parent_story, :sequel_stories,
+                                     cover_image_attachment: :blob)
   end
 
   # GET /stories/:id — lecture de l'histoire
@@ -357,7 +365,7 @@ class StoriesController < ApplicationController
       :duration_minutes,
       :custom_theme,
       :interactive,
-      :image_style,     # Style visuel de l'illustration (ghibli, comics, pixar, watercolor)
+      :image_style,     # Style visuel de l'illustration (ghibli, comics, pixar, watercolor, cinematic)
       child_ids: []     # Tableau d'IDs pour la sélection multiple d'enfants
     )
   end

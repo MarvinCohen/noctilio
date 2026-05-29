@@ -21,6 +21,7 @@ class ImageGeneratorService
   require "uri"
   require "net/http"
   require "json"
+  require "base64"
 
   # ----------------------------------------------------------------
   # fal.ai — endpoint synchrone FLUX.1 Dev
@@ -107,21 +108,22 @@ class ImageGeneratorService
     # Sauvegarde du prompt utilisé (utile pour débuguer ou régénérer)
     @story.update_column(:image_prompt, prompt)
 
-    # Tentative 1 : fal.ai en priorité si la clé est configurée
-    # FLUX.1 Dev = meilleure qualité artistique, images stockées sur CDN permanent
-    if ENV["FAL_API_KEY"].present?
-      Rails.logger.info("ImageGeneratorService — tentative fal.ai pour story ##{@story.id}")
-      result = generate_with_fal(prompt)
-      return result if result[:success]
-      Rails.logger.warn("ImageGeneratorService — fal.ai a échoué : #{result[:error]}, tentative DALL-E")
-    end
-
-    # Tentative 2 : DALL-E si la clé OpenAI est configurée
+    # Tentative 1 : DALL-E 3 en priorité — meilleur suivi des prompts complexes
+    # (scènes avec robots/mechs, cockpits, rôles multiples personnages)
     if ENV["OPENAI_API_KEY"].present?
       Rails.logger.info("ImageGeneratorService — tentative DALL-E pour story ##{@story.id}")
       result = generate_with_dalle(prompt)
       return result if result[:success]
-      Rails.logger.warn("ImageGeneratorService — DALL-E a échoué : #{result[:error]}, tentative Pollinations")
+      Rails.logger.warn("ImageGeneratorService — DALL-E a échoué : #{result[:error]}, tentative fal.ai")
+    end
+
+    # Tentative 2 : fal.ai (FLUX.1 Dev) — fallback si DALL-E échoue
+    # FLUX.1 Dev = bonne qualité artistique, images stockées sur CDN permanent
+    if ENV["FAL_API_KEY"].present?
+      Rails.logger.info("ImageGeneratorService — tentative fal.ai pour story ##{@story.id}")
+      result = generate_with_fal(prompt)
+      return result if result[:success]
+      Rails.logger.warn("ImageGeneratorService — fal.ai a échoué : #{result[:error]}, tentative Pollinations")
     end
 
     # Tentative 3 : Pollinations.ai (gratuit, dernier recours)
@@ -226,27 +228,38 @@ class ImageGeneratorService
   def generate_with_dalle(prompt)
     client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
+    # gpt-image-1 (modèle natif GPT-4o) — bien meilleur suivi de prompt que DALL-E 3 :
+    # - Comprend les scènes complexes (mech + cockpit + personnage à l'intérieur)
+    # - Filtre de contenu moins agressif que DALL-E 3 (pas de rejet 400 sur les aventures)
+    # - Rendu cinématique plus détaillé
+    # Pas de sanitisation nécessaire — gpt-image-1 gère le vocabulaire d'aventure enfantin
     response = client.images.generate(
       parameters: {
         prompt:  prompt,
-        model:   "dall-e-3",
+        model:   "gpt-image-1",
         size:    "1024x1024",
-        quality: "standard",
-        style:   "natural",
+        quality: "medium",  # "low" / "medium" / "high" — medium = bon équilibre qualité/coût
         n:       1
       }
     )
 
-    image_url = response.dig("data", 0, "url")
-    return { success: false, error: "DALL-E n'a pas retourné d'URL" } unless image_url
+    # gpt-image-1 retourne l'image encodée en base64 (pas une URL)
+    # DALL-E 3 retournait une URL — le format de réponse est différent
+    b64 = response.dig("data", 0, "b64_json")
+    return { success: false, error: "gpt-image-1 n'a pas retourné d'image" } unless b64
 
-    # Sauvegarde l'URL et télécharge l'image dans ActiveStorage
-    @story.update_column(:cover_image_url, image_url)
-    attach_image_from_url(image_url, "png")
+    # Décode le base64 et attache directement à ActiveStorage (pas besoin de télécharger)
+    image_data = Base64.decode64(b64)
+    @story.cover_image.attach(
+      io:           StringIO.new(image_data),
+      filename:     "histoire_#{@story.id}_couverture.png",
+      content_type: "image/png"
+    )
 
-    { success: true, url: image_url }
+    Rails.logger.info("ImageGeneratorService — gpt-image-1 OK pour story ##{@story.id}")
+    { success: true }
   rescue StandardError => e
-    { success: false, error: "Erreur DALL-E : #{e.message}" }
+    { success: false, error: "Erreur gpt-image-1 : #{e.message}" }
   end
 
   # ============================================================
@@ -292,7 +305,9 @@ class ImageGeneratorService
     "ghibli"     => %w[ghibli shinkai],
     "comics"     => ["spider-verse", "spider verse", "comics", "halftone"],
     "pixar"      => %w[pixar disney],
-    "watercolor" => %w[watercolor storybook hand-painted]
+    "watercolor" => %w[watercolor storybook hand-painted],
+    # Cinématique : mots-clés larges — si l'un est présent, le style est déjà inclus
+    "cinematic"  => %w[cinematic photorealistic blockbuster concept\ art film\ poster]
   }.freeze
 
   # ── Référence de style à injecter si Groq l'a omise ──────────────────────────────
@@ -300,7 +315,9 @@ class ImageGeneratorService
     "ghibli"     => "Makoto Shinkai and Studio Ghibli cinematic animation style, soft watercolor pastels, dreamy atmosphere",
     "comics"     => "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors",
     "pixar"      => "Pixar and Disney 3D animation style, warm cinematic lighting, highly detailed CGI, expressive characters",
-    "watercolor" => "vintage children's book illustration style, soft watercolor textures, warm hand-painted look, storybook fairy tale"
+    "watercolor" => "vintage children's book illustration style, soft watercolor textures, warm hand-painted look, storybook fairy tale",
+    # Cinématique : pas de référence dessin animé — gpt-image-1 choisit son rendu naturel
+    "cinematic"  => "cinematic movie concept art, photorealistic CGI, dramatic film poster style, epic blockbuster, child-safe"
   }.freeze
 
   def build_image_prompt

@@ -295,7 +295,8 @@
                    { key: "ghibli",     name: "Studio Ghibli",  desc: "Aquarelle douce, tons pastels, atmosphère onirique" },
                    { key: "comics",     name: "Comics",          desc: "Traits forts, couleurs vives, style Spider-Verse" },
                    { key: "pixar",      name: "Pixar / Disney",  desc: "Rendu 3D lumineux, chaleureux, expressif" },
-                   { key: "watercolor", name: "Conte illustré",  desc: "Aquarelle vintage, livre d'images, tons chauds" }
+                   { key: "watercolor", name: "Conte illustré",  desc: "Aquarelle vintage, livre d'images, tons chauds" },
+                   { key: "cinematic",  name: "Cinématique",     desc: "Rendu réaliste, poster de film, détails épiques" }
                  ].each do |style| %>
 
                 <label class="style-card <%= 'selected' if @story.image_style == style[:key] %>">

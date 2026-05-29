@@ -6,18 +6,20 @@
 
 // Classe de base — commune à toutes les alertes Bootstrap
 .alert {
-  // Positionnement fixe en bas à droite (toast style)
+  // Positionnement fixe centré en bas
   position: fixed;
   bottom: 16px;
-  right: 16px;
+  left: 50%;
+  transform: translateX(-50%);
 
   // Au-dessus de tout (sidebar z-index est ~100, on passe au-dessus)
   z-index: 1050;
 
-  // Dimensions et espacement
-  min-width: 280px;
-  max-width: 420px;
-  padding: 14px 18px;
+  // Dimensions compactes — s'adapte au contenu sans dépasser l'écran
+  // max-width en vw pour compatibilité SassC (pas de min() avec calc())
+  width: max-content;
+  max-width: 360px;
+  padding: 10px 14px;
 
   // DA cosmique — fond sombre semi-opaque avec flou de fond
   background: rgba(17, 21, 39, 0.95);
@@ -37,6 +39,11 @@
 
   // Supprime le box-shadow Bootstrap par défaut
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+// Sur mobile : limite la largeur à l'écran avec des marges de 16px de chaque côté
+@media (max-width: 400px) {
+  .alert { max-width: calc(100vw - 32px); }
 }
 
 // ── Notice (info) — accent doré ────────────────────────────────────────────

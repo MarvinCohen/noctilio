@@ -23,10 +23,12 @@ class TrophyRoomController < ApplicationController
     @level_progress = ((@xp_points % 500) / 500.0 * 100).round
 
     # Galerie des illustrations générées (dernières histoires avec image)
+    # includes :child pour éviter le N+1 sur story.child.name dans la vue
     @illustrated_stories = current_user.stories
                                        .completed
                                        .where.not(cover_image_url: nil)
                                        .recent
                                        .limit(9)
+                                       .includes(:child)
   end
 end

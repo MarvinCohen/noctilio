@@ -92,7 +92,7 @@
             <span class="story-saga-label">Épisode <%= @story.episode_number %></span>
             <%# Lien vers l'épisode suivant s'il existe %>
             <% if @story.has_sequel? %>
-              <%= link_to story_path(@story.sequel_stories.order(:created_at).first), class: "story-saga-link story-saga-link--next" do %>
+              <%= link_to story_path(@story.next_sequel), class: "story-saga-link story-saga-link--next" do %>
                 Épisode <%= @story.episode_number + 1 %>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               <% end %>
@@ -368,7 +368,7 @@
 
               <%# Continuer l'aventure (ou lien épisode suivant si déjà créé) %>
               <% if @story.has_sequel? %>
-                <%= link_to story_path(@story.sequel_stories.order(:created_at).first),
+                <%= link_to story_path(@story.next_sequel),
                       class: "story-btn-continue" do %>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="m9 18 6-6-6-6"/></svg>Épisode <%= @story.episode_number + 1 %>
                 <% end %>
