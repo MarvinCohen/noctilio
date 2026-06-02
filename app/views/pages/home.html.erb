@@ -425,6 +425,92 @@
     .features-grid { grid-template-columns: 1fr; }
   }
 
+  /* ── Section "Comment ça marche" ── */
+  .how-section {
+    padding: 4rem 2rem 6rem;
+    position: relative;
+    z-index: 2;
+  }
+  .how-inner {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .how-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    opacity: 0.7;
+  }
+  .how-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--cream);
+    margin-bottom: 3rem;
+  }
+  /* Chaque étape est une ligne : numéro + texte */
+  .how-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .how-step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 1.5rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.08);
+  }
+  .how-step:last-child { border-bottom: none; }
+  /* Numéro de l'étape — cercle doré discret */
+  .how-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(240, 201, 122, 0.25);
+    background: rgba(240, 201, 122, 0.06);
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .how-step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+  }
+  .how-step-desc {
+    font-size: 0.88rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+  /* Paragraphe de clôture sous les étapes */
+  .how-closing {
+    margin-top: 2.5rem;
+    padding: 1.5rem 2rem;
+    background: rgba(240, 201, 122, 0.04);
+    border: 1px solid rgba(240, 201, 122, 0.1);
+    border-radius: 16px;
+    font-size: 0.9rem;
+    line-height: 1.85;
+    color: var(--text-dim);
+  }
+  .how-closing strong { color: var(--text); font-weight: 400; }
+  @media (max-width: 600px) {
+    .how-step { grid-template-columns: 36px 1fr; gap: 1rem; }
+  }
+
   /* ============================================================ */
   /* FOOTER PARTAGÉ — copie du _footer.scss pour le layout landing */
   /* Le layout landing n'inclut pas application.css (évite Bootstrap) */
@@ -691,6 +777,62 @@
       <h3 class="feature-title">En quelques secondes</h3>
       <p class="feature-desc">L'histoire est prête avant même que le bain soit fini. La routine du soir devient un moment magique.</p>
     </div>
+  </div>
+</section>
+
+<%# ============================================================ %>
+<%# Section "Comment ça marche" — 3 étapes claires %>
+<%# Objectif SEO : augmenter le volume de texte utile et indexable %>
+<%# pour les requêtes "histoires personnalisées enfants IA" %>
+<%# ============================================================ %>
+<section class="how-section">
+  <div class="how-inner">
+
+    <p class="how-eyebrow">✦ Simple comme une histoire</p>
+    <h2 class="how-title">Comment ça marche ?</h2>
+
+    <div class="how-steps">
+
+      <%# Étape 1 — Créer le profil de l'enfant %>
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div>
+          <p class="how-step-title">Crée le profil de ton héros</p>
+          <p class="how-step-desc">
+            Renseigne le prénom de ton enfant, son âge, ses personnages préférés et l'univers de son choix — forêt enchantée, espace, dinosaures, pirates ou animaux. Tu peux aussi décrire librement le monde de ton imagination. Noctilio s'en souvient pour toutes les histoires suivantes.
+          </p>
+        </div>
+      </div>
+
+      <%# Étape 2 — Génération par l'IA %>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div>
+          <p class="how-step-title">L'IA compose une histoire unique</p>
+          <p class="how-step-desc">
+            En quelques secondes, notre intelligence artificielle (GPT-4o) génère un conte inédit, adapté à l'âge de ton enfant et à son niveau de lecture. Chaque histoire est accompagnée d'une illustration générée spécialement pour l'occasion. Il n'y en a jamais deux pareilles.
+          </p>
+        </div>
+      </div>
+
+      <%# Étape 3 — Lecture ou écoute au coucher %>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div>
+          <p class="how-step-title">Lis ou écoute au moment du coucher</p>
+          <p class="how-step-desc">
+            Installez-vous confortablement. L'histoire est prête à être lue ensemble ou écoutée à voix haute. En mode interactif, ton enfant choisit lui-même la suite de l'aventure à chaque étape — un vrai livre dont il est le héros.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <%# Paragraphe de clôture — résumé SEO de la proposition de valeur %>
+    <div class="how-closing">
+      <strong>Noctilio</strong> est pensé pour les parents francophones qui veulent offrir à leurs enfants des moments de lecture riches et personnalisés, sans y passer des heures. Chaque histoire est adaptée à l'enfant — son prénom, son âge, sa personnalité — et renouvelée à chaque génération. <strong>3 histoires par mois gratuitement</strong>, et des histoires illimitées avec le mode interactif en abonnement Premium.
+    </div>
+
   </div>
 </section>
 
