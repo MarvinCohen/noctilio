@@ -22,8 +22,8 @@
     "headline": "<%= @article[:title].gsub('"', '\"') %>",
     "description": "<%= @article[:description].gsub('"', '\"') %>",
     "url": "https://www.noctilio-app.fr/blog/<%= @article[:slug] %>",
-    "datePublished": "<%= @article[:published_at].iso8601 %>",
-    "dateModified": "<%= @article[:published_at].iso8601 %>",
+    "datePublished": "<%= @article[:published_at].strftime("%Y-%m-%dT00:00:00+02:00") %>",
+    "dateModified": "<%= @article[:published_at].strftime("%Y-%m-%dT00:00:00+02:00") %>",
     "inLanguage": "fr",
     "author": {
       "@type": "Organization",
