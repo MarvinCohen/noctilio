@@ -158,11 +158,35 @@ bibliothèque (bookworm, story_keeper)
 
 ## SEO
 
-- `public/robots.txt` — bloque les pages privées, autorise /, /cgu, /confidentialite, /mentions-legales
-- `public/sitemap.xml` — 4 URLs publiques indexées
+- `public/robots.txt` — bloque les pages privées, autorise /, /cgu, /confidentialite, /mentions-legales, /blog
+- `public/sitemap.xml` — 8 URLs publiques : landing, légales (×3), blog index + 3 articles
 - `public/llms.txt` — description Noctilio pour les IA (ChatGPT, Perplexity, Gemini)
+- `public/og-image.jpg` — image Open Graph dédiée 1536×1024 (générée via gpt-image-1)
 - Layouts : robots dynamique via `content_for(:robots)` — par défaut noindex (app), index sur pages publiques
 - Schema.org JSON-LD dans home.html.erb : SoftwareApplication + Organization + WebSite
+
+### Blog SEO (statique, sans base de données)
+
+- Controller : `app/controllers/blog_controller.rb` — ARTICLES constant, slug-based routing
+- Routes : `GET /blog` → `blog#index`, `GET /blog/:slug` → `blog#show`
+- Articles : `app/views/blog/_<slug>.html.erb` (partials)
+- Articles actuels :
+  - `histoires-du-soir-enfant` — "5 idées d'histoires du soir pour endormir son enfant"
+  - `conte-personnalise-ia-enfant` — "Comment l'IA génère des contes personnalisés"
+  - `histoires-enfant-4-ans` — "Histoires pour enfant de 4 ans : ce qui fonctionne vraiment"
+- Lien "Blog" présent dans le footer partagé (`app/views/shared/_footer.html.erb`)
+
+### ⚠️ Quand la landing page sera supprimée (/ devient dashboard)
+
+Quand `/` sera protégé par Devise et redirigera vers `/users/sign_in`, il faudra :
+
+1. **`robots.txt`** — remplacer `Allow: /` par `Disallow: /` pour l'app privée
+2. **`sitemap.xml`** — retirer `/` ; garder uniquement `/blog/*` et les pages légales
+3. **Schema.org** — déplacer le JSON-LD `SoftwareApplication` + `Organization` de `home.html.erb`
+   vers une page publique permanente (layout landing, ou page `/a-propos` à créer)
+4. **og:image** — vérifier qu'elle est servie sur toutes les pages publiques restantes
+5. **Google Search Console** — soumettre le nouveau sitemap + inspecter les URLs
+6. Le blog devient la principale vitrine SEO du site — prioriser les nouveaux articles
 
 ## Tests (Minitest)
 

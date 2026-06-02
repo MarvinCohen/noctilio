@@ -8,6 +8,43 @@
 <% content_for :description, "Conseils pratiques pour les parents : histoires du soir, contes personnalisés par IA, idées pour chaque âge. Le blog de Noctilio." %>
 <% content_for :robots, "index, follow" %>
 
+<%# Schema.org Blog — données structurées pour la page liste du blog %>
+<%# Aide Google à comprendre que c'est un blog avec plusieurs articles listés %>
+<% content_for :head do %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "Blog Noctilio",
+    "description": "Conseils pratiques pour les parents sur les histoires pour enfants : rituels du soir, contes personnalisés par IA, idées par tranche d'âge.",
+    "url": "https://www.noctilio-app.fr/blog",
+    "inLanguage": "fr",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Noctilio",
+      "url": "https://www.noctilio-app.fr"
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://www.noctilio-app.fr/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://www.noctilio-app.fr/blog"
+        }
+      ]
+    }
+  }
+  </script>
+<% end %>
+
 <style>
   /* ── Blog index — liste des articles ── */
   .blog-page {

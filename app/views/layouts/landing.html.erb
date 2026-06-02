@@ -23,7 +23,9 @@
 
     <%# ── Balises SEO de base ── %>
     <%# description : résumé affiché par Google sous le titre dans les résultats de recherche %>
-    <meta name="description" content="Noctilio génère des histoires personnalisées pour ton enfant en quelques secondes — avec son prénom, ses personnages et son univers préféré. Propulsé par l'IA.">
+    <%# Dynamique : si une vue fournit content_for(:description), elle est utilisée ici %>
+    <%# Sinon : description par défaut de la landing page %>
+    <meta name="description" content="<%= content_for?(:description) ? yield(:description) : "Noctilio génère des histoires personnalisées pour ton enfant en quelques secondes — avec son prénom, ses personnages et son univers préféré. Propulsé par l'IA." %>">
 
     <%# Canonical — indique à Google l'URL de référence (évite www vs non-www, http vs https) %>
     <link rel="canonical" href="https://www.noctilio-app.fr<%= request.path %>">
@@ -45,27 +47,31 @@
 
     <%# ── Open Graph (Facebook, WhatsApp, LinkedIn, iMessage…) ── %>
     <%# Ces balises définissent l'aperçu affiché quand quelqu'un partage le lien %>
-    <meta property="og:type"        content="website">
+    <%# og:type : "article" pour les articles de blog, "website" pour les autres pages %>
+    <meta property="og:type"        content="<%= content_for?(:og_type) ? yield(:og_type) : "website" %>">
     <%# og:url dynamique — utilise request.original_url pour correspondre exactement à la page %>
     <meta property="og:url"         content="<%= request.original_url %>">
-    <meta property="og:title"       content="Noctilio — Des histoires magiques pour ton enfant">
-    <meta property="og:description" content="Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant.">
+    <%# og:title dynamique — reprend le titre SEO de la vue si défini, sinon valeur par défaut %>
+    <meta property="og:title"       content="<%= content_for?(:title) ? yield(:title) : "Noctilio — Des histoires magiques pour ton enfant" %>">
+    <%# og:description dynamique — reprend la description SEO de la vue si définie %>
+    <meta property="og:description" content="<%= content_for?(:description) ? yield(:description) : "Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant." %>">
     <%# og:image : image dédiée 1536×1024px générée pour les aperçus de partage social %>
     <%# Servie depuis public/ — URL absolue obligatoire pour Facebook, WhatsApp, LinkedIn %>
     <meta property="og:image"       content="https://www.noctilio-app.fr/og-image.jpg">
     <meta property="og:image:width"  content="1536">
     <meta property="og:image:height" content="1024">
-    <meta property="og:image:alt"    content="Noctilio — Des histoires magiques pour ton enfant">
+    <meta property="og:image:alt"    content="<%= content_for?(:title) ? yield(:title) : "Noctilio — Des histoires magiques pour ton enfant" %>">
     <meta property="og:locale"       content="fr_FR">
     <meta property="og:site_name"    content="Noctilio">
 
     <%# ── Twitter Card (X) ── %>
     <%# summary_large_image : affiche une grande image dans le tweet %>
     <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:title"       content="Noctilio — Des histoires magiques pour ton enfant">
-    <meta name="twitter:description" content="Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant.">
+    <%# Reprend les mêmes valeurs dynamiques que og: pour cohérence %>
+    <meta name="twitter:title"       content="<%= content_for?(:title) ? yield(:title) : "Noctilio — Des histoires magiques pour ton enfant" %>">
+    <meta name="twitter:description" content="<%= content_for?(:description) ? yield(:description) : "Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant." %>">
     <meta name="twitter:image"       content="https://www.noctilio-app.fr/og-image.jpg">
-    <meta name="twitter:image:alt"   content="Noctilio — histoires personnalisées pour enfants">
+    <meta name="twitter:image:alt"   content="<%= content_for?(:title) ? yield(:title) : "Noctilio — histoires personnalisées pour enfants" %>">
 
     <%# CSRF meta tags — nécessaires pour les requêtes fetch() vers l'API Rails %>
     <%= csrf_meta_tags %>
