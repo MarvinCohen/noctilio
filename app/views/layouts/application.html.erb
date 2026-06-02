@@ -1,8 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
   <head>
-    <title><%= content_for(:title) || "Noctilio" %></title>
+    <meta charset="UTF-8">
+    <title><%= content_for(:title) || "Noctilio — Histoires magiques pour enfants" %></title>
+
+    <%# Robots — par défaut noindex pour les pages app (derrière authentification) %>
+    <%# Les pages légales publiques surchargent ce comportement via content_for(:robots) %>
+    <meta name="robots" content="<%= content_for?(:robots) ? yield(:robots) : "noindex, nofollow" %>">
+
+    <%# Description — surchargeable page par page via content_for(:description) %>
+    <meta name="description" content="<%= content_for?(:description) ? yield(:description) : "Noctilio — Des histoires personnalisées générées par IA pour ton enfant." %>">
+
+    <%# URL canonique — évite les doublons si la page est accidentellement indexée %>
+    <link rel="canonical" href="https://noctilio-app.fr<%= request.path %>">
+
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <%# theme-color — colore la barre du navigateur sur mobile avec le fond nuit de Noctilio %>
+    <meta name="theme-color" content="#0b0e1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Noctilio">
     <meta name="mobile-web-app-capable" content="yes">
@@ -30,7 +44,8 @@
     <%# ---------------------------------------------------------------- %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+    <%# display=swap : texte visible immédiatement avec la police système, remplacé quand Google Fonts charge %>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Kalam:wght@300;400;700&display=swap&font-display=swap" rel="stylesheet">
 
     <%# ---------------------------------------------------------------- %>
     <%# Style inline minimal — impose le fond sombre sur TOUT le body %>

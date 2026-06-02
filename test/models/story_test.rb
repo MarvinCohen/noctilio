@@ -286,6 +286,54 @@ class StoryTest < ActiveSupport::TestCase
     assert_equal "🚀", story.world_emoji
   end
 
+  # Vérifie que le style d'image "cinematic" est accepté comme valeur valide
+  # Cas : nouveau style ajouté — il doit passer la validation inclusion
+  # Pourquoi : cinematic est le 5ème style — il doit être dans la liste autorisée
+  test "image_style cinematic est accepté par la validation" do
+    # Arrange
+    child = children(:leo)
+    story = Story.new(child: child, status: :pending, image_style: "cinematic")
+
+    # Act
+    story.valid?
+
+    # Assert — aucune erreur ne doit porter sur image_style
+    assert_empty story.errors[:image_style],
+                 "Le style cinematic devrait être valide — il fait partie des 5 styles autorisés"
+  end
+
+  # Vérifie qu'un style inconnu est refusé par la validation
+  # Cas : style "oil_painting" qui n'existe pas dans l'app
+  # Pourquoi : la validation inclusion empêche les valeurs arbitraires
+  test "image_style inconnu est refusé par la validation" do
+    # Arrange
+    child = children(:leo)
+    story = Story.new(child: child, status: :pending, image_style: "oil_painting")
+
+    # Act
+    story.valid?
+
+    # Assert
+    assert story.errors[:image_style].any?,
+           "Un style inconnu devrait être refusé — seuls ghibli/comics/pixar/watercolor/cinematic sont autorisés"
+  end
+
+  # Vérifie que image_style peut être nil (champ optionnel)
+  # Cas : histoire sans style d'illustration explicite
+  # Pourquoi : allow_nil: true est déclaré dans la validation
+  test "image_style nil est accepté" do
+    # Arrange
+    child = children(:leo)
+    story = Story.new(child: child, status: :pending, image_style: nil)
+
+    # Act
+    story.valid?
+
+    # Assert
+    assert_empty story.errors[:image_style],
+                 "image_style nil devrait être accepté (champ optionnel)"
+  end
+
   # Vérifie que world_emoji retourne ✨ pour un univers inconnu ou nil
   # Cas : histoire avec custom_theme, pas de world_theme prédéfini
   # Pourquoi : valeur par défaut quand l'utilisateur a décrit son propre univers

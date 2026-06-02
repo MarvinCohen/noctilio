@@ -1075,3 +1075,58 @@ function drawMoonPhase(canvas, phase) {
 }
 
 </script>
+
+<%# ── Schema.org — données structurées pour Google ── %>
+<%# JSON-LD : format recommandé par Google pour les rich results %>
+<%# Aide Google à comprendre le produit et à l'afficher dans les résultats enrichis %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Noctilio",
+      "url": "https://noctilio-app.fr",
+      "description": "Application de génération d'histoires personnalisées pour enfants par intelligence artificielle. Créez des contes uniques avec le prénom, les personnages et l'univers préférés de votre enfant.",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "Web, iOS, Android",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR",
+        "description": "Accès gratuit — 3 histoires par mois"
+      },
+      "audience": {
+        "@type": "PeopleAudience",
+        "suggestedMinAge": 2,
+        "suggestedMaxAge": 10,
+        "audienceType": "Parents d'enfants de 2 à 10 ans"
+      },
+      "inLanguage": "fr",
+      "author": {
+        "@type": "Organization",
+        "name": "Noctilio",
+        "url": "https://noctilio-app.fr"
+      }
+    },
+    {
+      "@type": "Organization",
+      "name": "Noctilio",
+      "url": "https://noctilio-app.fr",
+      "description": "Noctilio génère des histoires personnalisées pour enfants grâce à l'intelligence artificielle.",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "<%= image_url('mascot.png') %>",
+        "width": 512,
+        "height": 512
+      }
+    },
+    {
+      "@type": "WebSite",
+      "name": "Noctilio",
+      "url": "https://noctilio-app.fr",
+      "inLanguage": "fr"
+    }
+  ]
+}
+</script>

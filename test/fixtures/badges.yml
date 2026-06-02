@@ -2,38 +2,248 @@
 # condition_key doit être unique (contrainte en base)
 # Ces clés correspondent exactement aux constantes définies dans Badge
 
+# ── Progression ──────────────────────────────────────────────────────────────
+
 first_story:
   name: "Première histoire"
   condition_key: first_story
   description: "Créer sa première histoire"
-  icon: "star"
+  icon: "⭐"
 
 five_stories:
   name: "5 histoires"
   condition_key: five_stories
   description: "Créer 5 histoires au total"
-  icon: "book"
+  icon: "📚"
 
 ten_stories:
   name: "10 histoires"
   condition_key: ten_stories
   description: "Créer 10 histoires au total"
-  icon: "trophy"
+  icon: "🏅"
 
-night_owl:
-  name: "Hibou nocturne"
-  condition_key: night_owl
-  description: "Créer une histoire après 21h"
-  icon: "moon"
+twenty_stories:
+  name: "20 histoires"
+  condition_key: twenty_stories
+  description: "20 aventures créées"
+  icon: "🌟"
+
+thirty_stories:
+  name: "30 histoires"
+  condition_key: thirty_stories
+  description: "30 histoires créées"
+  icon: "🎯"
+
+fifty_stories:
+  name: "50 histoires"
+  condition_key: fifty_stories
+  description: "50 aventures créées"
+  icon: "🏆"
+
+hundred_stories:
+  name: "100 histoires"
+  condition_key: hundred_stories
+  description: "100 histoires créées"
+  icon: "💯"
+
+# ── Univers ───────────────────────────────────────────────────────────────────
+
+space_explorer:
+  name: "Explorateur Spatial"
+  condition_key: space_explorer
+  description: "3 aventures dans l'espace"
+  icon: "🚀"
+
+dino_fan:
+  name: "Fan de Dinos"
+  condition_key: dino_fan
+  description: "3 aventures avec des dinosaures"
+  icon: "🦕"
+
+princess_fan:
+  name: "Fan de Princesses"
+  condition_key: princess_fan
+  description: "3 aventures de princesses"
+  icon: "👸"
+
+pirate_captain:
+  name: "Capitaine Pirate"
+  condition_key: pirate_captain
+  description: "3 aventures de pirates"
+  icon: "🏴‍☠️"
+
+animal_lover:
+  name: "Ami des Animaux"
+  condition_key: animal_lover
+  description: "3 aventures avec des animaux"
+  icon: "🦁"
+
+world_traveler:
+  name: "Grand Voyageur"
+  condition_key: world_traveler
+  description: "Avoir exploré les 5 univers"
+  icon: "🌍"
+
+# ── Mode interactif ───────────────────────────────────────────────────────────
+
+first_interactive:
+  name: "Premier Choix"
+  condition_key: first_interactive
+  description: "Première histoire interactive complétée"
+  icon: "🎮"
+
+choice_maker:
+  name: "Maître des Choix"
+  condition_key: choice_maker
+  description: "10 choix interactifs effectués"
+  icon: "🔀"
+
+# ── Sagas ─────────────────────────────────────────────────────────────────────
+
+saga_starter:
+  name: "La Suite !"
+  condition_key: saga_starter
+  description: "Avoir créé la suite d'une histoire"
+  icon: "📖"
+
+saga_master:
+  name: "Maître de la Saga"
+  condition_key: saga_master
+  description: "Une saga de 3 épisodes"
+  icon: "🎬"
+
+# ── Styles ────────────────────────────────────────────────────────────────────
+
+style_explorer:
+  name: "Artiste Complet"
+  condition_key: style_explorer
+  description: "Avoir utilisé les 5 styles d'illustration"
+  icon: "🎨"
+
+ghibli_fan:
+  name: "Fan de Ghibli"
+  condition_key: ghibli_fan
+  description: "5 histoires dans le style Studio Ghibli"
+  icon: "🖼️"
+
+cinematic_pro:
+  name: "Réalisateur en Herbe"
+  condition_key: cinematic_pro
+  description: "3 histoires en style cinématique"
+  icon: "🎬"
+
+# ── Valeurs éducatives ────────────────────────────────────────────────────────
 
 kind_heart:
   name: "Coeur généreux"
   condition_key: kind_heart
   description: "Choisir la valeur gentillesse 3 fois"
-  icon: "heart"
+  icon: "❤️"
+
+courage_heart:
+  name: "Cœur Courageux"
+  condition_key: courage_heart
+  description: "Choisir le courage 3 fois"
+  icon: "💪"
+
+sharing_heart:
+  name: "Cœur Généreux"
+  condition_key: sharing_heart
+  description: "Choisir le partage 3 fois"
+  icon: "🤝"
+
+confidence_builder:
+  name: "Cœur Confiant"
+  condition_key: confidence_builder
+  description: "Choisir la confiance 3 fois"
+  icon: "💫"
+
+# ── Thème libre ───────────────────────────────────────────────────────────────
+
+free_spirit:
+  name: "Esprit Libre"
+  condition_key: free_spirit
+  description: "Première histoire avec son propre thème"
+  icon: "✨"
+
+imaginative:
+  name: "Grand Imaginatif"
+  condition_key: imaginative
+  description: "5 histoires avec son propre thème"
+  icon: "🎭"
+
+# ── Durée ─────────────────────────────────────────────────────────────────────
+
+quick_tales:
+  name: "Vite Fait Bien Fait"
+  condition_key: quick_tales
+  description: "5 histoires express de 5 minutes"
+  icon: "⚡"
+
+epic_reader:
+  name: "Lecteur Épique"
+  condition_key: epic_reader
+  description: "Première histoire de 15 minutes"
+  icon: "📜"
+
+# ── Famille ───────────────────────────────────────────────────────────────────
+
+together:
+  name: "Aventure Partagée"
+  condition_key: together
+  description: "Première histoire avec plusieurs enfants"
+  icon: "👫"
+
+big_family:
+  name: "Grande Famille"
+  condition_key: big_family
+  description: "Une histoire avec 3 héros ou plus"
+  icon: "👨‍👩‍👧"
+
+# ── Horaires ──────────────────────────────────────────────────────────────────
+
+night_owl:
+  name: "Hibou nocturne"
+  condition_key: night_owl
+  description: "Créer une histoire après 21h"
+  icon: "🦉"
+
+early_bird:
+  name: "Lève-tôt"
+  condition_key: early_bird
+  description: "Histoire créée avant 8h du matin"
+  icon: "🌅"
+
+midnight_tales:
+  name: "Conte de Minuit"
+  condition_key: midnight_tales
+  description: "Histoire créée après minuit"
+  icon: "🌙"
+
+# ── Bibliothèque ──────────────────────────────────────────────────────────────
 
 bookworm:
   name: "Grand lecteur"
   condition_key: bookworm
   description: "Avoir 10 histoires sauvegardées"
-  icon: "glasses"
+  icon: "🔖"
+
+collector:
+  name: "Collectionneur"
+  condition_key: collector
+  description: "5 histoires sauvegardées"
+  icon: "💾"
+
+great_library:
+  name: "Grande Bibliothèque"
+  condition_key: great_library
+  description: "25 histoires sauvegardées"
+  icon: "📚"
+
+# ── Week-end ──────────────────────────────────────────────────────────────────
+
+weekend_tales:
+  name: "Héros du Week-end"
+  condition_key: weekend_tales
+  description: "3 histoires créées le week-end"
+  icon: "🎉"

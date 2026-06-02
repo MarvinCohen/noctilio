@@ -12,70 +12,148 @@
   /* Ces variables reproduisent les tokens de la DA cosmique */
   .tr-page          { padding: 2.5rem 0 4rem; }
 
-  /* ── Hero XP ── */
-  /* Carte principale qui affiche le niveau, la barre de progression et le total XP */
+  /* ── Hero XP — redesign ── */
+  /* Carte principale : fond sombre avec glow radial doré derrière l'orbe de niveau */
   .tr-hero-card {
-    background:    #111527;                      /* Deep — fond de carte */
-    border:        1px solid rgba(240,201,122,0.15); /* Border doré subtil */
-    border-radius: 16px;
-    padding:       2rem 2.5rem;
+    position:      relative;
+    background:    #0d1023;
+    border:        1px solid rgba(240,201,122,0.22);
+    border-radius: 20px;
+    padding:       1.75rem 1.75rem 1.5rem;
     margin-bottom: 2.5rem;
+    overflow:      hidden;
   }
-  /* Titre de page — Cormorant Garamond italic, style éditorial */
+  /* Halo doré en haut à droite — derrière l'orbe de niveau */
+  .tr-hero-card::before {
+    content:          '';
+    position:         absolute;
+    top:              -60px;
+    right:            -60px;
+    width:            220px;
+    height:           220px;
+    background:       radial-gradient(circle, rgba(240,201,122,0.18) 0%, transparent 68%);
+    pointer-events:   none;
+  }
+  /* Ligne de brillance en haut de la carte */
+  .tr-hero-card::after {
+    content:    '';
+    position:   absolute;
+    top:        0;
+    left:       10%;
+    right:      10%;
+    height:     1px;
+    background: linear-gradient(90deg, transparent, rgba(240,201,122,0.45), transparent);
+  }
+
+  /* ── Label chapeau — "SALLE DES TROPHÉES" en petites caps ── */
+  .tr-hero-label {
+    font-size:      0.68rem;
+    font-weight:    700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color:          rgba(240,201,122,0.60);
+    margin-bottom:  0.4rem;
+  }
+  /* Titre principal — Cormorant Garamond italic, large */
   .tr-page-title {
     font-family:   'Cormorant Garamond', Georgia, serif;
     font-style:    italic;
-    font-size:     clamp(2rem, 5vw, 3.2rem);
-    color:         #fdf6e3; /* Cream */
-    line-height:   1.1;
-    margin-bottom: 0.25rem;
+    font-size:     clamp(1.9rem, 5vw, 3rem);
+    color:         #fdf6e3;
+    line-height:   1.05;
+    margin-bottom: 0.2rem;
   }
   .tr-page-subtitle {
-    color:       #8a8578; /* Text-dim */
-    font-size:   0.95rem;
+    color:         rgba(138,133,120,0.85);
+    font-size:     0.88rem;
     margin-bottom: 0;
   }
-  /* Emoji trophée — grand, centré */
-  .tr-trophy-icon { font-size: 3.5rem; line-height: 1; }
 
-  /* Badge pill niveau — fond doré, texte sombre */
-  .tr-level-badge {
-    display:       inline-flex;
-    align-items:   center;
-    gap:           0.4rem;
-    background:    #f0c97a;
-    color:         #0b0e1a;
-    border-radius: 50px;
-    font-weight:   700;
-    font-size:     1rem;
-    padding:       0.4rem 1.1rem;
-    white-space:   nowrap;
+  /* ── Orbe de niveau — cercle doré avec glow ── */
+  /* L'élément hero visuel à droite — communique le niveau d'un coup d'œil */
+  .tr-level-orb {
+    width:           82px;
+    height:          82px;
+    border-radius:   50%;
+    border:          2px solid rgba(240,201,122,0.75);
+    background:      linear-gradient(145deg, rgba(240,201,122,0.14) 0%, rgba(240,201,122,0.04) 100%);
+    box-shadow:      0 0 28px rgba(240,201,122,0.22), inset 0 1px 0 rgba(255,255,255,0.06);
+    /* Centrage strict : flex colonne + centrage sur les deux axes + texte centré */
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    justify-content: center;
+    text-align:      center;
+    flex-shrink:     0;
+    /* Évite que le flex parent étire ou déforme le cercle */
+    align-self:      center;
   }
-  /* Valeur XP — Cormorant Garamond, grand, doré */
+  /* Chiffre du niveau — Cormorant Garamond, doré, très grand */
+  .tr-level-number {
+    display:     block;           /* block pour que text-align: center s'applique */
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size:   2.4rem;
+    font-weight: 700;
+    color:       #f0c97a;
+    line-height: 1;
+    width:       100%;
+    text-align:  center;
+  }
+  /* Libellé "NIVEAU" sous le chiffre */
+  .tr-level-caption {
+    display:        block;        /* block pour centrage cohérent */
+    width:          100%;
+    text-align:     center;
+    font-size:      0.5rem;
+    font-weight:    800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color:          rgba(240,201,122,0.65);
+    margin-top:     0.1rem;
+    line-height:    1;
+  }
+
+  /* ── Bande de stats XP ── */
+  /* Séparateur fin entre infos et barre de progression */
+  .tr-hero-divider {
+    border:     none;
+    border-top: 1px solid rgba(240,201,122,0.08);
+    margin:     1.1rem 0 1rem;
+  }
+  /* Valeur XP — Cormorant Garamond, très grand, doré */
   .tr-xp-value {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-style:  italic;
-    font-size:   2.2rem;
+    font-size:   2rem;
     color:       #f0c97a;
     line-height: 1;
+    font-weight: 600;
   }
-  .tr-xp-label { color: #8a8578; font-size: 0.85rem; }
+  .tr-xp-label {
+    color:     rgba(138,133,120,0.85);
+    font-size: 0.8rem;
+    margin-top: 0.1rem;
+  }
 
-  /* Barre de progression XP — fond très sombre, remplissage doré */
+  /* Barre de progression XP — plus épaisse et plus impactante */
   .tr-progress {
-    background:    rgba(240,201,122,0.10); /* Mist */
+    background:    rgba(240,201,122,0.10);
     border-radius: 50px;
-    height:        8px;
+    height:        10px;
     overflow:      hidden;
-    margin:        0.6rem 0 0.3rem;
+    margin:        0.5rem 0 0.35rem;
   }
   .tr-progress-fill {
-    height:        100%;
-    background:    #f0c97a; /* Gold */
+    height:     100%;
+    background: linear-gradient(90deg, #c8a04a, #f0c97a, #fde9a2);
     border-radius: 50px;
-    transition:    width 0.6s ease;
+    transition:    width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 0 8px rgba(240,201,122,0.45);
   }
-  .tr-progress-label { color: #8a8578; font-size: 0.8rem; }
+  .tr-progress-label {
+    color:     rgba(138,133,120,0.85);
+    font-size: 0.78rem;
+  }
 
   /* ── Section titre ── */
   .tr-section-title {
@@ -123,6 +201,32 @@
   .tr-badge-tag--locked   { background: rgba(138,133,120,0.15); color: #8a8578; }
   .tr-badge-date { color: #8a8578; font-size: 0.7rem; display: block; margin-top: 0.3rem; }
 
+  /* ── Version compacte mobile — réduit la hauteur des cartes ── */
+  /* Sur mobile (< 600px) : 3 colonnes, cartes réduites, description masquée */
+  @media (max-width: 600px) {
+    /* Carte — padding minimal pour gagner de la hauteur */
+    .tr-badge-card {
+      padding:       0.75rem 0.4rem;
+      border-radius: 12px;
+    }
+    /* Emoji — taille réduite */
+    .tr-badge-icon {
+      font-size:     2rem;
+      margin-bottom: 0.3rem;
+    }
+    /* Nom du badge — légèrement plus petit */
+    .tr-badge-name {
+      font-size:     0.78rem;
+      margin-bottom: 0.2rem;
+    }
+    /* Description masquée sur mobile — trop verbeuse, ralentit la lecture */
+    .tr-badge-desc  { display: none; }
+    /* Tag réduit */
+    .tr-badge-tag   { font-size: 0.65rem; padding: 0.15rem 0.5rem; margin-top: 0.4rem; }
+    /* Date masquée sur mobile — surcharge visuelle inutile */
+    .tr-badge-date  { display: none; }
+  }
+
   /* ── Galerie d'illustrations ── */
   /* Cartes dark, image avec border-radius en haut */
   .tr-gallery-card {
@@ -148,6 +252,31 @@
   .tr-gallery-title { color: #fdf6e3; font-size: 0.88rem; font-weight: 600; }
   .tr-gallery-meta  { color: #8a8578; font-size: 0.75rem; margin-top: 0.2rem; }
 
+  /* ── Badge caché (état initial "Voir plus") ── */
+  /* Utilisé par badge_reveal_controller.js pour masquer les badges au-delà de la limite */
+  .tr-badge-hidden { display: none; }
+
+  /* ── Bouton "Voir plus de trophées" ── */
+  .tr-reveal-btn {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           0.5rem;
+    background:    transparent;
+    border:        1px solid rgba(240,201,122,0.35);
+    color:         #f0c97a;
+    border-radius: 50px;
+    font-size:     0.9rem;
+    font-weight:   600;
+    padding:       0.55rem 1.5rem;
+    cursor:        pointer;
+    transition:    background 0.2s, border-color 0.2s;
+    margin-top:    1.25rem;
+  }
+  .tr-reveal-btn:hover {
+    background:    rgba(240,201,122,0.10);
+    border-color:  rgba(240,201,122,0.65);
+  }
+
   /* ── Message vide ── */
   .tr-empty { color: #8a8578; text-align: center; padding: 2rem 0; font-size: 0.95rem; }
 
@@ -166,8 +295,11 @@
     /* Titre — réduit la taille min du clamp */
     .tr-page-title { font-size: clamp(1.6rem, 6vw, 3.2rem); }
 
-    /* Hero card — moins de padding */
-    .tr-hero-card { padding: 1.5rem 1.25rem; }
+    /* Hero card — moins de padding, orbe un peu plus petite */
+    .tr-hero-card { padding: 1.25rem 1.1rem; }
+    .tr-level-orb { width: 70px; height: 70px; }
+    .tr-level-number { font-size: 2rem; }
+    .tr-xp-value { font-size: 1.6rem; }
 
     /* Galerie — images un peu moins hautes */
     .tr-gallery-img { height: 140px; }
@@ -180,44 +312,50 @@
   <%# HERO — niveau + barre de progression XP %>
   <%# ============================================================ %>
   <div class="tr-hero-card">
-    <div class="row align-items-center g-3">
 
-      <%# Icône trophée à gauche %>
-      <div class="col-auto">
-        <div class="tr-trophy-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 2h12v7a6 6 0 0 1-12 0V2z"/><path d="M12 15v4"/><path d="M8 19h8"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-        </div>
-      </div>
+    <%# ── Ligne 1 : titre à gauche, orbe de niveau à droite ── %>
+    <div class="d-flex align-items-center justify-content-between gap-3">
 
-      <%# Titre + progression au centre %>
-      <div class="col">
-        <%# Titre principal — Cormorant Garamond italic, crème %>
-        <h1 class="tr-page-title">Salle des Trophées</h1>
+      <%# Bloc texte gauche %>
+      <div>
+        <%# Label chapeau en petites caps dorées %>
+        <div class="tr-hero-label">✦ Salle des Trophées</div>
+        <%# Titre éditorial en Cormorant Garamond italic %>
+        <h1 class="tr-page-title">Tes Trophées</h1>
         <p class="tr-page-subtitle">Tes exploits, tes rêves, ton univers</p>
-
-        <%# Barre de progression vers le prochain niveau %>
-        <div class="tr-progress mt-3">
-          <%# La largeur est calculée depuis le controller : @level_progress (0–100) %>
-          <div class="tr-progress-fill" style="width: <%= @level_progress %>%"
-               title="<%= @level_progress %>% vers le niveau suivant"></div>
-        </div>
-        <span class="tr-progress-label">
-          <%= @level_progress %>% vers le niveau <%= @level + 1 %>
-        </span>
       </div>
 
-      <%# XP total + badge niveau à droite %>
-      <div class="col-auto text-end d-flex flex-column align-items-end gap-2">
-        <%# XP en grand, Cormorant doré %>
-        <div>
-          <div class="tr-xp-value"><%= @xp_points %></div>
-          <div class="tr-xp-label">XP accumulés</div>
-        </div>
-        <%# Pill niveau — fond doré, texte sombre %>
-        <span class="tr-level-badge">⭐ Niveau <%= @level %></span>
+      <%# Orbe de niveau — cercle doré avec glow, chiffre centré %>
+      <%# C'est l'élément hero visuel — communique le niveau d'un coup d'œil %>
+      <div class="tr-level-orb flex-shrink-0">
+        <span class="tr-level-number"><%= @level %></span>
+        <span class="tr-level-caption">Niveau</span>
       </div>
 
     </div>
+
+    <%# ── Séparateur ── %>
+    <hr class="tr-hero-divider">
+
+    <%# ── Ligne 2 : XP total à gauche, barre de progression à droite ── %>
+    <div class="d-flex align-items-end gap-4">
+
+      <%# XP accumulés — Cormorant doré, affiché en grand %>
+      <div class="flex-shrink-0">
+        <div class="tr-xp-value"><%= number_with_delimiter(@xp_points, delimiter: "\u202f") %></div>
+        <div class="tr-xp-label">XP accumulés</div>
+      </div>
+
+      <%# Barre de progression vers le prochain niveau (prend le reste de la largeur) %>
+      <div class="flex-grow-1">
+        <div class="tr-progress">
+          <div class="tr-progress-fill" style="width: <%= @level_progress %>%"></div>
+        </div>
+        <span class="tr-progress-label"><%= @level_progress %>% vers le niveau <%= @level + 1 %></span>
+      </div>
+
+    </div>
+
   </div>
 
   <hr class="tr-divider">
@@ -226,7 +364,12 @@
   <%# BADGES MAGIQUES — grille 4 colonnes %>
   <%# Obtenu = carte lumineuse avec glow, À débloquer = opacity 0.4 %>
   <%# ============================================================ %>
-  <div class="mb-5">
+  <%# data-controller branche le Stimulus BadgeRevealController sur ce bloc %>
+  <%# data-badge-reveal-limit-value définit combien de badges sont visibles au départ %>
+  <div class="mb-5"
+       data-controller="badge-reveal"
+       data-badge-reveal-limit-value="8">
+
     <h2 class="tr-section-title">✦ Badges Magiques</h2>
 
     <div class="row g-3">
@@ -234,7 +377,9 @@
         <%# Vérifie si ce badge est dans la liste des badges obtenus %>
         <% earned = @earned_badge_ids.include?(badge.id) %>
 
-        <div class="col-6 col-md-3">
+        <%# data-badge-reveal-target="item" — permet au controller de masquer/révéler ce badge %>
+        <%# col-4 = 3 colonnes mobile, col-md-3 = 4 colonnes desktop %>
+        <div class="col-4 col-md-3" data-badge-reveal-target="item">
           <%# Classe différente selon le statut : glow si obtenu, désaturé si verrouillé %>
           <div class="tr-badge-card <%= earned ? 'tr-badge-card--earned' : 'tr-badge-card--locked' %>">
 
@@ -270,6 +415,25 @@
         </div>
       <% end %>
     </div>
+
+    <%# Boutons centrés sous la grille — un seul visible à la fois %>
+    <div class="text-center">
+      <%# "Voir plus" — visible au chargement, masqué après dépliement %>
+      <button class="tr-reveal-btn"
+              data-badge-reveal-target="btnMore"
+              data-action="click->badge-reveal#reveal">
+        Voir les autres trophées ✦
+      </button>
+
+      <%# "Voir moins" — masqué au chargement, visible après dépliement %>
+      <%# Au clic : replie les badges ET remonte au titre de la section %>
+      <button class="tr-reveal-btn"
+              data-badge-reveal-target="btnLess"
+              data-action="click->badge-reveal#collapse">
+        ↑ Voir moins
+      </button>
+    </div>
+
   </div>
 
   <hr class="tr-divider">

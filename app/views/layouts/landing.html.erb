@@ -6,18 +6,39 @@
     <title><%= content_for(:title) || "Noctilio — Des histoires magiques pour ton enfant" %></title>
 
     <%# Polices Google — design élégant de la landing page %>
+    <%# display=swap : affiche d'abord la police système, remplace dès que la police est chargée %>
+    <%# Améliore le score Cumulative Layout Shift (CLS) et évite le texte invisible (FOIT) %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap&font-display=swap" rel="stylesheet"/>
 
     <%# ── Balises SEO de base ── %>
     <%# description : résumé affiché par Google sous le titre dans les résultats de recherche %>
     <meta name="description" content="Noctilio génère des histoires personnalisées pour ton enfant en quelques secondes — avec son prénom, ses personnages et son univers préféré. Propulsé par l'IA.">
 
+    <%# Canonical — indique à Google l'URL de référence (évite www vs non-www, http vs https) %>
+    <link rel="canonical" href="https://noctilio-app.fr<%= request.path %>">
+
+    <%# hreflang — indique à Google que le site est en français pour les utilisateurs fr %>
+    <%# x-default : URL par défaut si aucune langue ne correspond au navigateur de l'utilisateur %>
+    <link rel="alternate" hreflang="fr" href="https://noctilio-app.fr<%= request.path %>">
+    <link rel="alternate" hreflang="x-default" href="https://noctilio-app.fr<%= request.path %>">
+
+    <%# theme-color — colore la barre du navigateur sur mobile (Chrome Android, Safari iOS) %>
+    <%# Renforce l'identité visuelle de Noctilio (fond nuit profonde) %>
+    <meta name="theme-color" content="#0b0e1a">
+
+    <%# Robots — autorise explicitement l'indexation des pages publiques du layout landing %>
+    <meta name="robots" content="index, follow">
+
+    <%# Sitemap — indique à Google où trouver le plan du site %>
+    <link rel="sitemap" type="application/xml" href="https://noctilio-app.fr/sitemap.xml">
+
     <%# ── Open Graph (Facebook, WhatsApp, LinkedIn, iMessage…) ── %>
     <%# Ces balises définissent l'aperçu affiché quand quelqu'un partage le lien %>
     <meta property="og:type"        content="website">
-    <meta property="og:url"         content="https://noctilio-app.fr">
+    <%# og:url dynamique — utilise request.original_url pour correspondre exactement à la page %>
+    <meta property="og:url"         content="<%= request.original_url %>">
     <meta property="og:title"       content="Noctilio — Des histoires magiques pour ton enfant">
     <meta property="og:description" content="Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant.">
     <%# og:image : l'image affichée dans l'aperçu — idéalement 1200×630px %>

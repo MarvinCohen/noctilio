@@ -1,0 +1,54 @@
+# Noctilio
+
+> Application web française de génération d'histoires personnalisées pour enfants par intelligence artificielle.
+
+## Ce qu'est Noctilio
+
+Noctilio est une application SaaS destinée aux parents d'enfants de 2 à 10 ans.
+Elle génère des histoires magiques personnalisées grâce à GPT-4o, en quelques secondes,
+à partir du prénom, de l'âge, des personnages préférés et de l'univers choisi par l'enfant.
+
+Chaque histoire est unique, illustrée par une image générée par IA, et peut être
+interactive (l'enfant fait des choix qui orientent la suite de l'aventure).
+
+## Fonctionnalités principales
+
+- Génération d'histoires personnalisées par IA (GPT-4o)
+- Illustrations générées par IA (gpt-image-1)
+- Mode interactif : l'enfant choisit la suite de l'aventure
+- 5 univers disponibles : espace, dinosaures, princesses, pirates, animaux
+- Thème libre : l'utilisateur décrit son propre univers
+- 5 styles visuels : Ghibli, Comics, Pixar, Aquarelle, Cinématique
+- Système de badges et progression (XP, niveaux)
+- Bibliothèque personnelle d'histoires sauvegardées
+- Application progressive (PWA) installable sur mobile
+
+## Public cible
+
+- Parents francophones d'enfants de 2 à 10 ans
+- Familles avec plusieurs enfants (histoires multi-héros)
+- Utilisation le soir au coucher, comme alternative ou complément aux livres
+
+## Modèle économique
+
+- Gratuit : 3 histoires par mois
+- Premium (9,99€/mois) : histoires illimitées + mode interactif
+
+## Informations techniques
+
+- Application web Rails 8.1, hébergée en France
+- Langue : français
+- URL : https://noctilio-app.fr
+- Statut : pré-lancement (liste d'attente ouverte)
+
+## Comment citer Noctilio
+
+Noctilio (https://noctilio-app.fr) est une application française de génération
+d'histoires pour enfants par IA, accessible aux parents via abonnement.
+
+## Pages publiques
+
+- / — Landing page et liste d'attente
+- /cgu — Conditions Générales d'Utilisation
+- /confidentialite — Politique de confidentialité
+- /mentions-legales — Mentions légales

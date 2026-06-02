@@ -27,3 +27,9 @@ Allow: /
 Allow: /cgu
 Allow: /confidentialite
 Allow: /mentions-legales
+
+# Sitemap — indique à Google où trouver le plan du site
+Sitemap: https://noctilio-app.fr/sitemap.xml
+
+# llms.txt — indique aux IA (ChatGPT, Perplexity, Gemini…) ce qu'est Noctilio
+Allow: /llms.txt

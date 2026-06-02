@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap XML — Noctilio
+  Contient uniquement les pages publiques indexables.
+  Les pages app (dashboard, stories, etc.) sont derrière authentification
+  et bloquées par robots.txt — elles ne figurent pas ici.
+
+  À mettre à jour quand de nouvelles pages publiques sont ajoutées.
+  Soumettre via Google Search Console après le lancement : https://search.google.com/search-console
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Landing page principale — priorité maximale -->
+  <url>
+    <loc>https://noctilio-app.fr/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Conditions Générales d'Utilisation -->
+  <url>
+    <loc>https://noctilio-app.fr/cgu</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Politique de confidentialité -->
+  <url>
+    <loc>https://noctilio-app.fr/confidentialite</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Mentions légales -->
+  <url>
+    <loc>https://noctilio-app.fr/mentions-legales</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>
