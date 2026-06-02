@@ -27,6 +27,7 @@ Allow: /
 Allow: /cgu
 Allow: /confidentialite
 Allow: /mentions-legales
+Allow: /blog
 
 # Sitemap — indique à Google où trouver le plan du site
 Sitemap: https://www.noctilio-app.fr/sitemap.xml

@@ -98,6 +98,14 @@ Rails.application.routes.draw do
   get "/mentions-legales",      to: "pages#legal",    as: :legal_notice
 
   # ============================================================
+  # Blog — articles SEO publics, pas besoin d'être connecté
+  # Articles stockés comme vues ERB (pas de base de données)
+  # Chaque slug correspond à un fichier app/views/blog/_<slug>.html.erb
+  # ============================================================
+  get "/blog",          to: "blog#index",   as: :blog
+  get "/blog/:slug",    to: "blog#show",    as: :blog_post
+
+  # ============================================================
   # Health check — vérifie que l'application fonctionne
   # ============================================================
   get "up" => "rails/health#show", as: :rails_health_check

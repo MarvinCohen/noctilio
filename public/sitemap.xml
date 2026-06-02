@@ -43,4 +43,36 @@
     <priority>0.3</priority>
   </url>
 
+  <!-- Blog — index des articles SEO -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Article 1 : histoires du soir -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog/histoires-du-soir-enfant</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Article 2 : conte personnalisé IA -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog/conte-personnalise-ia-enfant</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Article 3 : histoires enfant 4 ans -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog/histoires-enfant-4-ans</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
 </urlset>

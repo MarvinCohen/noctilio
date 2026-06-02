@@ -49,6 +49,10 @@ d'histoires pour enfants par IA, accessible aux parents via abonnement.
 ## Pages publiques
 
 - / — Landing page et liste d'attente
+- /blog — Blog : conseils pour les parents sur les histoires pour enfants
+- /blog/histoires-du-soir-enfant — 5 idées d'histoires du soir pour endormir son enfant
+- /blog/conte-personnalise-ia-enfant — Comment l'IA génère des contes personnalisés
+- /blog/histoires-enfant-4-ans — Histoires pour enfant de 4 ans : ce qui fonctionne vraiment
 - /cgu — Conditions Générales d'Utilisation
 - /confidentialite — Politique de confidentialité
 - /mentions-legales — Mentions légales

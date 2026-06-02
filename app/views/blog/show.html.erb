@@ -1,0 +1,222 @@
+<%# ============================================================ %>
+<%# Blog Noctilio — affichage d'un article %>
+<%# Le contenu de l'article est dans le partial _<slug>.html.erb %>
+<%# ============================================================ %>
+
+<%# SEO — titre et description spécifiques à chaque article %>
+<% content_for :title, "#{@article[:title]} — Blog Noctilio" %>
+<% content_for :description, @article[:description] %>
+<% content_for :robots, "index, follow" %>
+
+<style>
+  /* ── Article de blog — style dans le thème Noctilio ── */
+  .article-page {
+    min-height: 100vh;
+    padding: 3rem 1.5rem 6rem;
+    background: var(--bg-app, #0b0e1a);
+  }
+
+  .article-container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* En-tête de l'article */
+  .article-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.15);
+  }
+
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .article-date {
+    font-size: 0.78rem;
+    color: rgba(138, 133, 120, 0.6);
+    letter-spacing: 0.03em;
+  }
+
+  .article-reading {
+    font-size: 0.78rem;
+    color: rgba(240, 201, 122, 0.5);
+  }
+
+  .article-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 300;
+    font-style: italic;
+    color: #f0c97a;
+    line-height: 1.25;
+    margin: 0 0 1rem;
+  }
+
+  .article-description {
+    font-size: 1rem;
+    color: rgba(138, 133, 120, 0.85);
+    line-height: 1.75;
+    margin: 0;
+  }
+
+  /* Corps de l'article — typographie de lecture */
+  .article-body h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #d4cfc4;
+    margin: 2.5rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.1);
+  }
+
+  .article-body h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #c8c3b8;
+    margin: 1.75rem 0 0.5rem;
+  }
+
+  .article-body p {
+    font-size: 0.97rem;
+    color: #a8a29a;
+    line-height: 1.9;
+    margin-bottom: 1rem;
+  }
+
+  .article-body ul, .article-body ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .article-body li {
+    font-size: 0.95rem;
+    color: #a8a29a;
+    line-height: 1.85;
+    margin-bottom: 0.4rem;
+  }
+
+  .article-body strong {
+    color: #d4cfc4;
+    font-weight: 500;
+  }
+
+  /* Encadré "En résumé" ou citation */
+  .article-callout {
+    margin: 2rem 0;
+    padding: 1.25rem 1.5rem;
+    background: rgba(240, 201, 122, 0.05);
+    border-left: 3px solid rgba(240, 201, 122, 0.4);
+    border-radius: 0 12px 12px 0;
+  }
+
+  .article-callout p {
+    margin: 0;
+    color: #c4bfb4 !important;
+    font-style: italic;
+  }
+
+  /* CTA en bas d'article */
+  .article-cta {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(240, 201, 122, 0.06);
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 16px;
+    text-align: center;
+  }
+
+  .article-cta-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: #f0c97a;
+    margin: 0 0 0.5rem;
+  }
+
+  .article-cta-desc {
+    font-size: 0.88rem;
+    color: rgba(138, 133, 120, 0.8);
+    line-height: 1.7;
+    margin: 0 0 1.25rem;
+  }
+
+  .article-cta-btn {
+    display: inline-block;
+    background: #f0c97a;
+    color: #0b0e1a;
+    padding: 0.7rem 1.8rem;
+    border-radius: 100px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .article-cta-btn:hover {
+    background: #fdf6e3;
+    transform: scale(1.02);
+    text-decoration: none;
+  }
+
+  /* Navigation en bas de page */
+  .article-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(240, 201, 122, 0.1);
+  }
+
+  .article-nav-link {
+    font-size: 0.85rem;
+    color: rgba(138, 133, 120, 0.6);
+    text-decoration: none;
+  }
+
+  .article-nav-link:hover { color: #f0c97a; }
+</style>
+
+<div class="article-page">
+  <div class="article-container">
+
+    <%# En-tête de l'article %>
+    <header class="article-header">
+      <div class="article-meta">
+        <span class="article-date">
+          <%= @article[:published_at].strftime("%d %B %Y") %>
+        </span>
+        <span class="article-reading">
+          <%= @article[:reading_time] %> min de lecture
+        </span>
+      </div>
+      <h1 class="article-title"><%= @article[:title] %></h1>
+      <p class="article-description"><%= @article[:description] %></p>
+    </header>
+
+    <%# Corps de l'article — chargé depuis le partial correspondant au slug %>
+    <div class="article-body">
+      <%= render "blog/#{@partial}" %>
+    </div>
+
+    <%# CTA en bas — invite à essayer Noctilio %>
+    <div class="article-cta">
+      <p class="article-cta-title">Envie d'essayer ?</p>
+      <p class="article-cta-desc">Noctilio génère des histoires personnalisées pour ton enfant en quelques secondes — gratuitement.</p>
+      <%= link_to "Rejoindre la liste d'attente →", root_path, class: "article-cta-btn" %>
+    </div>
+
+    <div class="article-footer">
+      <%= link_to "← Tous les articles", blog_path, class: "article-nav-link" %>
+      <%= link_to "Accueil →", root_path, class: "article-nav-link" %>
+    </div>
+
+  </div>
+</div>

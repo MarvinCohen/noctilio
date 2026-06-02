@@ -1,0 +1,183 @@
+<%# ============================================================ %>
+<%# Blog Noctilio — liste des articles SEO %>
+<%# Page publique, layout landing (sans sidebar) %>
+<%# ============================================================ %>
+
+<%# SEO — titre et meta pour la page liste du blog %>
+<% content_for :title, "Blog Noctilio — Conseils histoires pour enfants" %>
+<% content_for :description, "Conseils pratiques pour les parents : histoires du soir, contes personnalisés par IA, idées pour chaque âge. Le blog de Noctilio." %>
+<% content_for :robots, "index, follow" %>
+
+<style>
+  /* ── Blog index — liste des articles ── */
+  .blog-page {
+    min-height: 100vh;
+    padding: 3rem 1.5rem 6rem;
+    background: var(--bg-app, #0b0e1a);
+  }
+
+  .blog-container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* En-tête de la page blog */
+  .blog-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.15);
+  }
+
+  .blog-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: #f0c97a;
+    opacity: 0.7;
+    margin-bottom: 1rem;
+  }
+
+  .blog-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 300;
+    font-style: italic;
+    color: #f0c97a;
+    margin: 0 0 0.75rem;
+  }
+
+  .blog-subtitle {
+    font-size: 0.95rem;
+    color: rgba(138, 133, 120, 0.8);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* Grille des articles */
+  .blog-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* Carte d'article */
+  .blog-card {
+    display: block;
+    padding: 1.75rem 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(240, 201, 122, 0.1);
+    border-radius: 16px;
+    text-decoration: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .blog-card:hover {
+    border-color: rgba(240, 201, 122, 0.25);
+    background: rgba(240, 201, 122, 0.04);
+    text-decoration: none;
+  }
+
+  .blog-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .blog-card-date {
+    font-size: 0.75rem;
+    color: rgba(138, 133, 120, 0.6);
+    letter-spacing: 0.03em;
+  }
+
+  .blog-card-reading {
+    font-size: 0.75rem;
+    color: rgba(240, 201, 122, 0.5);
+  }
+
+  .blog-card-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: #d4cfc4;
+    margin: 0 0 0.5rem;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+  }
+
+  .blog-card:hover .blog-card-title {
+    color: #f0c97a;
+  }
+
+  .blog-card-desc {
+    font-size: 0.88rem;
+    color: rgba(138, 133, 120, 0.75);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .blog-card-cta {
+    display: inline-block;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: rgba(240, 201, 122, 0.6);
+    letter-spacing: 0.05em;
+  }
+
+  .blog-card:hover .blog-card-cta {
+    color: #f0c97a;
+  }
+
+  /* Footer de navigation */
+  .blog-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(240, 201, 122, 0.1);
+    text-align: center;
+  }
+
+  .blog-back {
+    font-size: 0.85rem;
+    color: rgba(138, 133, 120, 0.6);
+    text-decoration: none;
+  }
+
+  .blog-back:hover { color: #f0c97a; }
+</style>
+
+<div class="blog-page">
+  <div class="blog-container">
+
+    <div class="blog-header">
+      <p class="blog-eyebrow">✦ Le blog Noctilio</p>
+      <h1 class="blog-title">Conseils pour les parents</h1>
+      <p class="blog-subtitle">Histoires du soir, contes personnalisés, idées pour chaque âge — tout ce qu'il faut savoir pour des moments de lecture magiques.</p>
+    </div>
+
+    <div class="blog-grid">
+      <% @articles.each do |article| %>
+        <%# Lien vers l'article — slug dans l'URL %>
+        <%= link_to blog_post_path(article[:slug]), class: "blog-card" do %>
+          <div class="blog-card-meta">
+            <span class="blog-card-date">
+              <%= article[:published_at].strftime("%d %B %Y") %>
+            </span>
+            <span class="blog-card-reading">
+              <%= article[:reading_time] %> min de lecture
+            </span>
+          </div>
+          <h2 class="blog-card-title"><%= article[:title] %></h2>
+          <p class="blog-card-desc"><%= article[:description] %></p>
+          <span class="blog-card-cta">Lire l'article →</span>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="blog-footer">
+      <%= link_to "← Retour à l'accueil", root_path, class: "blog-back" %>
+    </div>
+
+  </div>
+</div>

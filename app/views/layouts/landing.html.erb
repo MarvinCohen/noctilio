@@ -50,12 +50,12 @@
     <meta property="og:url"         content="<%= request.original_url %>">
     <meta property="og:title"       content="Noctilio — Des histoires magiques pour ton enfant">
     <meta property="og:description" content="Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant.">
-    <%# og:image : l'image affichée dans l'aperçu — idéalement 1200×630px %>
-    <%# On utilise image_url (pas image_path) pour obtenir l'URL absolue, obligatoire pour OG %>
-    <meta property="og:image"       content="<%= image_url('mascot.png') %>">
-    <meta property="og:image:width"  content="1024">
+    <%# og:image : image dédiée 1536×1024px générée pour les aperçus de partage social %>
+    <%# Servie depuis public/ — URL absolue obligatoire pour Facebook, WhatsApp, LinkedIn %>
+    <meta property="og:image"       content="https://www.noctilio-app.fr/og-image.jpg">
+    <meta property="og:image:width"  content="1536">
     <meta property="og:image:height" content="1024">
-    <meta property="og:image:alt"    content="Noctilio — histoires personnalisées pour enfants">
+    <meta property="og:image:alt"    content="Noctilio — Des histoires magiques pour ton enfant">
     <meta property="og:locale"       content="fr_FR">
     <meta property="og:site_name"    content="Noctilio">
 
@@ -64,7 +64,7 @@
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:title"       content="Noctilio — Des histoires magiques pour ton enfant">
     <meta name="twitter:description" content="Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant.">
-    <meta name="twitter:image"       content="<%= image_url('mascot.png') %>">
+    <meta name="twitter:image"       content="https://www.noctilio-app.fr/og-image.jpg">
     <meta name="twitter:image:alt"   content="Noctilio — histoires personnalisées pour enfants">
 
     <%# CSRF meta tags — nécessaires pour les requêtes fetch() vers l'API Rails %>
