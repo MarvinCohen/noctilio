@@ -75,4 +75,44 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- Article 4 : histoires enfant 3 ans -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog/histoires-enfant-3-ans</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Article 5 : histoires enfant 5 ans -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog/histoires-enfant-5-ans</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Article 6 : histoire personnalisée prénom enfant -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog/histoire-personnalisee-prenom-enfant</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Article 7 : conte interactif enfant -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog/conte-interactif-enfant</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Article 8 : histoire courte enfant soir -->
+  <url>
+    <loc>https://www.noctilio-app.fr/blog/histoire-courte-enfant-soir</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
 </urlset>

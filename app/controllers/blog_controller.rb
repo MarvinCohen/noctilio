@@ -35,6 +35,41 @@ class BlogController < ApplicationController
       description:  "Quels types d'histoires conviennent le mieux aux enfants de 4 ans ? Longueur, personnages, structure narrative — tout ce qu'il faut savoir.",
       published_at: Date.new(2026, 6, 2),
       reading_time: 5
+    },
+    {
+      slug:         "histoires-enfant-3-ans",
+      title:        "Histoires pour enfant de 3 ans : le rituel du soir qui apaise",
+      description:  "À 3 ans, l'histoire du soir est un rituel de transition essentiel. Découvrez la longueur idéale, les univers rassurants et comment gérer la peur du noir.",
+      published_at: Date.new(2026, 6, 2),
+      reading_time: 5
+    },
+    {
+      slug:         "histoires-enfant-5-ans",
+      title:        "Histoires pour enfant de 5 ans : les univers qui captivent vraiment",
+      description:  "À 5 ans, l'imagination explose. Quels types d'histoires fonctionnent le mieux ? Structure narrative, émotions complexes, mode interactif — guide complet.",
+      published_at: Date.new(2026, 6, 2),
+      reading_time: 5
+    },
+    {
+      slug:         "histoire-personnalisee-prenom-enfant",
+      title:        "Histoire personnalisée avec le prénom de votre enfant : pourquoi ça change tout",
+      description:  "Entendre son prénom dans une histoire active l'attention et la mémoire de l'enfant. Comprendre la puissance de la personnalisation et comment l'IA va plus loin.",
+      published_at: Date.new(2026, 6, 2),
+      reading_time: 5
+    },
+    {
+      slug:         "conte-interactif-enfant",
+      title:        "Conte interactif enfant : quand votre enfant choisit la suite de l'histoire",
+      description:  "Le conte interactif transforme l'écoute en participation. À partir de 4 ans, votre enfant devient co-auteur de son histoire du soir. Bénéfices et fonctionnement.",
+      published_at: Date.new(2026, 6, 2),
+      reading_time: 5
+    },
+    {
+      slug:         "histoire-courte-enfant-soir",
+      title:        "Histoire courte pour enfant : 5 minutes pour un rituel du soir réussi",
+      description:  "Une histoire courte bien construite est souvent plus efficace qu'une longue pour l'endormissement. Structure, thèmes et conseils pour les soirs express.",
+      published_at: Date.new(2026, 6, 2),
+      reading_time: 4
     }
   ].freeze
 

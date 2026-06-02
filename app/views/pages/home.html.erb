@@ -833,6 +833,15 @@
       <strong>Noctilio</strong> est pensé pour les parents francophones qui veulent offrir à leurs enfants des moments de lecture riches et personnalisés, sans y passer des heures. Chaque histoire est adaptée à l'enfant — son prénom, son âge, sa personnalité — et renouvelée à chaque génération. <strong>3 histoires par mois gratuitement</strong>, et des histoires illimitées avec le mode interactif en abonnement Premium.
     </div>
 
+    <%# Lien vers le blog — maillage interne + invitation à en savoir plus %>
+    <%# Permet à Google de découvrir le blog depuis la page d'autorité principale %>
+    <div style="text-align: center; margin-top: 2rem;">
+      <%= link_to blog_path,
+            style: "font-size:0.85rem; color:rgba(240,201,122,0.7); text-decoration:none; letter-spacing:0.04em; border-bottom:1px solid rgba(240,201,122,0.3); padding-bottom:2px;" do %>
+        Lire nos conseils pour les parents →
+      <% end %>
+    </div>
+
   </div>
 </section>
 
