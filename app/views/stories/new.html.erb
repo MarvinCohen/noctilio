@@ -313,9 +313,13 @@
                     <% if has_girl || has_boy %>
                       <%# data-style-key : identifie le style pour que le JS puisse swapper le src %>
                       <%# data-girl-src / data-boy-src : URLs des deux versions %>
+                      <%# loading="lazy" : chargement différé — ne charge que si visible dans le viewport %>
+                      <%# width/height : évite le CLS (Cumulative Layout Shift) en réservant l'espace %>
                       <img src="/images/style_examples/<%= style[:key] %>_girl.jpg"
                            alt="Exemple style <%= style[:name] %>"
                            class="style-card-img"
+                           width="400" height="400"
+                           loading="lazy"
                            data-style-key="<%= style[:key] %>"
                            data-girl-src="/images/style_examples/<%= style[:key] %>_girl.jpg"
                            data-boy-src="/images/style_examples/<%= style[:key] %>_boy.jpg">

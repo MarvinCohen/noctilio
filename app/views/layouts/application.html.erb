@@ -44,8 +44,15 @@
     <%# ---------------------------------------------------------------- %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <%# display=swap : texte visible immédiatement avec la police système, remplacé quand Google Fonts charge %>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Kalam:wght@300;400;700&display=swap&font-display=swap" rel="stylesheet">
+    <%# Chargement non-bloquant des polices — media="print" puis swap vers "all" au chargement %>
+    <%# Évite que Google Fonts bloque le rendu du HTML (render-blocking resource) %>
+    <link rel="stylesheet"
+          media="print"
+          onload="this.media='all'"
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Kalam:wght@300;400;700&display=swap"/>
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet"/>
+    </noscript>
 
     <%# ---------------------------------------------------------------- %>
     <%# Style inline minimal — impose le fond sombre sur TOUT le body %>

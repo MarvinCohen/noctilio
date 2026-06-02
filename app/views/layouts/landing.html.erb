@@ -6,11 +6,20 @@
     <title><%= content_for(:title) || "Noctilio — Des histoires magiques pour ton enfant" %></title>
 
     <%# Polices Google — design élégant de la landing page %>
-    <%# display=swap : affiche d'abord la police système, remplace dès que la police est chargée %>
-    <%# Améliore le score Cumulative Layout Shift (CLS) et évite le texte invisible (FOIT) %>
+    <%# preconnect : établit la connexion DNS/TLS avec Google Fonts avant que le HTML soit parsé %>
+    <%# display=swap : texte visible immédiatement avec la police système (évite FOIT) %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap&font-display=swap" rel="stylesheet"/>
+    <%# media="print" onload="this.media='all'" : charge les polices de façon non-bloquante %>
+    <%# Technique recommandée par web.dev/defer-non-critical-css %>
+    <link rel="stylesheet"
+          media="print"
+          onload="this.media='all'"
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap"/>
+    <%# Fallback <noscript> pour les navigateurs sans JS — charge normalement %>
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+    </noscript>
 
     <%# ── Balises SEO de base ── %>
     <%# description : résumé affiché par Google sous le titre dans les résultats de recherche %>
