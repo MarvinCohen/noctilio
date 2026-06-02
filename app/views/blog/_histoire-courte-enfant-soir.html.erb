@@ -70,3 +70,14 @@
 <p>
   Les parents qui improvisent des histoires le soir connaissent bien le syndrome de la panne d'inspiration — "il était une fois… euh… un petit… chat qui… voulait… dormir". Noctilio génère une histoire courte personnalisée en quelques secondes : vous choisissez la durée (3, 5 ou 10 minutes), l'univers, et l'IA fait le reste. Même les soirs les plus épuisants, le rituel tient.
 </p>
+
+<%# Maillage interne — liens vers articles complémentaires %>
+<div class="article-related">
+  <p class="article-related-title">À lire aussi</p>
+  <div class="article-related-links">
+    <%= link_to "5 idées d'histoires du soir pour endormir ton enfant facilement →",
+          blog_post_path("histoires-du-soir-enfant"), class: "article-related-link" %>
+    <%= link_to "Histoires pour enfant de 3 ans : le rituel du soir qui apaise →",
+          blog_post_path("histoires-enfant-3-ans"), class: "article-related-link" %>
+  </div>
+</div>

@@ -191,6 +191,43 @@
     font-style: italic;
   }
 
+  /* Bloc "À lire aussi" — maillage interne entre articles */
+  .article-related {
+    margin: 2.5rem 0 0;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(240, 201, 122, 0.1);
+  }
+
+  .article-related-title {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(240, 201, 122, 0.5);
+    margin-bottom: 1rem;
+  }
+
+  .article-related-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .article-related-link {
+    font-size: 0.88rem;
+    color: rgba(138, 133, 120, 0.75);
+    text-decoration: none;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(240, 201, 122, 0.2);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .article-related-link:hover {
+    color: #f0c97a;
+    border-left-color: rgba(240, 201, 122, 0.5);
+    text-decoration: none;
+  }
+
   /* CTA en bas d'article */
   .article-cta {
     margin-top: 3rem;

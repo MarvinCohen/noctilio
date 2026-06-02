@@ -68,3 +68,14 @@
 <p>
   À 5 ans, votre enfant est prêt pour les histoires à choix. "Est-ce que le héros doit entrer dans la grotte ou continuer sur le chemin ?" — cette simple question transforme l'écoute passive en participation active. L'enfant s'endort non plus spectateur, mais auteur. Et ça, ça change vraiment quelque chose.
 </p>
+
+<%# Maillage interne — liens vers articles complémentaires %>
+<div class="article-related">
+  <p class="article-related-title">À lire aussi</p>
+  <div class="article-related-links">
+    <%= link_to "Histoires pour enfant de 4 ans : ce qui les captive vraiment →",
+          blog_post_path("histoires-enfant-4-ans"), class: "article-related-link" %>
+    <%= link_to "Conte interactif enfant : quand votre enfant choisit la suite de l'histoire →",
+          blog_post_path("conte-interactif-enfant"), class: "article-related-link" %>
+  </div>
+</div>

@@ -74,3 +74,14 @@
 <p>
   L'IA permet une personnalisation et une disponibilité que les livres ne peuvent pas offrir. Chaque soir, une histoire nouvelle, taillée pour votre enfant.
 </p>
+
+<%# Maillage interne — liens vers articles complémentaires %>
+<div class="article-related">
+  <p class="article-related-title">À lire aussi</p>
+  <div class="article-related-links">
+    <%= link_to "Histoire personnalisée avec le prénom de votre enfant : pourquoi ça change tout →",
+          blog_post_path("histoire-personnalisee-prenom-enfant"), class: "article-related-link" %>
+    <%= link_to "Conte interactif enfant : quand votre enfant choisit la suite de l'histoire →",
+          blog_post_path("conte-interactif-enfant"), class: "article-related-link" %>
+  </div>
+</div>

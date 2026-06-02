@@ -74,3 +74,14 @@
 <p>
   C'est exactement ce que Noctilio essaie de faire automatiquement : en connaissant le profil de votre enfant (son âge, sa personnalité, ses univers préférés), l'IA génère chaque soir une histoire adaptée — unique, personnalisée, et prête en quelques secondes.
 </p>
+
+<%# Maillage interne — liens vers articles complémentaires %>
+<div class="article-related">
+  <p class="article-related-title">À lire aussi</p>
+  <div class="article-related-links">
+    <%= link_to "Histoire courte pour enfant : 5 minutes pour un rituel du soir réussi →",
+          blog_post_path("histoire-courte-enfant-soir"), class: "article-related-link" %>
+    <%= link_to "Histoires pour enfant de 3 ans : le rituel du soir qui apaise →",
+          blog_post_path("histoires-enfant-3-ans"), class: "article-related-link" %>
+  </div>
+</div>
