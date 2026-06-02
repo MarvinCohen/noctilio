@@ -9,9 +9,9 @@ class WelcomeMailer < ApplicationMailer
     @user       = user
     @first_name = user.first_name
     # URL vers la création d'un héros — premier pas logique après inscription
-    @hero_url   = new_child_url(host: "noctilio-app.fr")
+    @hero_url   = new_child_url(host: "www.noctilio-app.fr")
     # URL vers le dashboard
-    @dashboard_url = dashboard_url(host: "noctilio-app.fr")
+    @dashboard_url = dashboard_url(host: "www.noctilio-app.fr")
 
     mail(
       to:      user.email,

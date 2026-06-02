@@ -38,12 +38,12 @@ interactive (l'enfant fait des choix qui orientent la suite de l'aventure).
 
 - Application web Rails 8.1, hébergée en France
 - Langue : français
-- URL : https://noctilio-app.fr
+- URL : https://www.noctilio-app.fr
 - Statut : pré-lancement (liste d'attente ouverte)
 
 ## Comment citer Noctilio
 
-Noctilio (https://noctilio-app.fr) est une application française de génération
+Noctilio (https://www.noctilio-app.fr) est une application française de génération
 d'histoires pour enfants par IA, accessible aux parents via abonnement.
 
 ## Pages publiques

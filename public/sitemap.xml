@@ -13,28 +13,32 @@
 
   <!-- Landing page principale — priorité maximale -->
   <url>
-    <loc>https://noctilio-app.fr/</loc>
+    <loc>https://www.noctilio-app.fr/</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Conditions Générales d'Utilisation -->
   <url>
-    <loc>https://noctilio-app.fr/cgu</loc>
+    <loc>https://www.noctilio-app.fr/cgu</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <!-- Politique de confidentialité -->
   <url>
-    <loc>https://noctilio-app.fr/confidentialite</loc>
+    <loc>https://www.noctilio-app.fr/confidentialite</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <!-- Mentions légales -->
   <url>
-    <loc>https://noctilio-app.fr/mentions-legales</loc>
+    <loc>https://www.noctilio-app.fr/mentions-legales</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>

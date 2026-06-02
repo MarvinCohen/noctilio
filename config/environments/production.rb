@@ -62,7 +62,8 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Domaine utilisé dans les liens générés par les mailers (ex: lien de confirmation Devise)
-  config.action_mailer.default_url_options = { host: "noctilio-app.fr" }
+  # www obligatoire — le domaine canonical du site est www.noctilio-app.fr
+  config.action_mailer.default_url_options = { host: "www.noctilio-app.fr" }
 
   # Expéditeur par défaut pour tous les emails envoyés par l'app
   config.action_mailer.default_options = { from: "Noctilio <contact@noctilio-app.fr>" }
@@ -95,6 +96,7 @@ Rails.application.configure do
   # Rails rejette toute requête dont l'en-tête Host ne correspond pas à ces valeurs
   config.hosts << "noctilio-app.fr"
   config.hosts << "www.noctilio-app.fr"
+
 
   # Domaine Railway (production et previews)
   # up.railway.app est le domaine généré automatiquement par Railway

@@ -1,5 +1,12 @@
 class ApplicationController < ActionController::Base
   # ============================================================
+  # Redirection www — noctilio-app.fr → www.noctilio-app.fr (301)
+  # Les deux domaines sont actifs sur Railway, on canonicalise sur www
+  # avant_action en premier pour que ça s'applique à toutes les requêtes
+  # ============================================================
+  before_action :redirect_to_www
+
+  # ============================================================
   # Authentification — toutes les pages nécessitent une connexion
   # sauf celles qui utilisent skip_before_action
   # ============================================================
@@ -15,6 +22,15 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  # Redirige noctilio-app.fr (sans www) vers www.noctilio-app.fr
+  # 301 = redirection permanente — Google transfère le jus SEO vers le domaine canonique
+  # Uniquement en production pour ne pas gêner le développement local
+  def redirect_to_www
+    if Rails.env.production? && request.host == "noctilio-app.fr"
+      redirect_to "https://www.noctilio-app.fr#{request.fullpath}", status: :moved_permanently
+    end
+  end
 
   # Calcule la phase lunaire actuelle en heure de Paris (UTC+1 ou UTC+2 selon DST)
   # Retourne un float entre 0.0 et 1.0 :
