@@ -89,15 +89,18 @@
     align-self:      center;
   }
   /* Chiffre du niveau — Cormorant Garamond, doré, très grand */
+  /* line-height: 0.85 compense l'espace invisible au-dessus des chiffres serif */
+  /* margin-bottom: 0.15rem pousse légèrement le caption vers le bas pour équilibrer */
   .tr-level-number {
-    display:     block;           /* block pour que text-align: center s'applique */
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size:   2.4rem;
-    font-weight: 700;
-    color:       #f0c97a;
-    line-height: 1;
-    width:       100%;
-    text-align:  center;
+    display:       block;
+    font-family:   'Cormorant Garamond', Georgia, serif;
+    font-size:     2.4rem;
+    font-weight:   700;
+    color:         #f0c97a;
+    line-height:   0.85;
+    width:         100%;
+    text-align:    center;
+    margin-bottom: 0.15rem;
   }
   /* Libellé "NIVEAU" sous le chiffre */
   .tr-level-caption {
