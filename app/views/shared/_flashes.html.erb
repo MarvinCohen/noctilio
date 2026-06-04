@@ -19,11 +19,10 @@
 
 <%# Alert — avertissement ou erreur (mauvais mot de passe, quota, etc.) %>
 <%# alert-warning → bordure rouge dans la DA cosmique %>
-<%# data-controller="flash-autohide" : ferme automatiquement après 4s %>
+<%# Pas d'autohide sur les erreurs — l'utilisateur doit pouvoir lire et comprendre le message %>
 <% if alert %>
   <div class="alert alert-warning alert-dismissible fade show"
-       role="alert"
-       data-controller="flash-autohide">
+       role="alert">
     <%= alert %>
     <%# Bouton de fermeture Bootstrap — coloré en rouge via _alert.scss %>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>

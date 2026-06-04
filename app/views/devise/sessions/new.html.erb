@@ -285,10 +285,24 @@
     <h1 class="auth-title">Bon retour</h1>
     <p class="auth-subtitle">Retrouve tes histoires magiques</p>
 
+    <%# ── Message d'erreur Devise (mauvais email/mot de passe) ── %>
+    <%# On affiche le flash[:alert] ici, dans la card, plutôt que dans le layout %>
+    <%# pour éviter qu'il déborde hors de l'écran sur mobile %>
+    <% if flash[:alert] %>
+      <div class="auth-errors">
+        <%= flash[:alert] %>
+      </div>
+      <%# On supprime le flash immédiatement pour éviter qu'il soit aussi affiché par le layout %>
+      <% flash.delete(:alert) %>
+    <% end %>
+
     <%# ── Formulaire de connexion — simple_form_for Devise ── %>
     <%# resource = User (défini par Devise), resource_name = :user %>
     <%# session_path(resource_name) = /users/sign_in %>
-    <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+    <%# data-turbo="false" obligatoire : Turbo intercepte le POST et peut bloquer le cookie %>
+    <%# remember_me. La navigation pleine page garantit que le cookie persistant est bien posé. %>
+    <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name),
+          html: { data: { turbo: false } }) do |f| %>
 
       <%# Champ email avec autocomplete pour les navigateurs %>
       <div class="auth-field">

@@ -66,20 +66,15 @@
     <span class="app-footer__copyright">
       © <%= Date.today.year %> Noctilio · Fait avec ✦ pour les familles
     </span>
+    <%# Liens légaux — discrets, pas d'uppercase ni de soulignement %>
     <div class="app-footer__legal">
-      <%= link_to "CGU", cgu_path,
-            style: "font-size:0.72rem; color:rgba(240,201,122,0.55); text-decoration:none; text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid rgba(240,201,122,0.25); padding-bottom:1px;" %>
-      <span style="color:rgba(240,201,122,0.2); margin:0 6px;">·</span>
-      <%= link_to "Confidentialité", privacy_path,
-            style: "font-size:0.72rem; color:rgba(240,201,122,0.55); text-decoration:none; text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid rgba(240,201,122,0.25); padding-bottom:1px;" %>
-      <span style="color:rgba(240,201,122,0.2); margin:0 6px;">·</span>
-      <%# Mentions légales — obligatoires en France, lien dans le footer de toutes les pages %>
-      <%= link_to "Mentions légales", legal_notice_path,
-            style: "font-size:0.72rem; color:rgba(240,201,122,0.55); text-decoration:none; text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid rgba(240,201,122,0.25); padding-bottom:1px;" %>
-      <span style="color:rgba(240,201,122,0.2); margin:0 6px;">·</span>
-      <%# Blog — lien vers les articles SEO, visible depuis toutes les pages %>
-      <%= link_to "Blog", blog_path,
-            style: "font-size:0.72rem; color:rgba(240,201,122,0.55); text-decoration:none; text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid rgba(240,201,122,0.25); padding-bottom:1px;" %>
+      <%= link_to "CGU", cgu_path, class: "footer-legal-link" %>
+      <span class="footer-legal-sep">·</span>
+      <%= link_to "Confidentialité", privacy_path, class: "footer-legal-link" %>
+      <span class="footer-legal-sep">·</span>
+      <%= link_to "Mentions légales", legal_notice_path, class: "footer-legal-link" %>
+      <span class="footer-legal-sep">·</span>
+      <%= link_to "Blog", blog_path, class: "footer-legal-link" %>
     </div>
   </div>
 

@@ -56,6 +56,12 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
+  # Utilise Solid Queue en développement (identique à la production)
+  # Sans ça, perform_later utilise le backend :async (en mémoire du processus runner)
+  # ce qui fait que les jobs lancés depuis rails runner sont perdus quand le processus finit.
+  # Solid Queue persiste les jobs en base de données → ils survivent entre les processus.
+  config.active_job.queue_adapter = :solid_queue
+
   # Highlight code that triggered redirect in logs.
   config.action_dispatch.verbose_redirect_logs = true
 

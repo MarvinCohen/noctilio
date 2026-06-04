@@ -191,6 +191,30 @@ $footer-dim:   rgba(#fdf6e3, 0.35);
   gap: 10px;
 }
 
+// Lien légal — très discret, sans uppercase ni soulignement
+// Utilisé via la classe .footer-legal-link dans le partial _footer.html.erb
+.footer-legal-link {
+  font-size: 0.68rem;
+  color: rgba($footer-cream, 0.25); // Très atténué — quasi invisible au repos
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
+
+  // S'éclaircit légèrement au survol sans jamais devenir trop visible
+  &:hover {
+    color: rgba($footer-gold, 0.55);
+    text-decoration: none;
+  }
+}
+
+// Séparateur "·" entre les liens légaux — encore plus discret que les liens
+.footer-legal-sep {
+  font-size: 0.6rem;
+  color: rgba($footer-cream, 0.12);
+  line-height: 1;
+}
+
+// Ancienne classe — conservée pour compatibilité si référencée ailleurs
 .app-footer__legal-link {
   font-size: 0.72rem !important;
   color: rgba($footer-gold, 0.55) !important;

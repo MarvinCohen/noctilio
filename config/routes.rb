@@ -56,6 +56,9 @@ Rails.application.routes.draw do
 
       # POST /stories/:id/explore_alternative — génère la timeline alternative d'un choix
       post :explore_alternative
+
+      # POST /stories/:id/retry — relance la génération d'une histoire échouée
+      post :retry
     end
   end
 

@@ -19,7 +19,17 @@
   // max-width en vw pour compatibilité SassC (pas de min() avec calc())
   width: max-content;
   max-width: 360px;
-  padding: 10px 14px;
+  // padding-right laissé à Bootstrap (3rem) pour le bouton X — on écrase seulement les autres côtés
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 14px;
+
+  // Aligne la croix verticalement au milieu du texte
+  // Bootstrap positionne .btn-close en absolute — on le force à se centrer
+  .btn-close {
+    top: 50%;
+    transform: translateY(-50%);
+  }
 
   // DA cosmique — fond sombre semi-opaque avec flou de fond
   background: rgba(17, 21, 39, 0.95);

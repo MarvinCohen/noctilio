@@ -167,6 +167,9 @@ class ImageGeneratorService
         # Négatif renforcé pour peau ébène : liste exhaustive des tons clairs à bloquer
         # FLUX tend à ignorer la peau foncée si le prompt contient des éléments "européens"
         "light skin, white skin, pale skin, fair skin, tan skin, tanned, caucasian, asian skin, light complexion, european features"
+      elsif tone.match?(/brun.?foncé|foncé/)
+        # Peau brun foncé : bloque seulement les tons très clairs — pas aussi agressif qu'ébène
+        "very pale skin, very light skin, fair skin, white skin"
       elsif tone.match?(/clair|blanc|fair|pale/)
         "dark skin, black skin, brown skin, tanned skin"
       elsif tone.match?(/métis|mixed|doré|olive|mat/)
@@ -411,10 +414,17 @@ class ImageGeneratorService
     vehicle_name = story_text.match(/(?:son|sa)\s+(?:robot|vaisseau|dragon|cheval|mech[a]?)\s+[«""]([^»""]+)[»""]/i)
                              &.captures&.first&.capitalize
 
-    # Choisit le style visuel selon la couleur de peau des héros
+    # has_very_dark_skin : peau ébène/noir uniquement → préfixe "BLACK CHILD WITH VERY DARK EBONY SKIN"
+    # Ce préfixe est réservé aux peaux ébène car FLUX les ignore fortement sans renforcement.
+    # Pour "brun foncé" (dark brown), le préfixe serait inexact et forcerait un résultat trop sombre.
+    has_very_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé/i) }
+
+    # has_dark_skin : inclut aussi brun foncé → change le style visuel (Spider-Verse vs Ghibli)
+    # Spider-Verse représente mieux les personnages à peau foncée que les références est-asiatiques Ghibli
     has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé|brun.?foncé/i) }
-    visual_style  = has_dark_skin ? VISUAL_STYLE_DARK_SKIN : VISUAL_STYLE
-    skin_first    = has_dark_skin ? "BLACK CHILD WITH VERY DARK EBONY SKIN as main character. " : ""
+
+    visual_style = has_dark_skin ? VISUAL_STYLE_DARK_SKIN : VISUAL_STYLE
+    skin_first   = has_very_dark_skin ? "BLACK CHILD WITH VERY DARK EBONY SKIN as main character. " : ""
 
     # Construction du prompt selon le rôle du héros
     prompt = if is_pilot

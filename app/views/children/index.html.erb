@@ -36,17 +36,14 @@
           <%# Corps de la carte : avatar + nom + âge + traits %>
           <div class="ch-card-body">
 
-            <%# Avatar emoji dans un cercle doré semi-transparent %>
-            <%# Genre "girl" → 👧, tout autre genre → 🧒 %>
-            <%# Avatar SVG — même silhouette de base, petite mèche pour les filles %>
+            <%# Avatar DiceBear personnalisé selon la couleur de peau et de cheveux de l'enfant %>
+            <%# dicebear_avatar_url(child) construit l'URL avec les bons paramètres de couleur %>
             <div class="ch-avatar-circle">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="7" r="4"/>
-                <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
-                <% if child.gender == "girl" %>
-                  <path d="M9 7c0-1.1.9-2 2-2 1.5 0 2.5 1 2 3"/>
-                <% end %>
-              </svg>
+              <%= image_tag dicebear_avatar_url(child),
+                    alt: child.name,
+                    width: 80,
+                    height: 80,
+                    style: "border-radius: 50%; object-fit: cover;" %>
             </div>
 
             <%# Nom en Cormorant Garamond italic %>

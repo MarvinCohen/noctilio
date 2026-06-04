@@ -9,15 +9,13 @@
   <%# ── En-tête : avatar grand + nom + actions ── %>
   <div class="ch-show-header">
 
-    <%# Avatar emoji en cercle doré — variante large pour la page show %>
+    <%# Avatar DiceBear grand format — version large pour la page show %>
     <div class="ch-avatar-circle ch-avatar-circle--lg">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="7" r="4"/>
-        <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
-        <% if @child.gender == "girl" %>
-          <path d="M9 7c0-1.1.9-2 2-2 1.5 0 2.5 1 2 3"/>
-        <% end %>
-      </svg>
+      <%= image_tag dicebear_avatar_url(@child),
+            alt: @child.name,
+            width: 120,
+            height: 120,
+            style: "border-radius: 50%; object-fit: cover;" %>
     </div>
 
     <%# Nom et âge de l'enfant %>

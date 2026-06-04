@@ -132,6 +132,7 @@
     border: 1px solid rgba(240, 201, 122, 0.2);
     padding: 0.35rem 0.9rem;
     border-radius: 100px;
+    white-space: nowrap;  /* Empêche le texte de passer sur deux lignes */
   }
   /* Lien de connexion discret pour les utilisateurs existants */
   .nav-login {
@@ -357,7 +358,7 @@
 
   /* FEATURES */
   .features {
-    padding: 2rem 2rem 6rem;
+    padding: 2rem 2rem 2rem;
     position: relative;
     z-index: 2;
   }
@@ -418,11 +419,42 @@
   }
 
   /* Mobile */
+  /* Appareils tactiles (mobile/tablette) — pas de curseur personnalisé */
+  @media (hover: none) {
+    .cursor, .cursor-ring { display: none; }
+    body { cursor: auto; }
+  }
+
   @media (max-width: 600px) {
     nav { padding: 1.2rem 1.5rem; }
-    .form-inner { flex-direction: column; border-radius: 20px; padding: 12px; }
-    .form-btn { border-radius: 12px; padding: 0.85rem; text-align: center; }
-    .features-grid { grid-template-columns: 1fr; }
+    /* Hero — pas de min-height sur mobile, le contenu détermine la hauteur */
+    .hero { min-height: auto; padding: 5rem 1.5rem 2rem; }
+    /* Diviseur — plus court et même marge de chaque côté */
+    .divider { height: 50px; margin-top: 0; margin-bottom: 2rem; }
+    /* Section "Comment ça marche" — padding réduit après le divider */
+    .how-section { padding-top: 0.5rem; }
+    /* Badge nav — plus petit sur mobile, texte sur une seule ligne */
+    .nav-badge { font-size: 0.58rem; padding: 0.25rem 0.6rem; letter-spacing: 0.12em; }
+    /* Formulaire waitlist — on garde le layout horizontal pill sur mobile */
+    /* Moins de padding interne + police réduite pour tenir dans 400px */
+    .form-inner { padding: 5px 5px 5px 14px; gap: 6px; }
+    .form-input { font-size: 0.82rem; }
+    .form-btn { padding: 0.7rem 1rem; font-size: 0.75rem; letter-spacing: 0.03em; }
+    /* Feature cards : layout horizontal compact sur mobile */
+    .features-grid { grid-template-columns: 1fr; gap: 1px; }
+    .feature-card {
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    /* Icône plus petite, sans margin-bottom */
+    .feature-icon { width: 36px; height: 36px; margin-bottom: 0; flex-shrink: 0; border-radius: 10px; }
+    /* Bloc texte prend le reste de la largeur */
+    .feature-text { display: flex; flex-direction: column; }
+    .feature-title { font-size: 1rem; margin-bottom: 0.2rem; }
+    .feature-desc { font-size: 0.8rem; line-height: 1.55; }
   }
 
   /* ── Section "Comment ça marche" ── */
@@ -679,7 +711,7 @@
   </h1>
 
   <p class="hero-sub">
-    Chaque soir, une histoire magique générée en quelques secondes — avec le prénom, les personnages et l'univers préférés de ton enfant. Racontée d'une voix douce, comme par enchantement.
+    Chaque soir, une histoire magique générée en quelques secondes, avec le prénom, les personnages et l'univers préférés de ton enfant. Racontée d'une voix douce, comme par enchantement.
   </p>
 
   <%# Formulaire d'inscription — soumis via fetch() vers POST /waitlist %>
@@ -749,8 +781,10 @@
           <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
         </svg>
       </div>
-      <h3 class="feature-title">Personnalisée</h3>
-      <p class="feature-desc">Prénom, personnages favoris, lieu de rêve — chaque histoire est unique et taillée pour ton enfant.</p>
+      <div class="feature-text">
+        <h3 class="feature-title">Personnalisée</h3>
+        <p class="feature-desc">Prénom, personnages favoris, lieu de rêve : chaque histoire est unique et taillée pour ton enfant.</p>
+      </div>
     </div>
 
     <%# Feature 2 — Racontée : icône micro %>
@@ -763,8 +797,10 @@
           <line x1="9" y1="22" x2="15" y2="22"/>
         </svg>
       </div>
-      <h3 class="feature-title">Racontée</h3>
-      <p class="feature-desc">Une voix douce et naturelle lit l'histoire à voix haute. Parfait pour les soirs où tu n'as plus l'énergie.</p>
+      <div class="feature-text">
+        <h3 class="feature-title">Racontée</h3>
+        <p class="feature-desc">Une voix douce et naturelle lit l'histoire à voix haute. Parfait pour les soirs où tu n'as plus l'énergie.</p>
+      </div>
     </div>
 
     <%# Feature 3 — En quelques secondes : icône éclair %>
@@ -774,11 +810,16 @@
           <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
         </svg>
       </div>
-      <h3 class="feature-title">En quelques secondes</h3>
-      <p class="feature-desc">L'histoire est prête avant même que le bain soit fini. La routine du soir devient un moment magique.</p>
+      <div class="feature-text">
+        <h3 class="feature-title">En quelques secondes</h3>
+        <p class="feature-desc">L'histoire est prête avant même que le bain soit fini. La routine du soir devient un moment magique.</p>
+      </div>
     </div>
   </div>
 </section>
+
+<%# Trait vertical de séparation après les feature cards %>
+<div class="divider"></div>
 
 <%# ============================================================ %>
 <%# Section "Comment ça marche" — 3 étapes claires %>
@@ -799,7 +840,7 @@
         <div>
           <h3 class="how-step-title">Crée le profil de ton héros</h3>
           <p class="how-step-desc">
-            Renseigne le prénom de ton enfant, son âge, ses personnages préférés et l'univers de son choix — forêt enchantée, espace, dinosaures, pirates ou animaux. Tu peux aussi décrire librement le monde de ton imagination. Noctilio s'en souvient pour toutes les histoires suivantes.
+            Renseigne le prénom de ton enfant, son âge, ses personnages préférés et l'univers de son choix : forêt enchantée, espace, dinosaures, pirates ou animaux. Tu peux aussi décrire librement le monde de ton imagination. Noctilio s'en souvient pour toutes les histoires suivantes.
           </p>
         </div>
       </div>
@@ -821,7 +862,7 @@
         <div>
           <h3 class="how-step-title">Lis ou écoute au moment du coucher</h3>
           <p class="how-step-desc">
-            Installez-vous confortablement. L'histoire est prête à être lue ensemble ou écoutée à voix haute. En mode interactif, ton enfant choisit lui-même la suite de l'aventure à chaque étape — un vrai livre dont il est le héros.
+            Installez-vous confortablement. L'histoire est prête à être lue ensemble ou écoutée à voix haute. En mode interactif, ton enfant choisit lui-même la suite de l'aventure à chaque étape, comme dans un vrai livre dont il est le héros.
           </p>
         </div>
       </div>
@@ -830,7 +871,7 @@
 
     <%# Paragraphe de clôture — résumé SEO de la proposition de valeur %>
     <div class="how-closing">
-      <strong>Noctilio</strong> est pensé pour les parents francophones qui veulent offrir à leurs enfants des moments de lecture riches et personnalisés, sans y passer des heures. Chaque histoire est adaptée à l'enfant — son prénom, son âge, sa personnalité — et renouvelée à chaque génération. <strong>3 histoires par mois gratuitement</strong>, et des histoires illimitées avec le mode interactif en abonnement Premium.
+      <strong>Noctilio</strong> est pensé pour les parents francophones qui veulent offrir à leurs enfants des moments de lecture riches et personnalisés, sans y passer des heures. Chaque histoire est adaptée à l'enfant, son prénom, son âge, sa personnalité, et renouvelée à chaque génération. <strong>3 histoires par mois gratuitement</strong>, et des histoires illimitées avec le mode interactif en abonnement Premium.
     </div>
 
     <%# Lien vers le blog — maillage interne + invitation à en savoir plus %>

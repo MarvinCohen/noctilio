@@ -6,7 +6,7 @@ class StoriesController < ApplicationController
   # Charge l'histoire avant ces actions
   # save_story est inclus pour récupérer @story via set_story avant de la sauvegarder
   # audio est inclus pour vérifier que l'utilisateur est bien le propriétaire avant de générer l'audio
-  before_action :set_story, only: [:show, :destroy, :choose, :status, :save_story, :audio, :continue, :replay, :explore_alternative]
+  before_action :set_story, only: [:show, :destroy, :choose, :status, :save_story, :audio, :continue, :replay, :explore_alternative, :retry]
 
   # Vérifie que l'utilisateur n'a pas dépassé sa limite mensuelle avant de créer
   # DÉSACTIVÉ pendant les tests — à réactiver avant le lancement
@@ -14,7 +14,7 @@ class StoriesController < ApplicationController
 
   # GET /stories — bibliothèque personnelle de l'utilisateur
   def index
-    # N'affiche que les histoires terminées ET sauvegardées par l'utilisateur
+    # Histoires terminées et sauvegardées — affichées dans la grille principale
     # includes précharge les associations utilisées dans la vue (évite les N+1) :
     #   :child               → story.child.name dans les méta de chaque carte
     #   :parent_story        → story.sequel? vérifie parent_story_id
@@ -25,6 +25,13 @@ class StoriesController < ApplicationController
                            .saved_stories
                            .includes(:child, :parent_story, :sequel_stories,
                                      cover_image_attachment: :blob)
+
+    # Histoires échouées — affichées séparément avec un bouton "Réessayer"
+    # Triées du plus récent au plus ancien pour voir les dernières tentatives en premier
+    @failed_stories = current_user.stories
+                                  .failed
+                                  .includes(:child)
+                                  .order(created_at: :desc)
   end
 
   # GET /stories/:id — lecture de l'histoire
@@ -309,6 +316,32 @@ class StoriesController < ApplicationController
     @story.update!(saved: true)
     # Redirige vers la page de l'histoire avec un message de confirmation
     redirect_to story_path(@story), notice: "Histoire sauvegardée dans ta bibliothèque ! 📚"
+  end
+
+  # POST /stories/:id/retry — relance la génération d'une histoire échouée
+  # Réinitialise le contenu et remet l'histoire en pending avant de relancer le job
+  def retry
+    # Vérifie que l'histoire est bien en échec — on ne relance pas une histoire déjà complétée
+    unless @story.failed?
+      return redirect_to stories_path, alert: "Cette histoire n'est pas en échec."
+    end
+
+    # Nettoie l'état précédent avant de relancer pour partir d'une ardoise propre
+    @story.cover_image.purge if @story.cover_image.attached?
+    @story.update!(
+      status:             :pending,
+      content:            nil,
+      title:              nil,
+      image_scene_prompt: nil,
+      image_prompt:       nil,
+      cover_image_url:    nil
+    )
+
+    # Relance le job de génération en arrière-plan
+    GenerateStoryJob.perform_later(@story.id)
+
+    # Redirige vers la page de l'histoire — le spinner de génération s'affiche
+    redirect_to story_path(@story), notice: "Génération relancée ! L'histoire sera prête dans quelques instants."
   end
 
   # DELETE /stories/:id — supprime l'histoire

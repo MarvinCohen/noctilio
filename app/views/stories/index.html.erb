@@ -22,6 +22,54 @@
     <% end %>
   </div>
 
+  <%# ── Section histoires échouées — affichée uniquement si certaines ont planté ── %>
+  <% if @failed_stories.any? %>
+    <div class="lib-failed-section">
+
+      <%# Titre de section avec icône d'alerte %>
+      <h2 class="lib-failed-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <%= @failed_stories.count %> génération<%= "s" if @failed_stories.count > 1 %> échouée<%= "s" if @failed_stories.count > 1 %>
+      </h2>
+
+      <%# Liste compacte des histoires échouées — une ligne par histoire %>
+      <div class="lib-failed-list">
+        <% @failed_stories.each do |story| %>
+          <div class="lib-failed-row">
+
+            <%# Emoji univers + nom de l'enfant + paramètres de l'histoire %>
+            <div class="lib-failed-info">
+              <span class="lib-failed-emoji"><%= story.world_emoji %></span>
+              <div>
+                <span class="lib-failed-child">Pour <%= story.child.name %></span>
+                <span class="lib-failed-meta">
+                  <%= story.world_label %> · <%= story.image_style&.capitalize || "Style auto" %> · <%= story.duration_minutes %> min
+                  · <%= story.created_at.strftime("%d/%m") %>
+                </span>
+              </div>
+            </div>
+
+            <%# Actions : Réessayer + Supprimer %>
+            <div class="lib-failed-actions">
+              <%# Réessayer — remet en pending et relance le job %>
+              <%= button_to "Réessayer", retry_story_path(story),
+                    method: :post,
+                    class: "lib-btn-retry" %>
+
+              <%# Supprimer — efface définitivement cette tentative %>
+              <%= button_to "Supprimer", story_path(story),
+                    method: :delete,
+                    class: "lib-btn-danger lib-btn-danger--sm",
+                    data: { turbo_confirm: "Supprimer cette tentative définitivement ?" } %>
+            </div>
+
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+  <% end %>
+
   <% if @stories.any? %>
     <%# Grille de cartes — responsive 3/2/1 colonnes %>
     <div class="lib-grid">

@@ -77,7 +77,9 @@ class StoryGeneratorService
 
     # Détecte si un héros a la peau foncée — utilisé comme signal de fallback
     # pour garantir une bonne représentation quand aucun style n'est choisi
-    has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé|brun/i) }
+    # brun.?foncé (pas juste brun) pour éviter de déclencher le style Spider-Verse
+    # sur des peaux dorées ou olive qui contiendraient "brun" dans leur libellé
+    has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé|brun.?foncé/i) }
 
     # Sélectionne le style visuel pour le prompt image :
     #   1. Si l'utilisateur a choisi un style → on l'applique
@@ -144,7 +146,7 @@ class StoryGeneratorService
             content: <<~PROMPT
               #{scene_instruction}.
 
-              HERO PHYSICAL DESCRIPTION (MANDATORY — copy these traits EXACTLY into your prompt, word for word):
+              HERO PHYSICAL DESCRIPTION (MANDATORY — translate to English if needed, include ALL traits in your prompt):
               #{heroes_physical}
 
               #{@story.custom_theme.present? ? "⚠️ MANDATORY SCENE CONCEPT — YOU MUST RESPECT THIS EXACTLY:\n#{@story.custom_theme}\n\nKey visual rules from this concept:\n- If a ROBOT / MECH / VEHICLE is mentioned: it MUST be the dominant visual element (large, in the foreground). The hero is INSIDE or ON it — NOT standing separately next to it.\n- If an ENEMY (dinosaur, monster...) is mentioned: it is the THREAT the robot faces, NOT something the hero rides or befriends.\n- DO NOT swap the roles of hero/robot/enemy.\n\n" : ""}STORY (read to find the best visual moment):
@@ -155,7 +157,7 @@ class StoryGeneratorService
               RULES:
               1. START the prompt with the hero's exact physical description (skin, hair, eyes) — this is the most important part
               #{scene_rules}
-              5. STRICTLY include the exact physical traits: skin color, hair color, eye color — DO NOT change or omit any of them
+              5. STRICTLY include the exact physical traits: skin color, hair color, eye color, accessories — TRANSLATE any French descriptions to English (e.g. "taches de rousseur" → "freckles on nose and cheeks", "lunettes rondes dorées" → "round golden glasses", "ailes de fée" → "fairy wings", "bandana rouge" → "red bandana")
               6. ONLY add clothing/accessories explicitly mentioned in the story — DO NOT invent extra clothing items (no hoodie unless stated)
               7. Style: #{style_ref}, #{style_suffix}
               8. END the prompt by repeating the hero's hair color and eye color — example: "#{ending_example}"
@@ -312,13 +314,22 @@ class StoryGeneratorService
     heroes_desc  = all_heroes.map { |c| "• #{c.avatar_description}" }.join("\n")
     word_count   = @story.duration_minutes * 200
 
+    # Ligne univers — OBLIGATOIRE quand world_theme est défini.
+    # Sans cette contrainte explicite, Groq invente un décor qui ignore l'univers choisi
+    # (ex: world_theme "space" → histoire dans une forêt enchantée)
+    adventure_section = if @story.world_theme.present?
+      "🌍 UNIVERS OBLIGATOIRE : #{world_theme_prompt_label}\n      🌟 THÈME : #{@story.custom_theme.presence || "une aventure épique et magique"}"
+    else
+      "🌟 AVENTURE : #{@story.custom_theme.presence || "une aventure épique et magique"}"
+    end
+
     prompt = <<~PROMPT
       PARAMÈTRES DE L'HISTOIRE :
 
       ⚔️  HÉROS (présents ensemble dès la première phrase) :
       #{heroes_desc}
 
-      🌟 AVENTURE : #{@story.custom_theme.presence || "une aventure épique et magique"}
+      #{adventure_section}
       💫 VALEUR À TRANSMETTRE : #{value_label}
       ⏱️  LONGUEUR OBLIGATOIRE : #{word_count} mots minimum — ne termine PAS avant d'avoir atteint #{word_count} mots.
 
@@ -489,6 +500,26 @@ class StoryGeneratorService
       5. L'enjeu doit être NOUVEAU — une nouvelle aventure, pas une répétition.
       6. Le titre doit indiquer que c'est l'épisode #{episode_num} (ex: "Titre — Épisode #{episode_num}").
     PROMPT
+  end
+
+  # Retourne une description détaillée de l'univers pour le prompt texte
+  # La description explicite le cadre visuel et les éléments attendus
+  # pour que Groq ne parte pas dans un décor générique (forêt enchantée pour l'espace, etc.)
+  def world_theme_prompt_label
+    {
+      "space"      => "L'ESPACE COSMIQUE — l'histoire se passe DANS L'ESPACE ou sur d'autres planètes. " \
+                      "Décors obligatoires : vaisseaux spatiaux, planètes, galaxies, étoiles, combinaisons spatiales, " \
+                      "stations orbitales, astéroïdes, nébuleuses. PAS de forêt, PAS de château, PAS de mer.",
+      "dinos"      => "DINOSAURES ET ÈRE PRÉHISTORIQUE — l'histoire se passe dans un monde de dinosaures. " \
+                      "Les animaux principaux DOIVENT être des DINOSAURES (T-Rex, Vélociraptor, Brachiosaure, Tricératops...). " \
+                      "PAS de dragons, PAS de licornes. Décors : jungle préhistorique, volcans, marécages.",
+      "princesses" => "MONDE ENCHANTÉ DES PRINCESSES ET ROYAUMES MAGIQUES — châteaux, royaumes, cours royales, " \
+                      "créatures féeriques (fées, licornes), forêts enchantées, sortilèges.",
+      "pirates"    => "MONDE DES PIRATES ET HAUTE MER — l'histoire se passe en mer. " \
+                      "Décors obligatoires : bateaux pirates, îles tropicales, trésors enfouis, port animé, tempêtes marines.",
+      "animals"    => "MONDE DES ANIMAUX — les personnages secondaires et l'univers tournent autour des animaux. " \
+                      "Forêt, savane, océan ou jungle selon le contexte. Les animaux parlent et s'aventurent avec le héros."
+    }[@story.world_theme] || @story.world_theme
   end
 
   # Retourne le libellé français de la valeur éducative
