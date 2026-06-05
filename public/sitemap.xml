@@ -51,10 +51,10 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- Article 1 : histoires du soir -->
+  <!-- Article 1 : histoires du soir — article phare, date la plus ancienne -->
   <url>
     <loc>https://www.noctilio-app.fr/blog/histoires-du-soir-enfant</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-04-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -62,7 +62,7 @@
   <!-- Article 2 : conte personnalisé IA -->
   <url>
     <loc>https://www.noctilio-app.fr/blog/conte-personnalise-ia-enfant</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -70,7 +70,7 @@
   <!-- Article 3 : histoires enfant 4 ans -->
   <url>
     <loc>https://www.noctilio-app.fr/blog/histoires-enfant-4-ans</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -78,7 +78,7 @@
   <!-- Article 4 : histoires enfant 3 ans -->
   <url>
     <loc>https://www.noctilio-app.fr/blog/histoires-enfant-3-ans</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-04-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -86,7 +86,7 @@
   <!-- Article 5 : histoires enfant 5 ans -->
   <url>
     <loc>https://www.noctilio-app.fr/blog/histoires-enfant-5-ans</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -94,7 +94,7 @@
   <!-- Article 6 : histoire personnalisée prénom enfant -->
   <url>
     <loc>https://www.noctilio-app.fr/blog/histoire-personnalisee-prenom-enfant</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-05-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -102,7 +102,7 @@
   <!-- Article 7 : conte interactif enfant -->
   <url>
     <loc>https://www.noctilio-app.fr/blog/conte-interactif-enfant</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-05-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -110,7 +110,7 @@
   <!-- Article 8 : histoire courte enfant soir -->
   <url>
     <loc>https://www.noctilio-app.fr/blog/histoire-courte-enfant-soir</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

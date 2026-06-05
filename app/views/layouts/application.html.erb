@@ -201,6 +201,24 @@
               }
             }, 250);
           });
+
+          // ── Pause quand l'onglet est invisible — économise CPU/batterie sur mobile ──
+          // document.visibilityState === 'hidden' → l'onglet est en arrière-plan ou l'écran éteint
+          // On annule requestAnimationFrame et on le relance quand l'onglet redevient visible
+          document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+              // Onglet masqué → stop l'animation pour économiser les ressources
+              if (window._globalStarsFrame) {
+                cancelAnimationFrame(window._globalStarsFrame);
+                window._globalStarsFrame = null;
+              }
+            } else {
+              // Onglet redevenu visible → relance l'animation là où on en était
+              if (!window._globalStarsFrame) {
+                window._globalStarsFrame = requestAnimationFrame(drawStars);
+              }
+            }
+          });
         }
       })();
     </script>

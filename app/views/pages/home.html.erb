@@ -1047,10 +1047,11 @@
       ctx.fillStyle = `rgba(240, 201, 122, ${a})`;
       ctx.fill();
     });
-    requestAnimationFrame(drawStars);
+    starsFrame = requestAnimationFrame(drawStars);
   }
 
-  resize(); createStars(); requestAnimationFrame(drawStars);
+  resize(); createStars();
+  let starsFrame = requestAnimationFrame(drawStars);
 
   // Sur mobile, le resize se déclenche quand la barre d'adresse se cache pendant le scroll
   // On ignore les changements de hauteur seuls (typique du chrome mobile)
@@ -1067,6 +1068,16 @@
         createStars();
       }
     }, 250);
+  });
+
+  // Pause quand l'onglet est en arrière-plan — économise CPU/batterie sur mobile
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      cancelAnimationFrame(starsFrame);
+      starsFrame = null;
+    } else if (!starsFrame) {
+      starsFrame = requestAnimationFrame(drawStars);
+    }
   });
 
   // ============================================================

@@ -12,6 +12,9 @@
 # URISchemes: http, https
 Layout/LineLength:
   Max: 239
+  # Les réponses FAQ dans blog_controller.rb sont des strings longues non-découpables
+  Exclude:
+    - 'app/controllers/blog_controller.rb'
 
 # Offense count: 2
 Lint/UselessConstantScoping:

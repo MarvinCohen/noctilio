@@ -26,8 +26,9 @@
     "dateModified": "<%= @article[:published_at].strftime("%Y-%m-%dT00:00:00+02:00") %>",
     "inLanguage": "fr",
     "author": {
-      "@type": "Organization",
-      "name": "Noctilio",
+      "@type": "Person",
+      "name": "Marvin Cohen",
+      "jobTitle": "Fondateur de Noctilio",
       "url": "https://www.noctilio-app.fr"
     },
     "publisher": {
@@ -76,6 +77,30 @@
     }
   }
   </script>
+
+  <%# Schema FAQPage — injecté uniquement si l'article définit des questions/réponses %>
+  <%# Avantage : meilleure citabilité par les AI Overviews de Google et les LLM (ChatGPT, Perplexity) %>
+  <%# même si Google a restreint les FAQ rich results aux sites gouvernementaux/santé %>
+  <% if @article[:faqs].present? %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      <% @article[:faqs].each_with_index do |faq, i| %>
+      {
+        "@type": "Question",
+        "name": "<%= faq[:question].gsub('"', '\"') %>",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "<%= faq[:answer].gsub('"', '\"') %>"
+        }
+      }<%= i < @article[:faqs].length - 1 ? "," : "" %>
+      <% end %>
+    ]
+  }
+  </script>
+  <% end %>
 <% end %>
 
 <style>
