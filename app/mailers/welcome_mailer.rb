@@ -2,7 +2,6 @@
 # Mailer d'accueil — envoyé automatiquement après inscription d'un nouvel utilisateur
 # Déclenché depuis le callback after_create_commit dans le modèle User
 class WelcomeMailer < ApplicationMailer
-
   # Email de bienvenue — présente l'app et invite à créer un premier héros
   # @param user [User] — le nouvel utilisateur inscrit
   def welcome_email(user)
@@ -14,7 +13,7 @@ class WelcomeMailer < ApplicationMailer
     @dashboard_url = dashboard_url(host: "www.noctilio-app.fr")
 
     mail(
-      to:      user.email,
+      to: user.email,
       subject: "Bienvenue sur Noctilio ✦ #{@first_name} !"
     )
   end
