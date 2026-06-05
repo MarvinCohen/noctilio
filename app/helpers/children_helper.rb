@@ -3,7 +3,6 @@
 # ============================================================
 
 module ChildrenHelper
-
   # Génère l'URL de l'avatar DiceBear personnalisé selon le profil de l'enfant.
   #
   # On utilise le style "adventurer" qui supporte skin + hair color.
@@ -15,26 +14,26 @@ module ChildrenHelper
   def dicebear_avatar_url(child)
     # --- Mapping couleurs de cheveux (libellé FR → hex DiceBear) ---
     hair_map = {
-      "noir"          => "0e0e0e",
+      "noir" => "0e0e0e",
       "châtain foncé" => "3d2314",
-      "châtain"       => "6b3a22",
-      "blond foncé"   => "9c6f2a",
-      "blond"         => "c9a84c",
-      "blond clair"   => "e8d5a3",
-      "roux"          => "8b3a0f",
-      "blanc"         => "ece8e0"
+      "châtain" => "6b3a22",
+      "blond foncé" => "9c6f2a",
+      "blond" => "c9a84c",
+      "blond clair" => "e8d5a3",
+      "roux" => "8b3a0f",
+      "blanc" => "ece8e0"
     }
 
     # --- Mapping teintes de peau (libellé FR → hex DiceBear) ---
     skin_map = {
-      "ébène"      => "2d1b0e",
+      "ébène" => "2d1b0e",
       "brun foncé" => "4a2c12",
-      "brun"       => "7c4a1e",
-      "caramel"    => "c68a4a",
-      "doré"       => "d4a853",
-      "olive"      => "c4a882",
-      "beige"      => "e8c99a",
-      "clair"      => "f5deb3",
+      "brun" => "7c4a1e",
+      "caramel" => "c68a4a",
+      "doré" => "d4a853",
+      "olive" => "c4a882",
+      "beige" => "e8c99a",
+      "clair" => "f5deb3",
       "très clair" => "fef0e7"
     }
 
@@ -52,7 +51,6 @@ module ChildrenHelper
     hair_styles = case child.gender
                   when "boy"  then "short01,short02,short03,short04"
                   when "girl" then "long01,long02,long03,long04,long05,long06,long07,long08"
-                  else nil
                   end
 
     # Construit l'URL DiceBear v9 avec les paramètres de personnalisation
@@ -67,10 +65,7 @@ module ChildrenHelper
     url += "&backgroundType=solid"
     url += "&scale=90"
     # DiceBear attend des paramètres hair[] séparés pour chaque style autorisé
-    if hair_styles
-      hair_styles.split(",").each { |s| url += "&hair[]=#{s}" }
-    end
+    hair_styles&.split(",")&.each { |s| url += "&hair[]=#{s}" }
     url
   end
-
 end

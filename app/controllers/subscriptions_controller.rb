@@ -37,27 +37,25 @@ class SubscriptionsController < ApplicationController
     @checkout_session = current_user.payment_processor.checkout(
       mode: "subscription",
       line_items: [{
-        price:    ENV.fetch("STRIPE_PREMIUM_PRICE_ID"),
+        price: ENV.fetch("STRIPE_PREMIUM_PRICE_ID"),
         quantity: 1
       }],
       success_url: subscription_success_url(session_id: "{CHECKOUT_SESSION_ID}"),
-      cancel_url:  subscription_url
+      cancel_url: subscription_url
     )
 
     # Redirige vers la page de paiement Stripe (domaine externe)
     # allow_other_host: true est obligatoire pour les redirections vers Stripe
     redirect_to @checkout_session.url, allow_other_host: true
-
   rescue KeyError
     # STRIPE_PREMIUM_PRICE_ID n'est pas défini dans les variables d'environnement
     redirect_to subscription_path,
-      alert: "Configuration Stripe manquante. Contacte l'administrateur."
-
-  rescue => e
+                alert: "Configuration Stripe manquante. Contacte l'administrateur."
+  rescue StandardError => e
     # Erreur inattendue (API Stripe down, clé invalide, etc.)
     Rails.logger.error "[Stripe] Erreur checkout : #{e.message}"
     redirect_to subscription_path,
-      alert: "Une erreur est survenue lors du paiement. Réessaie dans quelques instants."
+                alert: "Une erreur est survenue lors du paiement. Réessaie dans quelques instants."
   end
 
   # GET /abonnement/success?session_id=... — retour après paiement réussi
@@ -69,7 +67,7 @@ class SubscriptionsController < ApplicationController
 
     # Redirige vers le dashboard avec un message de confirmation
     redirect_to dashboard_path,
-      notice: "Bienvenue dans Noctilio Premium ! Profite d'histoires illimitées. ✨"
+                notice: "Bienvenue dans Noctilio Premium ! Profite d'histoires illimitées. ✨"
   end
 
   # POST /abonnement/cancel — annule l'abonnement en cours
@@ -84,15 +82,14 @@ class SubscriptionsController < ApplicationController
       subscription.cancel
 
       redirect_to subscription_path,
-        notice: "Ton abonnement sera résilié à la fin de la période en cours."
+                  notice: "Ton abonnement sera résilié à la fin de la période en cours."
     else
       redirect_to subscription_path,
-        alert: "Aucun abonnement actif trouvé."
+                  alert: "Aucun abonnement actif trouvé."
     end
-
-  rescue => e
+  rescue StandardError => e
     Rails.logger.error "[Stripe] Erreur annulation : #{e.message}"
     redirect_to subscription_path,
-      alert: "Impossible d'annuler l'abonnement. Contacte le support."
+                alert: "Impossible d'annuler l'abonnement. Contacte le support."
   end
 end

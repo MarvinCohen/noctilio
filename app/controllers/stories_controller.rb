@@ -6,7 +6,8 @@ class StoriesController < ApplicationController
   # Charge l'histoire avant ces actions
   # save_story est inclus pour récupérer @story via set_story avant de la sauvegarder
   # audio est inclus pour vérifier que l'utilisateur est bien le propriétaire avant de générer l'audio
-  before_action :set_story, only: [:show, :destroy, :choose, :status, :save_story, :audio, :continue, :replay, :explore_alternative, :retry]
+  before_action :set_story,
+                only: %i[show destroy choose status save_story audio continue replay explore_alternative retry]
 
   # Vérifie que l'utilisateur n'a pas dépassé sa limite mensuelle avant de créer
   # DÉSACTIVÉ pendant les tests — à réactiver avant le lancement
@@ -50,9 +51,9 @@ class StoriesController < ApplicationController
     @children = current_user.children.ordered
 
     # Si l'utilisateur n'a pas encore créé de profil enfant, on le redirige
-    if @children.empty?
-      redirect_to new_child_path, alert: "Créez d'abord le profil d'un enfant pour générer une histoire !"
-    end
+    return unless @children.empty?
+
+    redirect_to new_child_path, alert: "Créez d'abord le profil d'un enfant pour générer une histoire !"
   end
 
   # POST /stories — crée l'histoire et lance la génération en arrière-plan
@@ -71,7 +72,7 @@ class StoriesController < ApplicationController
 
     # Le premier enfant sélectionné est le héros principal
     primary_child_id = selected_ids.first
-    extra_ids        = selected_ids[1..]   # Les autres enfants (peut être vide)
+    extra_ids        = selected_ids[1..] # Les autres enfants (peut être vide)
 
     # On vérifie que tous les enfants appartiennent bien à l'utilisateur connecté
     child = current_user.children.find(primary_child_id)
@@ -172,7 +173,7 @@ class StoriesController < ApplicationController
         # Convertit le markdown généré par l'IA en HTML propre côté serveur
         # Redcarpet est plus fiable que le parser JS artisanal dans story_choice_controller
         renderer = Redcarpet::Render::HTML.new(safe_links_only: true)
-        markdown  = Redcarpet::Markdown.new(renderer, autolink: false, tables: false)
+        markdown = Redcarpet::Markdown.new(renderer, autolink: false, tables: false)
         continuation_html = markdown.render(resolved.context_chosen)
       end
     end
@@ -180,22 +181,22 @@ class StoriesController < ApplicationController
     # Construit l'URL de l'image si elle est disponible
     # Utilisé par story_image_controller.js pour afficher l'image sans recharger la page
     image_url = if @story.cover_image.attached?
-      url_for(@story.cover_image)          # ActiveStorage (fal.ai / DALL-E via Cloudinary)
-    elsif @story.cover_image_url.present?
-      @story.cover_image_url               # URL externe (Pollinations)
-    end
+                  url_for(@story.cover_image) # ActiveStorage (fal.ai / DALL-E via Cloudinary)
+                elsif @story.cover_image_url.present?
+                  @story.cover_image_url # URL externe (Pollinations)
+                end
 
     # URL de l'audio si le fichier est déjà généré par GenerateAudioJob
     audio_url = @story.audio_file.attached? ? url_for(@story.audio_file) : nil
 
     render json: {
-      status:       @story.status,
-      completed:    @story.completed?,
-      title:        @story.title,
+      status: @story.status,
+      completed: @story.completed?,
+      title: @story.title,
       continuation: continuation_html,
       redirect_url: story_path(@story),
-      image_url:    image_url,
-      audio_url:    audio_url           # nil si l'audio n'est pas encore généré
+      image_url: image_url,
+      audio_url: audio_url # nil si l'audio n'est pas encore généré
     }
   end
 
@@ -215,7 +216,7 @@ class StoriesController < ApplicationController
       # Audio pas encore généré — lance le job en arrière-plan
       # Le JS recevra 202 et commencera à poller /status toutes les 3s
       GenerateAudioJob.perform_later(@story.id, source: source)
-      head :accepted  # 202
+      head :accepted # 202
     end
   end
 
@@ -258,7 +259,8 @@ class StoriesController < ApplicationController
     # On logue le détail complet côté serveur pour le debug
     # Mais on renvoie un message générique au client — évite de fuiter des infos d'infrastructure
     Rails.logger.error("StoriesController error: #{e.class} — #{e.message}\n#{e.backtrace.first(5).join("\n")}")
-    render json: { success: false, error: "Une erreur est survenue, veuillez réessayer." }, status: :internal_server_error
+    render json: { success: false, error: "Une erreur est survenue, veuillez réessayer." },
+           status: :internal_server_error
   end
 
   # POST /stories/:id/replay — recrée une histoire identique from scratch
@@ -274,7 +276,8 @@ class StoriesController < ApplicationController
       GenerateStoryJob.perform_later(replay_story.id)
       redirect_to story_path(replay_story), notice: "L'aventure recommence avec de nouveaux choix... ✨"
     else
-      redirect_to story_path(@story), alert: "Impossible de recommencer : #{replay_story.errors.full_messages.to_sentence}"
+      redirect_to story_path(@story),
+                  alert: "Impossible de recommencer : #{replay_story.errors.full_messages.to_sentence}"
     end
   end
 
@@ -322,19 +325,17 @@ class StoriesController < ApplicationController
   # Réinitialise le contenu et remet l'histoire en pending avant de relancer le job
   def retry
     # Vérifie que l'histoire est bien en échec — on ne relance pas une histoire déjà complétée
-    unless @story.failed?
-      return redirect_to stories_path, alert: "Cette histoire n'est pas en échec."
-    end
+    return redirect_to stories_path, alert: "Cette histoire n'est pas en échec." unless @story.failed?
 
     # Nettoie l'état précédent avant de relancer pour partir d'une ardoise propre
     @story.cover_image.purge if @story.cover_image.attached?
     @story.update!(
-      status:             :pending,
-      content:            nil,
-      title:              nil,
+      status: :pending,
+      content: nil,
+      title: nil,
       image_scene_prompt: nil,
-      image_prompt:       nil,
-      cover_image_url:    nil
+      image_prompt: nil,
+      cover_image_url: nil
     )
 
     # Relance le job de génération en arrière-plan
@@ -356,7 +357,7 @@ class StoriesController < ApplicationController
   # Utilisé pour les réponses JSON (explore_alternative, status)
   def render_markdown_to_html(text)
     renderer = Redcarpet::Render::HTML.new(safe_links_only: true)
-    markdown  = Redcarpet::Markdown.new(renderer, autolink: false, tables: false)
+    markdown = Redcarpet::Markdown.new(renderer, autolink: false, tables: false)
     markdown.render(text.to_s)
   end
 
@@ -384,10 +385,10 @@ class StoriesController < ApplicationController
   # — Gratuit  : bloqué à 3 histoires/mois
   # Redirige vers la page d'abonnement avec un message explicatif si limite atteinte
   def check_story_limit!
-    unless current_user.can_create_story?
-      redirect_to subscription_path,
-        alert: "Tu as atteint ta limite de 3 histoires ce mois-ci. Passe en Premium pour des histoires illimitées !"
-    end
+    return if current_user.can_create_story?
+
+    redirect_to subscription_path,
+                alert: "Tu as atteint ta limite de 3 histoires ce mois-ci. Passe en Premium pour des histoires illimitées !"
   end
 
   def story_params

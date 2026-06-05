@@ -174,8 +174,14 @@ class Badge < ApplicationRecord
     award_if_not_earned(user, IMAGINATIVE,  earned_badge_ids, all_badges) if custom_count >= 5
 
     # ── Durée ──────────────────────────────────────────────────────────────────
-    award_if_not_earned(user, QUICK_TALES, earned_badge_ids, all_badges) if user.stories.completed.where(duration_minutes: 5).count >= 5
-    award_if_not_earned(user, EPIC_READER, earned_badge_ids, all_badges) if user.stories.completed.where(duration_minutes: 15).exists?
+    if user.stories.completed.where(duration_minutes: 5).count >= 5
+      award_if_not_earned(user, QUICK_TALES, earned_badge_ids,
+                          all_badges)
+    end
+    if user.stories.completed.where(duration_minutes: 15).exists?
+      award_if_not_earned(user, EPIC_READER, earned_badge_ids,
+                          all_badges)
+    end
 
     # ── Famille ────────────────────────────────────────────────────────────────
     # Aventure Partagée — histoire avec au moins 1 enfant supplémentaire
@@ -225,8 +231,6 @@ class Badge < ApplicationRecord
                         .count
     award_if_not_earned(user, WEEKEND_TALES, earned_badge_ids, all_badges) if weekend_count >= 3
   end
-
-  private
 
   # Attribue un badge à l'utilisateur s'il ne l'a pas encore
   # all_badges       : Hash { condition_key => badge } préchargé — zéro requête SQL ici

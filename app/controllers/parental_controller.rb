@@ -36,11 +36,11 @@ class ParentalController < ApplicationController
     # IDs des enfants ayant au moins un choix interactif en attente
     # Un choix est "en attente" si chosen_option est nil (l'enfant n'a pas encore choisi)
     @children_with_pending = Story
-                               .joins(:story_choices)
-                               .where(child_id: child_ids,
-                                      story_choices: { chosen_option: nil })
-                               .distinct
-                               .pluck(:child_id)
+                             .joins(:story_choices)
+                             .where(child_id: child_ids,
+                                    story_choices: { chosen_option: nil })
+                             .distinct
+                             .pluck(:child_id)
 
     # Valeurs éducatives explorées — regroupées par valeur, triées par fréquence
     # Exclut les histoires sans valeur éducative définie

@@ -14,7 +14,7 @@ class DashboardController < ApplicationController
     # Histoires en cours de génération — bornées à 10 pour éviter une requête non bornée
     # includes(:child) pour les mêmes raisons que @recent_stories
     @pending_stories = current_user.stories
-                                   .where(status: [:pending, :generating])
+                                   .where(status: %i[pending generating])
                                    .includes(:child)
                                    .limit(10)
 

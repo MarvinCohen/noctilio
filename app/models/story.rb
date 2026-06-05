@@ -75,13 +75,13 @@ class Story < ApplicationRecord
   # Utilisé par StoriesController#replay
   def build_replay
     child.stories.build(
-      world_theme:       world_theme,
-      custom_theme:      custom_theme,
+      world_theme: world_theme,
+      custom_theme: custom_theme,
       educational_value: educational_value,
-      duration_minutes:  duration_minutes,
-      interactive:       interactive,
-      extra_child_ids:   extra_child_ids,
-      saved:             true  # Auto-sauvegardée dans la bibliothèque
+      duration_minutes: duration_minutes,
+      interactive: interactive,
+      extra_child_ids: extra_child_ids,
+      saved: true # Auto-sauvegardée dans la bibliothèque
     )
   end
 
@@ -89,14 +89,14 @@ class Story < ApplicationRecord
   # Utilisé par StoriesController#continue
   def build_sequel
     child.stories.build(
-      parent_story_id:   id,
-      world_theme:       world_theme,
-      custom_theme:      custom_theme,
+      parent_story_id: id,
+      world_theme: world_theme,
+      custom_theme: custom_theme,
       educational_value: educational_value,
-      duration_minutes:  duration_minutes,
-      interactive:       interactive,
-      extra_child_ids:   extra_child_ids,
-      saved:             true  # Auto-sauvegardée dans la bibliothèque
+      duration_minutes: duration_minutes,
+      interactive: interactive,
+      extra_child_ids: extra_child_ids,
+      saved: true # Auto-sauvegardée dans la bibliothèque
     )
   end
 
@@ -125,11 +125,11 @@ class Story < ApplicationRecord
   # Retourne ✨ si pas d'univers prédéfini (mode description libre)
   def world_emoji
     {
-      "space"      => "🚀",
-      "dinos"      => "🦕",
+      "space" => "🚀",
+      "dinos" => "🦕",
       "princesses" => "👸",
-      "pirates"    => "🏴‍☠️",
-      "animals"    => "🦁"
+      "pirates" => "🏴‍☠️",
+      "animals" => "🦁"
     }.fetch(world_theme.to_s, "✨")
   end
 
@@ -137,11 +137,11 @@ class Story < ApplicationRecord
   # Si pas d'univers prédéfini, retourne un extrait de la description libre
   def world_label
     {
-      "space"      => "Espace",
-      "dinos"      => "Dinosaures",
+      "space" => "Espace",
+      "dinos" => "Dinosaures",
       "princesses" => "Princesses",
-      "pirates"    => "Pirates",
-      "animals"    => "Animaux"
+      "pirates" => "Pirates",
+      "animals" => "Animaux"
     }.fetch(world_theme.to_s, custom_theme.presence || "Histoire personnalisée")
   end
 
@@ -149,6 +149,7 @@ class Story < ApplicationRecord
   # extra_child_ids est un tableau d'IDs PostgreSQL stocké en base
   def extra_children
     return Child.none if extra_child_ids.blank?
+
     Child.where(id: extra_child_ids)
   end
 

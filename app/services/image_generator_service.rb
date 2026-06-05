@@ -76,13 +76,13 @@ class ImageGeneratorService
   # qui ont un biais fort vers les tons de peau clairs (personnages est-asiatiques)
   # On utilise des références qui représentent naturellement des personnages à peau foncée
   VISUAL_STYLE_DARK_SKIN = "semi-realistic animation illustration, " \
-                            "Spider-Man Into the Spider-Verse and Disney modern animation style, " \
-                            "Black protagonist with dark ebony skin, expressive face, " \
-                            "highly detailed painterly backgrounds, " \
-                            "dramatic volumetric lighting with god rays, " \
-                            "vibrant saturated colors with deep shadows, " \
-                            "cinematic widescreen composition, " \
-                            "child-safe, no blood, no gore, action-focused, magical and emotional atmosphere"
+                           "Spider-Man Into the Spider-Verse and Disney modern animation style, " \
+                           "Black protagonist with dark ebony skin, expressive face, " \
+                           "highly detailed painterly backgrounds, " \
+                           "dramatic volumetric lighting with god rays, " \
+                           "vibrant saturated colors with deep shadows, " \
+                           "cinematic widescreen composition, " \
+                           "child-safe, no blood, no gore, action-focused, magical and emotional atmosphere"
 
   # Mots-clés indiquant que le héros PILOTE ou MONTE quelque chose
   # Si détectés dans l'histoire, le héros n'est pas directement dans la mêlée —
@@ -114,6 +114,7 @@ class ImageGeneratorService
       Rails.logger.info("ImageGeneratorService — tentative DALL-E pour story ##{@story.id}")
       result = generate_with_dalle(prompt)
       return result if result[:success]
+
       Rails.logger.warn("ImageGeneratorService — DALL-E a échoué : #{result[:error]}, tentative fal.ai")
     end
 
@@ -123,6 +124,7 @@ class ImageGeneratorService
       Rails.logger.info("ImageGeneratorService — tentative fal.ai pour story ##{@story.id}")
       result = generate_with_fal(prompt)
       return result if result[:success]
+
       Rails.logger.warn("ImageGeneratorService — fal.ai a échoué : #{result[:error]}, tentative Pollinations")
     end
 
@@ -149,30 +151,32 @@ class ImageGeneratorService
     # Prépare la requête HTTP vers l'endpoint fal.ai
     uri  = URI(FAL_API_URL)
     http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl     = true       # fal.ai utilise HTTPS
+    http.use_ssl = true # fal.ai utilise HTTPS
     http.read_timeout = 120       # 120s max — FLUX peut prendre ~10-30s
     http.open_timeout = 10        # 10s pour établir la connexion
 
     # Construit la requête POST avec les paramètres de génération
     request = Net::HTTP::Post.new(uri.path)
-    request["Authorization"] = "Key #{ENV['FAL_API_KEY']}"  # Auth fal.ai
+    request["Authorization"] = "Key #{ENV.fetch('FAL_API_KEY', nil)}" # Auth fal.ai
     request["Content-Type"]  = "application/json"
 
     # Construit le negative_prompt selon la couleur de peau de chaque héros
     # On bloque l'opposé de la couleur spécifiée pour forcer le modèle à la respecter
     skin_negatives = @story.all_children.filter_map do |child|
       next unless child.skin_tone.present?
+
       tone = child.skin_tone.downcase
-      if tone.match?(/éb[eè]ne|noir|très.?foncé|dark/)
+      case tone
+      when /éb[eè]ne|noir|très.?foncé|dark/
         # Négatif renforcé pour peau ébène : liste exhaustive des tons clairs à bloquer
         # FLUX tend à ignorer la peau foncée si le prompt contient des éléments "européens"
         "light skin, white skin, pale skin, fair skin, tan skin, tanned, caucasian, asian skin, light complexion, european features"
-      elsif tone.match?(/brun.?foncé|foncé/)
+      when /brun.?foncé|foncé/
         # Peau brun foncé : bloque seulement les tons très clairs — pas aussi agressif qu'ébène
         "very pale skin, very light skin, fair skin, white skin"
-      elsif tone.match?(/clair|blanc|fair|pale/)
+      when /clair|blanc|fair|pale/
         "dark skin, black skin, brown skin, tanned skin"
-      elsif tone.match?(/métis|mixed|doré|olive|mat/)
+      when /métis|mixed|doré|olive|mat/
         "very dark skin, very pale skin"
       end
     end.uniq
@@ -191,12 +195,12 @@ class ImageGeneratorService
     negative += ", #{skin_negatives.join(', ')}" if skin_negatives.any?
 
     request.body = {
-      prompt:              prompt,
-      negative_prompt:     negative,         # Bloque les peaux claires si le héros est à peau ébène
-      image_size:          "landscape_4_3",  # Format paysage — idéal pour couverture de livre
-      num_inference_steps: 28,               # 28 = meilleure qualité (vs 24), acceptable pour FLUX Dev
-      guidance_scale:      5.0,              # 5.0 = plus fidèle aux contraintes (skin tone, accessoires)
-      num_images:          1,
+      prompt: prompt,
+      negative_prompt: negative, # Bloque les peaux claires si le héros est à peau ébène
+      image_size: "landscape_4_3", # Format paysage — idéal pour couverture de livre
+      num_inference_steps: 28, # 28 = meilleure qualité (vs 24), acceptable pour FLUX Dev
+      guidance_scale: 5.0, # 5.0 = plus fidèle aux contraintes (skin tone, accessoires)
+      num_images: 1,
       enable_safety_checker: true
     }.to_json
 
@@ -229,7 +233,7 @@ class ImageGeneratorService
   # ============================================================
   # Utilisé seulement si OPENAI_API_KEY est configurée dans .env
   def generate_with_dalle(prompt)
-    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+    client = OpenAI::Client.new(access_token: ENV.fetch("OPENAI_API_KEY", nil))
 
     # gpt-image-1 (modèle natif GPT-4o) — bien meilleur suivi de prompt que DALL-E 3 :
     # - Comprend les scènes complexes (mech + cockpit + personnage à l'intérieur)
@@ -238,11 +242,11 @@ class ImageGeneratorService
     # Pas de sanitisation nécessaire — gpt-image-1 gère le vocabulaire d'aventure enfantin
     response = client.images.generate(
       parameters: {
-        prompt:  prompt,
-        model:   "gpt-image-1",
-        size:    "1024x1024",
-        quality: "medium",  # "low" / "medium" / "high" — medium = bon équilibre qualité/coût
-        n:       1
+        prompt: prompt,
+        model: "gpt-image-1",
+        size: "1024x1024",
+        quality: "medium", # "low" / "medium" / "high" — medium = bon équilibre qualité/coût
+        n: 1
       }
     )
 
@@ -254,8 +258,8 @@ class ImageGeneratorService
     # Décode le base64 et attache directement à ActiveStorage (pas besoin de télécharger)
     image_data = Base64.decode64(b64)
     @story.cover_image.attach(
-      io:           StringIO.new(image_data),
-      filename:     "histoire_#{@story.id}_couverture.png",
+      io: StringIO.new(image_data),
+      filename: "histoire_#{@story.id}_couverture.png",
       content_type: "image/png"
     )
 
@@ -305,22 +309,22 @@ class ImageGeneratorService
   #   2. Fallback algorithmique → extract_key_moment + descriptions physiques manuelles
   # ── Mots-clés par style — pour détecter si Groq a inclus le style dans son prompt ──
   STYLE_KEYWORDS = {
-    "ghibli"     => %w[ghibli shinkai],
-    "comics"     => ["spider-verse", "spider verse", "comics", "halftone"],
-    "pixar"      => %w[pixar disney],
+    "ghibli" => %w[ghibli shinkai],
+    "comics" => ["spider-verse", "spider verse", "comics", "halftone"],
+    "pixar" => %w[pixar disney],
     "watercolor" => %w[watercolor storybook hand-painted],
     # Cinématique : mots-clés larges — si l'un est présent, le style est déjà inclus
-    "cinematic"  => %w[cinematic photorealistic blockbuster concept\ art film\ poster]
+    "cinematic" => %w[cinematic photorealistic blockbuster concept\ art film\ poster]
   }.freeze
 
   # ── Référence de style à injecter si Groq l'a omise ──────────────────────────────
   STYLE_REFS = {
-    "ghibli"     => "Makoto Shinkai and Studio Ghibli cinematic animation style, soft watercolor pastels, dreamy atmosphere",
-    "comics"     => "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors",
-    "pixar"      => "Pixar and Disney 3D animation style, warm cinematic lighting, highly detailed CGI, expressive characters",
+    "ghibli" => "Makoto Shinkai and Studio Ghibli cinematic animation style, soft watercolor pastels, dreamy atmosphere",
+    "comics" => "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors",
+    "pixar" => "Pixar and Disney 3D animation style, warm cinematic lighting, highly detailed CGI, expressive characters",
     "watercolor" => "vintage children's book illustration style, soft watercolor textures, warm hand-painted look, storybook fairy tale",
     # Cinématique : pas de référence dessin animé — gpt-image-1 choisit son rendu naturel
-    "cinematic"  => "cinematic movie concept art, photorealistic CGI, dramatic film poster style, epic blockbuster, child-safe"
+    "cinematic" => "cinematic movie concept art, photorealistic CGI, dramatic film poster style, epic blockbuster, child-safe"
   }.freeze
 
   def build_image_prompt
@@ -393,11 +397,11 @@ class ImageGeneratorService
                   when /foncé|brun.?foncé/          then "dark brown skin"
                   when /métis|mixed|caramel|doré/   then "warm golden brown skin"
                   when /olive|mat/                  then "olive toned skin"
-                  when /clair|fair|blanc/            then "fair light skin"
+                  when /clair|fair|blanc/ then "fair light skin"
                   else "#{child.skin_tone} skin"
                   end
         attrs << skin_en
-        attrs << skin_en  # Répétition volontaire pour renforcer l'attention du modèle
+        attrs << skin_en # Répétition volontaire pour renforcer l'attention du modèle
       end
       attrs << child.child_description if child.child_description.present?
       "#{child.name}: #{attrs.join(', ')}" if attrs.any?
@@ -411,7 +415,7 @@ class ImageGeneratorService
     is_pilot   = PILOT_KEYWORDS.any? { |w| story_text.include?(w) }
 
     # Extrait le nom du véhicule/robot depuis le texte (pattern : "son robot « NOM »")
-    vehicle_name = story_text.match(/(?:son|sa)\s+(?:robot|vaisseau|dragon|cheval|mech[a]?)\s+[«""]([^»""]+)[»""]/i)
+    vehicle_name = story_text.match(/(?:son|sa)\s+(?:robot|vaisseau|dragon|cheval|mecha?)\s+[«"]([^»"]+)[»"]/i)
                              &.captures&.first&.capitalize
 
     # has_very_dark_skin : peau ébène/noir uniquement → préfixe "BLACK CHILD WITH VERY DARK EBONY SKIN"
@@ -428,21 +432,21 @@ class ImageGeneratorService
 
     # Construction du prompt selon le rôle du héros
     prompt = if is_pilot
-      # Pilote : le combat du véhicule prime sur l'apparence du héros
-      vehicle_desc = vehicle_name ? "a giant robot named #{vehicle_name}" : "a giant mecha robot"
-      "TWO GIANT ROBOTS IN EPIC BATTLE in the foreground — #{vehicle_desc} vs enemy robot, " \
-      "massive scale mechanical combat, sparks flying, dynamic clash, " \
-      "small cockpit window showing #{@story.all_children.map(&:name).join(' and ')} (#{physical_emphasis}) piloting inside. " \
-      "SCENE: #{scene}. #{visual_style}, dramatic rim light, motion blur, giant robots battling"
-    else
-      # Héros direct : l'apparence prime
-      "#{skin_first}" \
-      "MANDATORY CHARACTER APPEARANCE: #{heroes_str}. " \
-      "#{heroes_str}, #{physical_emphasis}, in dynamic action pose. " \
-      "SCENE: #{scene}. " \
-      "Dramatic action moment, intense atmosphere, cinematic composition. " \
-      "#{visual_style}, dramatic rim light, motion blur"
-    end
+               # Pilote : le combat du véhicule prime sur l'apparence du héros
+               vehicle_desc = vehicle_name ? "a giant robot named #{vehicle_name}" : "a giant mecha robot"
+               "TWO GIANT ROBOTS IN EPIC BATTLE in the foreground — #{vehicle_desc} vs enemy robot, " \
+                 "massive scale mechanical combat, sparks flying, dynamic clash, " \
+                 "small cockpit window showing #{@story.all_children.map(&:name).join(' and ')} (#{physical_emphasis}) piloting inside. " \
+                 "SCENE: #{scene}. #{visual_style}, dramatic rim light, motion blur, giant robots battling"
+             else
+               # Héros direct : l'apparence prime
+               "#{skin_first}" \
+                 "MANDATORY CHARACTER APPEARANCE: #{heroes_str}. " \
+                 "#{heroes_str}, #{physical_emphasis}, in dynamic action pose. " \
+                 "SCENE: #{scene}. " \
+                 "Dramatic action moment, intense atmosphere, cinematic composition. " \
+                 "#{visual_style}, dramatic rim light, motion blur"
+             end
 
     # Pour les suites d'épisodes : ancre le character design sur l'épisode précédent
     if @story.sequel? && @story.parent_story&.image_prompt.present?
@@ -470,7 +474,7 @@ class ImageGeneratorService
     # NOTE : on utilise [#]{1,3} au lieu de #{1,3} pour éviter l'interpolation Ruby
     clean = @story.content
                   .gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")
-                  .gsub(/^[#]{1,3} .+$/, "")
+                  .gsub(/^\#{1,3} .+$/, "")
                   .strip
 
     # Récupère tous les paragraphes non vides d'au moins 80 caractères
@@ -487,15 +491,15 @@ class ImageGeneratorService
     # Vérifie que le "meilleur" paragraphe a au moins 1 mot d'action
     # Sinon, fallback sur le paragraphe aux 2/3 du texte
     best_score = ACTION_KEYWORDS.count { |w| best_paragraph.downcase.include?(w) }
-    if best_score == 0
-      climax_index  = (paragraphs.length * 2 / 3).clamp(0, paragraphs.length - 1)
+    if best_score.zero?
+      climax_index = (paragraphs.length * 2 / 3).clamp(0, paragraphs.length - 1)
       best_paragraph = paragraphs[climax_index]
     end
 
-    moment = best_paragraph.gsub(/\n/, " ").strip
+    moment = best_paragraph.gsub("\n", " ").strip
 
     # Limite à 200 caractères pour ne pas dépasser la longueur optimale du prompt image
-    moment.length > 200 ? moment[0..200].rstrip + "..." : moment
+    moment.length > 200 ? "#{moment[0..200].rstrip}..." : moment
   end
 
   # ============================================================
@@ -507,7 +511,10 @@ class ImageGeneratorService
     # Sécurité : on vérifie que l'URL est bien HTTPS avant de l'ouvrir
     # URI.open peut lire des fichiers locaux si l'URL commence par file:// (SSRF)
     # Une URL malveillante retournée par une API compromise pourrait lire /etc/passwd
-    raise ArgumentError, "URL invalide : seules les URLs HTTPS sont autorisées (reçu : #{url})" unless url.to_s.start_with?("https://")
+    unless url.to_s.start_with?("https://")
+      raise ArgumentError,
+            "URL invalide : seules les URLs HTTPS sont autorisées (reçu : #{url})"
+    end
 
     # Ouvre l'URL avec un timeout pour éviter de bloquer le job trop longtemps
     downloaded_file = URI.open(url, read_timeout: 60, open_timeout: 30)
@@ -516,13 +523,13 @@ class ImageGeneratorService
 
     # Attache l'image téléchargée à l'histoire via ActiveStorage
     @story.cover_image.attach(
-      io:           downloaded_file,
-      filename:     "histoire_#{@story.id}_couverture.#{extension}",
+      io: downloaded_file,
+      filename: "histoire_#{@story.id}_couverture.#{extension}",
       content_type: content_type
     )
   rescue StandardError => e
     # Si le téléchargement échoue, l'URL est déjà sauvegardée en base comme fallback
     Rails.logger.error("ImageGeneratorService — échec téléchargement : #{e.message}")
-    raise  # Re-raise pour que la méthode appelante capture l'erreur
+    raise # Re-raise pour que la méthode appelante capture l'erreur
   end
 end

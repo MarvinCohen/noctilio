@@ -18,10 +18,10 @@ module StoriesHelper
     text = content.gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "").strip
 
     html_parts       = []
-    paragraph_lines  = []  # Buffer pour accumuler les lignes d'un paragraphe courant
+    paragraph_lines  = [] # Buffer pour accumuler les lignes d'un paragraphe courant
 
     text.each_line do |line|
-      line = line.rstrip  # Supprime l'espace et le \n en fin de ligne
+      line = line.rstrip # Supprime l'espace et le \n en fin de ligne
 
       if line.start_with?("## ", "# ", "### ")
         # --- Titre de chapitre détecté ---
@@ -68,8 +68,8 @@ module StoriesHelper
 
     # Applique le gras/italique inline après avoir échappé le HTML (sécurité XSS)
     formatted = html_escape(raw)
-      .gsub(/\*\*(.+?)\*\*/, '<strong>\1</strong>')
-      .gsub(/\*(.+?)\*/, '<em>\1</em>')
+                .gsub(/\*\*(.+?)\*\*/, '<strong>\1</strong>')
+                .gsub(/\*(.+?)\*/, '<em>\1</em>')
 
     html_parts << tag.p(formatted.html_safe, class: "story-paragraph")
   end

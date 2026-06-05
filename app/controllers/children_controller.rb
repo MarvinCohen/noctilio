@@ -6,7 +6,7 @@ class ChildrenController < ApplicationController
   # (grâce à set_child qui cherche dans current_user.children)
 
   # Charge l'enfant depuis la base AVANT ces actions
-  before_action :set_child, only: [:show, :edit, :update, :destroy]
+  before_action :set_child, only: %i[show edit update destroy]
 
   # GET /children — liste tous les enfants de l'utilisateur
   def index

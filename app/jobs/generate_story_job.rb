@@ -46,13 +46,11 @@ class GenerateStoryJob < ApplicationJob
 
     story.update!(
       content: content,
-      title:   title
+      title: title
     )
 
     # 5. En mode interactif : extraire et créer le choix depuis le texte
-    if story.interactive?
-      create_story_choice_from_content(story, content)
-    end
+    create_story_choice_from_content(story, content) if story.interactive?
 
     # 6. Marquer l'histoire comme terminée DÈS QUE LE TEXTE EST PRÊT
     # → le Stimulus story_status_controller redirige immédiatement vers la page de lecture
@@ -83,7 +81,7 @@ class GenerateStoryJob < ApplicationJob
     # Génère l'image dans ce job (thread principal)
     # On génère d'abord le prompt image via Groq (~3-5s), puis l'illustration (~30-60s)
     begin
-      story.reload  # S'assure que story.content est bien chargé depuis la base
+      story.reload # S'assure que story.content est bien chargé depuis la base
       image_scene = generator.generate_image_scene_prompt
       story.update_column(:image_scene_prompt, image_scene) if image_scene.present?
       Rails.logger.info("GenerateStoryJob — scène image générée : #{image_scene}")
@@ -102,7 +100,7 @@ class GenerateStoryJob < ApplicationJob
     # Toute autre erreur : on marque comme échoué
     story&.update(status: :failed)
     Rails.logger.error("GenerateStoryJob — erreur critique : #{e.message}")
-    raise  # Re-raise pour que Solid Queue puisse logger l'erreur
+    raise # Re-raise pour que Solid Queue puisse logger l'erreur
   end
 
   private
@@ -147,7 +145,7 @@ class GenerateStoryJob < ApplicationJob
       next unless question && option_a && option_b
 
       story.story_choices.create!(
-        step_number: index + 1,   # 1-indexé
+        step_number: index + 1, # 1-indexé
         question: question,
         option_a: option_a,
         option_b: option_b

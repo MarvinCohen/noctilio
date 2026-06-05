@@ -19,14 +19,14 @@ class GenerateAudioJob < ApplicationJob
 
     # Détermine le texte à lire selon la source
     text = case source
-    when "continuation"
-      # Texte de la continuation après un choix interactif
-      choice = StoryChoice.find_by(id: choice_id)
-      choice&.context_chosen
-    else
-      # Contenu principal de l'histoire
-      story.content
-    end
+           when "continuation"
+             # Texte de la continuation après un choix interactif
+             choice = StoryChoice.find_by(id: choice_id)
+             choice&.context_chosen
+           else
+             # Contenu principal de l'histoire
+             story.content
+           end
 
     return if text.blank?
 
@@ -45,9 +45,9 @@ class GenerateAudioJob < ApplicationJob
         Rails.logger.info("GenerateAudioJob — chunk #{index + 1}/#{chunks.length} en cours")
         client.audio.speech(
           parameters: {
-            model:           "tts-1",
-            input:           chunk,
-            voice:           "nova",
+            model: "tts-1",
+            input: chunk,
+            voice: "nova",
             response_format: "mp3"
           }
         )
@@ -63,27 +63,24 @@ class GenerateAudioJob < ApplicationJob
       # has_one_attached écrase — si on attachait à story, l'audio principal de
       # l'histoire serait perdu dès le premier choix interactif
       choice = StoryChoice.find_by(id: choice_id)
-      if choice
-        choice.audio_file.attach(
-          io:           StringIO.new(audio_data),
-          filename:     "histoire_#{story_id}_continuation_#{choice_id}.mp3",
-          content_type: "audio/mpeg"
-        )
-      end
+      choice&.audio_file&.attach(
+        io: StringIO.new(audio_data),
+        filename: "histoire_#{story_id}_continuation_#{choice_id}.mp3",
+        content_type: "audio/mpeg"
+      )
     else
       # Audio principal de l'histoire
       story.audio_file.attach(
-        io:           StringIO.new(audio_data),
-        filename:     "histoire_#{story_id}.mp3",
+        io: StringIO.new(audio_data),
+        filename: "histoire_#{story_id}.mp3",
         content_type: "audio/mpeg"
       )
     end
 
     Rails.logger.info("GenerateAudioJob — audio généré pour story ##{story_id} (source: #{source})")
-
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn("GenerateAudioJob — story ##{story_id} introuvable")
-  rescue => e
+  rescue StandardError => e
     Rails.logger.error("GenerateAudioJob — erreur : #{e.message}")
   end
 

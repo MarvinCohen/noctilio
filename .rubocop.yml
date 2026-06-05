@@ -1,3 +1,5 @@
+inherit_from: .rubocop_todo.yml
+
 AllCops:
   NewCops: enable
   Exclude:
@@ -34,8 +36,6 @@ Lint/MissingSuper:
   Enabled: false
 Style/FrozenStringLiteralComment:
   Enabled: false
-Layout/LineLength:
-  Max: 120
 Style/EmptyMethod:
   Enabled: false
 Bundler/OrderedGems:

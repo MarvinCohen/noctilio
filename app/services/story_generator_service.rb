@@ -103,9 +103,11 @@ class StoryGeneratorService
                 else
                   # Fallback : Spider-Verse pour peau foncée (style dynamique adapté), Ghibli sinon
                   # On ne précise pas l'ethnicité ici — la description physique du héros s'en charge
-                  has_dark_skin \
-                    ? "Spider-Man Into the Spider-Verse and modern Disney animation style, bold outlines, vibrant saturated colors" \
-                    : "Makoto Shinkai and Studio Ghibli cinematic animation style"
+                  if has_dark_skin
+                    "Spider-Man Into the Spider-Verse and modern Disney animation style, bold outlines, vibrant saturated colors"
+                  else
+                    "Makoto Shinkai and Studio Ghibli cinematic animation style"
+                  end
                 end
 
     # ── Règles de composition adaptées au style ─────────────────────────────
@@ -131,10 +133,10 @@ class StoryGeneratorService
 
     response = @client.chat(
       parameters: {
-        model:       MODEL,
-        messages:    [
+        model: MODEL,
+        messages: [
           {
-            role:    "system",
+            role: "system",
             content: <<~SYSTEM
               You are an expert at writing image generation prompts for FLUX and DALL-E.
               You always write in English. You STRICTLY respect character physical descriptions AND the requested art style.
@@ -142,14 +144,14 @@ class StoryGeneratorService
             SYSTEM
           },
           {
-            role:    "user",
+            role: "user",
             content: <<~PROMPT
               #{scene_instruction}.
 
               HERO PHYSICAL DESCRIPTION (MANDATORY — translate to English if needed, include ALL traits in your prompt):
               #{heroes_physical}
 
-              #{@story.custom_theme.present? ? "⚠️ MANDATORY SCENE CONCEPT — YOU MUST RESPECT THIS EXACTLY:\n#{@story.custom_theme}\n\nKey visual rules from this concept:\n- If a ROBOT / MECH / VEHICLE is mentioned: it MUST be the dominant visual element (large, in the foreground). The hero is INSIDE or ON it — NOT standing separately next to it.\n- If an ENEMY (dinosaur, monster...) is mentioned: it is the THREAT the robot faces, NOT something the hero rides or befriends.\n- DO NOT swap the roles of hero/robot/enemy.\n\n" : ""}STORY (read to find the best visual moment):
+              #{"⚠️ MANDATORY SCENE CONCEPT — YOU MUST RESPECT THIS EXACTLY:\n#{@story.custom_theme}\n\nKey visual rules from this concept:\n- If a ROBOT / MECH / VEHICLE is mentioned: it MUST be the dominant visual element (large, in the foreground). The hero is INSIDE or ON it — NOT standing separately next to it.\n- If an ENEMY (dinosaur, monster...) is mentioned: it is the THREAT the robot faces, NOT something the hero rides or befriends.\n- DO NOT swap the roles of hero/robot/enemy.\n\n" if @story.custom_theme.present?}STORY (read to find the best visual moment):
               ---
               #{@story.content.to_s.first(3000)}
               ---
@@ -166,15 +168,15 @@ class StoryGeneratorService
             PROMPT
           }
         ],
-        temperature: 0.4,  # Basse température — on veut de la précision, pas de créativité
-        max_tokens:  200
+        temperature: 0.4, # Basse température — on veut de la précision, pas de créativité
+        max_tokens: 200
       }
     )
 
     response.dig("choices", 0, "message", "content")&.strip
   rescue StandardError => e
     Rails.logger.warn("StoryGeneratorService — échec generate_image_scene_prompt : #{e.message}")
-    nil  # En cas d'échec, ImageGeneratorService utilisera le fallback existant
+    nil # En cas d'échec, ImageGeneratorService utilisera le fallback existant
   end
 
   # Génère la "timeline alternative" — ce qui se serait passé avec l'autre option
@@ -189,11 +191,11 @@ class StoryGeneratorService
     # Appelle le même moteur de continuation avec l'option inversée
     response = @client.chat(
       parameters: {
-        model:       MODEL,
-        messages:    build_continuation_messages(alternative_choice),
+        model: MODEL,
+        messages: build_continuation_messages(alternative_choice),
         temperature: 0.85,
-        max_tokens:  600,
-        top_p:       0.9
+        max_tokens: 600,
+        top_p: 0.9
       }
     )
 
@@ -218,7 +220,7 @@ class StoryGeneratorService
         model: MODEL,
         messages: build_continuation_messages(story_choice),
         temperature: 0.85,
-        max_tokens: 600,   # Suite plus courte — environ 3 paragraphes
+        max_tokens: 600, # Suite plus courte — environ 3 paragraphes
         top_p: 0.9
       }
     )
@@ -248,9 +250,7 @@ class StoryGeneratorService
 
     # Si c'est un épisode de suite, on injecte le contexte de l'histoire parente
     # pour que l'IA assure la continuité narrative (mêmes personnages, même univers, même ton)
-    if @story.sequel? && @story.parent_story.present?
-      messages << { role: "user", content: parent_context_prompt }
-    end
+    messages << { role: "user", content: parent_context_prompt } if @story.sequel? && @story.parent_story.present?
 
     messages
   end
@@ -304,8 +304,7 @@ class StoryGeneratorService
   # Prompt utilisateur — la demande précise avec tous les paramètres de l'histoire
   def user_prompt
     # Récupération des paramètres de l'histoire
-    value_label    = educational_value_label
-    duration_label = "#{@story.duration_minutes} minutes de lecture"
+    value_label = educational_value_label
 
     # Construction du prompt utilisateur — variables enfant + contexte de l'aventure
     # Chain of Thought : on guide le modèle étape par étape pour une meilleure cohérence
@@ -318,10 +317,10 @@ class StoryGeneratorService
     # Sans cette contrainte explicite, Groq invente un décor qui ignore l'univers choisi
     # (ex: world_theme "space" → histoire dans une forêt enchantée)
     adventure_section = if @story.world_theme.present?
-      "🌍 UNIVERS OBLIGATOIRE : #{world_theme_prompt_label}\n      🌟 THÈME : #{@story.custom_theme.presence || "une aventure épique et magique"}"
-    else
-      "🌟 AVENTURE : #{@story.custom_theme.presence || "une aventure épique et magique"}"
-    end
+                          "🌍 UNIVERS OBLIGATOIRE : #{world_theme_prompt_label}\n      🌟 THÈME : #{@story.custom_theme.presence || 'une aventure épique et magique'}"
+                        else
+                          "🌟 AVENTURE : #{@story.custom_theme.presence || 'une aventure épique et magique'}"
+                        end
 
     prompt = <<~PROMPT
       PARAMÈTRES DE L'HISTOIRE :
@@ -419,13 +418,13 @@ class StoryGeneratorService
                               .count
 
     # Calcule combien de mots pour cette continuation
-    continuation_words = tokens_for_duration / 4   # ~quart de l'histoire par continuation
+    continuation_words = tokens_for_duration / 4 # ~quart de l'histoire par continuation
 
     # Prend les 1500 derniers caractères de l'histoire — assez pour la cohérence narrative,
     # sans envoyer tout le texte depuis le début (qui ferait repartir l'IA au début)
     recent_context = @story.content.to_s.last(1500)
 
-    if remaining_choices > 0
+    if remaining_choices.positive?
       # Il reste des choix à venir — génère un passage intermédiaire qui fait avancer l'histoire
       # sans la conclure (l'enfant aura encore un choix à faire après)
       continuation_instruction = <<~CHOICE
@@ -507,27 +506,27 @@ class StoryGeneratorService
   # pour que Groq ne parte pas dans un décor générique (forêt enchantée pour l'espace, etc.)
   def world_theme_prompt_label
     {
-      "space"      => "L'ESPACE COSMIQUE — l'histoire se passe DANS L'ESPACE ou sur d'autres planètes. " \
-                      "Décors obligatoires : vaisseaux spatiaux, planètes, galaxies, étoiles, combinaisons spatiales, " \
-                      "stations orbitales, astéroïdes, nébuleuses. PAS de forêt, PAS de château, PAS de mer.",
-      "dinos"      => "DINOSAURES ET ÈRE PRÉHISTORIQUE — l'histoire se passe dans un monde de dinosaures. " \
-                      "Les animaux principaux DOIVENT être des DINOSAURES (T-Rex, Vélociraptor, Brachiosaure, Tricératops...). " \
-                      "PAS de dragons, PAS de licornes. Décors : jungle préhistorique, volcans, marécages.",
+      "space" => "L'ESPACE COSMIQUE — l'histoire se passe DANS L'ESPACE ou sur d'autres planètes. " \
+                 "Décors obligatoires : vaisseaux spatiaux, planètes, galaxies, étoiles, combinaisons spatiales, " \
+                 "stations orbitales, astéroïdes, nébuleuses. PAS de forêt, PAS de château, PAS de mer.",
+      "dinos" => "DINOSAURES ET ÈRE PRÉHISTORIQUE — l'histoire se passe dans un monde de dinosaures. " \
+                 "Les animaux principaux DOIVENT être des DINOSAURES (T-Rex, Vélociraptor, Brachiosaure, Tricératops...). " \
+                 "PAS de dragons, PAS de licornes. Décors : jungle préhistorique, volcans, marécages.",
       "princesses" => "MONDE ENCHANTÉ DES PRINCESSES ET ROYAUMES MAGIQUES — châteaux, royaumes, cours royales, " \
                       "créatures féeriques (fées, licornes), forêts enchantées, sortilèges.",
-      "pirates"    => "MONDE DES PIRATES ET HAUTE MER — l'histoire se passe en mer. " \
-                      "Décors obligatoires : bateaux pirates, îles tropicales, trésors enfouis, port animé, tempêtes marines.",
-      "animals"    => "MONDE DES ANIMAUX — les personnages secondaires et l'univers tournent autour des animaux. " \
-                      "Forêt, savane, océan ou jungle selon le contexte. Les animaux parlent et s'aventurent avec le héros."
+      "pirates" => "MONDE DES PIRATES ET HAUTE MER — l'histoire se passe en mer. " \
+                   "Décors obligatoires : bateaux pirates, îles tropicales, trésors enfouis, port animé, tempêtes marines.",
+      "animals" => "MONDE DES ANIMAUX — les personnages secondaires et l'univers tournent autour des animaux. " \
+                   "Forêt, savane, océan ou jungle selon le contexte. Les animaux parlent et s'aventurent avec le héros."
     }[@story.world_theme] || @story.world_theme
   end
 
   # Retourne le libellé français de la valeur éducative
   def educational_value_label
     {
-      "courage"    => "le courage",
-      "sharing"    => "le partage",
-      "kindness"   => "la gentillesse",
+      "courage" => "le courage",
+      "sharing" => "le partage",
+      "kindness" => "la gentillesse",
       "confidence" => "la confiance en soi"
     }.fetch(@story.educational_value.to_s, "les valeurs positives")
   end

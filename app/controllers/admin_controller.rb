@@ -4,7 +4,6 @@
 # Tout autre utilisateur est redirigé vers le dashboard
 # ============================================================
 class AdminController < ApplicationController
-
   # Vérifie l'accès admin avant chaque action de ce controller
   before_action :require_admin!
 
@@ -31,8 +30,8 @@ class AdminController < ApplicationController
   def require_admin!
     # Utilise User#admin? qui vérifie la colonne admin en base
     # Pour activer : User.find_by(email: "ton@email.com").update!(admin: true)
-    unless current_user.admin?
-      redirect_to dashboard_path, alert: "Accès non autorisé."
-    end
+    return if current_user.admin?
+
+    redirect_to dashboard_path, alert: "Accès non autorisé."
   end
 end

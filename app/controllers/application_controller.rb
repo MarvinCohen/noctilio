@@ -17,7 +17,7 @@ class ApplicationController < ActionController::Base
   # ============================================================
   # Par défaut Devise redirige vers root_path après connexion.
   # On surcharge cette méthode pour rediriger vers le dashboard.
-  def after_sign_in_path_for(resource)
+  def after_sign_in_path_for(_resource)
     dashboard_path
   end
 
@@ -27,9 +27,9 @@ class ApplicationController < ActionController::Base
   # 301 = redirection permanente — Google transfère le jus SEO vers le domaine canonique
   # Uniquement en production pour ne pas gêner le développement local
   def redirect_to_www
-    if Rails.env.production? && request.host == "noctilio-app.fr"
-      redirect_to "https://www.noctilio-app.fr#{request.fullpath}", status: :moved_permanently
-    end
+    return unless Rails.env.production? && request.host == "noctilio-app.fr"
+
+    redirect_to "https://www.noctilio-app.fr#{request.fullpath}", status: :moved_permanently
   end
 
   # Calcule la phase lunaire actuelle en heure de Paris (UTC+1 ou UTC+2 selon DST)
