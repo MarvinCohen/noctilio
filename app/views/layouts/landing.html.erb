@@ -81,6 +81,10 @@
     <%= favicon_link_tag image_path('mascot.svg'), type: 'image/svg+xml' %>
     <%= favicon_link_tag image_path('mascot.png'), type: 'image/png', sizes: '32x32' %>
 
+    <%# CSS dédié à la landing page — standalone, sans Bootstrap %>
+    <%# Compilé depuis app/assets/stylesheets/landing.scss par Propshaft %>
+    <%= stylesheet_link_tag "landing", "data-turbo-track": "reload" %>
+
     <%= yield :head %>
   </head>
   <body>

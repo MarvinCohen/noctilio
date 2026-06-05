@@ -1,9 +1,9 @@
 class PagesController < ApplicationController
   # Pages publiques — pas besoin d'être connecté
-  # :legal ajouté pour que les mentions légales soient accessibles sans compte
-  skip_before_action :authenticate_user!, only: %i[home cgu privacy legal]
+  # :a_propos ajouté : page fondateur visible sans compte, essentielle pour le E-E-A-T
+  skip_before_action :authenticate_user!, only: %i[home cgu privacy legal a_propos]
 
-  # Layout landing pour la home, layout application pour les pages légales
+  # Layout landing pour la home, layout application pour les autres pages publiques
   layout "landing", only: [:home]
 
   # Page CGU — conditions générales d'utilisation
@@ -14,6 +14,11 @@ class PagesController < ApplicationController
 
   # Page mentions légales — obligatoires en France (LCEN 2004)
   def legal; end
+
+  # Page À propos — présente Marvin Cohen pour renforcer les signaux E-E-A-T
+  # E-E-A-T = Experience, Expertise, Authoritativeness, Trustworthiness (Google QRG)
+  # Cette page est référencée dans le schéma author des articles de blog
+  def a_propos; end
 
   def home
     # Si l'utilisateur est déjà connecté, on le redirige directement

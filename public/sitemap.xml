@@ -19,6 +19,14 @@
     <priority>1.0</priority>
   </url>
 
+  <!-- À propos — page fondateur, signaux E-E-A-T, auteur des articles de blog -->
+  <url>
+    <loc>https://www.noctilio-app.fr/a-propos</loc>
+    <lastmod>2026-06-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
   <!-- Conditions Générales d'Utilisation -->
   <url>
     <loc>https://www.noctilio-app.fr/cgu</loc>

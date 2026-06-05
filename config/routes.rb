@@ -93,6 +93,12 @@ Rails.application.routes.draw do
   get "/admin/waitlist", to: "admin#waitlist", as: :admin_waitlist
 
   # ============================================================
+  # Page À propos — présente Marvin Cohen, fondateur de Noctilio
+  # Contribue aux signaux E-E-A-T (expérience, expertise, autorité, confiance)
+  # ============================================================
+  get "/a-propos", to: "pages#a_propos", as: :a_propos
+
+  # ============================================================
   # Pages légales — publiques, pas besoin d'être connecté
   # ============================================================
   get "/cgu",                   to: "pages#cgu",     as: :cgu
