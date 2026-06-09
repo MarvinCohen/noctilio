@@ -34,7 +34,14 @@ body {
   font-weight: 300;
   min-height: 100vh;
   overflow-x: hidden;
-  cursor: none; // Masqué — le curseur doré personnalisé prend le relais via JS
+}
+
+// Curseur natif masqué UNIQUEMENT quand le curseur doré JS est prêt.
+// La classe .custom-cursor est ajoutée par le JS une fois le curseur initialisé.
+// SÉCURITÉ UX : si le JS plante (ex: Safari), la classe n'est jamais ajoutée
+// et la souris native reste visible — l'utilisateur n'est jamais "sans souris".
+body.custom-cursor {
+  cursor: none;
 }
 
 // Texture de bruit subtile superposée au fond
@@ -325,9 +332,13 @@ nav {
   font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.05em;
-  cursor: none;
   white-space: nowrap;
   transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.3s ease;
+
+  // Curseur natif visible par défaut (pointer = main).
+  // Masqué seulement si le curseur doré JS est actif (classe .custom-cursor sur body).
+  cursor: pointer;
+  body.custom-cursor & { cursor: none; }
 
   &:hover {
     background: var(--cream);

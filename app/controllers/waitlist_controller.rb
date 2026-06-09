@@ -22,9 +22,15 @@ class WaitlistController < ApplicationController
         count: [WaitlistEntry.count + User.count, 247].max
       }
     else
+      # already_subscribed : true si l'échec vient de l'unicité de l'email
+      # (l'email est déjà en base). errors.details expose le type d'erreur (:taken)
+      # de façon fiable, sans dépendre du texte du message.
+      already_subscribed = @entry.errors.details[:email].any? { |e| e[:error] == :taken }
+
       # Échec : retourne les erreurs pour les afficher côté client
       render json: {
         success: false,
+        already_subscribed: already_subscribed,
         error: @entry.errors.full_messages.first
       }, status: :unprocessable_entity
     end

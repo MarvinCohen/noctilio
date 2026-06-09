@@ -23,3 +23,6 @@ fr:
       not_found_in_database: "Email ou mot de passe incorrect."
       unauthenticated: "Vous devez vous connecter pour continuer."
       unconfirmed: "Vous devez confirmer votre adresse email avant de continuer."
+      # already_authenticated : affiché quand un utilisateur connecté tente d'accéder
+      # à la page d'inscription ou de connexion (Devise le redirige automatiquement)
+      already_authenticated: "Vous êtes déjà connecté."

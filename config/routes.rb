@@ -68,6 +68,15 @@ Rails.application.routes.draw do
   get "/parental",    to: "parental#index",      as: :parental
 
   # ============================================================
+  # Mon compte — espace personnel : infos du compte + statut abonnement
+  # ============================================================
+  # GET /mon-compte — affiche les infos du compte connecté
+  get  "/mon-compte",           to: "account#show",             as: :account
+  # POST /mon-compte/mode-test — bascule le mode test (admin) pour débloquer
+  # les fonctionnalités premium. Restreint à une liste blanche d'emails côté serveur.
+  post "/mon-compte/mode-test", to: "account#toggle_test_mode", as: :account_toggle_test_mode
+
+  # ============================================================
   # Salle des trophées — badges et XP de l'utilisateur
   # ============================================================
   get "/trophees",    to: "trophy_room#index",   as: :trophy_room

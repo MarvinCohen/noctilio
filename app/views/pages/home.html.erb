@@ -225,58 +225,68 @@
 <script nonce="<%= content_security_policy_nonce %>">
   // Encapsulé dans load pour garantir que tout le DOM est prêt
   window.addEventListener('load', function() {
-    try {
 
   // ============================================================
-  // Lune réelle — dessin de la phase lunaire sur canvas
+  // Chaque module ci-dessous est isolé dans son PROPRE try/catch.
+  // Si l'un plante (ex: Safari sur une API canvas), les autres continuent
+  // de fonctionner. Avant, un seul try/catch global cassait TOUT au premier
+  // plantage : curseur figé, étoiles invisibles, bouton waitlist inactif.
   // ============================================================
+
+  // ── Module Lune — dessin de la phase lunaire sur canvas ──
   // data-phase est injecté par Rails depuis PagesController (@moon_phase)
-  const landingMoon = document.getElementById('landing-moon-canvas');
-  if (landingMoon) {
-    const phase = parseFloat(landingMoon.dataset.phase || '0.5');
-    drawMoonPhase(landingMoon, phase);
-  }
-
-  // ============================================================
-  // Curseur personnalisé — point doré + anneau avec délai
-  // ============================================================
-  const cursorEl = document.getElementById('cursor');
-  const ringEl   = document.getElementById('cursorRing');
-  let mx = 0, my = 0, rx = 0, ry = 0;
-
-  if (cursorEl && ringEl) {
-    document.addEventListener('mousemove', e => {
-      mx = e.clientX; my = e.clientY;
-      cursorEl.style.left = mx + 'px';
-      cursorEl.style.top  = my + 'px';
-    });
-
-    // L'anneau suit avec un léger retard (interpolation)
-    function animateRing() {
-      rx += (mx - rx) * 0.12;
-      ry += (my - ry) * 0.12;
-      ringEl.style.left = rx + 'px';
-      ringEl.style.top  = ry + 'px';
-      requestAnimationFrame(animateRing);
+  try {
+    const landingMoon = document.getElementById('landing-moon-canvas');
+    if (landingMoon) {
+      const phase = parseFloat(landingMoon.dataset.phase || '0.5');
+      drawMoonPhase(landingMoon, phase);
     }
-    animateRing();
+  } catch (e) { console.error('Noctilio [lune]:', e); }
 
-    // Agrandit le curseur sur les éléments interactifs
-    document.querySelectorAll('button, a, input').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        cursorEl.style.width = '12px'; cursorEl.style.height = '12px';
-        ringEl.style.width   = '48px'; ringEl.style.height   = '48px';
-      });
-      el.addEventListener('mouseleave', () => {
-        cursorEl.style.width = '8px'; cursorEl.style.height = '8px';
-        ringEl.style.width   = '32px'; ringEl.style.height   = '32px';
-      });
-    });
-  }
+  // ── Module Curseur personnalisé — point doré + anneau avec délai ──
+  try {
+    const cursorEl = document.getElementById('cursor');
+    const ringEl   = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
 
-  // ============================================================
-  // Sillage étoile filante — trail doré qui suit le curseur
-  // ============================================================
+    if (cursorEl && ringEl) {
+      // On masque le curseur natif SEULEMENT maintenant que le curseur doré
+      // est bien initialisé. Si ce module avait planté, .custom-cursor ne serait
+      // jamais ajoutée → la souris native resterait visible (pas de "souris perdue").
+      document.body.classList.add('custom-cursor');
+
+      document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        cursorEl.style.left = mx + 'px';
+        cursorEl.style.top  = my + 'px';
+      });
+
+      // L'anneau suit avec un léger retard (interpolation)
+      function animateRing() {
+        rx += (mx - rx) * 0.12;
+        ry += (my - ry) * 0.12;
+        ringEl.style.left = rx + 'px';
+        ringEl.style.top  = ry + 'px';
+        requestAnimationFrame(animateRing);
+      }
+      animateRing();
+
+      // Agrandit le curseur sur les éléments interactifs
+      document.querySelectorAll('button, a, input').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          cursorEl.style.width = '12px'; cursorEl.style.height = '12px';
+          ringEl.style.width   = '48px'; ringEl.style.height   = '48px';
+        });
+        el.addEventListener('mouseleave', () => {
+          cursorEl.style.width = '8px'; cursorEl.style.height = '8px';
+          ringEl.style.width   = '32px'; ringEl.style.height   = '32px';
+        });
+      });
+    }
+  } catch (e) { console.error('Noctilio [curseur]:', e); }
+
+  // ── Module Sillage — trail doré qui suit le curseur ──
+  try {
   const trailCanvas = document.getElementById('trail-canvas');
   const trailCtx    = trailCanvas.getContext('2d');
 
@@ -340,10 +350,10 @@
     requestAnimationFrame(drawTrail);
   }
   drawTrail();
+  } catch (e) { console.error('Noctilio [sillage]:', e); }
 
-  // ============================================================
-  // Étoiles animées — canvas en arrière-plan
-  // ============================================================
+  // ── Module Étoiles animées — canvas en arrière-plan ──
+  try {
   const canvas = document.getElementById('stars-canvas');
   const ctx    = canvas.getContext('2d');
   let stars    = [];
@@ -412,10 +422,10 @@
       starsFrame = requestAnimationFrame(drawStars);
     }
   });
+  } catch (e) { console.error('Noctilio [étoiles]:', e); }
 
-  // ============================================================
-  // Soumission du formulaire — fetch() vers POST /waitlist
-  // ============================================================
+  // ── Module Formulaire — soumission fetch() vers POST /waitlist ──
+  try {
   // Le token CSRF est requis par Rails pour toute requête POST non-Turbo
   function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content;
@@ -455,15 +465,25 @@
       const data = await response.json();
 
       if (data.success) {
-        // Cache le formulaire, affiche le message de bienvenue
-        document.getElementById('formInner').style.display = 'none';
+        // Succès : transforme le bouton en confirmation (reste désactivé)
+        btn.disabled = true;
+        btn.textContent = '✦ Vous êtes bien inscrit';
+        document.getElementById('emailInput').disabled = true;
         errorEl.classList.remove('show');
+        // Affiche aussi le message de bienvenue sous le formulaire
         document.getElementById('successMsg').classList.add('show');
 
         // Anime le compteur jusqu'au nouveau chiffre réel
         animateCounter(data.count);
+      } else if (data.already_subscribed) {
+        // Email déjà en base : transforme le bouton, sans le réactiver
+        // (inutile de réessayer puisque l'email est déjà inscrit)
+        btn.disabled = true;
+        btn.textContent = 'Vous êtes déjà inscrit';
+        document.getElementById('emailInput').disabled = true;
+        errorEl.classList.remove('show');
       } else {
-        // Email déjà inscrit ou autre erreur serveur
+        // Autre erreur serveur (format, etc.) : message + bouton réactivé
         showError(data.error || 'Une erreur est survenue.');
         btn.disabled = false;
         btn.textContent = 'Accès anticipé →';
@@ -501,11 +521,8 @@
   if (emailInput) emailInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') handleSubmit();
   });
+  } catch (e) { console.error('Noctilio [formulaire]:', e); }
 
-    } catch(e) {
-      // Affiche l'erreur JS dans la console pour debug
-      console.error('Noctilio JS error:', e);
-    }
   }); // fin window.load
 
 // ============================================================

@@ -48,14 +48,15 @@
 <%# ────────────────────────────────────────────────────── %>
 <%# Conteneur principal — même style que les pages légales %>
 <%# ────────────────────────────────────────────────────── %>
-<div class="legal-page">
+<%# padding-left/right : marge latérale sur mobile et desktop %>
+<div class="legal-page" style="padding-left: 1.5rem; padding-right: 1.5rem;">
   <div class="legal-container">
 
     <%# ── En-tête — nom + rôle ── %>
     <div class="legal-header">
-      <h1 class="legal-title">À propos</h1>
+      <h1 class="legal-title" style="color: #f0c97a;">À propos</h1>
       <%# Sous-titre court — renforce immédiatement l'identité de l'auteur %>
-      <p class="legal-date">Marvin Cohen — Fondateur de Noctilio</p>
+      <p class="legal-date">Marvin Cohen, Fondateur de Noctilio</p>
     </div>
 
     <div class="legal-content">
@@ -63,9 +64,9 @@
       <%# ── Section 1 : Qui je suis ── %>
       <%# Signal E-E-A-T "Experience" : parcours personnel concret %>
       <section class="legal-section">
-        <h2>Qui je suis</h2>
+        <h2 style="color: #f0c97a;">Qui je suis</h2>
         <p>
-          Je m'appelle Marvin Cohen. Je suis développeur web, formé au Wagon Paris, et papa.
+          Je m'appelle Marvin Cohen. Je suis développeur web, formé au Wagon Bordeaux, et papa.
           C'est d'ailleurs cette deuxième casquette qui m'a poussé à créer Noctilio.
         </p>
         <p>
@@ -81,7 +82,7 @@
       <%# ── Section 2 : Pourquoi Noctilio ── %>
       <%# Signal E-E-A-T "Experience" : motivation authentique, contexte réel %>
       <section class="legal-section">
-        <h2>Pourquoi j'ai créé Noctilio</h2>
+        <h2 style="color: #f0c97a;">Pourquoi j'ai créé Noctilio</h2>
         <p>
           L'idée est née simplement : et si l'IA pouvait générer, chaque soir, une histoire
           unique centrée sur ton enfant ? Avec son prénom comme héros, ses centres d'intérêt
@@ -101,7 +102,7 @@
       <%# ── Section 3 : La technologie ── %>
       <%# Signal E-E-A-T "Expertise" : transparence sur les outils utilisés %>
       <section class="legal-section">
-        <h2>La technologie derrière Noctilio</h2>
+        <h2 style="color: #f0c97a;">La technologie derrière Noctilio</h2>
         <p>
           Noctilio est construit avec :
         </p>
@@ -138,7 +139,7 @@
       <%# ── Section 4 : Mes valeurs ── %>
       <%# Signal E-E-A-T "Trustworthiness" : engagement envers la sécurité des enfants %>
       <section class="legal-section">
-        <h2>Ce qui compte pour moi</h2>
+        <h2 style="color: #f0c97a;">Ce qui compte pour moi</h2>
         <ul>
           <li>
             <strong>Sécurité avant tout.</strong> Chaque histoire est générée avec
@@ -164,7 +165,7 @@
       <%# ── Section 5 : Contact ── %>
       <%# Signal E-E-A-T "Trustworthiness" : joignabilité réelle de l'auteur %>
       <section class="legal-section">
-        <h2>Me contacter</h2>
+        <h2 style="color: #f0c97a;">Me contacter</h2>
         <p>
           Tu as une question, une suggestion, ou tu veux simplement raconter
           comment Noctilio a changé ton rituel du soir ?
@@ -173,19 +174,43 @@
           Écris-moi à
           <%# Email en clair — signal de confiance fort pour Google et les visiteurs %>
           <strong>marvincohen95@gmail.com</strong>
-          ou retrouve Noctilio sur
-          <a href="https://www.instagram.com/noctilioapp" target="_blank" rel="noopener noreferrer">Instagram</a>
-          et
-          <a href="https://www.tiktok.com/@Noctili5" target="_blank" rel="noopener noreferrer">TikTok</a>.
+          ou retrouve Noctilio sur les réseaux :
+        </p>
+        <%# Icônes réseaux sociaux — même SVG inline que le footer %>
+        <div style="display: flex; gap: 1rem; margin-top: 0.75rem;">
+          <a href="https://www.instagram.com/noctilioapp"
+             target="_blank" rel="noopener noreferrer"
+             aria-label="Noctilio sur Instagram"
+             style="color: #f0c97a; display: flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+            </svg>
+            Instagram
+          </a>
+          <a href="https://www.tiktok.com/@Noctili5"
+             target="_blank" rel="noopener noreferrer"
+             aria-label="Noctilio sur TikTok"
+             style="color: #f0c97a; display: flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.95a8.2 8.2 0 0 0 4.78 1.52V7.03a4.85 4.85 0 0 1-1.01-.34z"/>
+            </svg>
+            TikTok
+          </a>
+        </div>
+        <p style="margin-top: 1rem;">
         </p>
         <p>
           Je lis tous les messages — j'essaie de répondre dans les 48 h.
         </p>
       </section>
 
-      <%# ── CTA — inciter à essayer l'app ── %>
+      <%# ── CTA — si connecté : dashboard ; sinon : inscription ── %>
+      <%# Évite l'erreur Devise "already_authenticated" pour les utilisateurs connectés %>
       <section class="legal-section" style="text-align: center; padding-top: 1rem;">
-        <%= link_to "Essayer Noctilio gratuitement", new_user_registration_path,
+        <%= link_to user_signed_in? ? "Créer une histoire" : "Essayer Noctilio gratuitement",
+              user_signed_in? ? new_story_path : new_user_registration_path,
               style: "display: inline-block; padding: 0.8rem 2rem; background: #f0c97a;
                       color: #0b0e1a; font-weight: 600; border-radius: 8px;
                       text-decoration: none; font-size: 1rem;" %>

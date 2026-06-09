@@ -11,14 +11,38 @@
     <div>
       <%# Titre Cormorant Garamond italic %>
       <h1 class="lib-title">Ma bibliothèque</h1>
-      <%# Sous-titre avec le nombre d'histoires %>
+      <%# Sous-titre dynamique selon l'onglet actif %>
       <p class="lib-subtitle">
-        <%= @stories.count %> histoire<%= "s" if @stories.count > 1 %> dans ta bibliothèque
+        <% if @tab == "all" %>
+          <%= @all_count %> histoire<%= "s" if @all_count > 1 %> générée<%= "s" if @all_count > 1 %>
+        <% else %>
+          <%= @saved_count %> histoire<%= "s" if @saved_count > 1 %> sauvegardée<%= "s" if @saved_count > 1 %>
+        <% end %>
       </p>
     </div>
     <%# CTA pill doré — créer une nouvelle histoire %>
     <%= link_to new_story_path, class: "lib-btn-primary" do %>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>Nouvelle histoire
+    <% end %>
+  </div>
+
+  <%# ── Onglets Bibliothèque / Toutes ── %>
+  <%# tab=saved (défaut) : histoires explicitement sauvegardées %>
+  <%# tab=all : toutes les histoires terminées %>
+  <div class="lib-tabs">
+    <%= link_to stories_path,
+          class: "lib-tab #{"lib-tab--active" if @tab == "saved"}" do %>
+      <%# Icône marque-page %>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      Bibliothèque
+      <span class="lib-tab-count"><%= @saved_count %></span>
+    <% end %>
+    <%= link_to stories_path(tab: "all"),
+          class: "lib-tab #{"lib-tab--active" if @tab == "all"}" do %>
+      <%# Icône horloge %>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Toutes
+      <span class="lib-tab-count"><%= @all_count %></span>
     <% end %>
   </div>
 

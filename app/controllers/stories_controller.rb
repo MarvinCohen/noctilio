@@ -14,18 +14,29 @@ class StoriesController < ApplicationController
   # before_action :check_story_limit!, only: [:new, :create]
 
   # GET /stories — bibliothèque personnelle de l'utilisateur
+  # Supporte ?tab=saved (défaut) et ?tab=all (toutes les histoires terminées)
   def index
-    # Histoires terminées et sauvegardées — affichées dans la grille principale
+    # Onglet actif — "saved" par défaut pour la bibliothèque curative
+    # "all" affiche toutes les histoires terminées (même non sauvegardées)
+    @tab = params[:tab] == "all" ? "all" : "saved"
+
+    # Base commune — histoires terminées triées du plus récent au plus ancien
     # includes précharge les associations utilisées dans la vue (évite les N+1) :
     #   :child               → story.child.name dans les méta de chaque carte
     #   :parent_story        → story.sequel? vérifie parent_story_id
     #   :sequel_stories      → story.has_sequel? vérifie l'existence d'une suite
     #   cover_image_attachment: :blob → story.cover_image.attached? sans requête extra
-    @stories = current_user.stories
-                           .completed_recent
-                           .saved_stories
-                           .includes(:child, :parent_story, :sequel_stories,
-                                     cover_image_attachment: :blob)
+    base = current_user.stories
+                       .completed_recent
+                       .includes(:child, :parent_story, :sequel_stories,
+                                 cover_image_attachment: :blob)
+
+    # Filtre selon l'onglet actif
+    @stories = @tab == "all" ? base : base.saved_stories
+
+    # Compteurs pour les badges des onglets — deux requêtes COUNT légères
+    @saved_count = current_user.stories.completed.saved_stories.count
+    @all_count   = current_user.stories.completed.count
 
     # Histoires échouées — affichées séparément avec un bouton "Réessayer"
     # Triées du plus récent au plus ancien pour voir les dernières tentatives en premier

@@ -134,7 +134,9 @@ class Story < ApplicationRecord
   end
 
   # Retourne le libellé français de l'univers
-  # Si pas d'univers prédéfini, retourne un extrait de la description libre
+  # Pour un thème libre (custom_theme), on retourne un libellé COURT et fixe
+  # "Histoire personnalisée" — et jamais le custom_theme complet (jusqu'à 500
+  # caractères) qui ferait déborder le badge pilule sur les cartes de la bibliothèque
   def world_label
     {
       "space" => "Espace",
@@ -142,7 +144,7 @@ class Story < ApplicationRecord
       "princesses" => "Princesses",
       "pirates" => "Pirates",
       "animals" => "Animaux"
-    }.fetch(world_theme.to_s, custom_theme.presence || "Histoire personnalisée")
+    }.fetch(world_theme.to_s, "Histoire personnalisée")
   end
 
   # Retourne les enfants supplémentaires associés à cette histoire

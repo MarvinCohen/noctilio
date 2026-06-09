@@ -324,10 +324,41 @@
   /* ── Contenu de l'histoire ── */
   .story-content-wrapper {
     background: rgba(17, 21, 39, 0.5);
-    border: 1px solid rgba(240, 201, 122, 0.08);
+    border: 1px solid rgba(240, 201, 122, 0.12); // légèrement plus visible
     border-radius: 16px;
     padding: 2rem;
     margin-bottom: 2rem;
+
+    /* Drop cap — lettre ornée dorée sur le premier paragraphe */
+    /* Donne un effet "livre de contes" immédiatement visible à l'ouverture */
+    /* line-height: 0.8 + margin-top: 0 = haut de la lettre aligné avec la 1re ligne */
+    .story-paragraph:first-of-type::first-letter {
+      font-family: 'Cinzel Decorative', Georgia, serif;
+      font-size: 3.5em;
+      font-style: italic;
+      font-weight: 600;
+      color: #f0c97a;
+      float: left;
+      line-height: 0.8;
+      margin-top: 0.05em;
+      margin-right: 0.1em;
+      margin-bottom: -0.05em;
+    }
+
+    /* Titres de chapitres — dorés au lieu de crème pour casser la monotonie */
+    /* ✦ ornement avant chaque titre via ::before */
+    .story-chapter {
+      color: #f0c97a !important;         // doré au lieu de cream
+      border-bottom-color: rgba(240, 201, 122, 0.25) !important; // séparateur plus visible
+
+      &::before {
+        content: "✦ ";
+        opacity: 0.6;
+        font-style: normal;
+        font-size: 0.7em;
+        vertical-align: middle;
+      }
+    }
   }
 
   /* ── Mode interactif — carte de choix ── */

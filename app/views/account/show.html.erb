@@ -1,0 +1,112 @@
+<%# ============================================================ %>
+<%# Mon compte — infos du compte connecté + statut abonnement %>
+<%# DA cosmique : carte dark #111527, accents dorés #f0c97a %>
+<%# ============================================================ %>
+
+<div class="container" style="max-width: 640px; padding-top: 1.5rem; padding-bottom: 3rem;">
+
+  <%# ── En-tête ── %>
+  <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 2.2rem; color: #f0c97a; margin-bottom: 0.25rem;">
+    Mon compte
+  </h1>
+  <p style="color: rgba(212, 207, 196, 0.65); margin-bottom: 2rem;">
+    Tes informations personnelles et ton abonnement
+  </p>
+
+  <%# ── Carte : identité ── %>
+  <div style="background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.25rem;">
+
+    <%# Avatar (initiales) + nom complet %>
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+      <%# Pastille dorée avec les initiales prénom + nom %>
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: #f0c97a; color: #0b0e1a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; flex-shrink: 0;">
+        <%= @user.first_name[0].upcase %><%= @user.last_name[0].upcase %>
+      </div>
+      <div>
+        <div style="color: #d4cfc4; font-size: 1.1rem; font-weight: 600;">
+          <%= @user.first_name %> <%= @user.last_name %>
+        </div>
+        <div style="color: rgba(212, 207, 196, 0.6); font-size: 0.9rem;">
+          <%= @user.email %>
+        </div>
+      </div>
+    </div>
+
+    <%# Ligne XP — points d'expérience accumulés %>
+    <div style="display: flex; align-items: center; gap: 0.4rem; color: #f0c97a; font-size: 0.95rem; padding-top: 1rem; border-top: 1px solid rgba(240, 201, 122, 0.1);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+      <%= @user.xp_points %> XP
+    </div>
+  </div>
+
+  <%# ── Carte : abonnement & statut ── %>
+  <div style="background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.25rem;">
+
+    <h2 style="color: #f0c97a; font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">
+      Abonnement
+    </h2>
+
+    <%# Badge de statut — Premium (doré) ou Gratuit (gris) %>
+    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+      <% if @user.premium? %>
+        <%# Premium : pastille dorée pleine %>
+        <span style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.85rem; background: #f0c97a; color: #0b0e1a; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+          Premium
+        </span>
+      <% else %>
+        <%# Gratuit : pastille bordée grise %>
+        <span style="display: inline-flex; align-items: center; padding: 0.35rem 0.85rem; background: rgba(212, 207, 196, 0.08); color: rgba(212, 207, 196, 0.8); border: 1px solid rgba(212, 207, 196, 0.2); border-radius: 50px; font-size: 0.8rem; font-weight: 500;">
+          Gratuit
+        </span>
+      <% end %>
+
+      <%# Badge Admin — affiché uniquement si le compte est admin %>
+      <% if @user.admin? %>
+        <span style="display: inline-flex; align-items: center; padding: 0.35rem 0.85rem; background: rgba(240, 201, 122, 0.12); color: #f0c97a; border: 1px solid rgba(240, 201, 122, 0.3); border-radius: 50px; font-size: 0.8rem; font-weight: 500;">
+          Admin
+        </span>
+      <% end %>
+    </div>
+
+    <%# Lien vers la gestion de l'abonnement (page tarification / Stripe) %>
+    <div style="margin-top: 1.25rem;">
+      <%= link_to "Gérer l'abonnement", subscription_path,
+            style: "color: #f0c97a; text-decoration: none; font-size: 0.9rem;" %>
+    </div>
+  </div>
+
+  <%# ── Carte : mode test — visible seulement pour les emails autorisés ── %>
+  <% if @can_use_test_mode %>
+    <div style="background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.25rem;">
+
+      <h2 style="color: #f0c97a; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+        Mode test
+      </h2>
+      <p style="color: rgba(212, 207, 196, 0.65); font-size: 0.88rem; margin-bottom: 1rem;">
+        Active le mode test pour débloquer toutes les fonctionnalités premium
+        (dont le mode interactif) sans abonnement. Réservé à ton compte.
+      </p>
+
+      <%# Bouton bascule — active ou désactive selon le statut admin actuel %>
+      <% if @user.admin? %>
+        <%# Déjà admin → bouton pour désactiver (style discret bordé) %>
+        <%= button_to "Désactiver le mode test", account_toggle_test_mode_path,
+              method: :post,
+              style: "padding: 0.6rem 1.2rem; background: transparent; color: rgba(212, 207, 196, 0.8); border: 1px solid rgba(212, 207, 196, 0.25); border-radius: 8px; font-size: 0.9rem; cursor: pointer;" %>
+      <% else %>
+        <%# Pas encore admin → bouton doré pour activer %>
+        <%= button_to "Activer le mode test", account_toggle_test_mode_path,
+              method: :post,
+              style: "padding: 0.6rem 1.2rem; background: #f0c97a; color: #0b0e1a; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer;" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# ── Lien : modifier les infos (Devise) ── %>
+  <div>
+    <%= link_to "Modifier mes informations", edit_user_registration_path,
+          style: "color: rgba(212, 207, 196, 0.7); text-decoration: none; font-size: 0.9rem;" %>
+  </div>
+
+</div>

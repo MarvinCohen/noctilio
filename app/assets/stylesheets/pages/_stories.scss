@@ -502,6 +502,56 @@
   flex-wrap: wrap;
 }
 
+// ── Onglets Bibliothèque / Toutes ──
+// Barre d'onglets placée sous l'en-tête, au-dessus de la grille
+.lib-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(240, 201, 122, 0.15); // séparateur doré discret
+  padding-bottom: 0;
+}
+
+// Chaque onglet — pill sobre, devient doré quand actif
+.lib-tab {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #8a8578; // gris discret par défaut
+  text-decoration: none;
+  border-bottom: 2px solid transparent; // barre inférieure invisible par défaut
+  margin-bottom: -1px; // chevauche le border-bottom du parent
+  transition: color 0.2s, border-color 0.2s;
+
+  &:hover {
+    color: #d4cfc4;
+  }
+
+  // Onglet actif — doré + soulignement
+  &.lib-tab--active {
+    color: #f0c97a;
+    border-bottom-color: #f0c97a;
+    font-weight: 500;
+  }
+}
+
+// Badge compteur — chiffre dans un pill mini
+.lib-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  background: rgba(240, 201, 122, 0.12);
+  color: #f0c97a;
+  border-radius: 999px;
+}
+
 // Titre Cormorant Garamond italic, crème
 .lib-title {
   font-family: 'Cormorant Garamond', Georgia, serif;

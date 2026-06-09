@@ -623,8 +623,8 @@
       <div class="par-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h2 class="par-section-title mb-0">Activité récente</h2>
-          <%# Lien vers la bibliothèque complète %>
-          <%= link_to "Tout voir →", stories_path, class: "par-btn-outline" %>
+          <%# tab=all : cohérent avec l'activité affichée (toutes les histoires, pas seulement sauvegardées) %>
+          <%= link_to "Tout voir →", stories_path(tab: "all"), class: "par-btn-outline" %>
         </div>
 
         <% if @recent_stories.any? %>

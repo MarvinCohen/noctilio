@@ -114,6 +114,18 @@
       <%# Menu dropdown — fond dark, bordure dorée %>
       <ul class="dropdown-menu dropdown-menu-end sidebar-dropdown-menu">
 
+        <%# Mon compte — infos du compte + statut abonnement %>
+        <li>
+          <%= link_to account_path, class: "dropdown-item" do %>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>Mon compte
+          <% end %>
+        </li>
+
+        <li><hr class="dropdown-divider"></li>
+
         <%# Trophées %>
         <li>
           <%= link_to trophy_room_path, class: "dropdown-item" do %>
