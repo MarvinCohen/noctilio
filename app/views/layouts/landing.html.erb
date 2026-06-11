@@ -10,12 +10,25 @@
     <%# display=swap : texte visible immédiatement avec la police système (évite FOIT) %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <%# media="print" onload="this.media='all'" : charge les polices de façon non-bloquante %>
-    <%# Technique recommandée par web.dev/defer-non-critical-css %>
-    <link rel="stylesheet"
+    <%# media="print" : charge les polices de façon non-bloquante (technique web.dev/defer-non-critical-css) %>
+    <%# La bascule vers media="all" se fait via le <script> nonce ci-dessous %>
+    <%# (l'attribut onload inline est interdit par la CSP — un nonce ne s'applique pas aux gestionnaires inline) %>
+    <link id="async-fonts"
+          rel="stylesheet"
           media="print"
-          onload="this.media='all'"
           href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap"/>
+    <%# Bascule la feuille de polices de media="print" à "all" une fois chargée %>
+    <%# Équivalent JS de l'attribut onload, autorisé par la CSP grâce au nonce %>
+    <script nonce="<%= content_security_policy_nonce %>">
+      (function() {
+        var link = document.getElementById('async-fonts');
+        if (!link) return;
+        // Applique tout de suite si déjà en cache (l'event load ne se déclenche pas dans ce cas)
+        if (link.sheet) { link.media = 'all'; }
+        // Sinon, applique dès que la feuille est téléchargée
+        else { link.addEventListener('load', function() { link.media = 'all'; }); }
+      })();
+    </script>
     <%# Fallback <noscript> pour les navigateurs sans JS — charge normalement %>
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
