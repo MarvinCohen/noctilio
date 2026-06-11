@@ -29,10 +29,11 @@ Rails.application.configure do
     policy.img_src :self, :https, :data
 
     # Requêtes fetch() / XHR : ce domaine (appels Stimulus → Rails)
-    # + cloud.umami.is : où le script Umami envoie les events de navigation (POST /api/send)
-    # NOTE : si les events n'apparaissent pas en prod, vérifier dans l'onglet Réseau
-    # vers quel domaine part réellement la requête et l'ajouter ici
-    policy.connect_src :self, "https://cloud.umami.is"
+    # + cloud.umami.is : domaine d'où le script Umami est chargé
+    # + gateway.umami.is : domaine RÉEL vers lequel Umami envoie les events (POST /api/send)
+    #   Vérifié en prod via l'onglet Réseau : le script est servi par cloud.umami.is
+    #   mais le beacon de tracking part vers gateway.umami.is (les deux sont donc nécessaires)
+    policy.connect_src :self, "https://cloud.umami.is", "https://gateway.umami.is"
 
     # Désactiver complètement les plugins Flash/Java (obsolètes et dangereux)
     policy.object_src :none
