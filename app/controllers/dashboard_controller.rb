@@ -9,7 +9,9 @@ class DashboardController < ApplicationController
     # Dernières histoires terminées (max 5 pour la section "Reprendre")
     # includes(:child) précharge l'enfant associé en une requête — évite le N+1
     # quand la vue affiche le nom ou l'avatar de l'enfant pour chaque histoire
-    @recent_stories = current_user.stories.completed_recent.includes(:child).limit(5)
+    # with_attached_cover_image précharge aussi les pièces jointes ActiveStorage
+    # — évite le N+1 quand la vue affiche la couverture de chaque histoire
+    @recent_stories = current_user.stories.completed_recent.includes(:child).with_attached_cover_image.limit(5)
 
     # Histoires en cours de génération — bornées à 10 pour éviter une requête non bornée
     # includes(:child) pour les mêmes raisons que @recent_stories

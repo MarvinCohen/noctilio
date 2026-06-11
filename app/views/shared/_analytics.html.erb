@@ -1,0 +1,17 @@
+<%# ============================================================ %>
+<%# Script de tracking Umami Cloud — analytics cookieless, RGPD-friendly %>
+<%# ============================================================ %>
+<%# Rendu UNIQUEMENT si umami_enabled? (voir AnalyticsHelper) : %>
+<%#   - ENV["UMAMI_WEBSITE_ID"] défini (prod uniquement → off en dev/test) %>
+<%#   - utilisateur non-admin (le mode test ne pollue pas les statistiques) %>
+<%# %>
+<%# defer          : ne bloque pas le rendu de la page %>
+<%# data-website-id : identifiant du site fourni par cloud.umami.is %>
+<%# nonce          : exigé par la CSP (cloud.umami.is est aussi listé dans script_src) %>
+<%# ============================================================ %>
+<% if umami_enabled? %>
+  <script defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="<%= ENV["UMAMI_WEBSITE_ID"] %>"
+          nonce="<%= content_security_policy_nonce %>"></script>
+<% end %>

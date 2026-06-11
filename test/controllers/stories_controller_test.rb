@@ -382,6 +382,55 @@ class StoriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ===========================================================
+  # SECTION 5bis — GARDES PREMIUM (sécurité business)
+  # ===========================================================
+
+  # Vérifie qu'un POST forgé avec interactive: true est refusé pour un compte gratuit
+  # Cas : Paul (gratuit) contourne la checkbox HTML désactivée en forgeant la requête
+  # Pourquoi : la validation interactive_requires_premium doit bloquer côté serveur
+  test "POST /stories avec interactive: true est refusé pour un compte gratuit" do
+    # Arrange
+    sign_in_as(users(:paul))
+    count_before = Story.count
+
+    # Act — requête forgée avec interactive: true (impossible via le formulaire normal)
+    post stories_path, params: {
+      story: {
+        child_ids: [children(:theo).id],
+        world_theme: "space",
+        educational_value: "courage",
+        duration_minutes: 5,
+        interactive: true
+      }
+    }
+
+    # Assert 1 — aucune histoire créée en base
+    assert_equal count_before, Story.count,
+                 "Aucune histoire interactive ne doit être créée pour un compte gratuit"
+
+    # Assert 2 — le formulaire est re-rendu avec une erreur de validation (422)
+    assert_response :unprocessable_entity,
+                    "La validation premium devrait re-rendre le formulaire en 422"
+  end
+
+  # Vérifie que la génération audio (TTS payant) est bloquée pour un compte gratuit
+  # Cas : Marie (gratuite) poste sur /stories/:id/audio
+  # Pourquoi : chaque appel TTS OpenAI coûte de l'argent — réservé aux abonnés
+  test "POST /stories/:id/audio retourne 403 pour un compte gratuit" do
+    # Arrange
+    sign_in_as(users(:marie))
+    story = stories(:completed_saved)
+
+    # Act — tentative de génération audio sans être premium
+    post audio_story_path(story)
+
+    # Assert — la garde du controller doit répondre 403 Forbidden
+    # (head :forbidden — aucun appel OpenAI n'est effectué)
+    assert_response :forbidden,
+                    "La génération audio doit être refusée (403) pour un compte gratuit"
+  end
+
+  # ===========================================================
   # SECTION 6 — DELETE /stories/:id (destroy)
   # ===========================================================
 

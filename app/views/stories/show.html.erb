@@ -122,6 +122,10 @@
         <%# ── LECTEUR AUDIO — barre flottante centrée en bas ── %>
         <%# DA cosmique : glassmorphism sombre, accents dorés, icônes SVG %>
         <%# Les styles .audio-bar-* sont définis dans _stories.scss %>
+        <%# PREMIUM UNIQUEMENT — le TTS coûte de l'argent à chaque génération. %>
+        <%# Pour les comptes gratuits : pastille d'upsell vers /abonnement à la place %>
+        <%# (la vraie garde est côté serveur dans StoriesController#audio — 403) %>
+        <% if current_user.premium? %>
         <div class="audio-bar"
              data-controller="story-reader"
              data-story-id="<%= @story.id %>">
@@ -184,6 +188,15 @@
           </div>
 
         </div>
+        <% else %>
+          <%# Compte gratuit — pastille discrète qui présente la lecture vocale Premium %>
+          <div class="audio-bar" style="justify-content: center;">
+            <%= link_to subscription_path, style: "display: inline-flex; align-items: center; gap: 0.5rem; color: #f0c97a; text-decoration: none; font-size: 0.85rem;" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Lecture vocale — réservée aux abonnés Premium
+            <% end %>
+          </div>
+        <% end %>
 
         <%# ── MODE INTERACTIF — affiche le choix si disponible ── %>
         <% if @story.interactive? && @pending_choice %>

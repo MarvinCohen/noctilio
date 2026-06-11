@@ -156,6 +156,27 @@
           input_html: { class: "form-control", rows: 3 } %>
   </div>
 
+  <%# ── Consentement parental (RGPD) — uniquement à la création ── %>
+  <%# new_record? : la case n'est affichée que pour un nouveau profil, %>
+  <%# pas en modification (la validation est on: :create côté modèle) %>
+  <% if child.new_record? %>
+    <div class="ch-divider"></div>
+    <div class="ch-form-section mb-0">
+      <%# label englobe la checkbox → cliquer le texte coche la case %>
+      <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; color: rgba(212, 207, 196, 0.8); font-size: 0.88rem; line-height: 1.5;">
+        <%# f.check_box envoie "0" si décochée, "1" si cochée — %>
+        <%# c'est ce "0" qui déclenche l'erreur de validation acceptance %>
+        <%= f.check_box :parental_consent, style: "margin-top: 3px; flex-shrink: 0; accent-color: #f0c97a;" %>
+        <span>
+          Je certifie être le parent ou tuteur légal de cet enfant et je consens
+          au traitement de ses données (prénom, âge, apparence) pour la
+          personnalisation des histoires, conformément à la
+          <%= link_to "politique de confidentialité", "/confidentialite", target: "_blank", style: "color: #f0c97a;" %>.
+        </span>
+      </label>
+    </div>
+  <% end %>
+
   <%# ── Boutons d'action ── %>
   <div class="ch-form-actions mt-3">
     <%# Bouton submit — fond doré pill %>

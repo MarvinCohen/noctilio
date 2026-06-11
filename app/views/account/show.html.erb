@@ -109,4 +109,23 @@
           style: "color: rgba(212, 207, 196, 0.7); text-decoration: none; font-size: 0.9rem;" %>
   </div>
 
+  <%# ── Zone danger : suppression du compte (RGPD — droit à l'oubli) ── %>
+  <%# Supprime le compte ET en cascade : enfants → histoires → images/audio %>
+  <%# (associations dependent: :destroy dans User et Child) %>
+  <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 107, 107, 0.15);">
+    <h2 style="color: rgba(255, 107, 107, 0.85); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem;">
+      Supprimer mon compte
+    </h2>
+    <p style="color: rgba(212, 207, 196, 0.55); font-size: 0.85rem; margin-bottom: 1rem;">
+      Supprime définitivement ton compte, les profils de tes enfants et toutes
+      les histoires générées (textes, images, audio). Cette action est irréversible.
+    </p>
+    <%# button_to DELETE vers la route Devise registrations#destroy %>
+    <%# turbo_confirm : demande confirmation avant d'envoyer la requête %>
+    <%= button_to "Supprimer définitivement mon compte", user_registration_path,
+          method: :delete,
+          data: { turbo_confirm: "Es-tu sûr ? Toutes les histoires et profils enfants seront supprimés définitivement. Cette action est irréversible." },
+          style: "padding: 0.6rem 1.2rem; background: transparent; color: rgba(255, 107, 107, 0.85); border: 1px solid rgba(255, 107, 107, 0.35); border-radius: 8px; font-size: 0.85rem; cursor: pointer;" %>
+  </div>
+
 </div>

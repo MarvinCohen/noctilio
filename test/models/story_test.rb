@@ -346,6 +346,77 @@ class StoryTest < ActiveSupport::TestCase
     assert_equal "✨", story.world_emoji
   end
 
+  # ===========================================================
+  # SECTION 5 — VALIDATION PREMIUM DU MODE INTERACTIF
+  # ===========================================================
+  # interactive_requires_premium est une garde business critique :
+  # elle empêche un utilisateur gratuit de forger une requête POST
+  # avec interactive=true pour contourner la checkbox désactivée.
+
+  # Vérifie qu'un utilisateur gratuit ne peut PAS créer une histoire interactive
+  # Cas : Marie (admin: false, pas d'abonnement Stripe) crée avec interactive: true
+  # Pourquoi : le mode interactif est l'argument de vente principal du Premium
+  test "une histoire interactive est invalide pour un utilisateur gratuit" do
+    # Arrange — Léo appartient à Marie, qui n'est pas premium
+    child = children(:leo)
+    assert_not child.user.premium?, "Pré-condition : Marie ne doit pas être premium"
+
+    story = child.stories.build(status: :pending, interactive: true)
+
+    # Act
+    story.valid?
+
+    # Assert — l'erreur doit porter sur interactive
+    assert story.errors[:interactive].any?,
+           "Un compte gratuit ne devrait pas pouvoir créer une histoire interactive"
+  end
+
+  # Vérifie qu'un utilisateur premium PEUT créer une histoire interactive
+  # Cas : admin_user (admin: true → premium? = true) crée avec interactive: true
+  # Pourquoi : la validation ne doit pas bloquer les abonnés légitimes
+  test "une histoire interactive est valide pour un utilisateur premium" do
+    # Arrange — crée un enfant pour l'admin (la fixture admin_user n'en a pas)
+    admin = users(:admin_user)
+    assert admin.premium?, "Pré-condition : admin_user doit être premium (admin: true)"
+
+    child = admin.children.create!(name: "Nina", age: 7)
+    story = child.stories.build(status: :pending, interactive: true)
+
+    # Act
+    story.valid?
+
+    # Assert — aucune erreur sur interactive
+    assert_empty story.errors[:interactive],
+                 "Un compte premium devrait pouvoir créer une histoire interactive"
+  end
+
+  # Vérifie qu'une histoire NON interactive reste valide pour un compte gratuit
+  # Cas : Marie crée une histoire classique (interactive: false)
+  # Pourquoi : la validation ne s'applique que si interactive? — pas de faux positifs
+  test "une histoire non interactive est valide pour un utilisateur gratuit" do
+    # Arrange
+    story = children(:leo).stories.build(status: :pending, interactive: false)
+
+    # Act + Assert
+    story.valid?
+    assert_empty story.errors[:interactive],
+                 "Une histoire classique ne doit pas être bloquée pour un compte gratuit"
+  end
+
+  # Vérifie qu'une histoire interactive EXISTANTE reste valide après désabonnement
+  # Cas : interactive_story appartient à Marie (gratuite) mais existe déjà en base
+  # Pourquoi : on: :create — si un abonné se désabonne, ses histoires restent lisibles/modifiables
+  test "une histoire interactive existante reste valide pour un utilisateur gratuit" do
+    # Arrange — fixture déjà persistée, propriétaire non premium
+    story = stories(:interactive_story)
+    assert_not story.child.user.premium?, "Pré-condition : le propriétaire ne doit pas être premium"
+
+    # Act + Assert — valid? sur un enregistrement persisté utilise le contexte :update
+    # → la validation on: :create est ignorée, l'histoire reste valide
+    assert story.valid?,
+           "Une histoire interactive déjà créée doit rester valide après désabonnement"
+  end
+
   # Vérifie que all_children retourne l'enfant principal + les extras
   # Cas : histoire avec un seul enfant (pas d'extra)
   # Pourquoi : utilisé dans les prompts IA pour décrire tous les héros

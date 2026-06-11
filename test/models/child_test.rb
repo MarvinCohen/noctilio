@@ -132,6 +132,66 @@ class ChildTest < ActiveSupport::TestCase
   end
 
   # ===========================================================
+  # SECTION 1bis — CONSENTEMENT PARENTAL (RGPD)
+  # ===========================================================
+  # parental_consent est un attribut virtuel validé uniquement à la création.
+  # La checkbox du formulaire envoie "0" (décochée) ou "1" (cochée).
+
+  # Vérifie qu'une création avec la case décochée ("0") est refusée
+  # Cas : le parent soumet le formulaire sans cocher le consentement
+  # Pourquoi : RGPD — données de mineurs, le consentement parental est obligatoire
+  test "un enfant créé avec parental_consent décoché est invalide" do
+    # Arrange — "0" est la valeur envoyée par f.check_box quand la case est décochée
+    child = users(:marie).children.build(name: "Zoé", age: 5, parental_consent: "0")
+
+    # Act
+    child.valid?
+
+    # Assert — l'erreur doit porter sur parental_consent
+    assert child.errors[:parental_consent].any?,
+           "La création sans consentement parental devrait être refusée"
+  end
+
+  # Vérifie qu'une création avec la case cochée ("1") est acceptée
+  # Cas : le parent coche bien la case de consentement
+  # Pourquoi : cas nominal — le formulaire valide doit passer
+  test "un enfant créé avec parental_consent coché est valide" do
+    # Arrange — "1" est la valeur envoyée par la checkbox cochée
+    child = users(:marie).children.build(name: "Zoé", age: 5, parental_consent: "1")
+
+    # Act + Assert
+    assert child.valid?,
+           "La création avec consentement coché devrait être valide : #{child.errors.full_messages}"
+  end
+
+  # Vérifie qu'une création SANS le champ (nil) reste acceptée
+  # Cas : création via console, seeds ou tests — pas de formulaire web
+  # Pourquoi : la validation acceptance ignore nil par défaut — seul le "0"
+  # explicite de la checkbox décochée déclenche l'erreur
+  test "un enfant créé sans champ parental_consent (nil) est valide" do
+    # Arrange — aucun parental_consent fourni (nil)
+    child = users(:marie).children.build(name: "Zoé", age: 5)
+
+    # Act + Assert
+    assert child.valid?,
+           "La création sans le champ (console/seeds) devrait rester possible"
+  end
+
+  # Vérifie que la modification d'un enfant existant n'exige PAS le consentement
+  # Cas : Léo (déjà en base) est mis à jour sans parental_consent
+  # Pourquoi : on: :create — le consentement n'est demandé qu'une fois, à la création
+  test "modifier un enfant existant ne redemande pas le consentement" do
+    # Arrange — fixture persistée, on simule une checkbox décochée à l'update
+    child = children(:leo)
+    child.parental_consent = "0"
+    child.age = 8
+
+    # Act + Assert — le contexte :update ignore la validation on: :create
+    assert child.valid?,
+           "La modification d'un profil existant ne doit pas exiger le consentement"
+  end
+
+  # ===========================================================
   # SECTION 2 — SCOPES
   # ===========================================================
 

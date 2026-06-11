@@ -13,8 +13,9 @@ Rails.application.configure do
     # Par défaut : n'autoriser que les ressources venant du même domaine
     policy.default_src :self
 
-    # Scripts : uniquement depuis ce domaine + nonce pour les scripts inline de Rails/Turbo
-    policy.script_src :self
+    # Scripts : ce domaine + nonce pour les scripts inline de Rails/Turbo
+    # + cloud.umami.is : d'où est servi le script d'analytics Umami (analytics cookieless)
+    policy.script_src :self, "https://cloud.umami.is"
 
     # Styles : ce domaine + Google Fonts + unsafe_inline nécessaire pour Bootstrap 5
     # Bootstrap 5 injecte des styles inline — impossible à supprimer sans réécrire Bootstrap
@@ -27,8 +28,11 @@ Rails.application.configure do
     # On autorise tout HTTPS car les URLs Cloudinary et fal.ai peuvent varier
     policy.img_src :self, :https, :data
 
-    # Requêtes fetch() / XHR : uniquement vers ce domaine (appels Stimulus → Rails)
-    policy.connect_src :self
+    # Requêtes fetch() / XHR : ce domaine (appels Stimulus → Rails)
+    # + cloud.umami.is : où le script Umami envoie les events de navigation (POST /api/send)
+    # NOTE : si les events n'apparaissent pas en prod, vérifier dans l'onglet Réseau
+    # vers quel domaine part réellement la requête et l'ajouter ici
+    policy.connect_src :self, "https://cloud.umami.is"
 
     # Désactiver complètement les plugins Flash/Java (obsolètes et dangereux)
     policy.object_src :none

@@ -64,6 +64,27 @@ class Story < ApplicationRecord
     message: "n'est pas un style d'illustration reconnu"
   }, allow_nil: true
 
+  # SÉCURITÉ BUSINESS — le mode interactif est réservé aux comptes Premium.
+  # La checkbox est désactivée dans le formulaire HTML pour les comptes gratuits,
+  # mais un utilisateur pourrait forger une requête POST avec interactive=true.
+  # Cette validation côté serveur rend le contournement impossible.
+  # on: :create — on ne valide qu'à la création : si un abonné Premium se désabonne,
+  # ses histoires interactives existantes restent valides (et donc lisibles/modifiables).
+  validate :interactive_requires_premium, on: :create, if: :interactive?
+
+  # ============================================================
+  # Validations privées (appelées par `validate` ci-dessus)
+  # ============================================================
+
+  # Ajoute une erreur si l'utilisateur propriétaire n'est pas Premium
+  def interactive_requires_premium
+    # child&.user : navigation sécurisée — child peut être nil si child_id invalide
+    # (l'erreur de présence de child_id sera levée par sa propre validation)
+    return if child&.user&.premium?
+
+    errors.add(:interactive, "est réservé aux abonnés Premium")
+  end
+
   # ============================================================
   # Méthodes de construction — Fat Model / Skinny Controller
   # ============================================================

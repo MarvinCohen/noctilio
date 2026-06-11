@@ -80,6 +80,7 @@ class ChildrenController < ApplicationController
       :eye_color,
       :skin_tone,
       :child_description,
+      :parental_consent,        # Attribut virtuel RGPD — case de consentement (validé on: :create)
       personality_traits: [],   # Tableau de chaînes (checkboxes)
       hobbies: []               # Tableau de chaînes (checkboxes)
     )

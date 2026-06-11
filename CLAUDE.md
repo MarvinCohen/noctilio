@@ -96,6 +96,9 @@ GET  /mentions-legales    → Mentions légales (publique, indexée)
 ```
 OPENAI_API_KEY=sk-...          # Obligatoire pour générer histoires et images
 STRIPE_PREMIUM_PRICE_ID=...    # À configurer plus tard
+UMAMI_WEBSITE_ID=...           # ID du site Umami Cloud (analytics) — défini sur Railway uniquement.
+                               # Absent en dev/test → le script de tracking est automatiquement désactivé.
+                               # Voir AnalyticsHelper#umami_enabled? (off aussi pour les comptes admin).
 ```
 
 ## Flux de génération d'une histoire
@@ -190,7 +193,7 @@ Quand `/` sera protégé par Devise et redirigera vers `/users/sign_in`, il faud
 
 ## Tests (Minitest)
 
-Suite complète : 162 tests, 278 assertions, 0 failures, 0 errors
+Suite complète : 180 tests, 0 failures, 0 errors
 
 Fichiers de test :
 - `test/models/badge_test.rb` — 31 tests sur les 37 badges

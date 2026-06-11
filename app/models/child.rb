@@ -10,10 +10,26 @@ class Child < ApplicationRecord
   has_many :stories, dependent: :destroy
 
   # ============================================================
+  # Consentement parental (RGPD)
+  # ============================================================
+  # Attribut VIRTUEL : pas de colonne en base — il sert uniquement à valider
+  # la case à cocher du formulaire de création. On ne stocke pas la valeur,
+  # le fait que le profil existe prouve que la case a été cochée à la création.
+  attr_accessor :parental_consent
+
+  # ============================================================
   # Validations
   # ============================================================
   validates :name, presence: true, length: { minimum: 2, maximum: 50 }
   validates :age,  presence: true, numericality: { only_integer: true, greater_than: 0, less_than: 16 }
+
+  # RGPD — données de mineurs : le parent doit cocher la case de consentement.
+  # acceptance: true → n'accepte que "1" ou true (la checkbox cochée envoie "1")
+  # on: :create → uniquement à la création (pas redemandé à chaque modification)
+  # Note : si le champ est nil (création via console/seeds/tests), la validation
+  # est ignorée par défaut — elle ne s'applique donc qu'au formulaire web,
+  # où la checkbox envoie toujours "0" (décochée) ou "1" (cochée).
+  validates :parental_consent, acceptance: { message: "doit être accepté pour créer un profil enfant" }, on: :create
 
   # ============================================================
   # Scopes

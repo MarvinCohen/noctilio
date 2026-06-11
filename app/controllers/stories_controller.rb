@@ -218,6 +218,14 @@ class StoriesController < ApplicationController
   # Sinon : lance GenerateAudioJob et retourne 202 Accepted → le JS poll /status jusqu'à ce que
   # audio_url soit disponible dans la réponse JSON
   def audio
+    # SÉCURITÉ BUSINESS — la génération audio (OpenAI TTS) coûte de l'argent
+    # à chaque appel. Réservée aux abonnés Premium, vérifiée CÔTÉ SERVEUR
+    # (cacher le bouton dans la vue ne suffirait pas : l'URL resterait appelable).
+    # 403 Forbidden — le JS du lecteur audio l'interprète comme un refus.
+    unless current_user.premium?
+      head :forbidden and return
+    end
+
     source = params[:source] || "story"
 
     if @story.audio_file.attached?

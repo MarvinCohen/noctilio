@@ -77,6 +77,9 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%# Script analytics Umami — rendu seulement en prod (visiteurs anonymes trackés) %>
+    <%= render "shared/analytics" %>
+
     <%# Favicon — mascotte hibou Noctilio %>
     <%= favicon_link_tag image_path('mascot.svg'), type: 'image/svg+xml' %>
     <%= favicon_link_tag image_path('mascot.png'), type: 'image/png', sizes: '32x32' %>

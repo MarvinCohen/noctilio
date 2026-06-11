@@ -111,218 +111,96 @@
 <div class="db-divider"></div>
 
 <%# ================================================================ %>
-<%# COMMENT ÇA MARCHE — 3 étapes numérotées %>
+<%# REPRENDRE LA LECTURE — dernières histoires terminées %>
+<%# Affichée seulement si l'utilisateur a déjà des histoires %>
+<%# @recent_stories : 5 dernières histoires complétées (chargées avec includes(:child)) %>
 <%# ================================================================ %>
-<section class="db-section db-section--centered">
+<% if @recent_stories.any? %>
+  <section class="db-section db-section--centered">
 
-  <div class="db-section-head db-section-head--centered" data-reveal="up">
-    <p class="db-eyebrow db-eyebrow--small">Simple comme bonjour</p>
-    <h2 class="db-section-title">Comment ça marche</h2>
-    <p class="db-section-subtitle">Trois étapes vers une histoire magique</p>
-  </div>
-
-  <div class="db-steps-grid">
-
-    <%# Étape 1 — apparaît en premier %>
-    <div class="db-step-card" data-reveal="up" style="--reveal-delay: 100ms">
-      <div class="db-step-number">1</div>
-      <div class="db-step-icon">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8" r="4"/>
-          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-        </svg>
-      </div>
-      <h3 class="db-step-title">Créer le profil</h3>
-      <p class="db-step-desc">Prénom, âge, personnalité et centres d'intérêt de votre enfant.</p>
+    <div class="db-section-head db-section-head--centered" data-reveal="up">
+      <p class="db-eyebrow db-eyebrow--small">Là où vous en étiez</p>
+      <h2 class="db-section-title">Reprendre la lecture</h2>
     </div>
 
-    <%# Connecteur entre les étapes %>
-    <div class="db-step-connector" aria-hidden="true">✦</div>
+    <%# Grille de cartes histoires — flex centré, wrap sur mobile %>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; max-width: 980px; margin: 0 auto;">
+      <% @recent_stories.each_with_index do |story, i| %>
+        <%# Toute la carte est cliquable → page de lecture de l'histoire %>
+        <%= link_to story_path(story), data: { reveal: "up" }, style: "--reveal-delay: #{i * 100}ms; text-decoration: none; width: 280px; background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; overflow: hidden; display: block;" do %>
 
-    <%# Étape 2 — décalée de 200ms %>
-    <div class="db-step-card" data-reveal="up" style="--reveal-delay: 250ms">
-      <div class="db-step-number">2</div>
-      <div class="db-step-icon">
-        <%# Sliders — personnalisation de l'histoire %>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="4" y1="6" x2="20" y2="6"/>
-          <line x1="4" y1="12" x2="20" y2="12"/>
-          <line x1="4" y1="18" x2="20" y2="18"/>
-          <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
-          <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
-          <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
-        </svg>
-      </div>
-      <h3 class="db-step-title">Choisir l'histoire</h3>
-      <p class="db-step-desc">Univers, valeur éducative, durée et mode interactif.</p>
+          <%# Couverture — version ActiveStorage si attachée, sinon URL OpenAI %>
+          <% if story.cover_image_source.present? %>
+            <%= image_tag story.cover_image_source, alt: story.title,
+                  style: "width: 100%; height: 150px; object-fit: cover; display: block;" %>
+          <% else %>
+            <%# Pas d'image — placeholder avec l'emoji de l'univers %>
+            <div style="width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; background: rgba(240, 201, 122, 0.05);">
+              <%= story.world_emoji %>
+            </div>
+          <% end %>
+
+          <div style="padding: 1rem 1.1rem;">
+            <%# Titre de l'histoire — tronqué à 2 lignes max via line-clamp %>
+            <div style="color: #d4cfc4; font-weight: 600; font-size: 0.95rem; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+              <%= story.title %>
+            </div>
+            <%# Prénom de l'enfant + univers — méta discrète %>
+            <div style="color: rgba(212, 207, 196, 0.55); font-size: 0.8rem; margin-top: 0.4rem;">
+              <%= story.world_emoji %> <%= story.child.name %> · <%= story.world_label %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
     </div>
 
-    <div class="db-step-connector" aria-hidden="true">✦</div>
-
-    <%# Étape 3 — décalée de 400ms %>
-    <div class="db-step-card" data-reveal="up" style="--reveal-delay: 400ms">
-      <div class="db-step-number">3</div>
-      <div class="db-step-icon">
-        <%# Étoiles — la magie opère %>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-        </svg>
-      </div>
-      <h3 class="db-step-title">La magie opère</h3>
-      <p class="db-step-desc">L'IA génère l'histoire et l'illustration en quelques secondes.</p>
+    <%# Lien vers la bibliothèque complète %>
+    <div style="text-align: center; margin-top: 1.75rem;">
+      <%= link_to "Voir toute la bibliothèque →", stories_path,
+            style: "color: #f0c97a; text-decoration: none; font-size: 0.9rem;" %>
     </div>
 
-  </div>
+  </section>
 
-  <%# ── Switcher de design — visible uniquement sur mobile ── %>
-  <%# Permet de basculer entre les 3 variantes sans recharger la page %>
-  <%# À retirer une fois le design final choisi %>
-
-</section>
-
-<div class="db-divider"></div>
+  <div class="db-divider"></div>
+<% end %>
 
 <%# ================================================================ %>
-<%# FONCTIONNALITÉS — grille 3×2 de features %>
+<%# MES HÉROS — raccourcis vers les profils enfants %>
+<%# Affichée seulement si au moins un profil existe (sinon le hero gère l'onboarding) %>
 <%# ================================================================ %>
-<section class="db-section db-section--centered">
+<% if @children.any? %>
+  <section class="db-section db-section--centered db-section--last">
 
-  <div class="db-section-head db-section-head--centered" data-reveal="up">
-    <p class="db-eyebrow db-eyebrow--small">Ce qui rend Noctilio unique</p>
-    <h2 class="db-section-title">Fonctionnalités magiques</h2>
-    <p class="db-section-subtitle">Tout ce dont vous avez besoin pour des soirées inoubliables</p>
-  </div>
-
-  <div class="db-features-grid">
-
-    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 0ms">
-      <div class="db-feature-icon">
-        <%# Étincelles — histoires IA %>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
-        </svg>
-      </div>
-      <h3 class="db-feature-title">Histoires IA personnalisées</h3>
-      <p class="db-feature-desc">Chaque histoire est unique, générée spécialement pour votre enfant.</p>
+    <div class="db-section-head db-section-head--centered" data-reveal="up">
+      <p class="db-eyebrow db-eyebrow--small">Les stars de vos histoires</p>
+      <h2 class="db-section-title">Mes héros</h2>
     </div>
 
-    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 100ms">
-      <div class="db-feature-icon">
-        <%# Bouclier check — contenu adapté à l'âge %>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <polyline points="9 12 11 14 15 10"/>
-        </svg>
-      </div>
-      <h3 class="db-feature-title">Adaptée à l'âge</h3>
-      <p class="db-feature-desc">Contenu calibré pour les enfants de 3 à 15 ans.</p>
+    <%# Pills enfants — avatar initiale + prénom, cliquables vers le profil %>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.85rem;" data-reveal="up">
+      <% @children.each do |child| %>
+        <%= link_to child_path(child),
+              style: "display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.5rem 1.1rem 0.5rem 0.5rem; background: #111527; border: 1px solid rgba(240, 201, 122, 0.18); border-radius: 50px; text-decoration: none;" do %>
+          <%# Pastille dorée avec l'initiale du prénom %>
+          <span style="width: 34px; height: 34px; border-radius: 50%; background: #f0c97a; color: #0b0e1a; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">
+            <%= child.name[0].upcase %>
+          </span>
+          <span style="color: #d4cfc4; font-size: 0.92rem; font-weight: 500;">
+            <%= child.name %> · <%= child.age %> ans
+          </span>
+        <% end %>
+      <% end %>
+
+      <%# Bouton "+" pour ajouter un nouveau profil enfant %>
+      <%= link_to new_child_path,
+            style: "display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.1rem; background: transparent; border: 1px dashed rgba(240, 201, 122, 0.35); border-radius: 50px; text-decoration: none; color: #f0c97a; font-size: 0.92rem;" do %>
+        + Ajouter un héros
+      <% end %>
     </div>
 
-    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 200ms">
-      <div class="db-feature-icon">
-        <%# Branches — choix interactifs %>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="6" cy="18" r="3"/>
-          <circle cx="6" cy="6" r="3"/>
-          <circle cx="18" cy="6" r="3"/>
-          <path d="M6 9v6"/>
-          <path d="M6 9a6 6 0 0 0 6 6h1"/>
-          <path d="M18 9v3a3 3 0 0 1-3 3h-1"/>
-        </svg>
-      </div>
-      <h3 class="db-feature-title">Mode interactif</h3>
-      <p class="db-feature-desc">L'enfant fait des choix qui changent la suite de l'histoire.</p>
-    </div>
-
-    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 150ms">
-      <div class="db-feature-icon">
-        <%# Cadre image — illustration %>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21 15 16 10 5 21"/>
-        </svg>
-      </div>
-      <h3 class="db-feature-title">Illustrations générées</h3>
-      <p class="db-feature-desc">Chaque histoire est accompagnée d'une illustration unique.</p>
-    </div>
-
-    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 250ms">
-      <div class="db-feature-icon">
-        <%# Cœur — valeurs éducatives %>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-        </svg>
-      </div>
-      <h3 class="db-feature-title">Valeurs éducatives</h3>
-      <p class="db-feature-desc">Courage, partage, gentillesse — des leçons douces tissées dans l'aventure.</p>
-    </div>
-
-    <div class="db-feature-card" data-reveal="scale" style="--reveal-delay: 350ms">
-      <div class="db-feature-icon">
-        <%# Utilisateurs — plusieurs profils %>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      </div>
-      <h3 class="db-feature-title">Plusieurs profils</h3>
-      <p class="db-feature-desc">Créez un profil pour chacun de vos enfants.</p>
-    </div>
-
-  </div>
-
-</section>
-
-<div class="db-divider"></div>
-
-<%# ================================================================ %>
-<%# TÉMOIGNAGES — ce que disent les parents %>
-<%# ================================================================ %>
-<section class="db-section db-section--centered db-section--last">
-
-  <div class="db-section-head db-section-head--centered" data-reveal="up">
-    <p class="db-eyebrow db-eyebrow--small">Des familles qui nous font confiance</p>
-    <h2 class="db-section-title">Ce qu'ils en disent</h2>
-  </div>
-
-  <div class="db-testimonials-grid">
-
-    <%# Témoignage 1 — entre depuis la gauche %>
-    <div class="db-testimonial-card" data-reveal="left" style="--reveal-delay: 0ms">
-      <div class="db-stars">★★★★★</div>
-      <p class="db-testimonial-text">« Noctilio a transformé nos soirées. Mes enfants réclament maintenant d'aller se coucher pour écouter leur histoire. »</p>
-      <div class="db-testimonial-author">
-        <span class="db-testimonial-name">Sarah M.</span>
-        <span class="db-testimonial-role">Maman de 2 enfants</span>
-      </div>
-    </div>
-
-    <%# Témoignage 2 — monte depuis le bas %>
-    <div class="db-testimonial-card" data-reveal="up" style="--reveal-delay: 150ms">
-      <div class="db-stars">★★★★★</div>
-      <p class="db-testimonial-text">« En tant que parent pressé, c'est un gain de temps énorme tout en gardant des moments de qualité avec ma fille. »</p>
-      <div class="db-testimonial-author">
-        <span class="db-testimonial-name">Michaël T.</span>
-        <span class="db-testimonial-role">Papa de 1 enfant</span>
-      </div>
-    </div>
-
-    <%# Témoignage 3 — entre depuis la droite %>
-    <div class="db-testimonial-card" data-reveal="right" style="--reveal-delay: 300ms">
-      <div class="db-stars">★★★★★</div>
-      <p class="db-testimonial-text">« Le mode interactif est brillant — mon fils se sent vraiment le héros de l'histoire. Il ne voudrait plus s'en passer. »</p>
-      <div class="db-testimonial-author">
-        <span class="db-testimonial-name">Émilie R.</span>
-        <span class="db-testimonial-role">Maman de 3 enfants</span>
-      </div>
-    </div>
-
-  </div>
-
-</section>
+  </section>
+<% end %>
 
 <%# Espace final %>
 <div style="height: 80px;"></div>

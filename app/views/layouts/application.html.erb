@@ -23,6 +23,9 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%# Script analytics Umami — rendu seulement en prod et pour les non-admins %>
+    <%= render "shared/analytics" %>
+
     <%= yield :head %>
 
     <%# ---------------------------------------------------------------- %>
