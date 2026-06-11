@@ -813,3 +813,159 @@ nav {
   25%       { transform: translateX(-6px); }
   75%       { transform: translateX(6px); }
 }
+
+// ============================================================
+// Histoire partagée publiquement (SharedStoriesController#show)
+// ============================================================
+// Page autonome servie via le layout landing : on redéfinit ici tout le style
+// (le bundle application / _stories.scss n'est PAS chargé sur ce layout).
+// Mobile-first : le partage se lit massivement sur téléphone (WhatsApp).
+
+// Conteneur principal — colonne centrée, largeur de lecture confortable
+.shared-story {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+}
+
+// En-tête de marque — logo texte discret en haut de page
+.shared-story__brand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.shared-story__brand-link {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  color: var(--gold);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+
+// Méta (univers + prénom) — petites pilules dorées translucides
+.shared-story__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.shared-story__pill {
+  font-size: 0.72rem;
+  color: var(--gold);
+  background: var(--mist);
+  border: 1px solid rgba(240, 201, 122, 0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  letter-spacing: 0.02em;
+}
+
+// Titre de l'histoire — Cormorant Garamond italique, doré crème
+.shared-story__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(1.8rem, 6vw, 2.8rem); // s'adapte du mobile au desktop
+  line-height: 1.15;
+  color: var(--cream);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+// Illustration — coins arrondis, légère bordure dorée
+.shared-story__illustration {
+  margin: 0 auto 28px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(240, 201, 122, 0.15);
+}
+
+.shared-story__illustration-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+// Contenu de l'histoire — texte de lecture confortable
+.shared-story__content {
+  font-size: 1.08rem;
+  line-height: 1.85;
+  color: var(--text);
+
+  // Classes produites par render_story_markdown (helper partagé) :
+  .story-paragraph { margin-bottom: 1.1em; }
+
+  .story-chapter {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+    font-size: 1.5rem;
+    margin: 1.6em 0 0.6em;
+  }
+
+  .story-section {
+    color: var(--cream);
+    font-size: 1.2rem;
+    margin: 1.3em 0 0.5em;
+  }
+}
+
+// Carte CTA d'acquisition — invite le lecteur à créer son compte
+.shared-story__cta {
+  margin-top: 48px;
+  padding: 32px 24px;
+  text-align: center;
+  background: var(--deep);
+  border: 1px solid rgba(240, 201, 122, 0.18);
+  border-radius: 18px;
+}
+
+.shared-story__cta-eyebrow {
+  font-size: 0.78rem;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.shared-story__cta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.4rem, 5vw, 1.9rem);
+  color: var(--cream);
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+
+.shared-story__cta-text {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+// Bouton principal doré — pleine largeur sur mobile
+.shared-story__cta-btn {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--night);
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+  padding: 13px 28px;
+  border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: var(--gold-soft);
+    transform: translateY(-2px);
+  }
+}
+
+// ── Adaptation petit mobile (iPhone SE ≈ 375px) ──
+@media (max-width: 400px) {
+  .shared-story { padding: 16px 14px 48px; }
+  .shared-story__content { font-size: 1rem; }
+  .shared-story__cta { padding: 26px 18px; }
+  .shared-story__cta-btn { display: block; width: 100%; }
+}

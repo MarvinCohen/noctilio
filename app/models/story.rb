@@ -86,6 +86,48 @@ class Story < ApplicationRecord
   end
 
   # ============================================================
+  # Partage public — lien en lecture seule via token signé
+  # ============================================================
+  # Permet à un parent de partager une histoire (ex : WhatsApp) sans que le
+  # destinataire ait besoin d'un compte. C'est un levier d'acquisition gratuit.
+  #
+  # On utilise un MessageVerifier : le token contient l'ID de l'histoire,
+  # signé cryptographiquement avec secret_key_base. Avantages :
+  #   - impossible à forger ou à deviner (un attaquant ne connaît pas la clé)
+  #   - impossible d'énumérer les histoires en incrémentant un id dans l'URL
+  #   - pas besoin de colonne en base (contrairement à un token aléatoire stocké)
+  # url_safe: true → le token ne contient que des caractères valides dans une URL
+  SHARE_PURPOSE = "story_share".freeze
+
+  # Construit (ou réutilise) le vérificateur de signature dédié au partage
+  # Mémoïsé au niveau de la classe pour ne pas le recréer à chaque appel
+  def self.share_verifier
+    @share_verifier ||= ActiveSupport::MessageVerifier.new(
+      Rails.application.secret_key_base, # clé secrète propre à l'application
+      digest:     "SHA256",              # algorithme de signature
+      serializer: JSON,                  # sérialise l'id en JSON (entier simple)
+      url_safe:   true                   # caractères compatibles URL (pas de +,/,=)
+    )
+  end
+
+  # Retrouve une histoire à partir d'un token de partage.
+  # Retourne nil si :
+  #   - le token est invalide ou falsifié (signature KO)
+  #   - l'histoire n'existe plus
+  #   - l'histoire n'est pas terminée (on ne partage que des histoires lisibles)
+  def self.find_by_share_token(token)
+    story_id = share_verifier.verify(token)        # lève si signature invalide
+    completed.find_by(id: story_id)                # nil si introuvable/non terminée
+  rescue ActiveSupport::MessageVerifier::InvalidSignature
+    nil                                            # token trafiqué → on renvoie nil
+  end
+
+  # Génère le token signé de CETTE histoire (utilisé pour construire l'URL de partage)
+  def share_token
+    self.class.share_verifier.generate(id)
+  end
+
+  # ============================================================
   # Méthodes de construction — Fat Model / Skinny Controller
   # ============================================================
   # Ces méthodes construisent de nouvelles histoires à partir de celle-ci.

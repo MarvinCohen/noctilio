@@ -52,8 +52,10 @@
     <%# Renforce l'identité visuelle de Noctilio (fond nuit profonde) %>
     <meta name="theme-color" content="#0b0e1a">
 
-    <%# Robots — autorise explicitement l'indexation des pages publiques du layout landing %>
-    <meta name="robots" content="index, follow">
+    <%# Robots — par défaut on autorise l'indexation des pages publiques du layout landing %>
+    <%# MAIS une vue peut forcer noindex via content_for(:robots) — ex : les histoires %>
+    <%# partagées (contenu privé d'utilisateur) ne doivent PAS être indexées par Google %>
+    <meta name="robots" content="<%= content_for?(:robots) ? yield(:robots) : "index, follow" %>">
 
     <%# Sitemap — indique à Google où trouver le plan du site %>
     <link rel="sitemap" type="application/xml" href="https://www.noctilio-app.fr/sitemap.xml">
@@ -70,7 +72,9 @@
     <meta property="og:description" content="<%= content_for?(:description) ? yield(:description) : "Chaque soir, une histoire unique générée en quelques secondes avec le prénom, les personnages et l'univers préférés de ton enfant." %>">
     <%# og:image : image dédiée 1536×1024px générée pour les aperçus de partage social %>
     <%# Servie depuis public/ — URL absolue obligatoire pour Facebook, WhatsApp, LinkedIn %>
-    <meta property="og:image"       content="https://www.noctilio-app.fr/og-image.jpg">
+    <%# Une vue peut surcharger via content_for(:og_image) — ex : une histoire partagée %>
+    <%# affiche sa propre illustration dans l'aperçu WhatsApp (bien plus engageant) %>
+    <meta property="og:image"       content="<%= content_for?(:og_image) ? yield(:og_image) : "https://www.noctilio-app.fr/og-image.jpg" %>">
     <meta property="og:image:width"  content="1536">
     <meta property="og:image:height" content="1024">
     <meta property="og:image:alt"    content="<%= content_for?(:title) ? yield(:title) : "Noctilio — Des histoires magiques pour ton enfant" %>">

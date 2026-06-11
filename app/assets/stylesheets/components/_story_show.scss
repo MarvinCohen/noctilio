@@ -448,6 +448,62 @@
   /* Les boutons dans un <form> (button_to) doivent aussi être centrés */
   .story-nav-footer-top form button { width: 100%; justify-content: center; }
 
+  /* ── Bloc de partage (WhatsApp + copier le lien) ── */
+  /* Placé avant la navigation de fin — encourage l'acquisition virale */
+  .story-share {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(240, 201, 122, 0.1);
+    text-align: center;
+  }
+
+  /* Label "Partager cette histoire" — petit texte doré atténué */
+  .story-share-label {
+    font-size: 0.8rem;
+    color: #8a8578;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Conteneur des deux boutons — centrés, passent à la ligne si besoin */
+  .story-share-actions {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Bouton de partage générique — pilule arrondie */
+  .story-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .story-share-btn:hover { transform: translateY(-1px); }
+
+  /* WhatsApp — vert de la marque WhatsApp */
+  .story-share-btn--whatsapp {
+    background: #25d366;
+    color: #0b0e1a;
+  }
+  .story-share-btn--whatsapp:hover { background: #1ebe5a; }
+
+  /* Copier le lien — style discret doré (contour) */
+  .story-share-btn--copy {
+    background: transparent;
+    color: #f0c97a;
+    border-color: rgba(240, 201, 122, 0.35);
+  }
+  .story-share-btn--copy:hover { background: rgba(240, 201, 122, 0.12); }
+
   /* ── Responsive mobile ── */
   @media (max-width: 600px) {
     /* Wrapper de page — padding-bottom augmenté pour que le contenu ne passe pas
@@ -501,5 +557,9 @@
       grid-template-columns: 1fr 1fr;
       gap: 0.5rem;
     }
+
+    /* Boutons de partage — pleine largeur (2 colonnes) sur mobile */
+    .story-share-actions { gap: 0.5rem; }
+    .story-share-btn { flex: 1; justify-content: center; }
   }
 

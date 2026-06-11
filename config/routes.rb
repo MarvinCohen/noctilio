@@ -63,6 +63,14 @@ Rails.application.routes.draw do
   end
 
   # ============================================================
+  # Partage public d'une histoire — lecture seule, SANS authentification
+  # ============================================================
+  # Le :token est un jeton signé (voir Story#share_token) qui contient l'id
+  # de l'histoire. Impossible à deviner ou à forger → on peut exposer cette
+  # page publiquement sans risque qu'un visiteur lise les histoires des autres.
+  get "/histoire/:token", to: "shared_stories#show", as: :shared_story
+
+  # ============================================================
   # Dashboard parental — statistiques de lecture des enfants
   # ============================================================
   get "/parental",    to: "parental#index",      as: :parental

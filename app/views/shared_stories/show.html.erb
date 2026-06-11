@@ -1,0 +1,75 @@
+<%# ============================================================ %>
+<%# Page publique d'une histoire partagée (lecture seule) %>
+<%# Layout : landing (autonome, sans navbar/sidebar de l'app) %>
+<%# Objectif : un visiteur non connecté lit l'histoire puis est invité %>
+<%# à créer son propre compte Noctilio (levier d'acquisition). %>
+<%# ============================================================ %>
+
+<%# ── Métadonnées SEO / réseaux sociaux (consommées par le layout landing) ── %>
+<%# Titre de l'onglet + aperçu de partage %>
+<% content_for :title, "#{@story.title} — une histoire Noctilio" %>
+
+<%# Description : extrait du début de l'histoire, nettoyé du markdown (#, *) %>
+<%# squish compacte les espaces multiples, truncate limite à ~155 caractères %>
+<% content_for :description, truncate(@story.content.to_s.gsub(/[#*]/, "").squish, length: 155) %>
+
+<%# IMPORTANT : noindex — une histoire d'utilisateur ne doit PAS être indexée par Google %>
+<% content_for :robots, "noindex, nofollow" %>
+
+<%# Aperçu WhatsApp/Facebook : on calcule l'URL de l'illustration de l'histoire %>
+<%# (bien plus engageant que l'image générique). url_for produit une URL absolue. %>
+<% if @story.cover_image.attached? %>
+  <% content_for :og_image, url_for(@story.cover_image) %>
+<% elsif @story.cover_image_url.present? %>
+  <% content_for :og_image, @story.cover_image_url %>
+<% end %>
+
+<%# ── Contenu de la page ── %>
+<main class="shared-story">
+
+  <%# En-tête de marque — lien discret vers l'accueil Noctilio %>
+  <header class="shared-story__brand">
+    <%= link_to "✦ Noctilio", root_path, class: "shared-story__brand-link" %>
+  </header>
+
+  <article class="shared-story__article">
+
+    <%# Méta : univers + prénom de l'enfant %>
+    <div class="shared-story__meta">
+      <span class="shared-story__pill"><%= @story.world_emoji %> <%= @story.world_label %></span>
+      <span class="shared-story__pill">Pour <%= @story.child.name %></span>
+    </div>
+
+    <%# Titre de l'histoire %>
+    <h1 class="shared-story__title"><%= @story.title || "Une histoire magique" %></h1>
+
+    <%# Illustration — affichée seulement si elle est disponible %>
+    <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
+      <% image_src = @story.cover_image.attached? ? url_for(@story.cover_image) : @story.cover_image_url %>
+      <div class="shared-story__illustration">
+        <%= image_tag image_src,
+              alt: "Illustration de #{@story.title}",
+              loading: "lazy",
+              class: "shared-story__illustration-img" %>
+      </div>
+    <% end %>
+
+    <%# Contenu de l'histoire — rendu markdown sécurisé (même helper que la lecture normale) %>
+    <div class="shared-story__content">
+      <%= render_story_markdown(@story.content) %>
+    </div>
+
+  </article>
+
+  <%# ── CTA d'acquisition — convertir le lecteur en utilisateur ── %>
+  <aside class="shared-story__cta">
+    <p class="shared-story__cta-eyebrow">✦ Créé avec Noctilio</p>
+    <h2 class="shared-story__cta-title">Envie d'une histoire comme celle-ci pour votre enfant ?</h2>
+    <p class="shared-story__cta-text">
+      Noctilio génère des histoires du soir personnalisées en quelques secondes,
+      avec le prénom, les personnages et l'univers préférés de votre enfant.
+    </p>
+    <%= link_to "Créer une histoire gratuitement", root_path, class: "shared-story__cta-btn" %>
+  </aside>
+
+</main>

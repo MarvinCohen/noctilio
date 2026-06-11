@@ -431,4 +431,46 @@ class StoryTest < ActiveSupport::TestCase
     assert_includes result, story.child,
                     "all_children doit toujours inclure l'enfant principal"
   end
+
+  # ===========================================================
+  # SECTION — PARTAGE PUBLIC (token signé)
+  # ===========================================================
+
+  # Vérifie qu'un token valide permet de retrouver l'histoire
+  # Pourquoi : c'est le cœur du partage — le destinataire ouvre le lien signé
+  test "find_by_share_token retrouve l'histoire avec un token valide" do
+    # Arrange — une histoire terminée + son token de partage
+    story = stories(:completed_saved)
+    token = story.share_token
+
+    # Act — on retrouve l'histoire à partir du token
+    found = Story.find_by_share_token(token)
+
+    # Assert — c'est bien la même histoire
+    assert_equal story, found, "Un token valide doit retrouver son histoire"
+  end
+
+  # Vérifie qu'un token falsifié/invalide ne retourne rien (sécurité)
+  # Pourquoi : un attaquant ne doit pas pouvoir forger un lien d'accès
+  test "find_by_share_token retourne nil pour un token invalide" do
+    # Act — on passe une chaîne qui n'est pas un token signé valide
+    found = Story.find_by_share_token("token-bidon-falsifie")
+
+    # Assert — aucun accès accordé
+    assert_nil found, "Un token falsifié ne doit donner accès à aucune histoire"
+  end
+
+  # Vérifie qu'on ne partage PAS une histoire non terminée
+  # Pourquoi : un lien ne doit pointer que vers une histoire lisible (status completed)
+  test "find_by_share_token retourne nil pour une histoire non terminée" do
+    # Arrange — une histoire encore en génération + son token
+    story = stories(:pending_story)
+    token = story.share_token
+
+    # Act
+    found = Story.find_by_share_token(token)
+
+    # Assert — non terminée → pas accessible publiquement
+    assert_nil found, "Une histoire non terminée ne doit pas être partageable"
+  end
 end
