@@ -765,6 +765,40 @@ nav {
   letter-spacing: 0.03em;
 }
 
+// Conteneur des liens légaux (CGU, Confidentialité…) — centré sous le copyright
+// Ces styles existent aussi dans components/_footer.scss (bundle application),
+// mais la landing charge uniquement landing.scss : il faut donc les redéclarer ici
+// sinon les liens s'affichent en bleu par défaut du navigateur.
+.app-footer__legal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+// Lien légal — très discret, crème atténué, sans soulignement
+.footer-legal-link {
+  font-size: 0.68rem;
+  color: rgba(253, 246, 227, 0.25); // Quasi invisible au repos
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
+
+  // S'éclaircit en doré au survol, sans jamais devenir trop visible
+  &:hover {
+    color: rgba(240, 201, 122, 0.55);
+    text-decoration: none;
+  }
+}
+
+// Séparateur "·" entre les liens légaux — encore plus discret
+.footer-legal-sep {
+  font-size: 0.6rem;
+  color: rgba(253, 246, 227, 0.12);
+  line-height: 1;
+}
+
 // ── Animations globales ───────────────────────────────────────
 
 // fadeUp — apparition depuis le bas, utilisé sur tous les éléments du hero

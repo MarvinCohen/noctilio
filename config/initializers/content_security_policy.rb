@@ -45,7 +45,13 @@ Rails.application.configure do
   # Génère un nonce unique par requête pour les scripts inline autorisés
   # Le nonce est un token aléatoire que Rails injecte dans les balises <script> légitimes
   # Si un script n'a pas ce nonce, le navigateur le bloque
-  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  #
+  # IMPORTANT : on utilise SecureRandom (et NON request.session.id).
+  # session.id est VIDE pour un visiteur anonyme sans session encore créée
+  # (ex : premier arrivage sur la landing) → le nonce devenait "" → tous les
+  # scripts inline (étoiles, curseur, lune) étaient bloqués par la CSP.
+  # SecureRandom garantit un nonce non-vide à chaque requête.
+  config.content_security_policy_nonce_generator = ->(_request) { SecureRandom.base64(16) }
 
   # Applique le nonce uniquement aux scripts (les styles utilisent :unsafe_inline à cause de Bootstrap)
   config.content_security_policy_nonce_directives = %w[script-src]
