@@ -17,16 +17,58 @@ export default class extends Controller {
     redirect: String   // URL vers laquelle rediriger quand c'est prêt
   }
 
+  // Cible facultative : le paragraphe où afficher les messages de progression
+  static targets = ["message"]
+
   connect() {
     // Démarre le polling avec un délai initial de 2 secondes
     // Délai courant en ms — commence à 2s, double à chaque tentative (max 16s)
     this.currentDelay = 2000
     this.scheduleNextPoll()
+
+    // Lance la rotation des messages de progression (réduit la sensation d'attente)
+    this.startMessageRotation()
   }
 
   disconnect() {
     // Annule le prochain poll planifié quand on quitte la page (évite les memory leaks)
     this.stopPolling()
+    // Arrête aussi la rotation des messages
+    this.stopMessageRotation()
+  }
+
+  // ── Rotation des messages de génération ──
+  // Fait défiler des messages évocateurs ("L'histoire s'écrit...", etc.) toutes
+  // les 3,5s pendant que l'IA travaille — l'attente paraît plus courte qu'avec
+  // un simple spinner figé. Purement cosmétique (pas lié au vrai statut serveur).
+  startMessageRotation() {
+    // Si la vue ne fournit pas de cible "message", on ne fait rien
+    if (!this.hasMessageTarget) return
+
+    // Messages affichés successivement, dans l'ordre logique de fabrication
+    this.messages = [
+      "✨ L'histoire s'écrit...",
+      "🖋️ Les personnages prennent vie...",
+      "🎨 L'illustration se dessine...",
+      "📖 On relit une dernière fois..."
+    ]
+    this.messageIndex = 0
+    this.messageTarget.textContent = this.messages[0] // affiche le 1er tout de suite
+
+    // Toutes les 3,5s : fondu sortant → change le texte → fondu entrant
+    this.messageInterval = setInterval(() => {
+      this.messageIndex = (this.messageIndex + 1) % this.messages.length
+      this.messageTarget.style.opacity = "0"
+      setTimeout(() => {
+        this.messageTarget.textContent = this.messages[this.messageIndex]
+        this.messageTarget.style.opacity = "1"
+      }, 300) // doit correspondre à la durée de transition CSS
+    }, 3500)
+  }
+
+  // Arrête la rotation des messages (appelé à la déconnexion du controller)
+  stopMessageRotation() {
+    if (this.messageInterval) clearInterval(this.messageInterval)
   }
 
   // Planifie le prochain poll avec le délai courant (backoff exponentiel)

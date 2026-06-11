@@ -41,6 +41,15 @@
     font-weight: 300;
     margin-bottom: 0.75rem;
   }
+  /* Message de progression rotatif — doré, transition d'opacité pour le fondu */
+  /* La durée (0.3s) doit correspondre au setTimeout de story_status_controller */
+  .story-generating-message {
+    color: #f0c97a;
+    font-size: 1.05rem;
+    margin-bottom: 0.75rem;
+    min-height: 1.4em; /* évite que la mise en page saute entre deux messages */
+    transition: opacity 0.3s ease;
+  }
   .story-generating-hint { color: #8a8578; margin-bottom: 2rem; }
   /* Barre de progression — fond mist, remplissage doré animé */
   .story-progress-bar {

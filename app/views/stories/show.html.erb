@@ -23,6 +23,13 @@
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
           </span>
           <h1 class="story-generating-title">La magie opère...</h1>
+
+          <%# Message de progression rotatif — animé par story_status_controller %>
+          <%# Donne l'impression que les étapes avancent (texte, illustration…) %>
+          <p class="story-generating-message" data-story-status-target="message">
+            ✨ L'histoire s'écrit...
+          </p>
+
           <p class="story-generating-hint">
             Votre histoire est en cours de création.<br>
             Cela prend généralement 15 à 30 secondes.
