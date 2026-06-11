@@ -82,6 +82,7 @@ POST /stories             → lance GenerateStoryJob
 GET  /stories/:id         → lecture + choix interactifs
 GET  /stories/:id/status  → polling JSON du statut (Stimulus)
 POST /stories/:id/choose  → enregistre un choix interactif
+GET  /histoire/:token     → partage public d'une histoire (lecture seule, token signé) — helper : shared_story_path
 GET  /children            → liste des profils enfants
 GET  /parental            → dashboard parental (stats)
 GET  /trophees            → salle des trophées (badges + XP) — helper : trophy_room_path
@@ -155,9 +156,13 @@ bibliothèque (bookworm, story_keeper)
 ## Stimulus controllers
 
 - `story_status_controller` — polling du statut de génération (toutes les 2s)
+  - Targets : message (paragraphe de messages progressifs pendant la génération)
 - `badge_reveal_controller` — révèle/replie les badges au-delà de la limite (8 par défaut)
   - Targets : item, btnMore, btnLess
   - Value : limit (default: 8)
+- `share_controller` — copie le lien public d'une histoire dans le presse-papier
+  - Targets : button
+  - Value : url (lien signé à copier)
 
 ## SEO
 
@@ -193,7 +198,7 @@ Quand `/` sera protégé par Devise et redirigera vers `/users/sign_in`, il faud
 
 ## Tests (Minitest)
 
-Suite complète : 180 tests, 0 failures, 0 errors
+Suite complète : 186 tests, 0 failures, 0 errors
 
 Fichiers de test :
 - `test/models/badge_test.rb` — 31 tests sur les 37 badges
