@@ -102,6 +102,69 @@
           </div>
         <% end %>
 
+        <%# ── ILLUSTRATION — image du moment clé, placée sous le titre ── %>
+        <%# Remontée ici (au lieu de la fin) pour l'effet "livre illustré" : %>
+        <%# le lecteur voit l'image dès le début, avant de lire le texte. %>
+        <div class="story-illustration-section">
+          <div class="story-illustration-label">✦ L'illustration de ton aventure</div>
+
+          <%# CAS 1 : l'image est déjà disponible %>
+          <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
+            <% image_src = @story.cover_image.attached? ? url_for(@story.cover_image) : @story.cover_image_url %>
+            <div class="story-illustration-wrapper">
+              <div class="story-illustration-skeleton" id="story-illustration-skeleton">
+                <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
+                <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
+              </div>
+              <%# L'image démarre cachée — un script nonce l'affiche après chargement %>
+              <%# On utilise un script nonce (au lieu de onload inline) car la CSP bloque %>
+              <%# les handlers inline (onload=, onerror=) sans 'unsafe-inline' %>
+              <%= image_tag image_src,
+                    alt:   "Illustration de #{@story.title}",
+                    class: "story-illustration-img",
+                    id:    "story-cover-img-#{@story.id}",
+                    style: "display:none" %>
+            </div>
+            <script nonce="<%= content_security_policy_nonce %>">
+              (function() {
+                // Récupère l'image et le skeleton par leur ID unique (évite les conflits si plusieurs histoires)
+                var img      = document.getElementById('story-cover-img-<%= @story.id %>');
+                var skeleton = document.getElementById('story-illustration-skeleton');
+                if (!img) return;
+
+                // Quand l'image est chargée : l'affiche et cache le skeleton
+                img.addEventListener('load', function() {
+                  img.style.display = 'block';
+                  if (skeleton) skeleton.style.display = 'none';
+                });
+
+                // Si l'image est déjà chargée (cache navigateur), déclenche manuellement
+                if (img.complete && img.naturalWidth > 0) {
+                  img.style.display = 'block';
+                  if (skeleton) skeleton.style.display = 'none';
+                }
+
+                // En cas d'erreur : affiche un message discret dans le skeleton
+                img.addEventListener('error', function() {
+                  if (skeleton) skeleton.innerHTML = '<p style="color:#8a8578;font-size:0.8rem;">Illustration non disponible</p>';
+                });
+              })();
+            </script>
+
+          <%# CAS 2 : l'image n'est pas encore prête — story_image_controller poll /status %>
+          <% else %>
+            <div class="story-illustration-wrapper"
+                 data-controller="story-image"
+                 data-story-image-status-url-value="<%= status_story_path(@story) %>"
+                 data-story-image-alt-value="Illustration de <%= @story.title %>">
+              <div class="story-illustration-skeleton">
+                <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
+                <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
         <%# ── Contenu de l'histoire ── %>
         <%# data-story-reader-target="text" : utilisé par story_choice_controller pour insérer la continuation %>
         <div class="story-content-wrapper"
@@ -305,68 +368,6 @@
             <% end %>
           </div>
         <% end %>
-
-        <%# ── ILLUSTRATION DE FIN — image du moment clé de l'histoire ── %>
-        <%# Placée à la fin pour l'effet "récompense" après la lecture %>
-        <div class="story-illustration-section">
-          <div class="story-illustration-label">✦ L'illustration de ton aventure</div>
-
-          <%# CAS 1 : l'image est déjà disponible %>
-          <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
-            <% image_src = @story.cover_image.attached? ? url_for(@story.cover_image) : @story.cover_image_url %>
-            <div class="story-illustration-wrapper">
-              <div class="story-illustration-skeleton" id="story-illustration-skeleton">
-                <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
-                <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
-              </div>
-              <%# L'image démarre cachée — un script nonce l'affiche après chargement %>
-              <%# On utilise un script nonce (au lieu de onload inline) car la CSP bloque %>
-              <%# les handlers inline (onload=, onerror=) sans 'unsafe-inline' %>
-              <%= image_tag image_src,
-                    alt:   "Illustration de #{@story.title}",
-                    class: "story-illustration-img",
-                    id:    "story-cover-img-#{@story.id}",
-                    style: "display:none" %>
-            </div>
-            <script nonce="<%= content_security_policy_nonce %>">
-              (function() {
-                // Récupère l'image et le skeleton par leur ID unique (évite les conflits si plusieurs histoires)
-                var img      = document.getElementById('story-cover-img-<%= @story.id %>');
-                var skeleton = document.getElementById('story-illustration-skeleton');
-                if (!img) return;
-
-                // Quand l'image est chargée : l'affiche et cache le skeleton
-                img.addEventListener('load', function() {
-                  img.style.display = 'block';
-                  if (skeleton) skeleton.style.display = 'none';
-                });
-
-                // Si l'image est déjà chargée (cache navigateur), déclenche manuellement
-                if (img.complete && img.naturalWidth > 0) {
-                  img.style.display = 'block';
-                  if (skeleton) skeleton.style.display = 'none';
-                }
-
-                // En cas d'erreur : affiche un message discret dans le skeleton
-                img.addEventListener('error', function() {
-                  if (skeleton) skeleton.innerHTML = '<p style="color:#8a8578;font-size:0.8rem;">Illustration non disponible</p>';
-                });
-              })();
-            </script>
-
-          <%# CAS 2 : l'image n'est pas encore prête — story_image_controller poll /status %>
-          <% else %>
-            <div class="story-illustration-wrapper"
-                 data-controller="story-image"
-                 data-story-image-status-url-value="<%= status_story_path(@story) %>"
-                 data-story-image-alt-value="Illustration de <%= @story.title %>">
-              <div class="story-illustration-skeleton">
-                <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
-                <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
-              </div>
-            </div>
-          <% end %>
-        </div>
 
         <%# ── PARTAGE — lien public en lecture seule (acquisition) ── %>
         <%# Affiché uniquement pour une histoire terminée. %>
