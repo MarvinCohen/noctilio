@@ -225,6 +225,29 @@
     transition: color 0.15s ease;
   }
   .sub-back-link:hover { color: #f0c97a; text-decoration: none; }
+
+  /* ── Responsive mobile (≤ 576px, cible iPhone SE 375px) ── */
+  /* La page n'avait aucun breakpoint : sur petit écran la carte et le tableau */
+  /* comparatif étaient trop serrés. On réduit paddings et tailles de police. */
+  @media (max-width: 576px) {
+    .sub-page { padding: 2rem 0 4rem; }
+    .sub-hero { margin-bottom: 2rem; }
+    .sub-hero-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    /* Carte — moins de padding et coins un peu moins arrondis */
+    .sub-card { padding: 1.5rem; border-radius: 18px; }
+
+    /* Prix — réduit pour ne pas déborder sur petit écran */
+    .sub-price-amount { font-size: 3.5rem; }
+
+    /* Titres de section (comparatif, FAQ) — un cran plus petits */
+    .sub-section-title { font-size: 1.5rem; }
+
+    /* Tableau comparatif — cellules plus compactes pour tenir sur 3 colonnes */
+    .sub-compare-table th,
+    .sub-compare-table td { padding: 0.6rem 0.5rem; font-size: 0.82rem; }
+    .sub-compare-table thead th { font-size: 0.75rem; }
+  }
 </style>
 
 <div class="container sub-page">
