@@ -126,8 +126,14 @@ class ImageGeneratorService
     # Base : artefacts visuels communs + hoodie non demandé (FLUX l'hallucine souvent)
     # On bloque aussi tout ce qui vieillit le héros : un enfant aux cheveux clairs
     # ne doit JAMAIS être rendu comme un adulte ou une personne âgée.
+    # Anti-artefacts mains/armes : FLUX rate souvent les mains et les épées
+    # (épée dédoublée, garde à l'envers, lame coupée en deux). On bloque ces défauts
+    # explicitement car les thèmes d'action passent par FLUX si gpt-image-1 échoue.
     negative = "blurry, low quality, deformed, ugly, bad anatomy, watermark, text, hoodie, sweatshirt, " \
-               "elderly, old man, old woman, adult, grown-up, wrinkles, aged face, beard, mustache"
+               "elderly, old man, old woman, adult, grown-up, wrinkles, aged face, beard, mustache, " \
+               "extra fingers, missing fingers, fused fingers, extra hands, deformed hands, malformed hands, " \
+               "double sword, two swords, extra blades, broken sword, malformed weapon, floating weapon, " \
+               "extra limbs, duplicated limbs, disconnected limbs"
 
     # Négatifs spécifiques au style choisi
     # Pour watercolor : on bloque explicitement les styles anime/CGI qui dominent sinon
@@ -241,19 +247,59 @@ class ImageGeneratorService
   end
 
   # ============================================================
-  # Construction du prompt image — approche "Portrait du héros"
+  # Construction du prompt image — approche "Portrait du héros" (hybride)
   # ============================================================
   # OBJECTIF : l'enfant doit SE RECONNAÎTRE sur l'illustration pour s'identifier
-  # au héros de son histoire du soir. On privilégie donc un PORTRAIT centré
-  # (visage visible, expression douce) plutôt qu'une scène d'action où le
-  # personnage est minuscule et méconnaissable.
+  # au héros de son histoire du soir. On garde donc TOUJOURS l'enfant grand et
+  # reconnaissable (visage net), jamais minuscule comme dans une scène d'action large.
+  #
+  # Deux cadrages selon le thème :
+  #   - PORTRAIT (par défaut) : enfant centré, décor doux et flou. Idéal pour les
+  #     thèmes calmes (princesses, animaux...) et pour l'ambiance du coucher.
+  #   - SCÈNE HÉROÏQUE (thèmes d'action/mecha) : enfant au premier plan, brave,
+  #     mais la scène d'aventure (robot, combat...) l'entoure. On garde le
+  #     spectacle SANS rendre l'enfant petit ou caché derrière un casque.
   #
   # Le prompt est construit de façon DÉTERMINISTE en Ruby (pas d'appel IA
   # intermédiaire qui réécrit et perd des traits) :
   #   - héros : Child#image_description (âge + peau + cheveux + yeux + prénom)
-  #   - décor : background_setting (thème de l'histoire, flou en arrière-plan)
+  #   - décor : background_setting / action_scene selon le thème
   #   - style : STYLE_REFS selon image_style
   # Avantages : reproductible, testable, moins cher, pas de trait oublié.
+
+  # ── Mots-clés détectant un thème d'ACTION dans le thème libre (custom_theme) ──
+  # Si l'un d'eux est présent, on bascule sur le cadrage "scène héroïque" au lieu
+  # du portrait calme. On ne scanne QUE le thème libre saisi par le parent (intention
+  # explicite), pas le texte de l'histoire — pour rester prévisible et éviter qu'un
+  # simple mot d'action dans un conte doux fasse basculer le rendu.
+  ACTION_THEME_KEYWORDS = %w[
+    robot robots mecha gundam combat bataille guerre épée epee sword
+    dragon vaisseau spaceship monstre monster envahisseur invader
+    ninja pirate attaque laser explosion bouclier armure chevalier knight
+  ].freeze
+
+  # ── Adoucisseurs de violence (FR + EN) ────────────────────────────────────
+  # La modération d'OpenAI (gpt-image-1) rejette en 400 les prompts contenant des
+  # verbes violents comme "combat", "tue", "détruit" (safety_violations=[violence]),
+  # ce qui nous fait retomber sur FLUX (bien moins bon sur les mains et les armes).
+  # On remplace donc ces mots par des équivalents héroïques NON violents AVANT
+  # d'injecter la scène dans le prompt. La détection du thème (action_theme?) reste
+  # faite sur le thème ORIGINAL : on adoucit seulement le rendu, pas la catégorisation.
+  # Clé = motif (insensible à la casse, bornes de mot), valeur = remplacement.
+  VIOLENCE_SOFTENERS = {
+    /\bcombat(?:tre|s|tant)?\b/i => "affronte courageusement",
+    /\battaqu(?:e|er|ent|ant)\b/i => "affronte",
+    /\btu(?:e|er|ent)\b/i => "arrête",
+    /\bdétrui(?:re|t|sent)\b/i => "repousse",
+    /\bfrapp(?:e|er|ent)\b/i => "défie",
+    /\bguerre\b/i => "grande aventure",
+    /\bfight(?:s|ing)?\b/i => "bravely faces",
+    /\bbattl(?:e|es|ing)\b/i => "epic adventure",
+    /\bkill(?:s|ing)?\b/i => "stops",
+    /\bdestroy(?:s|ing)?\b/i => "repels",
+    /\battack(?:s|ing)?\b/i => "faces",
+    /\bwar\b/i => "epic adventure"
+  }.freeze
 
   # ── Référence de style visuel selon le style choisi par le parent ──────────
   STYLE_REFS = {
@@ -271,20 +317,37 @@ class ImageGeneratorService
     # traduction sans ambiguïté (ex: cheveux "blanc" → "platinum white-blonde").
     heroes = @story.all_children.map(&:image_description).join(" and ")
 
-    # Décor : monde de l'histoire, rendu doux et flou en arrière-plan (bokeh)
-    setting = background_setting
-
     # Style visuel choisi par le parent (aquarelle par défaut — doux pour le coucher)
     style = STYLE_REFS[@story.image_style.presence || "watercolor"] || STYLE_REFS["watercolor"]
 
-    # Composition PORTRAIT : enfant centré, visage net, buste visible, expression
-    # heureuse et douce. Le décor reste flou pour ne pas voler la vedette au héros.
-    composition = "Warm character portrait, the child centered in the frame, " \
-                  "face clearly visible with a gentle happy expression, upper body shown, " \
-                  "looking softly toward the viewer. Background: #{setting}, soft and blurred (bokeh). " \
-                  "Warm golden bedtime lighting, cozy magical storybook atmosphere, child-safe."
-
-    prompt = "A portrait of #{heroes}. #{composition} Art style: #{style}."
+    # Cadrage HYBRIDE : scène héroïque si thème d'action, portrait calme sinon.
+    # Dans les deux cas l'enfant reste GRAND et reconnaissable (visage net).
+    if action_theme?
+      # Scène d'ACTION épique : l'enfant vit la scène (pilote son mecha, combat...).
+      # On veut le spectacle (bataille de robots, énergie) MAIS le visage de l'enfant
+      # doit rester net et reconnaissable — pas un perso minuscule comme avant.
+      # Si le héros pilote un engin : visage visible en gros plan dans le cockpit.
+      # NB : on évite les mots qui déclenchent la modération OpenAI ("gore", "scary",
+      # "fight", "blood"...) sinon gpt-image-1 renvoie une 400 et on retombe sur FLUX,
+      # nettement moins bon sur les mains et les armes (épées difformes, etc.).
+      # Les verbes violents du thème libre sont déjà adoucis par custom_scene.
+      # On évite aussi la négation "no blood" : la modération réagit au mot "blood"
+      # même nié — on emploie un vocabulaire positif ("child-safe", "wholesome").
+      composition = "Epic cinematic action scene of #{action_scene}. " \
+                    "The child is the hero, prominently featured and clearly recognizable, face clearly visible " \
+                    "(if piloting a mecha or vehicle, show the child's face up close through the cockpit canopy; " \
+                    "otherwise show the child in a full dynamic heroic pose). " \
+                    "Thrilling dynamic adventure composition filling the frame, epic heroic energy, sparks and motion, " \
+                    "dramatic sky and lighting, child-safe, wholesome family adventure. Magical heroic storybook adventure."
+      prompt = "An epic action illustration featuring #{heroes}. #{composition} Art style: #{style}."
+    else
+      # Portrait calme : enfant centré, décor du thème flou en arrière-plan.
+      composition = "Warm character portrait, the child centered in the frame, " \
+                    "face clearly visible with a gentle happy expression, upper body shown, " \
+                    "looking softly toward the viewer. Background: #{background_setting}, soft and blurred (bokeh). " \
+                    "Warm golden bedtime lighting, cozy magical storybook atmosphere, child-safe."
+      prompt = "A portrait of #{heroes}. #{composition} Art style: #{style}."
+    end
 
     # Garantie peau ébène : FLUX/gpt-image-1 ignorent souvent la peau très foncée.
     # On la réaffirme en TÊTE de prompt (premiers tokens = plus de poids).
@@ -299,14 +362,23 @@ class ImageGeneratorService
     prompt
   end
 
+  # Retourne true si le thème libre (custom_theme) évoque une aventure d'action
+  # (robot, combat, dragon...). Déclenche le cadrage "scène héroïque".
+  def action_theme?
+    text = @story.custom_theme.to_s.downcase
+    return false if text.blank?
+
+    ACTION_THEME_KEYWORDS.any? { |kw| text.include?(kw) }
+  end
+
   # ============================================================
-  # Décor d'arrière-plan selon le thème de l'histoire
+  # Décor d'arrière-plan (cadrage PORTRAIT) selon le thème
   # ============================================================
   # Retourne une courte description anglaise du monde de l'histoire, qui servira
-  # d'arrière-plan FLOU derrière le portrait du héros. Un thème libre (custom_theme)
-  # est utilisé tel quel ; sinon on mappe le world_theme vers un décor adapté.
+  # d'arrière-plan FLOU derrière le portrait du héros. Un thème libre est nettoyé
+  # (via custom_scene) ; sinon on mappe le world_theme vers un décor adapté.
   def background_setting
-    return @story.custom_theme.to_s.strip if @story.custom_theme.present?
+    return custom_scene if @story.custom_theme.present?
 
     {
       "space" => "a colorful cosmic space scene with stars, planets and a friendly rocket",
@@ -315,6 +387,29 @@ class ImageGeneratorService
       "pirates" => "a wooden pirate ship deck with the ocean and a golden sunset",
       "animals" => "a magical forest glade with friendly woodland animals"
     }.fetch(@story.world_theme.to_s, "a magical enchanted landscape")
+  end
+
+  # Décor de la SCÈNE HÉROÏQUE : on s'appuie sur le thème libre saisi par le parent.
+  def action_scene
+    custom_scene.presence || "an epic adventure with the hero facing a thrilling challenge"
+  end
+
+  # Nettoie le thème libre avant injection dans le prompt :
+  #   - retire le prénom du héros en tête (évite "Gégé est... un portrait de Gégé")
+  #   - adoucit les verbes violents (sinon gpt-image-1 rejette en 400 → fallback FLUX)
+  #   - retire la ponctuation finale
+  # NOTE : le texte reste en FRANÇAIS — gpt-image-1 le comprend, mais une vraie
+  # traduction nécessiterait un appel IA qu'on a justement voulu supprimer.
+  def custom_scene
+    text = @story.custom_theme.to_s.strip
+    # Retire un éventuel "Prénom est/était ..." au début (le héros est déjà décrit)
+    names = @story.all_children.map(&:name).reject(&:blank?)
+    names.each do |n|
+      text = text.sub(/\A#{Regexp.escape(n)}\s+(est|était|es|c'est)\s+/i, "")
+    end
+    # Adoucit les verbes violents pour passer la modération OpenAI
+    VIOLENCE_SOFTENERS.each { |pattern, replacement| text = text.gsub(pattern, replacement) }
+    text.sub(/[.…]+\z/, "").strip
   end
 
   # ============================================================
