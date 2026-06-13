@@ -352,7 +352,6 @@ class StoriesController < ApplicationController
       status: :pending,
       content: nil,
       title: nil,
-      image_scene_prompt: nil,
       image_prompt: nil,
       cover_image_url: nil
     )

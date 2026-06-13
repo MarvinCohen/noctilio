@@ -101,15 +101,23 @@
   /* Option B choisie : gradient doré animé (shimmer) */
   .story-btn-primary {
     display: inline-flex; align-items: center;
-    padding: 0.6rem 1.5rem;
-    background: #f0c97a;
+    padding: 0.7rem 1.6rem;
+    /* Dégradé doré (clair → soft) au lieu d'un aplat — donne du relief */
+    background: linear-gradient(135deg, #f5d595, #e8b95a);
     color: #0b0e1a;
     border: none; border-radius: 50px;
     font-weight: 700; font-size: 0.9rem;
     text-decoration: none;
-    transition: opacity 0.2s ease;
+    /* Halo doré discret pour faire "ressortir" le bouton sur le fond nuit */
+    box-shadow: 0 4px 14px rgba(240, 201, 122, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
-  .story-btn-primary:hover { opacity: 0.88; color: #0b0e1a; text-decoration: none; }
+  /* Au survol : le bouton se soulève et le halo s'intensifie (effet premium) */
+  .story-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 22px rgba(240, 201, 122, 0.45);
+    color: #0b0e1a; text-decoration: none;
+  }
   .story-btn-secondary {
     display: inline-flex; align-items: center;
     padding: 0.55rem 1.3rem;
@@ -117,11 +125,13 @@
     border: 1px solid rgba(240, 201, 122, 0.35);
     border-radius: 50px; font-size: 0.85rem;
     text-decoration: none;
-    transition: background 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   }
   .story-btn-secondary:hover {
     background: rgba(240, 201, 122, 0.08);
     border-color: rgba(240, 201, 122, 0.6);
+    /* Léger soulèvement pour s'aligner sur les CTAs dorées */
+    transform: translateY(-2px);
     color: #f0c97a; text-decoration: none;
   }
   .story-btn-success {
@@ -141,26 +151,34 @@
     border: 1px solid rgba(240, 201, 122, 0.3);
     border-radius: 50px; font-size: 0.85rem;
     cursor: pointer; font-weight: 600;
-    transition: background 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease;
   }
-  .story-btn-warning:hover { background: rgba(240, 201, 122, 0.25); }
+  /* Survol : fond doré un peu plus marqué + léger soulèvement */
+  .story-btn-warning:hover {
+    background: rgba(240, 201, 122, 0.25);
+    transform: translateY(-2px);
+  }
   .story-btn-warning[type="submit"] { appearance: none; -webkit-appearance: none; }
 
-  /* Bouton "Continuer l'aventure" — doré plein, sans animation */
+  /* Bouton "Continuer l'aventure" — CTA principale, dégradé doré + halo */
   .story-btn-continue {
     display: inline-flex; align-items: center;
-    padding: 0.55rem 1.3rem;
-    background: #f0c97a;
+    padding: 0.7rem 1.5rem;
+    /* Même traitement premium que .story-btn-primary : dégradé doré */
+    background: linear-gradient(135deg, #f5d595, #e8b95a);
     color: #0b0e1a;
     border: none;
     border-radius: 50px; font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
-    transition: opacity 0.2s ease;
+    box-shadow: 0 4px 14px rgba(240, 201, 122, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
+  /* Survol : soulèvement + halo renforcé (cohérent avec .story-btn-primary) */
   .story-btn-continue:hover {
-    opacity: 0.88;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 22px rgba(240, 201, 122, 0.45);
     color: #0b0e1a; text-decoration: none;
   }
   .story-btn-continue[type="submit"] { appearance: none; -webkit-appearance: none; }

@@ -1,3 +1,34 @@
+# ============================================================
+# Refonte image : approche "Portrait du héros" (branche feature/image-portrait)
+# ============================================================
+
+## Objectif (image)
+L'enfant doit SE RECONNAÎTRE sur l'illustration pour s'identifier au héros au coucher.
+On passe d'un prompt "scène d'action épique" (perso minuscule, mal cadré) à un PORTRAIT
+centré, visage visible, monde de l'histoire en arrière-plan doux. On simplifie aussi le
+pipeline : prompt construit en Ruby (déterministe), sans appel Groq intermédiaire.
+
+## Fichiers impactés (image)
+- app/models/child.rb — meilleure traduction couleurs (cheveux/yeux/peau)
+- app/services/image_generator_service.rb — nouveau build_image_prompt portrait + nettoyage
+- app/services/story_generator_service.rb — suppression de generate_image_scene_prompt
+- app/jobs/generate_story_job.rb — suppression de l'étape Groq image_scene_prompt
+- app/assets/stylesheets/pages/_stories.scss — cadrage portrait (déjà ajusté)
+
+## Étapes (image)
+- [x] child.rb : tables de traduction cheveux/yeux/peau + image_description = clause portrait
+- [x] image_generator_service.rb : build_image_prompt déterministe (portrait + décor + style)
+- [x] image_generator_service.rb : supprimer code mort (ACTION_KEYWORDS, PILOT_KEYWORDS, extract_key_moment, STYLE_KEYWORDS, VISUAL_STYLE*)
+- [x] image_generator_service.rb : négatifs "elderly/adult" sur le chemin fal.ai
+- [x] story_generator_service.rb : supprimer generate_image_scene_prompt
+- [x] generate_story_job.rb : retirer l'appel Groq image_scene, garder reload + ImageGeneratorService
+- [x] Suite de tests (186 runs, 0 failures)
+- [ ] Régénérer une image de test pour comparer le rendu
+
+# ============================================================
+# (Ancien plan — commercialisation, terminé)
+# ============================================================
+
 ## Objectif
 
 Préparer Noctilio à la commercialisation (hors quotas — gardés désactivés pour les

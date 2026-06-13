@@ -65,33 +65,36 @@ class Child < ApplicationRecord
     parts.join(", ")
   end
 
-  # Description physique précise pour le prompt image — en anglais pour FLUX/DALL-E
-  # Les modèles de diffusion répondent mieux aux descriptions physiques en anglais
+  # Clause descriptive du héros pour le prompt image — en anglais pour gpt-image-1/FLUX
+  # Forme : "a young 10-year-old boy with warm brown skin, platinum white-blonde hair
+  #          and light blue eyes, named Gégé, wearing a red cape"
+  # Objectif : que l'enfant SE RECONNAISSE sur l'illustration. On insiste donc sur
+  # l'âge (proportions enfantines) et on traduit chaque couleur en anglais sans
+  # ambiguïté (ex: "blanc" → "platinum white-blonde", pas "white" qui fait vieux).
   def image_description
-    parts = ["#{name}, #{age} year old #{gender_label_en}"]
+    # Toujours commencer par l'âge : ancre les proportions enfantines du modèle
+    clause = "a young #{age}-year-old #{gender_label_en}"
 
-    # Caractéristiques physiques — placées EN PREMIER car les modèles leur donnent plus de poids
-    parts << "blonde hair"                        if hair_color&.match?(/blond/i)
-    parts << "#{hair_color} hair"                 if hair_color.present? && !hair_color.match?(/blond/i)
-    parts << "green eyes"                         if eye_color&.match?(/vert/i)
-    parts << "#{eye_color} eyes"                  if eye_color.present? && !eye_color.match?(/vert/i)
-    # Traduit la couleur de peau en anglais précis pour le modèle de diffusion
-    if skin_tone.present?
-      parts << case skin_tone.downcase
-               when /éb[eè]ne|noir|très.?foncé/ then "very dark black ebony skin"
-               when /foncé|brun.?foncé/          then "dark brown skin"
-               when /métis|mixed|caramel|doré/   then "warm golden brown mixed skin"
-               when /olive|mat|mediterran/        then "olive mediterranean skin"
-               when /clair|fair|blanc/            then "fair light skin"
-               when /rose|pale/                   then "pale rosy skin"
-               else "#{skin_tone} skin"
-               end
+    # Peau : juste après l'âge, en anglais précis
+    clause += " with #{skin_tone_en} skin" if skin_tone.present?
+
+    # Cheveux + yeux regroupés dans une formulation naturelle
+    features = []
+    features << "#{hair_color_en} hair" if hair_color.present?
+    features << "#{eye_color_en} eyes"  if eye_color.present?
+    # "with X skin, Y hair and Z eyes" si peau présente, sinon "with Y hair and Z eyes"
+    if features.any?
+      connector = skin_tone.present? ? ", " : " with "
+      clause += "#{connector}#{features.join(' and ')}"
     end
 
-    # Accessoires et vêtements caractéristiques depuis la description libre
-    parts << child_description if child_description.present?
+    # Prénom — aide à individualiser le personnage
+    clause += ", named #{name}"
 
-    parts.join(", ")
+    # Accessoires / vêtements caractéristiques (description libre du parent)
+    clause += ", #{child_description}" if child_description.present?
+
+    clause
   end
 
   private
@@ -111,6 +114,50 @@ class Child < ApplicationRecord
     when "boy"   then "boy"
     when "girl"  then "girl"
     else "child"
+    end
+  end
+
+  # ── Traductions des couleurs FR → EN (sans ambiguïté pour le modèle d'image) ──
+
+  # Cheveux : "blanc/gris" → "platinum white-blonde" pour éviter l'effet "personne âgée".
+  # Un enfant aux cheveux clairs doit rester un enfant (blond platine, pas vieillard).
+  def hair_color_en
+    case hair_color.to_s.downcase
+    when /blanc|gris|argent/                 then "platinum white-blonde"
+    when /blond/                              then "blonde"
+    when /ch[aâ]tain\s*clair/                 then "light brown"
+    when /ch[aâ]tain|marron|brun/             then "brown"
+    when /noir/                               then "jet black"
+    when /roux|rousse|red|ginger/             then "ginger red"
+    else hair_color
+    end
+  end
+
+  # Yeux : traduit les libellés français courants en anglais.
+  # "clair" géré avant la couleur de base (ex: "bleu clair" → "light blue").
+  def eye_color_en
+    case eye_color.to_s.downcase
+    when /bleu\s*clair/                       then "light blue"
+    when /bleu/                               then "blue"
+    when /vert/                               then "green"
+    when /noisette/                           then "hazel"
+    when /marron|brun/                        then "warm brown"
+    when /noir/                               then "dark brown"
+    when /gris/                               then "grey"
+    else eye_color
+    end
+  end
+
+  # Peau : traduction nuancée (l'ordre compte — "foncé" avant "brun" simple).
+  def skin_tone_en
+    case skin_tone.to_s.downcase
+    when /éb[eè]ne|noir|très.?foncé/          then "dark ebony"
+    when /brun.?foncé|foncé/                  then "dark brown"
+    when /brun|caramel|métis|mixed|doré/      then "warm brown"
+    when /olive|mat|mediterran/               then "olive"
+    when /clair|blanc|fair|p[aâ]le/           then "fair light"
+    when /rose/                               then "rosy fair"
+    else skin_tone
     end
   end
 end

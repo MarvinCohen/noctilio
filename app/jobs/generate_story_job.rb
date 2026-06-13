@@ -42,7 +42,6 @@ class GenerateStoryJob < ApplicationJob
     # 4. Parser et sauvegarder le contenu généré
     content        = text_result[:content]
     title          = extract_title(content)
-    generator      = StoryGeneratorService.new(story)
 
     story.update!(
       content: content,
@@ -78,14 +77,12 @@ class GenerateStoryJob < ApplicationJob
     GenerateAudioJob.perform_later(story.id)
     Rails.logger.info("GenerateStoryJob — job audio lancé pour story ##{story_id}")
 
-    # Génère l'image dans ce job (thread principal)
-    # On génère d'abord le prompt image via Groq (~3-5s), puis l'illustration (~30-60s)
+    # Génère l'image dans ce job (thread principal).
+    # Le prompt image est désormais construit de façon DÉTERMINISTE en Ruby par
+    # ImageGeneratorService (approche "Portrait du héros") — plus d'appel Groq
+    # intermédiaire : moins de latence, pas de trait physique perdu à la réécriture.
     begin
       story.reload # S'assure que story.content est bien chargé depuis la base
-      image_scene = generator.generate_image_scene_prompt
-      story.update_column(:image_scene_prompt, image_scene) if image_scene.present?
-      Rails.logger.info("GenerateStoryJob — scène image générée : #{image_scene}")
-
       ImageGeneratorService.new(story).call
       Rails.logger.info("GenerateStoryJob — image générée pour story ##{story_id}")
     rescue StandardError => e

@@ -36,64 +36,6 @@ class ImageGeneratorService
   POLLINATIONS_BASE_URL = "https://image.pollinations.ai/prompt"
   POLLINATIONS_MODEL    = "flux-schnell"
 
-  # ----------------------------------------------------------------
-  # Mots-clés d'action pour identifier la scène la plus épique
-  # Défini au niveau classe (pas dans une méthode) — requis par Ruby
-  # ----------------------------------------------------------------
-  ACTION_KEYWORDS = %w[
-    bondit frappe combat affronte attaque charge plonge s'élance surgit
-    jaillit fend tranche transperce explose éclate rugit hurle tonne
-    fonce tourbillonne s'envole bataille affrontement éclair flamme
-    tempête blizzard bourrasque avalanche tornade ouragan foudre orage
-    choc impact lame épée coup poursuite fuir sauter courir
-    vaincre terrasse renverse déchire saisit arrache défend protège
-    danger péril menaçant terrifiant soudain fracas tonitruant grondement
-    s'écroule s'effondre déferle emporte engouffre précipice abîme
-    dévale fonce à toute vitesse ralentit perd contrôle glisse trébuche
-  ].freeze
-
-  # ----------------------------------------------------------------
-  # Style visuel cohérent pour toutes les illustrations de l'app
-  # Optimisé pour FLUX.1 Dev — langage naturel narratif (pas de liste de mots-clés)
-  # Structure FLUX : sujet → action → environnement → lumière → style/mood
-  #
-  # Style : anime semi-réaliste — inspiré des productions Makoto Shinkai (Your Name,
-  # Weathering With You) et des films Ghibli récents. Personnages expressifs avec
-  # proportions réalistes (pas super-déformés), décors ultra-détaillés, lumière
-  # atmosphérique et couleurs vibrantes.
-  # ----------------------------------------------------------------
-  # Style de base — utilisé quand aucun héros n'a la peau ébène
-  VISUAL_STYLE = "semi-realistic anime illustration, " \
-                 "Makoto Shinkai and Studio Ghibli cinematic style, " \
-                 "expressive characters with realistic proportions, " \
-                 "highly detailed painterly backgrounds, " \
-                 "dramatic volumetric lighting with god rays, " \
-                 "vibrant saturated colors with deep shadows, " \
-                 "cinematic widescreen composition, " \
-                 "child-safe, no blood, no gore, action-focused, magical and emotional atmosphere"
-
-  # Style alternatif pour les héros à peau foncée — évite les références Ghibli/Shinkai
-  # qui ont un biais fort vers les tons de peau clairs (personnages est-asiatiques)
-  # On utilise des références qui représentent naturellement des personnages à peau foncée
-  VISUAL_STYLE_DARK_SKIN = "semi-realistic animation illustration, " \
-                           "Spider-Man Into the Spider-Verse and Disney modern animation style, " \
-                           "Black protagonist with dark ebony skin, expressive face, " \
-                           "highly detailed painterly backgrounds, " \
-                           "dramatic volumetric lighting with god rays, " \
-                           "vibrant saturated colors with deep shadows, " \
-                           "cinematic widescreen composition, " \
-                           "child-safe, no blood, no gore, action-focused, magical and emotional atmosphere"
-
-  # Mots-clés indiquant que le héros PILOTE ou MONTE quelque chose
-  # Si détectés dans l'histoire, le héros n'est pas directement dans la mêlée —
-  # il faut montrer le véhicule/monture au premier plan, le héros visible dedans/dessus
-  PILOT_KEYWORDS = %w[
-    pilote pilotait commandes cockpit robot mecha vaisseau
-    spaceship avion dragon cheval monture surf skateboard traineau
-    sous-marin voiture bolide moto bicyclette cerf-volant
-    conduisait chevauchait montait surfait voguait naviguait
-  ].freeze
-
   def initialize(story)
     @story = story
     @child = story.child
@@ -182,7 +124,10 @@ class ImageGeneratorService
     end.uniq
 
     # Base : artefacts visuels communs + hoodie non demandé (FLUX l'hallucine souvent)
-    negative = "blurry, low quality, deformed, ugly, bad anatomy, watermark, text, hoodie, sweatshirt"
+    # On bloque aussi tout ce qui vieillit le héros : un enfant aux cheveux clairs
+    # ne doit JAMAIS être rendu comme un adulte ou une personne âgée.
+    negative = "blurry, low quality, deformed, ugly, bad anatomy, watermark, text, hoodie, sweatshirt, " \
+               "elderly, old man, old woman, adult, grown-up, wrinkles, aged face, beard, mustache"
 
     # Négatifs spécifiques au style choisi
     # Pour watercolor : on bloque explicitement les styles anime/CGI qui dominent sinon
@@ -296,28 +241,21 @@ class ImageGeneratorService
   end
 
   # ============================================================
-  # Construction du prompt image — optimisé FLUX.1 Dev
+  # Construction du prompt image — approche "Portrait du héros"
   # ============================================================
-  # FLUX fonctionne en langage naturel narratif, pas en liste de mots-clés.
-  # Structure optimale : sujet+action → environnement → lumière → style → mood
-  # Longueur idéale : 80-120 mots (assez précis sans noyer le modèle)
+  # OBJECTIF : l'enfant doit SE RECONNAÎTRE sur l'illustration pour s'identifier
+  # au héros de son histoire du soir. On privilégie donc un PORTRAIT centré
+  # (visage visible, expression douce) plutôt qu'une scène d'action où le
+  # personnage est minuscule et méconnaissable.
   #
-  # Ordre de priorité :
-  #   1. image_scene_prompt → prompt COMPLET généré par Groq (StoryGeneratorService)
-  #      Groq connaît l'histoire + l'apparence physique → gère tous les cas (pilote, héros, etc.)
-  #      Dans ce cas, on retourne le prompt directement sans modification
-  #   2. Fallback algorithmique → extract_key_moment + descriptions physiques manuelles
-  # ── Mots-clés par style — pour détecter si Groq a inclus le style dans son prompt ──
-  STYLE_KEYWORDS = {
-    "ghibli" => %w[ghibli shinkai],
-    "comics" => ["spider-verse", "spider verse", "comics", "halftone"],
-    "pixar" => %w[pixar disney],
-    "watercolor" => %w[watercolor storybook hand-painted],
-    # Cinématique : mots-clés larges — si l'un est présent, le style est déjà inclus
-    "cinematic" => %w[cinematic photorealistic blockbuster concept\ art film\ poster]
-  }.freeze
+  # Le prompt est construit de façon DÉTERMINISTE en Ruby (pas d'appel IA
+  # intermédiaire qui réécrit et perd des traits) :
+  #   - héros : Child#image_description (âge + peau + cheveux + yeux + prénom)
+  #   - décor : background_setting (thème de l'histoire, flou en arrière-plan)
+  #   - style : STYLE_REFS selon image_style
+  # Avantages : reproductible, testable, moins cher, pas de trait oublié.
 
-  # ── Référence de style à injecter si Groq l'a omise ──────────────────────────────
+  # ── Référence de style visuel selon le style choisi par le parent ──────────
   STYLE_REFS = {
     "ghibli" => "Makoto Shinkai and Studio Ghibli cinematic animation style, soft watercolor pastels, dreamy atmosphere",
     "comics" => "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors",
@@ -328,178 +266,55 @@ class ImageGeneratorService
   }.freeze
 
   def build_image_prompt
-    # ── Priorité 1 : prompt complet généré par Groq ─────────────────────────
-    # generate_image_scene_prompt (StoryGeneratorService) produit un prompt de 80-120 mots.
-    # On l'utilise comme base, mais on y ajoute TOUJOURS deux garanties :
-    #   1. La couleur de peau foncée en tête de prompt (FLUX ignore sinon)
-    #   2. La référence de style si Groq ne l'a pas incluse
-    if @story.image_scene_prompt.present?
-      prompt = @story.image_scene_prompt
+    # Héros : description physique précise en anglais (âge en tête → proportions
+    # enfantines, puis peau/cheveux/yeux/prénom). image_description gère la
+    # traduction sans ambiguïté (ex: cheveux "blanc" → "platinum white-blonde").
+    heroes = @story.all_children.map(&:image_description).join(" and ")
 
-      # ── Garantie 1 : peau foncée toujours en TÊTE de prompt ────────────────
-      # FLUX accorde plus de poids aux premiers tokens.
-      # Si le héros a la peau ébène et que Groq ne l'a pas mis en premier,
-      # on préfixe avec une emphase forte en majuscules.
-      has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé/i) }
-      if has_dark_skin && !prompt.downcase.start_with?("black child")
-        prompt = "BLACK CHILD WITH VERY DARK EBONY SKIN as main character. #{prompt}"
-      end
+    # Décor : monde de l'histoire, rendu doux et flou en arrière-plan (bokeh)
+    setting = background_setting
 
-      # ── Garantie 2 : style visuel toujours présent ─────────────────────────
-      # Groq suit les règles la plupart du temps, mais oublie parfois d'inclure
-      # la référence de style (ex: écrit "dreamy atmosphere" mais pas "Ghibli").
-      # On détecte l'absence et on ajoute la référence en fin de prompt.
-      chosen_style = @story.image_style.presence || "ghibli"
-      keywords     = STYLE_KEYWORDS[chosen_style] || []
-      prompt_lower = prompt.downcase
+    # Style visuel choisi par le parent (aquarelle par défaut — doux pour le coucher)
+    style = STYLE_REFS[@story.image_style.presence || "watercolor"] || STYLE_REFS["watercolor"]
 
-      unless keywords.any? { |kw| prompt_lower.include?(kw) }
-        style_ref = STYLE_REFS[chosen_style] || STYLE_REFS["ghibli"]
-        prompt += ", #{style_ref}"
-        Rails.logger.info("ImageGeneratorService — style '#{chosen_style}' absent du prompt Groq, ajouté en suffixe")
-      end
+    # Composition PORTRAIT : enfant centré, visage net, buste visible, expression
+    # heureuse et douce. Le décor reste flou pour ne pas voler la vedette au héros.
+    composition = "Warm character portrait, the child centered in the frame, " \
+                  "face clearly visible with a gentle happy expression, upper body shown, " \
+                  "looking softly toward the viewer. Background: #{setting}, soft and blurred (bokeh). " \
+                  "Warm golden bedtime lighting, cozy magical storybook atmosphere, child-safe."
 
-      # Pour les suites d'épisodes : cohérence visuelle avec l'épisode précédent
-      if @story.sequel? && @story.parent_story&.image_prompt.present?
-        parent_style_ref = @story.parent_story.image_prompt.truncate(300)
-        prompt += ", SAME CHARACTER DESIGN AND ART STYLE AS: #{parent_style_ref}, " \
-                  "exact same character appearances, same color palette, same art style, " \
-                  "visual consistency with previous episode"
-      end
+    prompt = "A portrait of #{heroes}. #{composition} Art style: #{style}."
 
-      return prompt
-    end
+    # Garantie peau ébène : FLUX/gpt-image-1 ignorent souvent la peau très foncée.
+    # On la réaffirme en TÊTE de prompt (premiers tokens = plus de poids).
+    has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé/i) }
+    prompt = "BLACK CHILD WITH DARK EBONY SKIN as the main character. #{prompt}" if has_dark_skin
 
-    # ── Priorité 2 : fallback algorithmique (si Groq a échoué) ──────────────
-    # Construit le prompt manuellement à partir des attributs physiques de l'enfant
-    # et du moment d'action extrait du texte.
-    Rails.logger.warn("ImageGeneratorService — image_scene_prompt absent pour story ##{@story.id}, utilisation du fallback algorithmique")
-
-    # Extrait la scène clé du climax de l'histoire (2/3 du texte)
-    key_moment = extract_key_moment
-
-    # Description physique précise de chaque héros
-    # image_description retourne les attributs en anglais avec les physiques EN PREMIER
-    hero_parts = @story.all_children.map(&:image_description)
-    heroes_str = hero_parts.join(" and ")
-
-    # Emphase physique — répétée pour forcer FLUX à la respecter
-    physical_emphasis = @story.all_children.map do |child|
-      attrs = []
-      attrs << "blonde hair"                          if child.hair_color&.match?(/blond/i)
-      attrs << "#{child.hair_color} hair"             if child.hair_color.present? && !child.hair_color.match?(/blond/i)
-      attrs << "bright green eyes"                    if child.eye_color&.match?(/vert/i)
-      attrs << "#{child.eye_color} eyes"              if child.eye_color.present? && !child.eye_color.match?(/vert/i)
-      # Couleur de peau : 2 formulations pour renforcer l'attention du modèle
-      if child.skin_tone.present?
-        skin_en = case child.skin_tone.downcase
-                  when /éb[eè]ne|noir|très.?foncé/ then "very dark black ebony skin"
-                  when /foncé|brun.?foncé/          then "dark brown skin"
-                  when /métis|mixed|caramel|doré/   then "warm golden brown skin"
-                  when /olive|mat/                  then "olive toned skin"
-                  when /clair|fair|blanc/ then "fair light skin"
-                  else "#{child.skin_tone} skin"
-                  end
-        attrs << skin_en
-        attrs << skin_en # Répétition volontaire pour renforcer l'attention du modèle
-      end
-      attrs << child.child_description if child.child_description.present?
-      "#{child.name}: #{attrs.join(', ')}" if attrs.any?
-    end.compact.join(". ")
-
-    # Scène dramatique extraite algorithmiquement (fallback)
-    scene = key_moment.present? ? key_moment.truncate(150) : (@story.custom_theme.presence || "epic adventure scene")
-
-    # Détecte si le héros est PILOTE ou CAVALIER de quelque chose
-    story_text = @story.content.to_s.downcase
-    is_pilot   = PILOT_KEYWORDS.any? { |w| story_text.include?(w) }
-
-    # Extrait le nom du véhicule/robot depuis le texte (pattern : "son robot « NOM »")
-    vehicle_name = story_text.match(/(?:son|sa)\s+(?:robot|vaisseau|dragon|cheval|mecha?)\s+[«"]([^»"]+)[»"]/i)
-                             &.captures&.first&.capitalize
-
-    # has_very_dark_skin : peau ébène/noir uniquement → préfixe "BLACK CHILD WITH VERY DARK EBONY SKIN"
-    # Ce préfixe est réservé aux peaux ébène car FLUX les ignore fortement sans renforcement.
-    # Pour "brun foncé" (dark brown), le préfixe serait inexact et forcerait un résultat trop sombre.
-    has_very_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé/i) }
-
-    # has_dark_skin : inclut aussi brun foncé → change le style visuel (Spider-Verse vs Ghibli)
-    # Spider-Verse représente mieux les personnages à peau foncée que les références est-asiatiques Ghibli
-    has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé|brun.?foncé/i) }
-
-    visual_style = has_dark_skin ? VISUAL_STYLE_DARK_SKIN : VISUAL_STYLE
-    skin_first   = has_very_dark_skin ? "BLACK CHILD WITH VERY DARK EBONY SKIN as main character. " : ""
-
-    # Construction du prompt selon le rôle du héros
-    prompt = if is_pilot
-               # Pilote : le combat du véhicule prime sur l'apparence du héros
-               vehicle_desc = vehicle_name ? "a giant robot named #{vehicle_name}" : "a giant mecha robot"
-               "TWO GIANT ROBOTS IN EPIC BATTLE in the foreground — #{vehicle_desc} vs enemy robot, " \
-                 "massive scale mechanical combat, sparks flying, dynamic clash, " \
-                 "small cockpit window showing #{@story.all_children.map(&:name).join(' and ')} (#{physical_emphasis}) piloting inside. " \
-                 "SCENE: #{scene}. #{visual_style}, dramatic rim light, motion blur, giant robots battling"
-             else
-               # Héros direct : l'apparence prime
-               "#{skin_first}" \
-                 "MANDATORY CHARACTER APPEARANCE: #{heroes_str}. " \
-                 "#{heroes_str}, #{physical_emphasis}, in dynamic action pose. " \
-                 "SCENE: #{scene}. " \
-                 "Dramatic action moment, intense atmosphere, cinematic composition. " \
-                 "#{visual_style}, dramatic rim light, motion blur"
-             end
-
-    # Pour les suites d'épisodes : ancre le character design sur l'épisode précédent
+    # Suite d'épisode : on demande le même design de personnage que l'épisode précédent
     if @story.sequel? && @story.parent_story&.image_prompt.present?
-      parent_style_ref = @story.parent_story.image_prompt.truncate(300)
-      prompt += ", SAME CHARACTER DESIGN AND ART STYLE AS: #{parent_style_ref}, " \
-                "exact same character appearances, same color palette, same art style, " \
-                "visual consistency with previous episode, same face designs"
+      prompt += " Same character design and art style as the previous episode."
     end
 
     prompt
   end
 
-  # Extrait le moment le plus épique/action de l'histoire pour l'illustration
-  #
-  # Stratégie :
-  #   1. Cherche le paragraphe avec le plus de mots d'action (combat, éclair, bondit...)
-  #   2. Si aucun trouvé : fallback sur le paragraphe aux 2/3 (zone climax habituelle)
-  #
-  # Les mots d'action sont des indicateurs forts d'une scène visuelle intense —
-  # exactement ce qu'on veut pour une illustration épique.
-  def extract_key_moment
-    return "" if @story.content.blank?
+  # ============================================================
+  # Décor d'arrière-plan selon le thème de l'histoire
+  # ============================================================
+  # Retourne une courte description anglaise du monde de l'histoire, qui servira
+  # d'arrière-plan FLOU derrière le portrait du héros. Un thème libre (custom_theme)
+  # est utilisé tel quel ; sinon on mappe le world_theme vers un décor adapté.
+  def background_setting
+    return @story.custom_theme.to_s.strip if @story.custom_theme.present?
 
-    # Nettoie le contenu : retire les blocs [CHOIX] et les titres markdown
-    # NOTE : on utilise [#]{1,3} au lieu de #{1,3} pour éviter l'interpolation Ruby
-    clean = @story.content
-                  .gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")
-                  .gsub(/^\#{1,3} .+$/, "")
-                  .strip
-
-    # Récupère tous les paragraphes non vides d'au moins 80 caractères
-    # (les courts sont souvent des transitions, pas des scènes visuelles)
-    paragraphs = clean.split(/\n\n+/).map(&:strip).reject { |p| p.length < 80 }
-    return "" if paragraphs.empty?
-
-    # Score chaque paragraphe selon le nombre de mots d'action qu'il contient
-    best_paragraph = paragraphs.max_by do |para|
-      para_downcase = para.downcase
-      ACTION_KEYWORDS.count { |word| para_downcase.include?(word) }
-    end
-
-    # Vérifie que le "meilleur" paragraphe a au moins 1 mot d'action
-    # Sinon, fallback sur le paragraphe aux 2/3 du texte
-    best_score = ACTION_KEYWORDS.count { |w| best_paragraph.downcase.include?(w) }
-    if best_score.zero?
-      climax_index = (paragraphs.length * 2 / 3).clamp(0, paragraphs.length - 1)
-      best_paragraph = paragraphs[climax_index]
-    end
-
-    moment = best_paragraph.gsub("\n", " ").strip
-
-    # Limite à 200 caractères pour ne pas dépasser la longueur optimale du prompt image
-    moment.length > 200 ? "#{moment[0..200].rstrip}..." : moment
+    {
+      "space" => "a colorful cosmic space scene with stars, planets and a friendly rocket",
+      "dinos" => "a lush prehistoric jungle with gentle dinosaurs and distant volcanoes",
+      "princesses" => "an enchanted castle with flowering gardens and glowing towers",
+      "pirates" => "a wooden pirate ship deck with the ocean and a golden sunset",
+      "animals" => "a magical forest glade with friendly woodland animals"
+    }.fetch(@story.world_theme.to_s, "a magical enchanted landscape")
   end
 
   # ============================================================

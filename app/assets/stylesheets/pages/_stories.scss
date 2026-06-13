@@ -124,6 +124,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  // Borne la largeur et centre le cadre : les images gpt-image-1 sont carrées
+  // (1024×1024). Sans limite, elles s'étiraient en plein large et étaient recadrées.
+  // Un cadre centré ~600px donne une vraie illustration de livre, sans coupe.
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 // Skeleton de chargement — affiché en attendant l'image Pollinations
@@ -157,8 +163,10 @@
 // Image finale — prend toute la largeur une fois chargée
 .story-illustration-img {
   width: 100%;
-  max-height: 480px;
-  object-fit: cover;
+  height: auto;
+  // contain (et non cover) : on affiche l'image ENTIÈRE sans la rogner.
+  // cover coupait la tête et le bas du corps des personnages carrés.
+  object-fit: contain;
   border-radius: 16px;
   // Apparition en fondu pour une transition douce
   animation: image-fade-in 0.6s ease-in;
