@@ -124,6 +124,14 @@ class User < ApplicationRecord
     (stories.completed.count * 100) + (user_badges.count * 50)
   end
 
+  # Niveau de l'utilisateur, dérivé de l'XP.
+  # Règle : 1 niveau tous les 500 XP, en commençant au niveau 1.
+  # Centralisé ici (Fat Model) pour être réutilisé par la sidebar ET la salle
+  # des trophées, qui calculaient le niveau chacune de leur côté avant.
+  def level
+    (xp_points / 500) + 1
+  end
+
   # ============================================================
   # Méthode de classe — connexion / création via Google OAuth
   # ============================================================

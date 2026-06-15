@@ -161,13 +161,46 @@ $cream-nav:  #fdf6e3;
   margin-left: auto; // Pousse tout à droite
 }
 
-// Score XP — pastille dorée discrète
-.sidebar-xp {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: rgba($gold-nav, 0.7);
-  letter-spacing: 0.06em;
+// Pastille niveau — petite étiquette dorée affichée à côté de l'avatar
+// Remplace l'ancien score XP : le niveau parle plus que des points bruts.
+.sidebar-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  background: rgba($gold-nav, 0.12);
+  border: 1px solid rgba($gold-nav, 0.3);
+  border-radius: 100px;       // Pill — cohérent avec l'avatar et les boutons
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: $gold-nav;
+  letter-spacing: 0.03em;
   white-space: nowrap;
+}
+
+// Bouton Abonnement — style ghost doré, identique au bouton "Installer"
+.sidebar-sub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: transparent;
+  color: rgba($gold-nav, 0.7);
+  border: 1px solid rgba($gold-nav, 0.3);
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    color: $gold-nav;
+    border-color: rgba($gold-nav, 0.6);
+    background: rgba($gold-nav, 0.08);
+    text-decoration: none;
+  }
 }
 
 // ============================================================
@@ -204,6 +237,9 @@ $cream-nav:  #fdf6e3;
 @media (max-width: 900px) {
   .sidebar-install-label { display: none; }
   .sidebar-install-btn   { padding: 6px 10px; }
+  // Le bouton Abonnement suit la même logique : on garde juste l'icône
+  .sidebar-sub-label { display: none; }
+  .sidebar-sub-btn   { padding: 6px 10px; }
 }
 
 // Bouton CTA "Créer" — pill doré compact
@@ -282,8 +318,7 @@ $cream-nav:  #fdf6e3;
   .sidebar-nav-label { display: none; }
   .sidebar-nav-item  { padding: 7px 10px; }
 
-  // Cache les éléments verbeux
-  .sidebar-xp { display: none; }
+  // La pastille niveau reste visible (compacte) à côté de l'avatar
 }
 
 // Mobile large — cache le nom du logo

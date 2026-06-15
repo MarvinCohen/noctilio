@@ -16,8 +16,8 @@ class TrophyRoomController < ApplicationController
     # Points d'expérience et niveau calculés depuis le modèle User
     @xp_points = current_user.xp_points
 
-    # Niveau calculé : 1 niveau tous les 500 XP
-    @level = (@xp_points / 500) + 1
+    # Niveau (1 tous les 500 XP) — calculé dans le modèle User#level
+    @level = current_user.level
 
     # Progression vers le prochain niveau (pourcentage)
     @level_progress = ((@xp_points % 500) / 500.0 * 100).round

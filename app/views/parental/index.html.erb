@@ -104,6 +104,30 @@
     color:         #f0c97a;
   }
 
+  /* ── Dropdown héros — révélation progressive (hero_reveal_controller) ── */
+  /* Ligne masquée tant que l'utilisateur n'a pas cliqué sur "Voir plus" */
+  .par-hero-row-hidden { display: none; }
+
+  /* Bouton "Voir plus / Voir moins" — pleine largeur, discret, centré */
+  .par-hero-toggle {
+    display:       block;
+    width:         100%;
+    margin-top:    0.4rem;
+    background:    transparent;
+    border:        1px solid rgba(240,201,122,0.25);
+    color:         #f0c97a;
+    border-radius: 12px;
+    font-size:     0.82rem;
+    font-weight:   600;
+    padding:       0.5rem;
+    cursor:        pointer;
+    transition:    background 0.15s, border-color 0.15s;
+  }
+  .par-hero-toggle:hover {
+    background:    rgba(240,201,122,0.08);
+    border-color:  rgba(240,201,122,0.5);
+  }
+
   /* ── Lien vide ── */
   .par-empty-link { color: #f0c97a; text-decoration: none; }
   .par-empty-link:hover { text-decoration: underline; }
@@ -458,8 +482,12 @@
     <div class="par-heroes-strip">
       <% @children.each do |child| %>
         <%= link_to child_path(child), class: "par-hero-avatar-card" do %>
-          <%# Cercle avec l'initiale du prénom %>
-          <div class="par-hero-circle"><%= child.name[0].upcase %></div>
+          <%# Avatar DiceBear dans le cercle doré (l'anneau sert de cadre) %>
+          <div class="par-hero-circle">
+            <%= image_tag dicebear_avatar_url(child),
+                  alt: child.name,
+                  style: "width:100%; height:100%; border-radius:50%; object-fit:cover;" %>
+          </div>
           <span class="par-hero-name"><%= child.name %></span>
           <span class="par-hero-age"><%= child.age %> ans</span>
         <% end %>
@@ -566,18 +594,21 @@
         </div>
 
         <% if @children.any? %>
+          <%# data-controller="hero-reveal" : limite l'affichage aux 5 premiers héros %>
+          <%# au-delà, un bouton "Voir plus" déplie le reste (évite une page trop longue) %>
+          <div data-controller="hero-reveal" data-hero-reveal-limit-value="5">
           <% @children.each do |child| %>
-            <div class="par-child-row">
+            <%# data-hero-reveal-target="item" : chaque ligne est gérée par le controller %>
+            <div class="par-child-row" data-hero-reveal-target="item">
 
-              <%# Icône enfant — silhouette SVG, mèche si fille %>
+              <%# Avatar DiceBear personnalisé (mêmes couleurs peau/cheveux que la fiche enfant) %>
+              <%# dicebear_avatar_url(child) construit l'URL SVG selon le profil de l'enfant %>
               <div class="par-child-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="7" r="4"/>
-                  <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
-                  <% if child.gender == "girl" %>
-                    <path d="M9 7c0-1.1.9-2 2-2 1.5 0 2.5 1 2 3"/>
-                  <% end %>
-                </svg>
+                <%= image_tag dicebear_avatar_url(child),
+                      alt: child.name,
+                      width: 40,
+                      height: 40,
+                      style: "width:40px; height:40px; border-radius:50%; object-fit:cover;" %>
               </div>
 
               <%# Infos de l'enfant %>
@@ -607,6 +638,22 @@
               <%= link_to "Voir →", child_path(child), class: "par-btn-outline" %>
             </div>
           <% end %>
+
+          <%# Boutons "Voir plus / Voir moins" — pilotés par hero_reveal_controller %>
+          <%# Cachés automatiquement par le controller si tous les héros tiennent dans la limite %>
+          <button type="button"
+                  class="par-hero-toggle"
+                  data-hero-reveal-target="btnMore"
+                  data-action="click->hero-reveal#reveal">
+            Voir plus
+          </button>
+          <button type="button"
+                  class="par-hero-toggle"
+                  data-hero-reveal-target="btnLess"
+                  data-action="click->hero-reveal#collapse">
+            Voir moins
+          </button>
+          </div>
         <% else %>
           <p class="par-empty-text">
             <%= link_to "Créer le premier profil →", new_child_path, class: "par-empty-link" %>
