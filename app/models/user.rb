@@ -142,17 +142,31 @@ class User < ApplicationRecord
   #   auth.info.email → email Google
   #   auth.info.first_name / auth.info.last_name → prénom/nom
   def self.from_omniauth(auth)
-    # find_or_create_by : cherche un utilisateur avec ce provider + uid
-    # Si trouvé → on le retourne, sinon → on en crée un nouveau
-    # Le bloc `do |user|` n'est exécuté QUE lors de la CRÉATION
-    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
-      user.email      = auth.info.email
-      user.first_name = auth.info.first_name.presence || auth.info.email.split("@").first
-      user.last_name  = auth.info.last_name.presence  || "-"
-      # password_confirmation n'est pas nécessaire ici car on n'utilise pas de mot de passe
-      # skip_confirmation! est inutile avec :validatable seul (Devise confirmable non activé)
+    # 1. On cherche d'abord un compte DÉJÀ lié à ce compte Google (provider + uid)
+    #    Cas le plus courant : l'utilisateur s'est déjà connecté via Google avant.
+    user = find_by(provider: auth.provider, uid: auth.uid)
+    return user if user
+
+    # 2. Sinon, on cherche un compte existant avec le MÊME email.
+    #    Cas : l'utilisateur s'était inscrit avec email/mot de passe, puis tente
+    #    de se connecter via Google. Sans ça, on tomberait sur "email déjà utilisé".
+    #    On lie alors son compte à Google (provider + uid) pour les prochaines fois.
+    user = find_by(email: auth.info.email)
+    if user
+      user.update(provider: auth.provider, uid: auth.uid)
+      return user
+    end
+
+    # 3. Aucun compte existant → on en crée un nouveau à partir des infos Google.
+    #    Le bloc `do |new_user|` est exécuté avant la sauvegarde.
+    create do |new_user|
+      new_user.provider   = auth.provider
+      new_user.uid        = auth.uid
+      new_user.email      = auth.info.email
+      new_user.first_name = auth.info.first_name.presence || auth.info.email.split("@").first
+      new_user.last_name  = auth.info.last_name.presence  || "-"
       # On génère un mot de passe aléatoire fort — l'utilisateur Google n'en aura jamais besoin
-      user.password = Devise.friendly_token[0, 20]
+      new_user.password   = Devise.friendly_token[0, 20]
     end
   end
 
