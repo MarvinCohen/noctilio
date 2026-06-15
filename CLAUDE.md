@@ -96,7 +96,17 @@ GET  /mentions-legales    → Mentions légales (publique, indexée)
 
 ```
 OPENAI_API_KEY=sk-...          # Obligatoire pour générer histoires et images
-STRIPE_PREMIUM_PRICE_ID=...    # À configurer plus tard
+
+# --- Stripe (abonnement Premium) ---
+# Le gem Pay lit ces variables d'ENV en priorité (sinon credentials).
+# En dev : clés "test" (carte 4242 4242 4242 4242). En prod : clés "live" sur Railway.
+STRIPE_PUBLIC_KEY=pk_...        # Clé publique (publishable) — utilisée côté client
+STRIPE_PRIVATE_KEY=sk_...       # Clé secrète — appels serveur à l'API Stripe
+STRIPE_SIGNING_SECRET=whsec_... # Secret de signature du webhook (vérifie l'authenticité des events)
+                               # Webhook monté automatiquement par Pay sur /pay/webhooks/stripe
+STRIPE_PREMIUM_PRICE_ID=price_... # ID du PRIX (price_, PAS prod_) de l'abonnement Premium
+                               # Utilisé dans SubscriptionsController#checkout (line_items)
+
 UMAMI_WEBSITE_ID=...           # ID du site Umami Cloud (analytics) — défini sur Railway uniquement.
                                # Absent en dev/test → le script de tracking est automatiquement désactivé.
                                # Voir AnalyticsHelper#umami_enabled? (off aussi pour les comptes admin).
@@ -212,12 +222,22 @@ Fichiers de test :
 - `test/controllers/trophy_room_controller_test.rb`
 - `test/controllers/waitlist_controller_test.rb`
 
-## Abonnement (à configurer plus tard)
+## Abonnement (Stripe configuré — mode TEST)
 
-- Gratuit : 3 histoires/mois
-- Premium (9,99€/mois) : illimité + mode interactif
-- `User#premium?` retourne `false` pour l'instant (Stripe pas encore configuré)
-- Quand Stripe est prêt : remplacer `false` par `subscribed?` dans `user.rb`
+- **Gratuit** : 3 histoires/semaine (réinitialisé chaque lundi), TEXTE SEUL
+  (ni illustration ni audio). Quota appliqué par `check_story_limit!`
+  (before_action sur new/create dans StoriesController).
+- **Premium** (9,99€/mois) : histoires illimitées + illustration IA + lecture audio
+  + mode interactif.
+- **Offre découverte** : la TOUTE PREMIÈRE histoire d'un compte gratuit est en accès
+  complet (image + audio + interactif) pour donner envie de s'abonner.
+  Voir `User#welcome_story?`, `User#full_experience_for?`, `User#first_story_pending?`.
+- `User#premium?` : `true` si admin OU abonnement Pay/Stripe actif (`subscribed?`).
+- Flux Stripe : `SubscriptionsController#checkout` → Stripe Checkout (hébergé) →
+  `success`/`cancel`. Résiliation = période de grâce (`on_grace_period?`),
+  réactivation possible via `#resume` tant que l'abonnement n'est pas terminé.
+- ⚠️ Encore en mode TEST (carte 4242…). Pour facturer pour de vrai : passer en
+  clés "live", configurer le webhook prod et les variables `STRIPE_*` sur Railway.
 
 ## Commandes utiles
 

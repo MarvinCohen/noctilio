@@ -9,9 +9,12 @@ class StoriesController < ApplicationController
   before_action :set_story,
                 only: %i[show destroy choose status save_story audio continue replay explore_alternative retry]
 
-  # Vérifie que l'utilisateur n'a pas dépassé sa limite mensuelle avant de créer
-  # DÉSACTIVÉ pendant les tests — à réactiver avant le lancement
-  # before_action :check_story_limit!, only: [:new, :create]
+  # Vérifie que l'utilisateur n'a pas dépassé sa limite hebdomadaire avant de créer
+  # — Gratuit : 3 histoires/semaine (réinitialisé chaque lundi)
+  # — Premium : illimité (can_create_story? renvoie toujours true)
+  # NB : la 1re histoire d'un compte passe toujours (c'est la #1 de la semaine),
+  # donc l'offre découverte n'est jamais bloquée par ce filtre.
+  before_action :check_story_limit!, only: [:new, :create]
 
   # GET /stories — bibliothèque personnelle de l'utilisateur
   # Supporte ?tab=saved (défaut) et ?tab=all (toutes les histoires terminées)
