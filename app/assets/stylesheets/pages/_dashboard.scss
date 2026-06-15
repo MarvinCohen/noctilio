@@ -318,13 +318,6 @@ $text-dim: rgba(#fdf6e3, 0.45);
 }
 
 // Étoile dans le bouton — tourne au survol
-.db-cta-star {
-  display: inline-block;
-  transition: transform 0.5s ease;
-
-  .db-cta-btn:hover & { transform: rotate(180deg); }
-}
-
 // Variante petite — pour l'état vide
 .db-cta-btn--sm {
   padding: 0.7rem 1.5rem;

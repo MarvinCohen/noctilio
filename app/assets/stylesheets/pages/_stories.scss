@@ -662,13 +662,17 @@
   font-size: 0.9rem;
   text-decoration: none;
   white-space: nowrap;
-  transition: opacity 0.2s ease, transform 0.15s ease;
+  // Halo doré discret au repos (même esprit que le bouton de la nav)
+  box-shadow: 0 2px 16px rgba(240, 201, 122, 0.3);
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 .lib-btn-primary:hover {
-  opacity: 0.88;
-  transform: translateY(-1px);
+  // Fond plus clair + halo doré plus intense = effet "brillant" au survol
+  background: #fdf6e3;
+  transform: scale(1.03);
   color: #0b0e1a;
   text-decoration: none;
+  box-shadow: 0 4px 24px rgba(240, 201, 122, 0.45);
 }
 
 // Bouton secondaire — outline doré

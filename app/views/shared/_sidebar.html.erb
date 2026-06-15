@@ -98,7 +98,8 @@
 
     <%# CTA Créer — bouton pill doré %>
     <%= link_to new_story_path, class: "sidebar-cta-btn" do %>
-      <span>✦</span> Créer une histoire
+      <%# Étoile ✦ immobile, qui tourne uniquement au survol (variante spin-star--hover) %>
+      <span class="spin-star--hover">✦</span> Créer une histoire
     <% end %>
 
     <%# Avatar utilisateur — dropdown avec liens secondaires + déconnexion %>

@@ -74,13 +74,13 @@
         Commence par créer le profil de ton héros — l'IA s'en souviendra à chaque histoire.
       </p>
       <%= link_to new_child_path, class: "db-cta-btn" do %>
-        <span class="db-cta-star">✦</span> Créer mon héros
+        <span class="spin-star--hover">✦</span> Créer mon héros
       <% end %>
 
     <% else %>
       <%# CTA normal — pill doré, même style que landing %>
       <%= link_to new_story_path, class: "db-cta-btn" do %>
-        <span class="db-cta-star">✦</span> Créer mon histoire
+        <span class="spin-star--hover">✦</span> Créer mon histoire
       <% end %>
 
       <%# Limite gratuite — discrète %>

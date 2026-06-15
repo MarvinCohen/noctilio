@@ -1,0 +1,25 @@
+// ============================================================
+// Étoile animée ✦ — utilisée sur tous les boutons "Créer une histoire"
+// ============================================================
+// Comportement : l'étoile reste IMMOBILE, et ne tourne QUE lorsqu'on
+// survole le bouton/lien qui la contient.
+// Pourquoi une classe partagée : éviter de redéfinir l'animation
+// dans chaque fichier (dashboard, sidebar, enfants, bibliothèque...).
+
+// Rotation complète de 0 à 360°
+@keyframes spin-star-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin-star--hover {
+  display: inline-block;
+  // Pas d'animation par défaut → l'étoile reste fixe
+}
+
+// Au survol du bouton/lien parent, l'étoile se met à tourner
+// (les boutons "Créer" sont tous des link_to → balise <a>)
+a:hover .spin-star--hover,
+button:hover .spin-star--hover {
+  animation: spin-star-rotate 0.6s linear infinite;
+}

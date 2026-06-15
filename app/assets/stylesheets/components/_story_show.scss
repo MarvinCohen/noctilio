@@ -102,19 +102,20 @@
   .story-btn-primary {
     display: inline-flex; align-items: center;
     padding: 0.7rem 1.6rem;
-    /* Dégradé doré (clair → soft) au lieu d'un aplat — donne du relief */
-    background: linear-gradient(135deg, #f5d595, #e8b95a);
+    /* Doré plat #f0c97a — identique aux boutons du reste du site (nav, bibliothèque) */
+    background: #f0c97a;
     color: #0b0e1a;
     border: none; border-radius: 50px;
     font-weight: 700; font-size: 0.9rem;
     text-decoration: none;
     /* Halo doré discret pour faire "ressortir" le bouton sur le fond nuit */
     box-shadow: 0 4px 14px rgba(240, 201, 122, 0.25);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   }
-  /* Au survol : le bouton se soulève et le halo s'intensifie (effet premium) */
+  /* Au survol : fond crème + léger zoom + halo renforcé (cohérent avec le site) */
   .story-btn-primary:hover {
-    transform: translateY(-2px);
+    background: #fdf6e3;
+    transform: scale(1.03);
     box-shadow: 0 7px 22px rgba(240, 201, 122, 0.45);
     color: #0b0e1a; text-decoration: none;
   }
@@ -160,12 +161,12 @@
   }
   .story-btn-warning[type="submit"] { appearance: none; -webkit-appearance: none; }
 
-  /* Bouton "Continuer l'aventure" — CTA principale, dégradé doré + halo */
+  /* Bouton "Continuer l'aventure" — CTA principale, doré plat + halo */
   .story-btn-continue {
     display: inline-flex; align-items: center;
     padding: 0.7rem 1.5rem;
-    /* Même traitement premium que .story-btn-primary : dégradé doré */
-    background: linear-gradient(135deg, #f5d595, #e8b95a);
+    /* Doré plat #f0c97a — identique aux boutons du reste du site (nav, bibliothèque) */
+    background: #f0c97a;
     color: #0b0e1a;
     border: none;
     border-radius: 50px; font-size: 0.85rem;
@@ -173,11 +174,12 @@
     cursor: pointer;
     text-decoration: none;
     box-shadow: 0 4px 14px rgba(240, 201, 122, 0.25);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   }
-  /* Survol : soulèvement + halo renforcé (cohérent avec .story-btn-primary) */
+  /* Au survol : fond crème + léger zoom + halo renforcé (cohérent avec le site) */
   .story-btn-continue:hover {
-    transform: translateY(-2px);
+    background: #fdf6e3;
+    transform: scale(1.03);
     box-shadow: 0 7px 22px rgba(240, 201, 122, 0.45);
     color: #0b0e1a; text-decoration: none;
   }
