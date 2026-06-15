@@ -102,6 +102,79 @@
   margin-bottom: 1.5rem;
 }
 
+// Encart de conversion affiché à la place de l'illustration pour une histoire
+// gratuite en texte seul (2e histoire et suivantes). Moment fort d'upsell :
+// l'utilisateur a goûté à l'expérience complète sur sa 1re histoire, ici il
+// constate le manque (pas d'image) → on propose de repasser en Premium.
+.story-upsell-card {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  background: rgba(240, 201, 122, 0.08);
+  border: 1px dashed rgba(240, 201, 122, 0.35);
+  border-radius: 16px;
+
+  &__icon {
+    font-size: 2.2rem;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f0c97a;
+    margin: 0 0 0.35rem;
+  }
+
+  &__text {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #c9c4b5;
+    margin: 0 auto 1rem;
+    max-width: 420px;
+  }
+
+  // Bouton plein doré, cohérent avec les CTA Premium de l'app
+  &__btn {
+    display: inline-block;
+    padding: 0.55rem 1.4rem;
+    background: #f0c97a;
+    color: #111527;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: filter 0.2s ease;
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+  }
+}
+
+// Note douce sous le lecteur, affichée seulement pour la 1re histoire offerte
+// d'un gratuit. Ton informatif, discret (pas de bouton) — l'upsell fort se fait
+// sur la 2e histoire via .story-upsell-card.
+.story-premium-hint {
+  max-width: 600px;
+  margin: 1.25rem auto 0;
+  text-align: center;
+  font-size: 0.82rem;
+  color: rgba(201, 196, 181, 0.85);
+
+  &__link {
+    color: #f0c97a;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 // Label discret au-dessus de l'image
 .story-illustration-label {
   text-align: center;
