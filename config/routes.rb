@@ -102,12 +102,23 @@ Rails.application.routes.draw do
   post "/abonnement/checkout", to: "subscriptions#checkout", as: :subscription_checkout
   get  "/abonnement/success",  to: "subscriptions#success",  as: :subscription_success
   post "/abonnement/cancel",   to: "subscriptions#cancel",   as: :subscription_cancel
+  post "/abonnement/reactiver", to: "subscriptions#resume",   as: :subscription_resume
 
   # ============================================================
   # Admin — pages privées accessibles uniquement par marvincohen95@gmail.com
   # ============================================================
   # GET /admin/waitlist — liste des emails inscrits sur la waitlist
   get "/admin/waitlist", to: "admin#waitlist", as: :admin_waitlist
+  # GET /admin/feedbacks — liste des retours utilisateurs laissés via /avis
+  get "/admin/feedbacks", to: "admin#feedbacks", as: :admin_feedbacks
+
+  # ============================================================
+  # Avis / retours — page publique pour laisser un retour (bug, suggestion...)
+  # ============================================================
+  # GET  /avis → formulaire ; POST /avis → enregistre le retour
+  # Accessible sans connexion (skip_before_action dans FeedbacksController)
+  get  "/avis", to: "feedbacks#new",    as: :feedback
+  post "/avis", to: "feedbacks#create"
 
   # ============================================================
   # Page À propos — présente Marvin Cohen, fondateur de Noctilio

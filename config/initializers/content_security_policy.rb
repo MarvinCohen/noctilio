@@ -42,16 +42,29 @@ Rails.application.configure do
     policy.frame_ancestors :none
   end
 
-  # Génère un nonce unique par requête pour les scripts inline autorisés
-  # Le nonce est un token aléatoire que Rails injecte dans les balises <script> légitimes
-  # Si un script n'a pas ce nonce, le navigateur le bloque
+  # Génère le nonce pour les scripts inline autorisés.
+  # Le nonce est un token que Rails injecte dans les balises <script> légitimes ;
+  # si un script n'a pas ce nonce, le navigateur le bloque.
   #
-  # IMPORTANT : on utilise SecureRandom (et NON request.session.id).
-  # session.id est VIDE pour un visiteur anonyme sans session encore créée
-  # (ex : premier arrivage sur la landing) → le nonce devenait "" → tous les
-  # scripts inline (étoiles, curseur, lune) étaient bloqués par la CSP.
-  # SecureRandom garantit un nonce non-vide à chaque requête.
-  config.content_security_policy_nonce_generator = ->(_request) { SecureRandom.base64(16) }
+  # IMPORTANT — pourquoi le nonce est lié à la SESSION (et pas purement aléatoire) :
+  # Turbo (Hotwire) navigue sans recharger la page : il récupère la nouvelle page
+  # en fetch() puis remplace le <body>. Or le navigateur continue d'imposer la CSP
+  # du tout PREMIER chargement (avec son nonce d'origine). Si on régénère un nonce
+  # aléatoire à chaque requête, le <body> ré-injecté par Turbo porte un nouveau nonce
+  # qui ne correspond plus à celui imposé par le document → les scripts inline
+  # (révélation du dashboard, étoiles…) sont bloqués et la page paraît "vide".
+  #
+  # Solution : un nonce STABLE par session. Pour un utilisateur connecté, session.id
+  # existe et reste constant entre deux navigations Turbo → le nonce correspond
+  # toujours → plus de blocage.
+  #
+  # Repli SecureRandom : un visiteur anonyme peut ne pas avoir de session.id encore
+  # créé (ex : tout premier arrivage sur la landing). Dans ce cas session.id est vide,
+  # ce qui donnerait un nonce "" qui bloquerait TOUS les scripts inline. On retombe
+  # donc sur SecureRandom pour garantir un nonce non-vide dans ce cas-là.
+  config.content_security_policy_nonce_generator = ->(request) do
+    request.session.id.to_s.presence || SecureRandom.base64(16)
+  end
 
   # Applique le nonce uniquement aux scripts (les styles utilisent :unsafe_inline à cause de Bootstrap)
   config.content_security_policy_nonce_directives = %w[script-src]

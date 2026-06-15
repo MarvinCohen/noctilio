@@ -86,7 +86,7 @@
       <%# Limite gratuite — discrète %>
       <% unless current_user.premium? %>
         <p class="db-limit-text">
-          <%= @stories_this_month %>/3 histoires ce mois ·
+          <%= @stories_this_week %>/3 histoires cette semaine ·
           <%= link_to "Passer en Premium →", subscription_path, class: "db-limit-link" %>
         </p>
       <% end %>
@@ -182,10 +182,13 @@
       <% @children.each do |child| %>
         <%= link_to child_path(child),
               style: "display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.5rem 1.1rem 0.5rem 0.5rem; background: #111527; border: 1px solid rgba(240, 201, 122, 0.18); border-radius: 50px; text-decoration: none;" do %>
-          <%# Pastille dorée avec l'initiale du prénom %>
-          <span style="width: 34px; height: 34px; border-radius: 50%; background: #f0c97a; color: #0b0e1a; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">
-            <%= child.name[0].upcase %>
-          </span>
+          <%# Avatar DiceBear personnalisé (mêmes couleurs peau/cheveux que la fiche enfant) %>
+          <%# dicebear_avatar_url(child) construit l'URL SVG selon le profil de l'enfant %>
+          <%= image_tag dicebear_avatar_url(child),
+                alt: child.name,
+                width: 34,
+                height: 34,
+                style: "width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" %>
           <span style="color: #d4cfc4; font-size: 0.92rem; font-weight: 500;">
             <%= child.name %> · <%= child.age %> ans
           </span>

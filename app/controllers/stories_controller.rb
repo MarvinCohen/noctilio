@@ -221,8 +221,10 @@ class StoriesController < ApplicationController
     # SÉCURITÉ BUSINESS — la génération audio (OpenAI TTS) coûte de l'argent
     # à chaque appel. Réservée aux abonnés Premium, vérifiée CÔTÉ SERVEUR
     # (cacher le bouton dans la vue ne suffirait pas : l'URL resterait appelable).
+    # Exception : la 1re histoire du compte (offre découverte) a aussi accès à
+    # l'audio — full_experience_for?(@story) couvre Premium ET 1re histoire offerte.
     # 403 Forbidden — le JS du lecteur audio l'interprète comme un refus.
-    unless current_user.premium?
+    unless current_user.full_experience_for?(@story)
       head :forbidden and return
     end
 
@@ -398,15 +400,15 @@ class StoriesController < ApplicationController
   # Paramètres autorisés pour la création d'une histoire
   # child_ids: [] = tableau d'IDs (sélection multiple d'enfants)
   # extra_child_ids: [] = géré manuellement dans create, pas directement via permit
-  # Vérifie que l'utilisateur peut encore créer une histoire ce mois-ci
+  # Vérifie que l'utilisateur peut encore créer une histoire cette semaine
   # — Premium : illimité (can_create_story? retourne true)
-  # — Gratuit  : bloqué à 3 histoires/mois
+  # — Gratuit  : bloqué à 3 histoires/semaine
   # Redirige vers la page d'abonnement avec un message explicatif si limite atteinte
   def check_story_limit!
     return if current_user.can_create_story?
 
     redirect_to subscription_path,
-                alert: "Tu as atteint ta limite de 3 histoires ce mois-ci. Passe en Premium pour des histoires illimitées !"
+                alert: "Tu as atteint ta limite de 3 histoires cette semaine. Passe en Premium pour des histoires illimitées !"
   end
 
   def story_params

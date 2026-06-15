@@ -42,6 +42,20 @@
         </div>
       </div>
 
+      <%# ── Bannière offre découverte ── %>
+      <%# Affichée uniquement pour un compte gratuit qui n'a encore créé aucune histoire :
+          sa 1re histoire est offerte en accès complet (illustration + audio + interactif).
+          But : accroche de conversion dès la création de la 1re histoire. %>
+      <% if !current_user.premium? && current_user.first_story_pending? %>
+        <div class="wizard-offer-banner">
+          <span class="wizard-offer-banner__icon">🎁</span>
+          <span>
+            <strong>Ta 1re histoire est offerte en accès complet</strong> :
+            illustration, lecture audio et mode interactif inclus.
+          </span>
+        </div>
+      <% end %>
+
       <%# ── Formulaire unique — tous les champs soumis ensemble ── %>
       <%= simple_form_for @story, url: stories_path do |f| %>
         <%= f.error_notification %>
@@ -369,25 +383,34 @@
             <p class="wizard-hint">Mode interactif et récapitulatif.</p>
 
             <%# Toggle mode interactif %>
+            <%# interactive_unlocked : le mode interactif est débloqué si l'utilisateur
+                est Premium OU si c'est sa 1re histoire (offre découverte en accès complet). %>
+            <% interactive_unlocked = current_user.premium? || current_user.first_story_pending? %>
             <div class="wizard-toggle-row">
               <div>
                 <div class="wizard-toggle-label">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:-2px"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
                   Mode interactif
-                  <% unless current_user.premium? %>
+                  <%# Badge contextuel : "Offert" pour la 1re histoire gratuite, "Premium" pour les gratuits ayant déjà des histoires %>
+                  <% if !current_user.premium? && current_user.first_story_pending? %>
+                    <span class="wizard-premium-badge">Offert</span>
+                  <% elsif !current_user.premium? %>
                     <span class="wizard-premium-badge">Premium</span>
                   <% end %>
                 </div>
                 <div class="wizard-toggle-hint">
                   <% if current_user.premium? %>
                     L'enfant fait des choix qui changent l'histoire
+                  <% elsif current_user.first_story_pending? %>
+                    Inclus dans ta 1re histoire offerte ✨
                   <% else %>
                     <%= link_to "Passer en Premium", subscription_path, style: "color:rgba(240,201,122,0.65);" %> pour débloquer
                   <% end %>
                 </div>
               </div>
               <div class="form-check form-switch mb-0">
-                <% if current_user.premium? %>
+                <%# Case activée si le mode interactif est débloqué (Premium ou 1re histoire) %>
+                <% if interactive_unlocked %>
                   <%= f.check_box :interactive, class: "form-check-input", id: "interactive-toggle" %>
                 <% else %>
                   <input class="form-check-input" type="checkbox" disabled>

@@ -17,8 +17,13 @@ class SubscriptionsController < ApplicationController
     # Indique à la vue si l'utilisateur est déjà premium
     @is_premium = current_user.premium?
 
-    # Nombre d'histoires créées ce mois-ci (pour afficher la jauge gratuite)
-    @stories_this_month = current_user.stories_this_month
+    # Récupère l'abonnement Stripe en cours (s'il existe) pour afficher son état.
+    # Sert à distinguer "Premium actif" d'une "résiliation programmée"
+    # (abonnement annulé mais encore valable jusqu'à la fin de la période payée).
+    @subscription = current_user.payment_processor&.subscription
+
+    # Nombre d'histoires créées cette semaine (pour afficher la jauge du quota gratuit)
+    @stories_this_week = current_user.stories_this_week
   end
 
   # POST /abonnement/checkout — lance le paiement Stripe
@@ -91,5 +96,28 @@ class SubscriptionsController < ApplicationController
     Rails.logger.error "[Stripe] Erreur annulation : #{e.message}"
     redirect_to subscription_path,
                 alert: "Impossible d'annuler l'abonnement. Contacte le support."
+  end
+
+  # POST /abonnement/reactiver — annule une résiliation programmée
+  def resume
+    # Récupère l'abonnement Stripe de l'utilisateur via Pay
+    subscription = current_user.payment_processor&.subscription
+
+    # on_grace_period? : l'abonnement est résilié mais encore actif jusqu'à l'échéance.
+    # C'est le SEUL cas où on peut réactiver (revenir en arrière sur la résiliation).
+    if subscription&.on_grace_period?
+      # resume annule la résiliation programmée → l'abonnement repart normalement
+      subscription.resume
+
+      redirect_to subscription_path,
+                  notice: "Ton abonnement est réactivé. Bon retour parmi les Premium ! ✨"
+    else
+      redirect_to subscription_path,
+                  alert: "Aucune résiliation à annuler."
+    end
+  rescue StandardError => e
+    Rails.logger.error "[Stripe] Erreur réactivation : #{e.message}"
+    redirect_to subscription_path,
+                alert: "Impossible de réactiver l'abonnement. Contacte le support."
   end
 end

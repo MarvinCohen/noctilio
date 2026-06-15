@@ -60,63 +60,63 @@ class UserTest < ActiveSupport::TestCase
   end
 
   # ===========================================================
-  # SECTION 2 — MÉTHODE stories_this_month
+  # SECTION 2 — MÉTHODE stories_this_week
   # ===========================================================
 
-  # Vérifie que stories_this_month compte correctement les histoires du mois en cours
-  # Cas : utilisateur avec plusieurs histoires ce mois et 1 histoire ancienne
-  # Pourquoi : cette méthode pilote la limite mensuelle des utilisateurs gratuits
-  test "stories_this_month compte les histoires du mois courant" do
+  # Vérifie que stories_this_week compte correctement les histoires de la semaine en cours
+  # Cas : utilisateur avec plusieurs histoires cette semaine et 1 histoire ancienne
+  # Pourquoi : cette méthode pilote la limite hebdomadaire des utilisateurs gratuits
+  test "stories_this_week compte les histoires de la semaine courante" do
     # Arrange — Marie a completed_saved + completed_not_saved + pending + failed + interactive
-    # créées ce mois-ci, et old_story créée il y a 2 mois
+    # créées cette semaine (created_at: Time.current dans les fixtures), et old_story il y a 2 mois
     user = users(:marie)
 
     # Act
-    count = user.stories_this_month
+    count = user.stories_this_week
 
     # Assert — old_story (il y a 2 mois) ne doit PAS être comptée
-    # Les histoires du mois courant : completed_saved, completed_not_saved, pending_story,
-    # failed_story, interactive_story → 5 histoires ce mois
+    # Les histoires de la semaine courante : completed_saved, completed_not_saved, pending_story,
+    # failed_story, interactive_story → 5 histoires cette semaine
     assert_equal 5, count,
-                 "stories_this_month devrait retourner 5 (old_story exclue car trop ancienne)"
+                 "stories_this_week devrait retourner 5 (old_story exclue car trop ancienne)"
   end
 
-  # Vérifie que stories_this_month retourne 0 pour un utilisateur sans histoire
+  # Vérifie que stories_this_week retourne 0 pour un utilisateur sans histoire
   # Cas : admin_user n'a pas d'enfant ni d'histoire dans les fixtures
   # Pourquoi : cas de base pour un nouveau compte
-  test "stories_this_month retourne 0 pour un utilisateur sans histoire" do
+  test "stories_this_week retourne 0 pour un utilisateur sans histoire" do
     # Arrange — admin_user n'a pas d'enfant dans les fixtures
     user = users(:admin_user)
 
     # Act
-    count = user.stories_this_month
+    count = user.stories_this_week
 
     # Assert
     assert_equal 0, count,
-                 "Un utilisateur sans histoire devrait avoir stories_this_month == 0"
+                 "Un utilisateur sans histoire devrait avoir stories_this_week == 0"
   end
 
   # ===========================================================
   # SECTION 3 — MÉTHODE can_create_story?
   # ===========================================================
 
-  # Vérifie que can_create_story? retourne true si l'utilisateur a moins de 3 histoires ce mois
-  # Cas : utilisateur avec 1 histoire ce mois (Paul a paul_story)
-  # Pourquoi : règle métier fondamentale — les gratuits ont 3 histoires/mois
-  test "can_create_story? retourne true si moins de 3 histoires ce mois" do
-    # Arrange — Paul a 1 seule histoire ce mois donc 1 < 3
+  # Vérifie que can_create_story? retourne true si l'utilisateur a moins de 3 histoires cette semaine
+  # Cas : utilisateur avec 1 histoire cette semaine (Paul a paul_story)
+  # Pourquoi : règle métier fondamentale — les gratuits ont 3 histoires/semaine
+  test "can_create_story? retourne true si moins de 3 histoires cette semaine" do
+    # Arrange — Paul a 1 seule histoire cette semaine donc 1 < 3
     user = users(:paul)
     assert_not user.premium?, "Pré-condition : Paul ne doit pas être premium"
 
     # Act + Assert
     assert user.can_create_story?,
-           "Paul a 1 histoire ce mois, il devrait pouvoir en créer d'autres (limite: 3)"
+           "Paul a 1 histoire cette semaine, il devrait pouvoir en créer d'autres (limite: 3)"
   end
 
   # Vérifie que can_create_story? retourne false quand la limite de 3 est atteinte
-  # Cas : utilisateur avec exactement 3 histoires ce mois
-  # Pourquoi : au-delà de 3, l'utilisateur gratuit est bloqué jusqu'au mois suivant
-  test "can_create_story? retourne false si 3 histoires ou plus ce mois" do
+  # Cas : utilisateur avec exactement 3 histoires cette semaine
+  # Pourquoi : au-delà de 3, l'utilisateur gratuit est bloqué jusqu'au lundi suivant
+  test "can_create_story? retourne false si 3 histoires ou plus cette semaine" do
     # Arrange — Paul a déjà 1 histoire (paul_story), on en crée 2 de plus
     user = users(:paul)
     child = children(:theo)
@@ -127,8 +127,8 @@ class UserTest < ActiveSupport::TestCase
     end
 
     # Vérifie la pré-condition : Paul doit bien avoir 3 histoires maintenant
-    assert_equal 3, user.stories_this_month,
-                 "Pré-condition : Paul doit avoir exactement 3 histoires ce mois"
+    assert_equal 3, user.stories_this_week,
+                 "Pré-condition : Paul doit avoir exactement 3 histoires cette semaine"
 
     # Assert — la limite est atteinte, plus de création possible
     assert_not user.can_create_story?,
@@ -145,6 +145,111 @@ class UserTest < ActiveSupport::TestCase
     # Assert — admin → premium → can_create_story? ignore le compteur
     assert user.can_create_story?,
            "Un admin devrait toujours pouvoir créer des histoires (accès illimité)"
+  end
+
+  # ===========================================================
+  # SECTION 3bis — OFFRE DÉCOUVERTE (1re histoire en accès complet)
+  # ===========================================================
+
+  # Vérifie que welcome_story? reconnaît la 1re histoire du compte
+  # Cas : Paul (gratuit) a une seule histoire (paul_story) → c'est sa 1re
+  # Pourquoi : la 1re histoire débloque l'expérience complète (image + audio + interactif)
+  test "welcome_story? retourne true pour la 1re histoire du compte" do
+    # Arrange — Paul a une seule histoire dans les fixtures
+    user = users(:paul)
+
+    # Act + Assert — paul_story est la plus petite id → c'est la 1re histoire
+    assert user.welcome_story?(stories(:paul_story)),
+           "paul_story devrait être reconnue comme la 1re histoire de Paul"
+  end
+
+  # Vérifie que welcome_story? retourne false pour une histoire qui n'est PAS la 1re
+  # Cas : on crée une 2e histoire pour Paul → elle a une id plus grande
+  # Pourquoi : seule la toute 1re histoire est offerte, pas les suivantes
+  test "welcome_story? retourne false pour une histoire qui n'est pas la 1re" do
+    # Arrange — Paul a déjà paul_story ; on crée une 2e histoire (id plus grande)
+    user = users(:paul)
+    seconde_histoire = children(:theo).stories.create!(status: :pending)
+
+    # Act + Assert — la 2e histoire n'est pas la plus petite id → pas offerte
+    assert_not user.welcome_story?(seconde_histoire),
+               "Une 2e histoire ne devrait PAS être reconnue comme la 1re"
+  end
+
+  # Vérifie que welcome_story? retourne false pour une histoire non sauvegardée (id nil)
+  # Cas : Story.new sans save → id == nil
+  # Pourquoi : on ne peut pas comparer une histoire inexistante en base
+  test "welcome_story? retourne false si l'histoire n'a pas d'id" do
+    # Arrange — histoire en mémoire, jamais sauvegardée
+    user = users(:paul)
+    histoire_non_sauvee = Story.new
+
+    # Act + Assert — id nil → la méthode renvoie false sans planter
+    assert_not user.welcome_story?(histoire_non_sauvee),
+               "Une histoire sans id ne devrait jamais être la 1re histoire"
+  end
+
+  # Vérifie que full_experience_for? est true pour la 1re histoire d'un gratuit
+  # Cas : Paul (gratuit) + sa 1re histoire (paul_story)
+  # Pourquoi : règle métier de l'offre découverte — la 1re histoire est en accès complet
+  test "full_experience_for? retourne true pour la 1re histoire d'un gratuit" do
+    # Arrange
+    user = users(:paul)
+    assert_not user.premium?, "Pré-condition : Paul ne doit pas être premium"
+
+    # Act + Assert — gratuit mais 1re histoire → expérience complète
+    assert user.full_experience_for?(stories(:paul_story)),
+           "La 1re histoire d'un gratuit devrait avoir l'expérience complète"
+  end
+
+  # Vérifie que full_experience_for? est false pour la 2e histoire d'un gratuit
+  # Cas : Paul (gratuit) + une 2e histoire
+  # Pourquoi : dès la 2e histoire, le gratuit repasse en texte seul
+  test "full_experience_for? retourne false pour la 2e histoire d'un gratuit" do
+    # Arrange — on crée une 2e histoire pour Paul
+    user = users(:paul)
+    seconde_histoire = children(:theo).stories.create!(status: :pending)
+
+    # Act + Assert — gratuit et pas la 1re → texte seul
+    assert_not user.full_experience_for?(seconde_histoire),
+               "La 2e histoire d'un gratuit ne devrait PAS avoir l'expérience complète"
+  end
+
+  # Vérifie que full_experience_for? est toujours true pour un premium (admin)
+  # Cas : admin_user (premium) + une histoire qui n'est pas la sienne
+  # Pourquoi : un premium a l'expérience complète sur TOUTES ses histoires, peu importe l'ordre
+  test "full_experience_for? retourne true pour un premium quelle que soit l'histoire" do
+    # Arrange — admin est premium ; on passe une histoire quelconque
+    user = users(:admin_user)
+    assert user.premium?, "Pré-condition : admin_user doit être premium"
+
+    # Act + Assert — premium → expérience complète sans vérifier si c'est la 1re
+    assert user.full_experience_for?(stories(:completed_saved)),
+           "Un premium devrait toujours avoir l'expérience complète"
+  end
+
+  # Vérifie que first_story_pending? est true quand l'utilisateur n'a aucune histoire
+  # Cas : admin_user n'a pas d'enfant ni d'histoire dans les fixtures
+  # Pourquoi : pilote l'affichage de la bannière d'offre et du toggle interactif dans le formulaire
+  test "first_story_pending? retourne true sans aucune histoire" do
+    # Arrange
+    user = users(:admin_user)
+
+    # Act + Assert — aucune histoire → la prochaine sera la 1re
+    assert user.first_story_pending?,
+           "first_story_pending? devrait être true pour un compte sans histoire"
+  end
+
+  # Vérifie que first_story_pending? est false dès qu'une histoire existe
+  # Cas : Marie a déjà plusieurs histoires
+  # Pourquoi : l'offre découverte ne doit plus s'afficher une fois la 1re histoire créée
+  test "first_story_pending? retourne false si l'utilisateur a déjà une histoire" do
+    # Arrange
+    user = users(:marie)
+
+    # Act + Assert — Marie a des histoires → l'offre n'est plus disponible
+    assert_not user.first_story_pending?,
+               "first_story_pending? devrait être false dès qu'une histoire existe"
   end
 
   # ===========================================================

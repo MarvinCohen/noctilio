@@ -21,6 +21,19 @@ class AdminController < ApplicationController
     @total = @entries.size
   end
 
+  # ============================================================
+  # GET /admin/feedbacks
+  # Affiche tous les retours utilisateurs, du plus récent au plus ancien
+  # ============================================================
+  def feedbacks
+    # includes(:user) précharge l'auteur en une requête → évite le N+1 dans la vue
+    # (sinon une requête SQL par retour pour afficher le nom de l'auteur)
+    @feedbacks = Feedback.includes(:user).order(created_at: :desc).limit(500).to_a
+
+    # Total affiché en tête de page — calcul en Ruby sur le tableau déjà chargé
+    @total = @feedbacks.size
+  end
+
   private
 
   # ============================================================

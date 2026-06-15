@@ -23,8 +23,8 @@ class DashboardController < ApplicationController
     # Profils enfants de l'utilisateur
     @children = current_user.children.ordered
 
-    # Nombre d'histoires créées ce mois (pour afficher la limite gratuite)
-    @stories_this_month = current_user.stories_this_month
+    # Nombre d'histoires créées cette semaine (pour afficher le quota gratuit hebdomadaire)
+    @stories_this_week = current_user.stories_this_week
 
     # Phase lunaire réelle (0.0 = nouvelle lune, 0.5 = pleine lune)
     # Passée à la vue pour dessiner la lune correctement sur le canvas

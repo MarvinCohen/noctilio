@@ -1,0 +1,177 @@
+<%# ============================================================ %>
+<%# Page publique /avis — formulaire de retour utilisateur %>
+<%# Accessible connecté ou non. DA cosmique : fond sombre, accents dorés. %>
+<%# ============================================================ %>
+
+<style nonce="<%= content_security_policy_nonce %>">
+  /* ── Wrapper centré ── */
+  .feedback-page { padding: 3rem 0 4rem; }
+
+  /* ── Carte du formulaire ── */
+  .feedback-card {
+    max-width: 620px;
+    margin: 0 auto;
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+  }
+
+  /* Titre — Cormorant Garamond italic, cohérent avec le reste de l'app */
+  .feedback-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 2rem;
+    font-weight: 300;
+    color: #fdf6e3;
+    margin: 0 0 0.4rem;
+    text-align: center;
+  }
+  .feedback-subtitle {
+    color: #8a8578;
+    font-size: 0.95rem;
+    text-align: center;
+    margin: 0 0 2rem;
+  }
+
+  /* ── Champs de formulaire ── */
+  .feedback-label {
+    display: block;
+    color: #f0c97a;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+  .feedback-field {
+    width: 100%;
+    background: #0d1020;
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 10px;
+    color: #fdf6e3;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    margin-bottom: 1.4rem;
+  }
+  .feedback-field:focus {
+    outline: none;
+    border-color: rgba(240, 201, 122, 0.6);
+    box-shadow: 0 0 0 3px rgba(240, 201, 122, 0.1);
+  }
+  textarea.feedback-field { resize: vertical; min-height: 130px; }
+
+  /* ── Menu déroulant (select) — flèche custom alignée à droite ── */
+  /* On masque la flèche native (qui s'affiche décalée à cause du padding droit)
+     et on dessine notre propre chevron doré en arrière-plan, collé au bord droit. */
+  select.feedback-field {
+    -webkit-appearance: none;   /* Safari / Chrome */
+    -moz-appearance: none;      /* Firefox */
+    appearance: none;
+    /* Chevron SVG doré (#f0c97a) encodé en data-URI, positionné à droite */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23f0c97a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    /* Espace à droite pour ne pas que le texte passe sous le chevron */
+    padding-right: 2.5rem;
+  }
+
+  /* ── Bouton d'envoi — pill doré plein ── */
+  .feedback-submit {
+    display: block;
+    width: 100%;
+    background: #f0c97a;
+    color: #0b0e1a;
+    border: none;
+    border-radius: 50px;
+    padding: 0.85rem;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+  }
+  .feedback-submit:hover { filter: brightness(1.08); }
+
+  /* ── Champ honeypot — invisible pour les humains, piège à bots ── */
+  /* On le sort de l'écran ET on le retire du flux clavier (tabindex/autocomplete) */
+  .feedback-hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  /* ── Bloc d'erreurs de validation ── */
+  .feedback-errors {
+    background: rgba(220, 90, 90, 0.1);
+    border: 1px solid rgba(220, 90, 90, 0.35);
+    border-radius: 10px;
+    color: #f3b6b6;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+  .feedback-errors ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+</style>
+
+<div class="container feedback-page">
+  <div class="feedback-card">
+
+    <%# ── En-tête ── %>
+    <h1 class="feedback-title">Donnez-nous votre avis</h1>
+    <p class="feedback-subtitle">
+      Un bug, une idée, une remarque ? Vos retours nous aident à améliorer Noctilio.
+    </p>
+
+    <%# ── Erreurs de validation (réaffichées après un POST invalide) ── %>
+    <% if @feedback.errors.any? %>
+      <div class="feedback-errors">
+        Votre retour n'a pas pu être envoyé :
+        <ul>
+          <% @feedback.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%# ── Formulaire — POST vers /avis ── %>
+    <%= form_with model: @feedback, url: feedback_path, method: :post do |f| %>
+
+      <%# Catégorie du retour — menu déroulant alimenté par Feedback::CATEGORIES %>
+      <%= f.label :category, "Type de retour", class: "feedback-label" %>
+      <%= f.select :category,
+            options_for_select(
+              [["Bug ou problème", "bug"], ["Suggestion", "suggestion"], ["Autre", "autre"]],
+              @feedback.category
+            ),
+            {},
+            class: "feedback-field" %>
+
+      <%# Message — champ obligatoire (validé côté modèle) %>
+      <%= f.label :message, "Votre message", class: "feedback-label" %>
+      <%= f.text_area :message, class: "feedback-field",
+            placeholder: "Décrivez votre retour en quelques mots..." %>
+
+      <%# Email — optionnel, pré-rempli si l'utilisateur est connecté %>
+      <%= f.label :email, "Votre email (optionnel, pour vous répondre)", class: "feedback-label" %>
+      <%= f.email_field :email, class: "feedback-field",
+            placeholder: "vous@exemple.fr" %>
+
+      <%# ── Honeypot anti-spam ── %>
+      <%# Champ "website" invisible : un humain ne le voit pas et ne le remplit pas, %>
+      <%# un bot le remplit automatiquement → le controller ignore alors le retour. %>
+      <%# aria-hidden + tabindex=-1 + autocomplete=off pour ne pas gêner l'accessibilité. %>
+      <div class="feedback-hp" aria-hidden="true">
+        <label for="website">Ne pas remplir ce champ</label>
+        <%= text_field_tag :website, nil, tabindex: -1, autocomplete: "off" %>
+      </div>
+
+      <%# Bouton d'envoi %>
+      <%= f.submit "Envoyer mon retour", class: "feedback-submit" %>
+
+    <% end %>
+
+  </div>
+</div>

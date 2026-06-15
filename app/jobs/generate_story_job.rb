@@ -72,21 +72,32 @@ class GenerateStoryJob < ApplicationJob
     # correctement. L'audio (~25s) et l'image (~35-60s) peuvent se chevaucher
     # si Solid Queue a plusieurs workers configurés.
 
-    # Lance le job audio en arrière-plan via Solid Queue
-    # Il s'exécutera dès qu'un worker sera disponible
-    GenerateAudioJob.perform_later(story.id)
-    Rails.logger.info("GenerateStoryJob — job audio lancé pour story ##{story_id}")
+    # Image + audio sont réservés au Premium : le gratuit n'a QUE le texte.
+    # Pourquoi : ce sont les deux opérations payantes (gpt-image-1 et TTS) ;
+    # les réserver au Premium maîtrise le coût et rend l'offre payante désirable.
+    # EXCEPTION — offre découverte : la 1re histoire du compte est en accès complet
+    # même pour un gratuit (full_experience_for? renvoie true pour la 1re histoire).
+    # On regarde le statut du propriétaire de l'histoire (story → child → user).
+    if story.child.user.full_experience_for?(story)
+      # Lance le job audio en arrière-plan via Solid Queue
+      # Il s'exécutera dès qu'un worker sera disponible
+      GenerateAudioJob.perform_later(story.id)
+      Rails.logger.info("GenerateStoryJob — job audio lancé pour story ##{story_id}")
 
-    # Génère l'image dans ce job (thread principal).
-    # Le prompt image est désormais construit de façon DÉTERMINISTE en Ruby par
-    # ImageGeneratorService (approche "Portrait du héros") — plus d'appel Groq
-    # intermédiaire : moins de latence, pas de trait physique perdu à la réécriture.
-    begin
-      story.reload # S'assure que story.content est bien chargé depuis la base
-      ImageGeneratorService.new(story).call
-      Rails.logger.info("GenerateStoryJob — image générée pour story ##{story_id}")
-    rescue StandardError => e
-      Rails.logger.error("GenerateStoryJob — échec image pour story ##{story_id} : #{e.message}")
+      # Génère l'image dans ce job (thread principal).
+      # Le prompt image est désormais construit de façon DÉTERMINISTE en Ruby par
+      # ImageGeneratorService (approche "Portrait du héros") — plus d'appel Groq
+      # intermédiaire : moins de latence, pas de trait physique perdu à la réécriture.
+      begin
+        story.reload # S'assure que story.content est bien chargé depuis la base
+        ImageGeneratorService.new(story).call
+        Rails.logger.info("GenerateStoryJob — image générée pour story ##{story_id}")
+      rescue StandardError => e
+        Rails.logger.error("GenerateStoryJob — échec image pour story ##{story_id} : #{e.message}")
+      end
+    else
+      # Gratuit : on s'arrête au texte (pas d'image ni d'audio générés)
+      Rails.logger.info("GenerateStoryJob — user gratuit : texte seul (ni image ni audio) pour story ##{story_id}")
     end
 
     Rails.logger.info("GenerateStoryJob — histoire ##{story_id} générée avec succès")

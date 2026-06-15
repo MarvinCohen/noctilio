@@ -65,19 +65,52 @@ class User < ApplicationRecord
     admin == true
   end
 
-  # Compte les histoires créées ce mois-ci (tous enfants confondus)
-  def stories_this_month
-    stories.where(created_at: Time.current.beginning_of_month..)
+  # Compte les histoires créées cette semaine (tous enfants confondus)
+  # beginning_of_week = lundi 00:00 → le quota gratuit se réinitialise chaque lundi
+  def stories_this_week
+    stories.where(created_at: Time.current.beginning_of_week..)
            .count
   end
 
   # Retourne true si l'utilisateur peut encore créer une histoire
   # — Premium : illimité
-  # — Gratuit : limité à 3 histoires par mois
+  # — Gratuit : limité à 3 histoires par semaine
   def can_create_story?
     return true if premium?
 
-    stories_this_month < 3
+    stories_this_week < 3
+  end
+
+  # ============================================================
+  # Offre découverte — la 1re histoire du compte est en accès complet
+  # ============================================================
+  # But : montrer toute la valeur (illustration + audio + mode interactif)
+  # dès la 1re histoire pour donner envie de s'abonner. Dès la 2e histoire,
+  # un compte gratuit repasse en "texte seul".
+
+  # Retourne true si `story` est la TOUTE PREMIÈRE histoire du compte.
+  # On compare son id à la plus petite clé primaire des histoires de l'utilisateur :
+  # la plus petite id = la 1re histoire créée. Pas besoin de colonne dédiée.
+  # NB : si l'utilisateur supprime sa 1re histoire, la suivante redevient "la 1re"
+  # (offre re-débloquée) — limite assumée au lancement, risque faible.
+  def welcome_story?(story)
+    # story.id peut être nil si l'histoire n'est pas encore sauvegardée → false
+    story.id.present? && story.id == stories.minimum(:id)
+  end
+
+  # Décide si une histoire donnée a droit à l'expérience complète
+  # (illustration + audio + mode interactif) : Premium toujours, sinon
+  # uniquement la 1re histoire offerte. Utilisée par le job et l'endpoint audio.
+  def full_experience_for?(story)
+    premium? || welcome_story?(story)
+  end
+
+  # Retourne true tant que l'utilisateur n'a encore créé AUCUNE histoire :
+  # sa prochaine histoire sera donc sa 1re et bénéficiera de l'offre découverte.
+  # Utilisée par le formulaire de création pour activer le toggle "mode interactif"
+  # et afficher la bannière d'offre AVANT que l'histoire n'existe en base.
+  def first_story_pending?
+    stories.none?
   end
 
   # Retourne le nom complet de l'utilisateur

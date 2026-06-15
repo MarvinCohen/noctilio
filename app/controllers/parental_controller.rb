@@ -55,8 +55,8 @@ class ParentalController < ApplicationController
     # stories_per_day retourne un hash { Date => count }, ex: { 2026-04-07 => 2, ... }
     @weekly_stories = stories_per_day(30)
 
-    # Total d'histoires créées ce mois-ci (pour afficher la limite d'abonnement)
-    @stories_this_month = current_user.stories_this_month
+    # Total d'histoires créées cette semaine (pour afficher le quota gratuit hebdomadaire)
+    @stories_this_week = current_user.stories_this_week
   end
 
   private

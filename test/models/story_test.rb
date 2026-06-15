@@ -147,7 +147,7 @@ class StoryTest < ActiveSupport::TestCase
 
   # Vérifie que le scope `completed` ne retourne que les histoires terminées
   # Cas : base avec des histoires dans plusieurs statuts
-  # Pourquoi : ce scope est utilisé dans User#stories_this_month et les badges
+  # Pourquoi : ce scope est utilisé dans User#stories_this_week et les badges
   test "scope completed ne retourne que les histoires terminées" do
     # Act — récupère toutes les histoires completed de Léo
     completed = children(:leo).stories.completed

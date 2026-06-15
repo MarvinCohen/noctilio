@@ -705,11 +705,11 @@
           <div>
             <span class="par-badge-free">Gratuit</span>
             <p class="par-quota-text">
-              <%= @stories_this_month %>/3 histoires ce mois-ci
+              <%= @stories_this_week %>/3 histoires cette semaine
             </p>
             <div class="par-quota-bar">
               <div class="par-quota-fill"
-                   style="width: <%= (@stories_this_month / 3.0 * 100).round %>%"></div>
+                   style="width: <%= (@stories_this_week / 3.0 * 100).round %>%"></div>
             </div>
             <%= link_to "Passer en Premium →", subscription_path, class: "par-btn-primary" %>
           </div>

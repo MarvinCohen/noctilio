@@ -271,12 +271,21 @@
     <%# ── Cas 1 : l'utilisateur est déjà premium ── %>
     <% if @is_premium %>
 
-      <%# Badge "Premium actif" en vert %>
+      <%# Badge d'état — distingue "Premium actif" d'une résiliation programmée %>
+      <%# on_grace_period? : abonnement résilié mais encore valable jusqu'à l'échéance %>
       <div class="text-center mb-3">
-        <span class="sub-badge-active">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Premium actif
-        </span>
+        <% if @subscription&.on_grace_period? %>
+          <%# Résiliation programmée : on reste premium jusqu'à la date de fin (badge doré) %>
+          <span class="sub-badge-active" style="background: rgba(240, 201, 122, 0.12); color: #f0c97a; border-color: rgba(240, 201, 122, 0.45);">
+            Résiliation programmée
+          </span>
+        <% else %>
+          <%# Abonnement pleinement actif (badge vert) %>
+          <span class="sub-badge-active">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Premium actif
+          </span>
+        <% end %>
       </div>
 
       <%# Liste des avantages inclus %>
@@ -287,7 +296,7 @@
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Mode <strong>interactif</strong> — l'enfant fait des choix</span>
+          <span class="sub-feature-label">Mode <strong>interactif</strong> : l'enfant fait des choix</span>
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
@@ -299,12 +308,25 @@
         </li>
       </ul>
 
-      <%# Bouton annulation — discret, en bas de carte %>
-      <%= button_to "Résilier l'abonnement",
-            subscription_cancel_path,
-            method: :post,
-            class: "sub-btn-cancel",
-            data: { confirm: "Ton accès premium sera maintenu jusqu'à la fin de la période en cours. Confirmes-tu ?" } %>
+      <% if @subscription&.on_grace_period? %>
+        <%# Résiliation déjà programmée : on rappelle la date de fin d'accès %>
+        <%# et on propose de FAIRE MARCHE ARRIÈRE (réactiver) plutôt que de re-résilier. %>
+        <p class="sub-note" style="text-align: center;">
+          Ton accès Premium reste actif jusqu'au
+          <strong><%= @subscription.ends_at.strftime("%d/%m/%Y") %></strong>.
+        </p>
+        <%= button_to "Réactiver mon abonnement",
+              subscription_resume_path,
+              method: :post,
+              class: "sub-btn-cta" %>
+      <% else %>
+        <%# Abonnement actif : bouton de résiliation discret en bas de carte %>
+        <%= button_to "Résilier l'abonnement",
+              subscription_cancel_path,
+              method: :post,
+              class: "sub-btn-cancel",
+              data: { confirm: "Ton accès premium sera maintenu jusqu'à la fin de la période en cours. Confirmes-tu ?" } %>
+      <% end %>
 
     <%# ── Cas 2 : utilisateur gratuit — afficher le CTA ── %>
     <% else %>
@@ -315,15 +337,15 @@
         <div class="sub-price-period">par mois · sans engagement</div>
       </div>
 
-      <%# Jauge histoires gratuites (max 3/mois) %>
+      <%# Jauge histoires gratuites (max 3/semaine) %>
       <div class="sub-quota">
-        <div class="sub-quota-label">Histoires gratuites ce mois-ci</div>
+        <div class="sub-quota-label">Histoires gratuites cette semaine</div>
         <div class="sub-quota-bar">
           <%# Calcul du pourcentage utilisé sur 3 histoires max %>
-          <% pct = [(@stories_this_month.to_f / 3 * 100).round, 100].min %>
+          <% pct = [(@stories_this_week.to_f / 3 * 100).round, 100].min %>
           <div class="sub-quota-fill" style="width: <%= pct %>%"></div>
         </div>
-        <div class="sub-quota-count"><%= @stories_this_month %> / 3 utilisées</div>
+        <div class="sub-quota-count"><%= @stories_this_week %> / 3 utilisées</div>
       </div>
 
       <%# Liste des features incluses en premium %>
@@ -334,7 +356,7 @@
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Mode <strong>interactif</strong> — l'enfant fait des choix</span>
+          <span class="sub-feature-label">Mode <strong>interactif</strong> : l'enfant fait des choix</span>
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
@@ -348,9 +370,14 @@
 
       <%# Bouton CTA — soumet le formulaire de checkout Stripe %>
       <%# button_to génère un formulaire POST directement %>
+      <%# data-turbo: false → désactive Turbo sur CE formulaire. %>
+      <%# Indispensable : le checkout redirige vers un domaine EXTERNE (Stripe). %>
+      <%# Turbo soumet en fetch() et ne sait pas suivre une redirection cross-origin %>
+      <%# → sans ça, le clic ne fait "rien". On force donc une soumission navigateur classique. %>
       <%= button_to "S'abonner — 9,99€/mois",
             subscription_checkout_path,
             method: :post,
+            form: { data: { turbo: false } },
             class: "sub-btn-cta" %>
 
       <p class="sub-note">Paiement sécurisé par Stripe · Résiliable à tout moment</p>
@@ -373,7 +400,7 @@
       </thead>
       <tbody>
         <tr>
-          <td>Histoires par mois</td>
+          <td>Histoires par semaine</td>
           <td class="sub-col-free">3</td>
           <td class="sub-check">Illimitées</td>
         </tr>
@@ -384,11 +411,11 @@
         </tr>
         <tr>
           <td>Illustrations générées par IA</td>
-          <td class="sub-check">✓</td>
+          <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
         <tr>
-          <td>Mode interactif — l'enfant fait des choix</td>
+          <td>Mode interactif : l'enfant fait des choix</td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
