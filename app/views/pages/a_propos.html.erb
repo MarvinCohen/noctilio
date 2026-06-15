@@ -54,7 +54,7 @@
 
     <%# ── En-tête — nom + rôle ── %>
     <div class="legal-header">
-      <h1 class="legal-title" style="color: #f0c97a;">À propos</h1>
+      <h1 class="legal-title">À propos</h1>
       <%# Sous-titre court — renforce immédiatement l'identité de l'auteur %>
       <p class="legal-date">Marvin Cohen, Fondateur de Noctilio</p>
     </div>
@@ -64,7 +64,7 @@
       <%# ── Section 1 : Qui je suis ── %>
       <%# Signal E-E-A-T "Experience" : parcours personnel concret %>
       <section class="legal-section">
-        <h2 style="color: #f0c97a;">Qui je suis</h2>
+        <h2>Qui je suis</h2>
         <p>
           Je m'appelle Marvin Cohen. Je suis développeur web, formé au Wagon Bordeaux, et papa.
           C'est d'ailleurs cette deuxième casquette qui m'a poussé à créer Noctilio.
@@ -82,7 +82,7 @@
       <%# ── Section 2 : Pourquoi Noctilio ── %>
       <%# Signal E-E-A-T "Experience" : motivation authentique, contexte réel %>
       <section class="legal-section">
-        <h2 style="color: #f0c97a;">Pourquoi j'ai créé Noctilio</h2>
+        <h2>Pourquoi j'ai créé Noctilio</h2>
         <p>
           L'idée est née simplement : et si l'IA pouvait générer, chaque soir, une histoire
           unique centrée sur ton enfant ? Avec son prénom comme héros, ses centres d'intérêt
@@ -102,7 +102,7 @@
       <%# ── Section 3 : La technologie ── %>
       <%# Signal E-E-A-T "Expertise" : transparence sur les outils utilisés %>
       <section class="legal-section">
-        <h2 style="color: #f0c97a;">La technologie derrière Noctilio</h2>
+        <h2>La technologie derrière Noctilio</h2>
         <p>
           Noctilio est construit avec :
         </p>
@@ -139,7 +139,7 @@
       <%# ── Section 4 : Mes valeurs ── %>
       <%# Signal E-E-A-T "Trustworthiness" : engagement envers la sécurité des enfants %>
       <section class="legal-section">
-        <h2 style="color: #f0c97a;">Ce qui compte pour moi</h2>
+        <h2>Ce qui compte pour moi</h2>
         <ul>
           <li>
             <strong>Sécurité avant tout.</strong> Chaque histoire est générée avec
@@ -165,7 +165,7 @@
       <%# ── Section 5 : Contact ── %>
       <%# Signal E-E-A-T "Trustworthiness" : joignabilité réelle de l'auteur %>
       <section class="legal-section">
-        <h2 style="color: #f0c97a;">Me contacter</h2>
+        <h2>Me contacter</h2>
         <p>
           Tu as une question, une suggestion, ou tu veux simplement raconter
           comment Noctilio a changé ton rituel du soir ?
@@ -219,3 +219,29 @@
     </div>
   </div>
 </div>
+
+<%# ── CSS — identique aux pages légales (cgu, confidentialité, mentions) ── %>
+<%# Sans ce bloc, la page À propos n'avait aucun style (classes .legal-* non définies) %>
+<style>
+  /* Conteneur pleine hauteur, fond sombre de l'app */
+  .legal-page {
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    background: var(--bg-app, #0b0e1a);
+  }
+  .legal-container { max-width: 760px; margin: 0 auto; }
+
+  /* En-tête centré avec séparateur doré */
+  .legal-header { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(240, 201, 122, 0.15); }
+  .legal-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 300; font-style: italic; color: #f0c97a; margin: 0 0 0.5rem; }
+  .legal-date { font-size: 0.82rem; color: rgba(138, 133, 120, 0.7); margin: 0; }
+
+  /* Sections — titres h2 en doré (cohérent avec les pages légales) */
+  .legal-section { margin-bottom: 2.5rem; }
+  .legal-section h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.25rem; font-weight: 600; color: #f0c97a; margin: 0 0 0.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid rgba(240, 201, 122, 0.1); }
+
+  /* Corps de texte — police lisible, gris doux */
+  .legal-content p, .legal-content li { font-family: 'Lora', Georgia, serif; font-size: 0.95rem; color: #a8a29a; line-height: 1.85; margin-bottom: 0.75rem; }
+  .legal-content ul { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+  .legal-content strong { color: #d4cfc4; font-weight: 600; }
+</style>
