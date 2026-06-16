@@ -303,7 +303,10 @@ class ImageGeneratorService
 
   # ── Référence de style visuel selon le style choisi par le parent ──────────
   STYLE_REFS = {
-    "ghibli" => "Makoto Shinkai and Studio Ghibli cinematic animation style, soft watercolor pastels, dreamy atmosphere",
+    # Ghibli : vrai trait Miyazaki (dessin 2D main, contours nets, aplats de couleur).
+    # On retire "soft watercolor pastels" (qui tirait vers le style aquarelle et rendait
+    # un flou peint) et "Makoto Shinkai" (studio plus photographique qui brouillait le rendu).
+    "ghibli" => "Studio Ghibli hand-drawn 2D animation style by Hayao Miyazaki, clean ink outlines, soft cel-shaded flat colors, lush painted backgrounds, gentle rounded faces, whimsical storybook atmosphere",
     "comics" => "Spider-Man Into the Spider-Verse animation style, bold outlines, vibrant saturated colors",
     "pixar" => "Pixar and Disney 3D animation style, warm cinematic lighting, highly detailed CGI, expressive characters",
     "watercolor" => "vintage children's book illustration style, soft watercolor textures, warm hand-painted look, storybook fairy tale",

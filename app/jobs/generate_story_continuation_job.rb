@@ -16,8 +16,37 @@ class GenerateStoryContinuationJob < ApplicationJob
     result = StoryGeneratorService.new(story).continue_with_choice(story_choice)
 
     if result[:success]
-      # Sauvegarder la suite dans le choix résolu
-      story_choice.update!(context_chosen: result[:content])
+      content = result[:content]
+
+      # La continuation peut se terminer par un NOUVEAU bloc [CHOIX] (étape
+      # intermédiaire) qui devient le choix suivant de l'aventure.
+      next_choice_attrs = extract_choice(content)
+
+      # On retire le bloc [CHOIX] du texte affiché : la vue rend context_chosen
+      # via simple_format (qui ne nettoie pas le markdown), donc sans ce gsub le
+      # bloc brut "[CHOIX] Question : ..." s'afficherait dans l'histoire.
+      clean_text = content.gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "").strip
+
+      # Sauvegarder la suite (nettoyée) dans le choix résolu
+      story_choice.update!(context_chosen: clean_text)
+
+      # Créer le choix suivant si la continuation en proposait un
+      if next_choice_attrs
+        story.story_choices.create!(next_choice_attrs.merge(step_number: story_choice.step_number + 1))
+        Rails.logger.info("GenerateStoryContinuationJob — choix #{story_choice.step_number + 1} créé pour story ##{story_id}")
+      end
+
+      # Pré-génère l'audio de la SUITE pour un enchaînement fluide (Partie B).
+      # On lance le TTS dès que le texte de la continuation est écrit : ainsi, quand
+      # l'enfant finit d'écouter le passage en cours, l'audio de la suite est déjà
+      # prêt (ou presque) et la lecture s'enchaîne sans coupure ni retour au début.
+      # Réservé à l'accès complet (Premium ou 1re histoire offerte) car le TTS coûte.
+      # source: "continuation" + choice_id → GenerateAudioJob lit choice.context_chosen
+      # et attache le MP3 à choice.audio_file (pas à story.audio_file).
+      if story.child.user.full_experience_for?(story)
+        GenerateAudioJob.perform_later(story.id, source: "continuation", choice_id: story_choice.id)
+        Rails.logger.info("GenerateStoryContinuationJob — audio de la suite lancé pour le choix ##{story_choice.id}")
+      end
 
       # Marquer l'histoire comme terminée de nouveau
       story.update!(status: :completed)
@@ -30,5 +59,23 @@ class GenerateStoryContinuationJob < ApplicationJob
     end
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn("GenerateStoryContinuationJob — enregistrement introuvable")
+  end
+
+  private
+
+  # Extrait le 1er bloc [CHOIX] d'un texte et retourne un hash d'attributs
+  # (question, option_a, option_b) prêt pour StoryChoice, ou nil si pas de bloc
+  # valide. Utilisé pour créer le choix suivant à partir d'une continuation.
+  def extract_choice(content)
+    block = content.match(/\[CHOIX\](.*?)\[FIN CHOIX\]/m)&.captures&.first
+    return nil if block.blank?
+
+    question = block.match(/Question\s*:\s*(.+)/i)&.captures&.first&.strip
+    option_a = block.match(/Option A\s*:\s*(.+)/i)&.captures&.first&.strip
+    option_b = block.match(/Option B\s*:\s*(.+)/i)&.captures&.first&.strip
+
+    return nil unless question && option_a && option_b
+
+    { question: question, option_a: option_a, option_b: option_b }
   end
 end

@@ -431,6 +431,112 @@ class StoriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ===========================================================
+  # SECTION 5ter — AUDIO DE LA SUITE INTERACTIVE (Partie B)
+  # ===========================================================
+  # Vérifie le câblage de l'enchaînement audio après un choix :
+  #   - #status expose choice_id + continuation_audio_url
+  #   - #audio source=continuation sert l'audio du choix (redirect) ou lance le job (202)
+  #   - la garde Premium s'applique aussi à la continuation (403)
+
+  # Helper — crée une histoire interactive complète possédée par un user PREMIUM (admin),
+  # avec un choix déjà résolu (chosen_option + context_chosen) prêt pour l'audio de suite.
+  # Retourne [story, choice].
+  def create_premium_interactive_story(user)
+    child  = user.children.create!(name: "Zoé", age: 6, gender: "girl")
+    story  = child.stories.create!(
+      title: "Aventure premium", content: "Début de l'histoire...",
+      status: :completed, interactive: true,
+      educational_value: "courage", duration_minutes: 5
+    )
+    choice = story.story_choices.create!(
+      step_number: 1, question: "Que fait Zoé ?",
+      option_a: "Avancer", option_b: "Reculer",
+      chosen_option: "a", context_chosen: "Zoé avança courageusement..."
+    )
+    [story, choice]
+  end
+
+  # Vérifie que /status expose le choix résolu et l'URL audio de la suite (nil si pas prêt)
+  # Cas : histoire interactive terminée avec un choix résolu mais sans audio attaché
+  # Pourquoi : le lecteur audio a besoin de choice_id pour demander l'audio de la suite
+  test "GET /stories/:id/status expose choice_id et continuation_audio_url" do
+    # Arrange — Marie, histoire interactive, on résout le choix avec une suite
+    sign_in_as(users(:marie))
+    story  = stories(:interactive_story)
+    choice = story_choices(:pending_choice)
+    choice.update!(chosen_option: "a", context_chosen: "Léo entra dans la forêt...")
+
+    # Act
+    get status_story_path(story), headers: { "Accept" => "application/json" }
+
+    # Assert
+    assert_response :success
+    data = JSON.parse(response.body)
+    assert_equal choice.id, data["choice_id"],
+                 "status doit renvoyer l'id du dernier choix résolu"
+    assert_nil data["continuation_audio_url"],
+               "continuation_audio_url doit être nil tant que l'audio n'est pas attaché"
+  end
+
+  # Vérifie que /audio source=continuation lance le job ciblé et répond 202 si l'audio n'est pas prêt
+  # Cas : user premium, choix résolu sans audio attaché
+  # Pourquoi : le job doit cibler le bon choix (choice_id) pour pré-générer l'audio de la suite
+  test "POST /stories/:id/audio source=continuation lance le job et répond 202" do
+    # Arrange — admin (premium) possède l'histoire interactive
+    sign_in_as(users(:admin_user))
+    story, choice = create_premium_interactive_story(users(:admin_user))
+
+    # Act + Assert — le job GenerateAudioJob doit être mis en file
+    assert_enqueued_with(job: GenerateAudioJob) do
+      post audio_story_path(story), params: { source: "continuation", choice_id: choice.id }
+    end
+
+    # Assert — 202 Accepted (le JS pollera /status ensuite)
+    assert_response :accepted,
+                    "L'audio de suite non prêt doit répondre 202"
+  end
+
+  # Vérifie que /audio source=continuation redirige vers le fichier si l'audio est déjà attaché
+  # Cas : user premium, choix résolu avec un audio_file déjà attaché (pré-généré)
+  # Pourquoi : enchaînement fluide — on sert directement l'audio sans relancer le TTS
+  test "POST /stories/:id/audio source=continuation sert le fichier déjà attaché" do
+    # Arrange — admin (premium), on attache un faux MP3 au choix
+    sign_in_as(users(:admin_user))
+    story, choice = create_premium_interactive_story(users(:admin_user))
+    choice.audio_file.attach(
+      io: StringIO.new("faux-mp3"),
+      filename: "suite.mp3",
+      content_type: "audio/mpeg"
+    )
+
+    # Act
+    post audio_story_path(story), params: { source: "continuation", choice_id: choice.id }
+
+    # Assert — redirige vers l'URL du fichier (pas de 202, pas de nouveau job)
+    assert_response :redirect,
+                    "Un audio de suite déjà prêt doit être servi par redirection"
+  end
+
+  # Vérifie que la garde Premium bloque aussi l'audio de la suite (sécurité business)
+  # Cas : Marie (gratuite) demande l'audio d'une continuation
+  # Pourquoi : le TTS coûte de l'argent — réservé à l'accès complet, même pour les suites
+  test "POST /stories/:id/audio source=continuation retourne 403 pour un compte gratuit" do
+    # Arrange — Marie est gratuite. On réutilise completed_saved : le test 403 existant
+    # confirme que ce n'est PAS sa 1re histoire (sinon l'offre découverte donnerait l'accès).
+    # La garde full_experience_for? s'exécute AVANT toute logique de choix, donc un
+    # choice_id factice suffit : on ne l'atteint jamais.
+    sign_in_as(users(:marie))
+    story = stories(:completed_saved)
+
+    # Act
+    post audio_story_path(story), params: { source: "continuation", choice_id: 999_999 }
+
+    # Assert — 403 Forbidden, aucun appel TTS
+    assert_response :forbidden,
+                    "L'audio de suite doit être refusé (403) pour un compte gratuit"
+  end
+
+  # ===========================================================
   # SECTION 6 — DELETE /stories/:id (destroy)
   # ===========================================================
 

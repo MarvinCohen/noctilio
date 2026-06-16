@@ -123,8 +123,12 @@ class GenerateStoryJob < ApplicationJob
     first_line.gsub(/^[#*\s]+/, "").gsub(/[*#]+$/, "").strip
   end
 
-  # Parse TOUS les blocs [CHOIX] dans le texte généré
-  # Le nombre de blocs dépend de la durée : 5min→1, 10min→2, 15min→3
+  # Parse le PREMIER bloc [CHOIX] du texte généré et crée le choix d'étape 1.
+  #
+  # Modèle séquentiel ("un choix à la fois") : la génération initiale ne contient
+  # qu'UN seul choix (celui qui clôt l'intro). Les choix suivants sont créés par
+  # GenerateStoryContinuationJob après chaque décision de l'enfant.
+  #
   # Format attendu :
   #   [CHOIX]
   #   Question : ...
@@ -132,36 +136,26 @@ class GenerateStoryJob < ApplicationJob
   #   Option B : ...
   #   [FIN CHOIX]
   def create_story_choice_from_content(story, content)
-    # scan retourne toutes les occurrences du pattern (pas seulement la première)
-    blocks = content.scan(/\[CHOIX\](.*?)\[FIN CHOIX\]/m)
-    return if blocks.empty?
+    # match (et pas scan) : on ne s'intéresse qu'au 1er bloc [CHOIX]
+    block = content.match(/\[CHOIX\](.*?)\[FIN CHOIX\]/m)&.captures&.first
+    return if block.blank?
 
-    # Nombre de choix attendu selon la durée : 5min→1, 10min→2, 15min→3
-    # On limite au nombre attendu même si l'IA en a généré plus — évite les doublons
-    expected_count = { 5 => 1, 10 => 2, 15 => 3 }.fetch(story.duration_minutes.to_i, 1)
-    blocks = blocks.first(expected_count)
+    question = block.match(/Question\s*:\s*(.+)/i)&.captures&.first&.strip
+    option_a = block.match(/Option A\s*:\s*(.+)/i)&.captures&.first&.strip
+    option_b = block.match(/Option B\s*:\s*(.+)/i)&.captures&.first&.strip
 
-    # Crée un StoryChoice pour chaque bloc trouvé
-    # step_number indique l'ordre : 1er choix = étape 1, 2ème = étape 2, etc.
-    blocks.each_with_index do |captures, index|
-      choice_block = captures.first
+    return unless question && option_a && option_b
 
-      question = choice_block.match(/Question\s*:\s*(.+)/i)&.captures&.first&.strip
-      option_a = choice_block.match(/Option A\s*:\s*(.+)/i)&.captures&.first&.strip
-      option_b = choice_block.match(/Option B\s*:\s*(.+)/i)&.captures&.first&.strip
+    # 1er choix de l'aventure → step_number 1
+    story.story_choices.create!(
+      step_number: 1,
+      question: question,
+      option_a: option_a,
+      option_b: option_b
+    )
 
-      next unless question && option_a && option_b
-
-      story.story_choices.create!(
-        step_number: index + 1, # 1-indexé
-        question: question,
-        option_a: option_a,
-        option_b: option_b
-      )
-
-      Rails.logger.info("GenerateStoryJob — choix interactif #{index + 1} créé pour story ##{story.id}")
-    end
+    Rails.logger.info("GenerateStoryJob — choix interactif 1 créé pour story ##{story.id}")
   rescue StandardError => e
-    Rails.logger.error("GenerateStoryJob — échec création choix interactifs : #{e.message}")
+    Rails.logger.error("GenerateStoryJob — échec création choix interactif : #{e.message}")
   end
 end

@@ -484,17 +484,20 @@
 }
 
 // ── Animation "Prêt" sur le bouton Play ──────────────────────────────────
-// Déclenché par story_reader_controller.markReady() dès que audio_url est disponible.
-// 3 pulses dorés pour attirer l'attention sans être agressif.
+// Déclenché par story_reader_controller (markReady pour l'audio principal,
+// markContinuationReady pour la suite) dès que l'audio est disponible.
+// Anneau doré qui s'élargit (20px de portée) pour bien attirer l'œil.
 @keyframes audioReadyPulse {
-  0%   { box-shadow: 0 0 0 0   rgba(240, 201, 122, 0.7); }
-  60%  { box-shadow: 0 0 0 12px rgba(240, 201, 122, 0);  }
-  100% { box-shadow: 0 0 0 0   rgba(240, 201, 122, 0);   }
+  0%   { box-shadow: 0 0 0 0    rgba(240, 201, 122, 0.85); }
+  70%  { box-shadow: 0 0 0 20px rgba(240, 201, 122, 0);    }
+  100% { box-shadow: 0 0 0 0    rgba(240, 201, 122, 0);    }
 }
 
-.audio-bar-play--ready {
-  // 3 répétitions — assez pour être visible, pas envahissant
-  animation: audioReadyPulse 0.75s ease-out 3;
+// Pulse en boucle jusqu'à ce que l'enfant clique sur Play (le controller retire
+// la classe au clic). Persistant : l'audio peut être prêt pendant que l'enfant
+// lit le texte sans regarder le bouton — un pulse limité serait souvent manqué.
+.audio-bar-play--ready-loop {
+  animation: audioReadyPulse 1.4s ease-out infinite;
 }
 
 // Bouton Stop — cercle discret, fond semi-transparent

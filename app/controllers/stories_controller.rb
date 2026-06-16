@@ -180,15 +180,26 @@ class StoriesController < ApplicationController
   def status
     # Récupère la continuation interactive si disponible (mode interactif terminé)
     # Utilisé par story_choice_controller.js pour mettre à jour le texte sans recharger
-    continuation_html = nil
+    continuation_html      = nil  # HTML de la suite à afficher
+    last_choice_id         = nil  # ID du dernier choix résolu (pour l'audio de la suite)
+    continuation_audio_url = nil  # URL de l'audio de la suite (nil si pas encore prêt)
+
     if @story.completed? && @story.interactive?
+      # Dernier choix résolu = celui dont on vient de générer la suite
       resolved = @story.story_choices.where.not(chosen_option: nil).order(:step_number).last
-      if resolved&.context_chosen.present?
-        # Convertit le markdown généré par l'IA en HTML propre côté serveur
-        # Redcarpet est plus fiable que le parser JS artisanal dans story_choice_controller
-        renderer = Redcarpet::Render::HTML.new(safe_links_only: true)
-        markdown = Redcarpet::Markdown.new(renderer, autolink: false, tables: false)
-        continuation_html = markdown.render(resolved.context_chosen)
+      if resolved
+        last_choice_id = resolved.id
+
+        if resolved.context_chosen.present?
+          # On utilise le MÊME helper que l'histoire initiale (render_story_markdown)
+          # pour que la suite ait exactement la même mise en page (<p class="story-paragraph">).
+          # Avant : Redcarpet produisait des <p> nus → style différent de l'intro.
+          continuation_html = helpers.render_story_markdown(resolved.context_chosen)
+        end
+
+        # Audio de la suite : prêt seulement si GenerateAudioJob a terminé (Partie B)
+        # Le JS du lecteur l'enchaîne après le passage en cours s'il est disponible.
+        continuation_audio_url = url_for(resolved.audio_file) if resolved.audio_file.attached?
       end
     end
 
@@ -210,7 +221,9 @@ class StoriesController < ApplicationController
       continuation: continuation_html,
       redirect_url: story_path(@story),
       image_url: image_url,
-      audio_url: audio_url # nil si l'audio n'est pas encore généré
+      audio_url: audio_url, # nil si l'audio principal n'est pas encore généré
+      choice_id: last_choice_id, # dernier choix résolu (pour cibler l'audio de la suite)
+      continuation_audio_url: continuation_audio_url # nil si l'audio de la suite n'est pas prêt
     }
   end
 
@@ -233,6 +246,26 @@ class StoriesController < ApplicationController
 
     source = params[:source] || "story"
 
+    # CAS 1 — audio d'une SUITE interactive (Partie B)
+    # Le JS demande l'audio de la continuation liée à un choix précis.
+    # On sert choice.audio_file (et NON story.audio_file) pour ne pas écraser
+    # l'audio principal de l'histoire.
+    if source == "continuation" && params[:choice_id].present?
+      choice = @story.story_choices.find_by(id: params[:choice_id])
+      head :not_found and return if choice.nil?
+
+      if choice.audio_file.attached?
+        # Audio de la suite prêt — redirige vers son URL
+        redirect_to url_for(choice.audio_file), allow_other_host: true
+      else
+        # Pas encore prêt — lance le job ciblé et répond 202 (le JS pollera /status)
+        GenerateAudioJob.perform_later(@story.id, source: "continuation", choice_id: choice.id)
+        head :accepted # 202
+      end
+      return
+    end
+
+    # CAS 2 — audio principal de l'histoire (comportement par défaut)
     if @story.audio_file.attached?
       # Audio prêt — redirige vers l'URL ActiveStorage (Cloudinary en prod)
       redirect_to url_for(@story.audio_file), allow_other_host: true

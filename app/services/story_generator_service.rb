@@ -74,11 +74,13 @@ class StoryGeneratorService
     alternative_choice = story_choice.dup
     alternative_choice.chosen_option = story_choice.chosen_option == "a" ? "b" : "a"
 
-    # Appelle le même moteur de continuation avec l'option inversée
+    # Appelle le même moteur de continuation avec l'option inversée.
+    # request_next_choice: false → la timeline alternative ne propose JAMAIS de
+    # nouveau choix cliquable (c'est une exploration en lecture seule du "et si...").
     response = @client.chat(
       parameters: {
         model: MODEL,
-        messages: build_continuation_messages(alternative_choice),
+        messages: build_continuation_messages(alternative_choice, request_next_choice: false),
         temperature: 0.85,
         max_tokens: 600,
         top_p: 0.9
@@ -106,7 +108,10 @@ class StoryGeneratorService
         model: MODEL,
         messages: build_continuation_messages(story_choice),
         temperature: 0.85,
-        max_tokens: 600, # Suite plus courte — environ 3 paragraphes
+        # Budget proportionnel à la durée (voir continuation_tokens).
+        # Avant : 600 tokens fixes → trop court face à la cible ~875 mots
+        # demandée dans le prompt, d'où des suites coupées en plein milieu de phrase.
+        max_tokens: continuation_tokens,
         top_p: 0.9
       }
     )
@@ -144,6 +149,28 @@ class StoryGeneratorService
   # Prompt système — personnage et règles NON-NÉGOCIABLES de l'IA
   # IMPORTANT : les directives critiques sont EN PREMIER (Llama pèse plus les premiers tokens)
   def system_prompt
+    # Règle 7 (clôture) — elle DIFFÈRE selon le mode :
+    # - Mode classique : l'histoire doit toujours être conclue (épilogue obligatoire).
+    # - Mode interactif : l'histoire NE doit PAS être conclue d'office — elle
+    #   s'arrête sur un choix. C'est l'instruction du message utilisateur qui dira,
+    #   au cas par cas, s'il faut s'arrêter sur un [CHOIX] ou écrire la conclusion.
+    closing_rule = if @story.interactive?
+                     <<~RULE
+                       7. NE COUPE JAMAIS EN PLEIN MILIEU : termine toujours ta phrase et ta scène
+                          proprement. En mode interactif, tu t'arrêtes au moment d'un choix
+                          (bloc [CHOIX]) SANS résoudre l'action — SAUF si l'instruction te
+                          demande explicitement d'écrire la conclusion finale.
+                          Suis à la lettre l'instruction du message utilisateur sur ce point.
+                     RULE
+                   else
+                     <<~RULE
+                       7. FIN OBLIGATOIRE : L'histoire doit TOUJOURS se terminer complètement.
+                          Ne t'arrête JAMAIS en plein milieu d'une phrase ou d'une scène.
+                          Si tu approches de la limite de tokens, écris l'épilogue immédiatement.
+                          Une histoire sans fin est un échec — la conclusion est non-négociable.
+                     RULE
+                   end
+
     <<~PROMPT
       Tu es le meilleur conteur d'histoires épiques et magiques pour enfants au monde.
       Tu écris en français, dans le style des grands films d'animation (Pixar, Miyazaki, Disney).
@@ -180,23 +207,22 @@ class StoryGeneratorService
       6. VOCABULAIRE ADAPTÉ : Adapté à l'âge, mais jamais simplet.
          Les enfants aiment les grands mots quand le contexte les rend compréhensibles.
 
-      7. FIN OBLIGATOIRE : L'histoire doit TOUJOURS se terminer complètement.
-         Ne t'arrête JAMAIS en plein milieu d'une phrase ou d'une scène.
-         Si tu approches de la limite de tokens, écris l'épilogue immédiatement.
-         Une histoire sans fin est un échec — la conclusion est non-négociable.
+      #{closing_rule}
     PROMPT
   end
 
-  # Prompt utilisateur — la demande précise avec tous les paramètres de l'histoire
+  # Prompt utilisateur — aiguille vers la version interactive ou classique.
+  # En interactif, on ne génère que le DÉBUT de l'histoire (jusqu'au 1er choix) ;
+  # la suite est produite au fil des choix par GenerateStoryContinuationJob.
   def user_prompt
-    # Récupération des paramètres de l'histoire
     value_label = educational_value_label
 
-    # Construction du prompt utilisateur — variables enfant + contexte de l'aventure
-    # Chain of Thought : on guide le modèle étape par étape pour une meilleure cohérence
+    # Héros (le principal + d'éventuels héros secondaires de la même famille)
     extra        = @story.extra_children.to_a
     all_heroes   = [@child] + extra
     heroes_desc  = all_heroes.map { |c| "• #{c.avatar_description}" }.join("\n")
+
+    # Nombre de mots visé pour une histoire COMPLÈTE (200 mots/min)
     word_count   = @story.duration_minutes * 200
 
     # Ligne univers — OBLIGATOIRE quand world_theme est défini.
@@ -208,6 +234,15 @@ class StoryGeneratorService
                           "🌟 AVENTURE : #{@story.custom_theme.presence || 'une aventure épique et magique'}"
                         end
 
+    if @story.interactive?
+      interactive_user_prompt(heroes_desc, adventure_section, value_label, word_count)
+    else
+      classic_user_prompt(heroes_desc, adventure_section, value_label, word_count)
+    end
+  end
+
+  # Prompt d'une histoire CLASSIQUE (non interactive) : histoire complète d'un bloc.
+  def classic_user_prompt(heroes_desc, adventure_section, value_label, word_count)
     prompt = <<~PROMPT
       PARAMÈTRES DE L'HISTOIRE :
 
@@ -257,100 +292,129 @@ class StoryGeneratorService
       Si tu approches de la limite, rédige l'épilogue immédiatement.
     FORMAT
 
-    # Mode interactif : nombre de choix selon la durée de l'histoire
-    # 5 min → 1 choix, 10 min → 2 choix, 15 min → 3 choix
-    # IMPORTANT : tous les blocs [CHOIX] sont dans la génération initiale —
-    # la suite après chaque choix sera générée séparément par GenerateStoryContinuationJob
-    if @story.interactive?
-      nb_choices = interactive_choices_count
-
-      prompt += <<~INTERACTIVE
-
-        IMPORTANT — Mode interactif : insère EXACTEMENT #{nb_choices} bloc(s) de choix.
-
-        RÈGLE ABSOLUE : le bloc [CHOIX] doit apparaître au MOMENT DE TENSION MAXIMALE —
-        AVANT que la situation soit résolue, AVANT que le héros agisse, AVANT le dénouement.
-        L'histoire doit s'arrêter net sur un dilemme, comme au bord d'un précipice.
-
-        ✓ BON : "Le robot ennemi se dressa face à Isaac. Deux options s'offrirent à lui..."
-            → [CHOIX] ← l'enfant décide MAINTENANT
-        ✗ MAUVAIS : "Isaac vainquit le robot et rentra chez lui triomphant."
-            → [CHOIX] ← trop tard, l'histoire est déjà finie
-
-        Format de chaque bloc (respecte exactement ce format) :
-        [CHOIX]
-        Question : (question courte au moment de la décision — "Que va faire [héros] ?")
-        Option A : (première action possible)
-        Option B : (deuxième action possible)
-        [FIN CHOIX]
-
-        Après chaque bloc [CHOIX], NE PAS résoudre l'action — arrête-toi là.
-        La suite sera générée par l'enfant en faisant son choix.
-        Nombre de blocs [CHOIX] : #{nb_choices}, placés avant chaque résolution de chapitre.
-      INTERACTIVE
-    end
-
     prompt
   end
 
-  # Construit les messages pour la continuation après un choix interactif
+  # Prompt de la 1re partie d'une histoire INTERACTIVE.
+  # Objectif : poser le décor + un ÉVÉNEMENT déclencheur qui rend le choix
+  # crucial, puis s'arrêter NET sur un unique bloc [CHOIX]. Aucune conclusion.
+  def interactive_user_prompt(heroes_desc, adventure_section, value_label, word_count)
+    # Nombre total de choix prévus sur toute l'aventure (selon la durée)
+    total_choices = interactive_choices_count
+
+    # L'intro ne couvre qu'UN segment de l'histoire (le morceau avant le 1er choix).
+    # On répartit le total de mots sur (nb de choix + 1) segments.
+    segment_words = word_count / (total_choices + 1)
+
+    <<~PROMPT
+      PARAMÈTRES DE L'HISTOIRE INTERACTIVE :
+
+      ⚔️  HÉROS (présents ensemble dès la première phrase) :
+      #{heroes_desc}
+
+      #{adventure_section}
+      💫 VALEUR À TRANSMETTRE : #{value_label}
+
+      C'est une histoire DONT L'ENFANT EST LE HÉROS : il fera des choix qui
+      décident de la suite. Tu n'écris PAS toute l'histoire maintenant — tu
+      écris seulement le DÉBUT, jusqu'au premier choix.
+
+      AVANT D'ÉCRIRE, pense étape par étape (ne pas afficher cette réflexion) :
+      1. Comment les héros SONT-ILS déjà en action dès la 1ère phrase ?
+      2. Quel ÉVÉNEMENT déclencheur fait surgir un vrai dilemme pour le héros ?
+      3. Pourquoi les deux options sont-elles aussi tentantes l'une que l'autre
+         (pas de "bon" ni de "mauvais" choix évident) ?
+
+      MAINTENANT ÉCRIS LE DÉBUT (environ #{segment_words} mots) :
+      — Titre accrocheur sur la première ligne (sans "Titre :" ni "#")
+      — Plante le décor et les héros EN ACTION, dans l'univers demandé
+      — Fais monter la tension vers un ÉVÉNEMENT qui force une décision
+      — ARRÊTE-TOI EXACTEMENT au moment de la décision, sur le bloc [CHOIX]
+
+      RÈGLE ABSOLUE — NE termine PAS l'histoire :
+      — PAS d'épilogue, PAS de conclusion, PAS de "ils vécurent heureux".
+      — NE résous PAS la situation : le héros est figé devant son choix.
+      — Le texte se termine par le bloc [CHOIX] et RIEN après.
+
+      Format du bloc de choix (à placer tout à la fin, une seule fois) :
+      [CHOIX]
+      Question : (question courte au moment de décider — "Que va faire [héros] ?")
+      Option A : (première action possible, audacieuse)
+      Option B : (deuxième action possible, tout aussi tentante)
+      [FIN CHOIX]
+    PROMPT
+  end
+
+  # Construit les messages pour la continuation après un choix interactif.
   # N'envoie PAS l'histoire depuis le début — seulement le contexte récent
-  # pour que l'IA continue naturellement sans repartir à zéro
-  def build_continuation_messages(story_choice)
-    # Vérifie s'il reste des choix non résolus après celui-ci (step_number supérieur)
-    remaining_choices = @story.story_choices
-                              .where(chosen_option: nil)
-                              .where("step_number > ?", story_choice.step_number)
-                              .count
+  # pour que l'IA continue naturellement sans repartir à zéro.
+  #
+  # request_next_choice : faut-il que la continuation se termine sur un NOUVEAU
+  #   bloc [CHOIX] (étape intermédiaire) ou par la conclusion finale ?
+  #   - nil (défaut) : calculé automatiquement selon l'étape du choix et le
+  #     nombre total de choix prévus pour la durée.
+  #   - false : forcé sans nouveau choix (utilisé par les timelines alternatives,
+  #     qui sont des explorations en lecture seule, sans branche cliquable).
+  def build_continuation_messages(story_choice, request_next_choice: nil)
+    # Nombre total de choix prévus sur l'aventure (5min→1, 10min→2, 15min→3)
+    total_choices = interactive_choices_count
 
-    # Calcule combien de mots pour cette continuation
-    continuation_words = tokens_for_duration / 4 # ~quart de l'histoire par continuation
+    # Par défaut : on demande un nouveau choix tant qu'on n'a pas atteint le dernier.
+    request_next_choice = story_choice.step_number < total_choices if request_next_choice.nil?
 
-    # Prend les 1500 derniers caractères de l'histoire — assez pour la cohérence narrative,
-    # sans envoyer tout le texte depuis le début (qui ferait repartir l'IA au début)
-    recent_context = @story.content.to_s.last(1500)
+    # Mots visés pour ce passage (~un quart de l'histoire par continuation)
+    continuation_words = tokens_for_duration / 4
 
-    if remaining_choices.positive?
-      # Il reste des choix à venir — génère un passage intermédiaire qui fait avancer l'histoire
-      # sans la conclure (l'enfant aura encore un choix à faire après)
-      continuation_instruction = <<~CHOICE
-        L'histoire s'intitule "#{@story.title}".
+    # Contexte récent = la fin du passage qui s'est terminé sur CE choix.
+    # Pour le 1er choix, c'est l'intro (@story.content). Pour les suivants, c'est
+    # la continuation générée après le choix précédent (stockée dans son context_chosen).
+    prev_choice    = @story.story_choices.find_by(step_number: story_choice.step_number - 1)
+    base_text      = prev_choice&.context_chosen.presence || @story.content.to_s
+    recent_context = base_text.last(1500)
 
-        Voici la fin du dernier passage :
-        #{recent_context}
+    # En-tête commun : titre, fin du passage précédent, choix de l'enfant
+    header = <<~HEAD
+      L'histoire s'intitule "#{@story.title}".
 
-        L'enfant a choisi : #{story_choice.chosen_text}
+      Voici la fin du dernier passage :
+      #{recent_context}
 
-        Continue DIRECTEMENT depuis ce choix (environ #{continuation_words} mots).
-        Ne résume pas ce qui s'est passé avant — plonge immédiatement dans l'action.
-        Même style cinématographique, même ton.
-        NE termine PAS l'histoire — l'aventure n'est pas encore finie, d'autres rebondissements attendent.
-        Arrête-toi sur un moment de tension ou de découverte.
-      CHOICE
-    else
-      # Dernier choix — génère la conclusion finale de l'histoire
-      continuation_instruction = <<~CHOICE
-        L'histoire s'intitule "#{@story.title}".
+      L'enfant a choisi : #{story_choice.chosen_text}
+    HEAD
 
-        Voici la fin du dernier passage :
-        #{recent_context}
+    body = if request_next_choice
+             # Étape intermédiaire : on avance ET on s'arrête sur un nouveau dilemme
+             <<~BODY
+               Continue DIRECTEMENT depuis ce choix (environ #{continuation_words} mots).
+               Ne résume pas ce qui s'est passé avant — plonge immédiatement dans l'action.
+               Même style cinématographique, même ton.
+               Fais monter la tension vers un NOUVEL événement qui force une décision,
+               puis ARRÊTE-TOI sur ce nouveau dilemme. PAS de conclusion, PAS d'épilogue.
 
-        L'enfant a choisi : #{story_choice.chosen_text}
-
-        C'est le dernier chapitre — écris une conclusion épique et mémorable (environ #{continuation_words} mots).
-        Continue DIRECTEMENT depuis ce choix sans résumer ce qui s'est passé avant.
-        Le climax doit être intense, la résolution satisfaisante.
-        Termine par une leçon vécue naturellement dans l'action — jamais expliquée, jamais moralisatrice.
-      CHOICE
-    end
+               Termine par ce bloc, une seule fois, tout à la fin :
+               [CHOIX]
+               Question : (question courte — "Que va faire [héros] ?")
+               Option A : (première action possible)
+               Option B : (deuxième action possible, tout aussi tentante)
+               [FIN CHOIX]
+             BODY
+           else
+             # Dernière étape : on conclut l'histoire
+             <<~BODY
+               C'est le dernier chapitre — écris une conclusion épique et mémorable
+               (environ #{continuation_words} mots).
+               Continue DIRECTEMENT depuis ce choix sans résumer ce qui s'est passé avant.
+               Le climax doit être intense, la résolution satisfaisante.
+               Termine par une leçon vécue naturellement dans l'action — jamais
+               expliquée, jamais moralisatrice.
+             BODY
+           end
 
     [
       # Le prompt système garde les règles de style (Pixar, structure narrative, etc.)
       { role: "system", content: system_prompt },
-      # Un seul message utilisateur avec le contexte récent + le choix + l'instruction
-      # Pas de user_prompt original (qui demandait de créer une histoire depuis le début)
-      # Pas du contenu complet de l'histoire (qui ferait repartir l'IA au début)
-      { role: "user", content: continuation_instruction }
+      # Un seul message utilisateur : contexte récent + choix + instruction
+      { role: "user", content: "#{header}\n#{body}" }
     ]
   end
 
@@ -423,6 +487,22 @@ class StoryGeneratorService
   # Groq (Llama 3.3 70B) supporte jusqu'à 8000 tokens de contexte
   def tokens_for_duration
     { 5 => 3500, 10 => 6000, 15 => 8000 }.fetch(@story.duration_minutes.to_i, 3500)
+  end
+
+  # Budget de tokens pour UNE continuation interactive (un seul passage).
+  #
+  # Le prompt de continuation vise environ `tokens_for_duration / 4` MOTS.
+  # En français, un mot ≈ 1,3 à 1,5 token : il faut donc largement plus de tokens
+  # que de mots visés, sinon la suite est coupée en plein milieu (bug observé sur
+  # l'histoire 57, où max_tokens valait 600 alors que ~875 mots étaient demandés).
+  #
+  # On prend la moitié du budget total : assez large pour boucler une conclusion
+  # sans risque de troncature, et toujours sous la limite de contexte de Groq.
+  #   5 min  → 1750 tokens   (cible ~875 mots)
+  #   10 min → 3000 tokens   (cible ~1500 mots)
+  #   15 min → 4000 tokens   (cible ~2000 mots)
+  def continuation_tokens
+    tokens_for_duration / 2
   end
 
   # Retourne le nombre de choix interactifs selon la durée

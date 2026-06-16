@@ -251,17 +251,18 @@
 
           </div>
 
-          <%# Badge "En préparation" — visible tant que l'audio n'est pas généré %>
-          <%# story_reader_controller le cache dès que audio_url apparaît dans /status %>
-          <%# Si l'audio est déjà prêt au chargement de la page, on ne l'affiche pas du tout %>
-          <% unless @story.audio_file.attached? %>
-            <div class="audio-bar-preparing" data-story-reader-target="preparingBadge">
-              <span class="audio-bar-preparing-dots">
-                <span></span><span></span><span></span>
-              </span>
-              <span>En préparation</span>
-            </div>
-          <% end %>
+          <%# Badge "En préparation" — chargement visuel de l'audio %>
+          <%# story_reader_controller le cache dès que l'audio est prêt (/status) %>
+          <%# Toujours présent dans le DOM (caché "d-none" si l'audio principal est %>
+          <%# déjà prêt) pour pouvoir le RÉAFFICHER après un choix interactif, %>
+          <%# pendant que l'audio de la suite se génère. %>
+          <div class="audio-bar-preparing <%= "d-none" if @story.audio_file.attached? %>"
+               data-story-reader-target="preparingBadge">
+            <span class="audio-bar-preparing-dots">
+              <span></span><span></span><span></span>
+            </span>
+            <span>En préparation</span>
+          </div>
 
           <%# Ligne 2 : barre de progression + timers %>
           <div class="audio-bar-center">
@@ -359,8 +360,9 @@
               <%# Continuation de l'histoire avec le choix effectué %>
               <% if choice.context_chosen.present? %>
                 <div class="story-content-wrapper mb-3">
-                  <%# h() échappe les balises HTML avant affichage — protège contre les injections XSS %>
-                  <%= simple_format(h(choice.context_chosen)) %>
+                  <%# Même rendu que l'histoire initiale (<p class="story-paragraph">) %>
+                  <%# render_story_markdown échappe le HTML en interne (protection XSS) %>
+                  <%= render_story_markdown(choice.context_chosen) %>
                 </div>
               <% end %>
 

@@ -94,8 +94,10 @@ export default class extends Controller {
 
       if (data.completed) {
         // La suite est prête — on arrête le polling et on met à jour le DOM
+        // On transmet aussi choice_id + continuation_audio_url pour que le lecteur
+        // audio puisse enchaîner sur la suite (Partie B).
         this.stopPolling()
-        this.appendContinuation(data.continuation)
+        this.appendContinuation(data.continuation, data.choice_id, data.continuation_audio_url)
       }
 
       if (data.status === "failed") {
@@ -112,7 +114,7 @@ export default class extends Controller {
   // ============================================================
   // appendContinuation — insère la suite dans la page
   // ============================================================
-  appendContinuation(continuationHtml) {
+  appendContinuation(continuationHtml, choiceId, audioUrl) {
     // Supprime la card de choix (ce composant) du DOM
     this.element.remove()
 
@@ -130,10 +132,13 @@ export default class extends Controller {
       ${continuationHtml}
     `)
 
-    // Déclenche l'événement personnalisé avec le HTML de la continuation
-    // story_reader_controller extrait le texte brut depuis innerText pour la lecture vocale
+    // Déclenche l'événement personnalisé avec le HTML de la continuation.
+    // On joint choiceId + audioUrl : le lecteur audio (story_reader_controller)
+    // enchaîne sur l'audio de la suite quand le passage en cours est terminé.
+    //   - audioUrl présent → la suite est déjà prête, lecture directe
+    //   - audioUrl null    → le lecteur demandera l'audio via choiceId (202 + polling)
     document.dispatchEvent(new CustomEvent("story:continuation-ready", {
-      detail: { html: continuationHtml }
+      detail: { html: continuationHtml, choiceId: choiceId, audioUrl: audioUrl }
     }))
   }
 

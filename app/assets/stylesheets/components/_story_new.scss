@@ -516,12 +516,11 @@
   /* Affiche l'enfant dans le style correspondant (générée via rails styles:generate_examples) */
   .style-card-img {
     width: 100%;
-    aspect-ratio: 4 / 3;   /* Même ratio que les illustrations générées dans l'app */
+    height: 150px;          /* Hauteur fixe : cards compactes (l'aspect-ratio 4/3 rendait des images trop hautes) */
     object-fit: cover;      /* Recadre sans déformer */
     display: block;
-    /* Fondu vers le bas pour que le texte s'intègre naturellement */
-    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    /* Image nette, sans fondu : plus propre et plus lisible.
+       La séparation avec le texte est gérée par un liseré doré (voir style-card-text). */
   }
 
   /* Fallback si l'image n'est pas encore générée — affiche la palette de couleurs */
@@ -550,13 +549,19 @@
 
   /* Zone de texte sous l'image */
   .style-card-text {
-    padding: 0.65rem 0.85rem 0.85rem;
+    padding: 0.7rem 0.85rem 0.85rem;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    /* Fond légèrement teinté pour lisibilité du texte */
-    background: rgba(11, 14, 26, 0.6);
-    margin-top: -1px;  /* Supprime le micro-écart entre image et texte */
+    /* Fond sombre opaque : sépare nettement le texte de l'image (plus de fondu flou) */
+    background: rgba(11, 14, 26, 0.85);
+    /* Liseré doré fin en haut : marque proprement la frontière image / texte */
+    border-top: 1px solid rgba(240, 201, 122, 0.18);
+  }
+  /* Liseré doré plus marqué quand la carte est sélectionnée */
+  .style-card:has(input:checked) .style-card-text,
+  .style-card.selected .style-card-text {
+    border-top-color: rgba(240, 201, 122, 0.4);
   }
 
   /* Nom du style */
