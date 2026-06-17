@@ -120,6 +120,8 @@
           <%# Footer global — affiché en bas de toutes les pages connectées %>
           <%= render "shared/footer" %>
         </main>
+        <%# Bottom tab bar — navigation type app native, visible mobile uniquement %>
+        <%= render "shared/bottom_nav" %>
       </div>
     <% else %>
       <%# --- Layout classique avec navbar (visiteurs non connectés) --- %>

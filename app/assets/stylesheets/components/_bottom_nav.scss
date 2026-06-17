@@ -1,0 +1,131 @@
+// ============================================================
+// Bottom tab bar — navigation type app native (mobile uniquement)
+// ============================================================
+// Cachée sur desktop (la top nav suffit). Affichée uniquement ≤768px.
+// Fixée en bas, effet verre nuit (cohérent avec la top nav et le lecteur audio).
+// Bouton central "Créer" surélevé en pastille dorée = geste principal de l'app.
+// ============================================================
+
+// Hauteur de la barre (hors zone de sécurité iPhone)
+$bottom-nav-height: 62px;
+
+// --- Cachée par défaut (desktop) ---
+.bottom-nav {
+  display: none;
+}
+
+// ============================================================
+// Mobile (≤768px) — la barre devient visible
+// ============================================================
+@media (max-width: 768px) {
+
+  .bottom-nav {
+    // Fixée en bas, pleine largeur
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1100;          // Au-dessus du contenu, sous les modales
+
+    // Répartit les 5 onglets équitablement
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    // Hauteur + zone de sécurité iPhone (encoche/barre home) via safe-area-inset
+    height: calc(#{$bottom-nav-height} + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+
+    // Effet verre nuit — mêmes codes que la top nav (.app-sidebar)
+    background: linear-gradient(to top, rgba(11, 14, 26, 0.96) 0%, rgba(11, 14, 26, 0.82) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    // Liseré doré fin en haut — sépare proprement du contenu
+    border-top: 1px solid var(--border);
+  }
+
+  // --- Onglet standard (Accueil, Histoires, Trophées, Profil) ---
+  .bottom-nav-item {
+    // Colonne : icône au-dessus, label en dessous
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;                       // Largeur égale entre les onglets
+
+    // Cible tactile confortable (>= 44px recommandé Apple)
+    min-height: 44px;
+    padding: 6px 0;
+
+    // État inactif : texte discret
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    .bottom-nav-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    // État actif : doré + petit halo sous l'icône (signature Noctilio)
+    &.active {
+      color: var(--gold);
+
+      svg {
+        // Halo doré diffus derrière l'icône active
+        filter: drop-shadow(0 0 6px rgba(240, 201, 122, 0.5));
+      }
+    }
+  }
+
+  // --- Bouton central Créer — pastille dorée surélevée ---
+  .bottom-nav-create {
+    // Surélevé au-dessus de la barre
+    flex: 0 0 auto;
+    width: 54px;
+    height: 54px;
+    margin-top: -22px;             // Remonte la pastille au-dessus du liseré
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // Pastille dorée pleine — couleur d'accent principale
+    background: var(--gold);
+    border-radius: 50%;
+    text-decoration: none;
+
+    // Halo doré + relief — donne le côté "flottant" au-dessus de la barre
+    box-shadow:
+      0 4px 16px rgba(240, 201, 122, 0.45),
+      0 0 0 4px rgba(11, 14, 26, 0.9);   // Anneau nuit qui détache du fond
+
+    // L'étoile ✦ au centre, en couleur nuit pour contraster sur l'or
+    .bottom-nav-create-star {
+      color: var(--night);
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    // Léger retour tactile au tap (cohérent avec les autres boutons de l'app)
+    transition: transform 0.15s ease;
+    &:active { transform: scale(0.92); }
+
+    // Sur la page de création : pastille en pulsation douce pour confirmer l'onglet
+    &.active {
+      box-shadow:
+        0 4px 20px rgba(240, 201, 122, 0.6),
+        0 0 0 4px rgba(11, 14, 26, 0.9);
+    }
+  }
+
+  // --- Le contenu principal laisse la place à la barre ---
+  // padding-bottom = hauteur barre + zone de sécurité, sinon la barre masque
+  // le bas du contenu (footer, derniers boutons).
+  .app-main {
+    padding-bottom: calc(#{$bottom-nav-height} + env(safe-area-inset-bottom) + 8px);
+  }
+}
