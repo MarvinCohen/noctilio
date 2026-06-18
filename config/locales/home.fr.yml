@@ -1,0 +1,57 @@
+# ============================================================
+# Traductions de la LANDING (page d'accueil publique) — français
+# ============================================================
+# Source de vérité FR. Les clés *_html contiennent du balisage de confiance
+# (<em>, <br>, <strong>) : Rails les marque automatiquement html_safe car
+# le nom de la clé se termine par "_html".
+fr:
+  home:
+    nav_badge: "Bientôt disponible"
+
+    hero:
+      eyebrow: "✦ Histoires personnalisées par IA ✦"
+      title_html: "Des contes <em>uniques</em>,<br>rien que pour<br>ton enfant"
+      subtitle: "Chaque soir, une histoire magique générée en quelques secondes, avec le prénom, les personnages et l'univers préférés de ton enfant. Racontée d'une voix douce, comme par enchantement."
+      email_placeholder: "ton@email.fr"
+      cta: "Accès anticipé →"
+      success: "✦ Merci ! Tu seras parmi les premiers à découvrir Noctilio."
+      note: "Aucun spam. Juste la magie, au bon moment."
+      counter_suffix: "familles déjà inscrites"
+
+    features:
+      personalised:
+        title: "Personnalisée"
+        desc: "Prénom, personnages favoris, lieu de rêve : chaque histoire est unique et taillée pour ton enfant."
+      narrated:
+        title: "Racontée"
+        desc: "Une voix douce et naturelle lit l'histoire à voix haute. Parfait pour les soirs où tu n'as plus l'énergie."
+      fast:
+        title: "En quelques secondes"
+        desc: "L'histoire est prête avant même que le bain soit fini. La routine du soir devient un moment magique."
+
+    how:
+      eyebrow: "✦ Simple comme une histoire"
+      title: "Comment ça marche ?"
+      step1_title: "Crée le profil de ton héros"
+      step1_desc: "Renseigne le prénom de ton enfant, son âge, ses personnages préférés et l'univers de son choix : forêt enchantée, espace, dinosaures, pirates ou animaux. Tu peux aussi décrire librement le monde de ton imagination. Noctilio s'en souvient pour toutes les histoires suivantes."
+      step2_title: "L'IA compose une histoire unique"
+      step2_desc: "En quelques secondes, notre intelligence artificielle (GPT-4o) génère un conte inédit, adapté à l'âge de ton enfant et à son niveau de lecture. Chaque histoire est accompagnée d'une illustration générée spécialement pour l'occasion. Il n'y en a jamais deux pareilles."
+      step3_title: "Lis ou écoute au moment du coucher"
+      step3_desc: "Installez-vous confortablement. L'histoire est prête à être lue ensemble ou écoutée à voix haute. En mode interactif, ton enfant choisit lui-même la suite de l'aventure à chaque étape, comme dans un vrai livre dont il est le héros."
+      closing_html: "<strong>Noctilio</strong> est pensé pour les parents qui veulent offrir à leurs enfants des moments de lecture riches et personnalisés, sans y passer des heures. Chaque histoire est adaptée à l'enfant, son prénom, son âge, sa personnalité, et renouvelée à chaque génération. <strong>3 histoires par mois gratuitement</strong>, et des histoires illimitées avec le mode interactif en abonnement Premium."
+      blog_link: "Lire nos conseils pour les parents →"
+
+    # Messages injectés en JavaScript (formulaire liste d'attente)
+    form_js:
+      invalid_email: "Vérifie le format de ton email."
+      subscribed: "✦ Vous êtes bien inscrit"
+      already: "Vous êtes déjà inscrit"
+      error: "Une erreur est survenue."
+      connection: "Problème de connexion. Réessaie dans un instant."
+
+    # Textes des données structurées Schema.org
+    schema:
+      app_description: "Application de génération d'histoires personnalisées pour enfants par intelligence artificielle. Créez des contes uniques avec le prénom, les personnages et l'univers préférés de votre enfant."
+      offer_desc: "Accès gratuit — 3 histoires par mois"
+      audience_type: "Parents d'enfants de 2 à 10 ans"
+      org_description: "Noctilio génère des histoires personnalisées pour enfants grâce à l'intelligence artificielle."

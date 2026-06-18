@@ -948,7 +948,9 @@
 
 // Responsive mobile
 @media (max-width: 600px) {
-  .lib-page { padding: 1.5rem 0.75rem 3rem; }
+  // Padding horizontal à 0 : le retrait latéral est géré uniformément par
+  // .page-card (16px) + .container (~12px), identique à toutes les pages.
+  .lib-page { padding: 1.5rem 0 3rem; }
   .lib-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.25rem; }
   .lib-title { font-size: clamp(1.6rem, 6vw, 3rem); }
   .lib-subtitle { margin-top: 0.2rem; }

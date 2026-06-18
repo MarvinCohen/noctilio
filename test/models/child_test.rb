@@ -237,16 +237,17 @@ class ChildTest < ActiveSupport::TestCase
   # Cas : enfant avec hair_color défini
   # Pourquoi : les attributs physiques garantissent la cohérence des illustrations
   test "avatar_description inclut la couleur de cheveux si renseignée" do
-    # Arrange — crée un enfant temporaire avec une couleur de cheveux
+    # Arrange — crée un enfant avec la clé stable "red" (roux)
+    # avatar_description traduit la clé en libellé FR via I18n → "roux"
     user = users(:marie)
-    child = user.children.build(name: "Alice", age: 7, hair_color: "roux")
+    child = user.children.build(name: "Alice", age: 7, hair_color: "red")
 
     # Act
     description = child.avatar_description
 
-    # Assert — la couleur de cheveux doit être dans la description
+    # Assert — le libellé FR traduit doit être dans la description
     assert_includes description, "roux",
-                    "avatar_description devrait inclure la couleur de cheveux"
+                    "avatar_description devrait traduire la clé 'red' en libellé 'roux'"
   end
 
   # Vérifie que avatar_description inclut les hobbies au format "qui adore X et Y"
@@ -291,9 +292,9 @@ class ChildTest < ActiveSupport::TestCase
   # Cas : enfant avec eye_color "vert" — doit être traduit en anglais
   # Pourquoi : les modèles de diffusion comprennent mieux "green eyes" que "yeux vert"
   test "image_description traduit les yeux verts en 'green eyes'" do
-    # Arrange — crée un enfant avec des yeux verts
+    # Arrange — crée un enfant avec la clé stable "green" (yeux verts)
     user = users(:marie)
-    child = user.children.build(name: "Iris", age: 6, eye_color: "vert", gender: "girl")
+    child = user.children.build(name: "Iris", age: 6, eye_color: "green", gender: "girl")
 
     # Act
     description = child.image_description
@@ -307,9 +308,9 @@ class ChildTest < ActiveSupport::TestCase
   # Cas : hair_color contient "blond"
   # Pourquoi : les modèles de diffusion ont un meilleur rendu avec le terme anglais précis
   test "image_description traduit les cheveux blonds en 'blonde hair'" do
-    # Arrange
+    # Arrange — crée un enfant avec la clé stable "blonde"
     user = users(:marie)
-    child = user.children.build(name: "Clara", age: 5, hair_color: "blond", gender: "girl")
+    child = user.children.build(name: "Clara", age: 5, hair_color: "blonde", gender: "girl")
 
     # Act
     description = child.image_description
@@ -317,6 +318,39 @@ class ChildTest < ActiveSupport::TestCase
     # Assert
     assert_includes description, "blonde hair",
                     "image_description devrait produire 'blonde hair' pour les cheveux blonds"
+  end
+
+  # Vérifie que les cheveux blancs ("white") deviennent "platinum white-blonde"
+  # Cas : hair_color = clé stable "white"
+  # Pourquoi : nuance volontaire pour gpt-image-1 — un enfant aux cheveux clairs
+  # doit rester un enfant (blond platine) et non paraître âgé ("white hair")
+  test "image_description traduit les cheveux 'white' en 'platinum white-blonde'" do
+    # Arrange
+    user = users(:marie)
+    child = user.children.build(name: "Nina", age: 6, hair_color: "white", gender: "girl")
+
+    # Act
+    description = child.image_description
+
+    # Assert — la nuance "platinum white-blonde" doit être présente
+    assert_includes description, "platinum white-blonde",
+                    "image_description devrait produire 'platinum white-blonde' pour la clé 'white'"
+  end
+
+  # Vérifie que la teinte de peau "brown" devient "warm brown" (et non littéral)
+  # Cas : skin_tone = clé stable "brown"
+  # Pourquoi : "warm brown" rend mieux des tons de peau chaleureux et naturels
+  test "image_description traduit la peau 'brown' en 'warm brown skin'" do
+    # Arrange
+    user = users(:marie)
+    child = user.children.build(name: "Sami", age: 7, skin_tone: "brown", gender: "boy")
+
+    # Act
+    description = child.image_description
+
+    # Assert
+    assert_includes description, "warm brown skin",
+                    "image_description devrait produire 'warm brown skin' pour la clé 'brown'"
   end
 
   # ===========================================================

@@ -10,20 +10,20 @@
   <div class="lib-header">
     <div>
       <%# Titre Cormorant Garamond italic %>
-      <h1 class="lib-title">Ma bibliothèque</h1>
-      <%# Sous-titre dynamique selon l'onglet actif %>
+      <h1 class="lib-title"><%= t("library.title") %></h1>
+      <%# Sous-titre dynamique selon l'onglet actif — pluralisation via I18n %>
       <p class="lib-subtitle">
         <% if @tab == "all" %>
-          <%= @all_count %> histoire<%= "s" if @all_count > 1 %> générée<%= "s" if @all_count > 1 %>
+          <%= t("library.count_all", count: @all_count) %>
         <% else %>
-          <%= @saved_count %> histoire<%= "s" if @saved_count > 1 %> sauvegardée<%= "s" if @saved_count > 1 %>
+          <%= t("library.count_saved", count: @saved_count) %>
         <% end %>
       </p>
     </div>
     <%# CTA pill doré — créer une nouvelle histoire %>
     <%= link_to new_story_path, class: "lib-btn-primary" do %>
       <%# Étoile ✦ immobile, qui tourne uniquement au survol (variante spin-star--hover) %>
-      <span class="spin-star--hover" style="margin-right:5px">✦</span>Nouvelle histoire
+      <span class="spin-star--hover" style="margin-right:5px">✦</span><%= t("library.new_story") %>
     <% end %>
   </div>
 
@@ -35,14 +35,14 @@
           class: "lib-tab #{"lib-tab--active" if @tab == "saved"}" do %>
       <%# Icône marque-page %>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-      Bibliothèque
+      <%= t("library.tab_saved") %>
       <span class="lib-tab-count"><%= @saved_count %></span>
     <% end %>
     <%= link_to stories_path(tab: "all"),
           class: "lib-tab #{"lib-tab--active" if @tab == "all"}" do %>
       <%# Icône horloge %>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Toutes
+      <%= t("library.tab_all") %>
       <span class="lib-tab-count"><%= @all_count %></span>
     <% end %>
   </div>
@@ -54,7 +54,8 @@
       <%# Titre de section avec icône d'alerte %>
       <h2 class="lib-failed-title">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <%= @failed_stories.count %> génération<%= "s" if @failed_stories.count > 1 %> échouée<%= "s" if @failed_stories.count > 1 %>
+        <%# Pluralisation gérée par I18n (clés one / other) %>
+        <%= t("library.failed_count", count: @failed_stories.count) %>
       </h2>
 
       <%# Liste compacte des histoires échouées — une ligne par histoire %>
@@ -66,9 +67,9 @@
             <div class="lib-failed-info">
               <span class="lib-failed-emoji"><%= story.world_emoji %></span>
               <div>
-                <span class="lib-failed-child">Pour <%= story.child.name %></span>
+                <span class="lib-failed-child"><%= t("library.for_child", name: story.child.name) %></span>
                 <span class="lib-failed-meta">
-                  <%= story.world_label %> · <%= story.image_style&.capitalize || "Style auto" %> · <%= story.duration_minutes %> min
+                  <%= story.world_label %> · <%= story.image_style&.capitalize || t("library.auto_style") %> · <%= story.duration_minutes %> min
                   · <%= story.created_at.strftime("%d/%m") %>
                 </span>
               </div>
@@ -77,15 +78,15 @@
             <%# Actions : Réessayer + Supprimer %>
             <div class="lib-failed-actions">
               <%# Réessayer — remet en pending et relance le job %>
-              <%= button_to "Réessayer", retry_story_path(story),
+              <%= button_to t("library.retry"), retry_story_path(story),
                     method: :post,
                     class: "lib-btn-retry" %>
 
               <%# Supprimer — efface définitivement cette tentative %>
-              <%= button_to "Supprimer", story_path(story),
+              <%= button_to t("library.delete"), story_path(story),
                     method: :delete,
                     class: "lib-btn-danger lib-btn-danger--sm",
-                    data: { turbo_confirm: "Supprimer cette tentative définitivement ?" } %>
+                    data: { turbo_confirm: t("library.delete_attempt_confirm") } %>
             </div>
 
           </div>
@@ -124,34 +125,34 @@
               <span class="lib-badge"><%= story.world_emoji %> <%= story.world_label %></span>
               <% if story.interactive? %>
                 <span class="lib-badge lib-badge-interactive">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/></svg>Interactif
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/></svg><%= t("library.interactive") %>
                 </span>
               <% end %>
               <%# Badge épisode — affiché si l'histoire fait partie d'une saga %>
               <% if story.sequel? || story.has_sequel? %>
                 <span class="lib-badge lib-badge-episode">
-                  Ép. <%= story.episode_number %>
+                  <%= t("library.episode", number: story.episode_number) %>
                 </span>
               <% end %>
             </div>
 
             <%# Titre cliquable %>
-            <%= link_to story.title || "Histoire sans titre", story_path(story),
+            <%= link_to story.title || t("library.untitled"), story_path(story),
                   class: "lib-card-title" %>
 
             <%# Méta : enfant associé + date de création %>
             <p class="lib-card-meta">
-              Pour <%= story.child.name %> · <%= story.created_at.strftime("%d/%m/%Y") %>
+              <%= t("library.for_child", name: story.child.name) %> · <%= story.created_at.strftime("%d/%m/%Y") %>
             </p>
           </div>
 
           <%# Pied : bouton Lire + Supprimer %>
           <div class="lib-card-footer">
-            <%= link_to "Lire", story_path(story), class: "lib-btn-secondary" %>
-            <%= button_to "Supprimer", story_path(story),
+            <%= link_to t("library.read"), story_path(story), class: "lib-btn-secondary" %>
+            <%= button_to t("library.delete"), story_path(story),
                   method: :delete,
                   class: "lib-btn-danger",
-                  data: { turbo_confirm: "Supprimer cette histoire définitivement ?" } %>
+                  data: { turbo_confirm: t("library.delete_story_confirm") } %>
           </div>
 
         </div>
@@ -164,11 +165,11 @@
       <span class="lib-empty-emoji">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       </span>
-      <h2>Ta bibliothèque est vide</h2>
-      <p>Génère ta première histoire magique en quelques secondes !</p>
+      <h2><%= t("library.empty_title") %></h2>
+      <p><%= t("library.empty_desc") %></p>
       <%= link_to new_story_path, class: "lib-btn-primary" do %>
         <%# Étoile ✦ immobile, qui tourne uniquement au survol (variante spin-star--hover) %>
-        <span class="spin-star--hover" style="margin-right:5px">✦</span>Créer une histoire
+        <span class="spin-star--hover" style="margin-right:5px">✦</span><%= t("library.create_story") %>
       <% end %>
     </div>
   <% end %>

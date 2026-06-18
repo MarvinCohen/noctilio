@@ -28,7 +28,7 @@
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
       </svg>
-      <span class="sidebar-nav-label">Histoires</span>
+      <span class="sidebar-nav-label"><%= t("nav.stories") %></span>
     <% end %>
 
     <%# sidebar-nav-item--secondary : caché sur mobile (≤480px), accessible via dropdown avatar %>
@@ -43,7 +43,7 @@
         <path d="M8 19h8"/>
         <line x1="8" y1="22" x2="16" y2="22"/>
       </svg>
-      <span class="sidebar-nav-label">Trophées</span>
+      <span class="sidebar-nav-label"><%= t("nav.trophies") %></span>
     <% end %>
 
     <% active = current_page?(parental_path) %>
@@ -55,7 +55,7 @@
         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
-      <span class="sidebar-nav-label">Espace parent</span>
+      <span class="sidebar-nav-label"><%= t("nav.parental") %></span>
     <% end %>
 
   </nav>
@@ -76,7 +76,7 @@
       style="display:none"
       data-controller="pwa-install"
       data-action="click->pwa-install#install"
-      title="Installer Noctilio sur votre appareil"
+      title="<%= t('nav.install_title') %>"
     >
       <%# Icône téléchargement / flèche vers le bas %>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -84,95 +84,39 @@
         <polyline points="7 10 12 15 17 10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
-      <span class="sidebar-install-label">Installer</span>
+      <span class="sidebar-install-label"><%= t("nav.install") %></span>
     </button>
 
     <%# Bouton Abonnement — accès rapide à la page Premium (style ghost doré) %>
-    <%= link_to subscription_path, class: "sidebar-sub-btn", title: "Abonnement" do %>
+    <%= link_to subscription_path, class: "sidebar-sub-btn", title: t("nav.subscription") do %>
       <%# Icône couronne — évoque le Premium %>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M2 7l5 5 5-7 5 7 5-5-2 12H4L2 7z"/>
       </svg>
-      <span class="sidebar-sub-label">Abonnement</span>
+      <span class="sidebar-sub-label"><%= t("nav.subscription") %></span>
     <% end %>
 
     <%# CTA Créer — bouton pill doré %>
     <%= link_to new_story_path, class: "sidebar-cta-btn" do %>
       <%# Étoile ✦ immobile, qui tourne uniquement au survol (variante spin-star--hover) %>
-      <span class="spin-star--hover">✦</span> Créer une histoire
+      <span class="spin-star--hover">✦</span> <%= t("nav.create") %>
     <% end %>
 
-    <%# Avatar utilisateur — dropdown avec liens secondaires + déconnexion %>
-    <%# Sur desktop : accès rapide aux liens déjà dans la nav + déconnexion %>
-    <%# Sur mobile (≤480px) : seul moyen d'accéder à Trophées, Parental et Déconnexion %>
-    <div class="sidebar-user dropdown">
+    <%# Avatar utilisateur — lien direct vers "Mon compte" %>
+    <%# Plus de dropdown : Trophées et Espace parent sont dans la bottom nav, %>
+    <%# la déconnexion est dans la page Mon compte. Un seul clic = page compte. %>
+    <div class="sidebar-user">
       <%# Pastille niveau — affichée juste à côté de l'avatar %>
       <%# Le niveau vient de User#level (1 niveau tous les 500 XP) %>
-      <span class="sidebar-level" title="Niveau <%= current_user.level %>">
+      <span class="sidebar-level" title="<%= t('nav.level_title', level: current_user.level) %>">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-        Niv. <%= current_user.level %>
+        <%= t("nav.level", level: current_user.level) %>
       </span>
 
-      <%# L'avatar est le toggle du dropdown Bootstrap %>
-      <button class="sidebar-user-avatar dropdown-toggle"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-              title="Menu utilisateur">
+      <%# L'avatar mène directement à la page Mon compte %>
+      <%= link_to account_path, class: "sidebar-user-avatar", title: t("nav.account") do %>
         <%= current_user.first_name[0].upcase %><%= current_user.last_name[0].upcase %>
-      </button>
-
-      <%# Menu dropdown — fond dark, bordure dorée %>
-      <ul class="dropdown-menu dropdown-menu-end sidebar-dropdown-menu">
-
-        <%# Mon compte — infos du compte + statut abonnement %>
-        <li>
-          <%= link_to account_path, class: "dropdown-item" do %>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>Mon compte
-          <% end %>
-        </li>
-
-        <li><hr class="dropdown-divider"></li>
-
-        <%# Trophées %>
-        <li>
-          <%= link_to trophy_room_path, class: "dropdown-item" do %>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px">
-              <path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/>
-              <path d="M6 2h12v7a6 6 0 0 1-12 0V2z"/><path d="M12 15v4"/>
-              <path d="M8 19h8"/><line x1="8" y1="22" x2="16" y2="22"/>
-            </svg>Trophées
-          <% end %>
-        </li>
-
-        <%# Dashboard parental %>
-        <li>
-          <%= link_to parental_path, class: "dropdown-item" do %>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-            </svg>Espace parent
-          <% end %>
-        </li>
-
-        <li><hr class="dropdown-divider"></li>
-
-        <%# Déconnexion %>
-        <li>
-          <%= link_to destroy_user_session_path,
-                data: { turbo_method: :delete },
-                class: "dropdown-item sidebar-dropdown-logout" do %>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>Déconnexion
-          <% end %>
-        </li>
-
-      </ul>
+      <% end %>
     </div>
 
   </div>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="fr">
+<%# lang dynamique : reflète la langue affichée (fr, en, es, de, it, pt) %>
+<html lang="<%= I18n.locale %>">
   <head>
     <meta charset="UTF-8">
     <title><%= content_for(:title) || "Noctilio — Histoires magiques pour enfants" %></title>
@@ -11,13 +12,30 @@
     <%# Description — surchargeable page par page via content_for(:description) %>
     <meta name="description" content="<%= content_for?(:description) ? yield(:description) : "Noctilio — Des histoires personnalisées générées par IA pour ton enfant." %>">
 
-    <%# URL canonique — évite les doublons si la page est accidentellement indexée %>
-    <link rel="canonical" href="https://www.noctilio-app.fr<%= request.path %>">
+    <%# Canonical + hreflang — UNIQUEMENT pour les pages publiques indexées %>
+    <%# (légales, à-propos, blog). Une page publique signale son indexation via %>
+    <%# content_for(:robots, "index, follow"). Les pages app privées (noindex) %>
+    <%# n'ont pas besoin de hreflang ni de canonical multilingue. %>
+    <% if content_for?(:robots) && yield(:robots).to_s.include?("index") %>
+      <%= render "shared/hreflang" %>
+    <% else %>
+      <%# Page privée : canonical simple de sécurité (si jamais indexée par erreur) %>
+      <link rel="canonical" href="https://www.noctilio-app.fr<%= request.path %>">
+    <% end %>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <%# theme-color — colore la barre du navigateur sur mobile avec le fond nuit de Noctilio %>
     <meta name="theme-color" content="#0b0e1a">
+    <%# view-transition — active les transitions de page Turbo (fondu doux entre pages). %>
+    <%# Turbo 8 enveloppe alors le rendu dans document.startViewTransition() ; %>
+    <%# l'animation est personnalisée dans components/_transitions.scss. %>
+    <meta name="view-transition" content="same-origin">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <%# Barre d'état iOS en mode app installée — "black" garde une barre sombre %>
+    <%# cohérente avec le fond nuit Noctilio (pas de bandeau blanc). %>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <%# Titre affiché sous l'icône iOS quand l'app est ajoutée à l'écran d'accueil %>
+    <meta name="apple-mobile-web-app-title" content="Noctilio">
     <meta name="application-name" content="Noctilio">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
@@ -38,7 +56,8 @@
     <%# Favicon — mascotte hibou Noctilio %>
     <%= favicon_link_tag image_path('mascot.svg'), type: 'image/svg+xml' %>
     <%= favicon_link_tag image_path('mascot.png'), type: 'image/png', sizes: '32x32' %>
-    <link rel="apple-touch-icon" href="<%= image_path('mascot.png') %>" sizes="180x180">
+    <%# Icône d'accueil iOS — version dédiée 180×180 (servie depuis public/) %>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
 
     <%# ---------------------------------------------------------------- %>
     <%# Google Fonts — Cormorant Garamond (titres serif italiques) + DM Sans (corps) %>
@@ -87,6 +106,16 @@
   </head>
 
   <body>
+    <%# ---------------------------------------------------------------- %>
+    <%# Splash screen PWA — visible uniquement en mode app installée %>
+    <%# (display-mode: standalone). En navigateur classique il reste caché. %>
+    <%# Le JS plus bas le fait disparaître en fondu une fois la page chargée. %>
+    <%# ---------------------------------------------------------------- %>
+    <div class="pwa-splash" id="pwa-splash" aria-hidden="true">
+      <%= image_tag "mascot.svg", alt: "", class: "pwa-splash-owl", width: 96, height: 96 %>
+      <p class="pwa-splash-word">Noctilio</p>
+    </div>
+
     <%# ---------------------------------------------------------------- %>
     <%# Canvas étoiles — fixé derrière tout le contenu sur toutes les pages %>
     <%# Le JS en bas de page dessine 250 étoiles dorées scintillantes %>
@@ -238,6 +267,54 @@
             }
           });
         }
+      })();
+    </script>
+
+    <%# ---------------------------------------------------------------- %>
+    <%# Splash screen PWA — fondu de sortie au lancement (mode app installée) %>
+    <%# On ne l'affiche qu'en mode standalone : en navigateur web, on retire %>
+    <%# l'élément tout de suite pour ne pas masquer le contenu. %>
+    <%# ---------------------------------------------------------------- %>
+    <script nonce="<%= content_security_policy_nonce %>">
+      (function() {
+        var splash = document.getElementById('pwa-splash');
+        if (!splash) return;
+
+        // Détecte le mode "app installée" (lancée depuis l'icône d'accueil).
+        // matchMedia(display-mode: standalone) couvre Android/Chrome ;
+        // navigator.standalone couvre iOS Safari ajouté à l'écran d'accueil.
+        var isStandalone =
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.navigator.standalone === true;
+
+        // En navigateur classique : on supprime le splash immédiatement.
+        if (!isStandalone) {
+          splash.remove();
+          return;
+        }
+
+        // Turbo remplace le <body> à chaque navigation et ré-exécute les <script>
+        // du body : le splash serait donc réinjecté et rejoué à chaque page.
+        // On pose un drapeau global (persiste sur window tant que l'app n'est pas
+        // rechargée à froid) pour n'animer le splash qu'au tout premier lancement.
+        if (window.__noctiSplashShown) {
+          // Lancement déjà fait → c'est une simple navigation interne : on retire
+          // le splash tout de suite, sans fondu, pour ne pas masquer la page.
+          splash.remove();
+          return;
+        }
+
+        // Premier lancement de l'app : on mémorise et on joue le fondu de sortie.
+        window.__noctiSplashShown = true;
+
+        // On laisse le splash visible ~0,9s puis on déclenche le fondu de sortie.
+        // Exécution directe (pas d'écouteur "load") : le script tourne déjà en bas
+        // du body, donc le DOM est prêt, et "load" ne se redéclenche pas sous Turbo.
+        setTimeout(function() {
+          splash.classList.add('pwa-splash--hidden'); // déclenche le fondu CSS
+          // Retire l'élément du DOM une fois le fondu terminé (0,5s)
+          setTimeout(function() { splash.remove(); }, 500);
+        }, 900);
       })();
     </script>
 

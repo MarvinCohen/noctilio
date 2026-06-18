@@ -1,0 +1,72 @@
+# ============================================================
+# Traductions du BLOG — espagnol
+# ============================================================
+es:
+  blog:
+    brand_suffix: "Blog Noctilio"
+    reading_time: "%{count} min de lectura"
+
+    index:
+      title: "Blog Noctilio — Consejos de cuentos para niños"
+      description: "Consejos prácticos para padres: cuentos para dormir, cuentos personalizados con IA, ideas para cada edad. El blog de Noctilio."
+      schema_name: "Blog Noctilio"
+      schema_description: "Consejos prácticos para padres sobre cuentos infantiles: rutinas para dormir, cuentos personalizados con IA, ideas por edad."
+      eyebrow: "✦ El blog de Noctilio"
+      heading: "Consejos para padres"
+      subtitle: "Cuentos para dormir, cuentos personalizados, ideas para cada edad: todo lo que necesitas para momentos de lectura mágicos."
+      read_article: "Leer el artículo →"
+      back_home: "← Volver al inicio"
+
+    show:
+      cta_title: "¿Quieres probarlo?"
+      cta_desc: "Noctilio genera cuentos personalizados para tu hijo en segundos, gratis."
+      cta_button: "Unirme a la lista de espera →"
+      related_title: "Lee también"
+      all_articles: "← Todos los artículos"
+      home_link: "Inicio →"
+
+    breadcrumb:
+      home: "Inicio"
+      blog: "Blog"
+
+    # --- Títulos + descripciones traducidos de cada artículo (clave = slug) ---
+    # (en FR, estos valores vienen del controlador; aquí se traducen)
+    articles:
+      histoires-du-soir-enfant:
+        title: "5 ideas de cuentos para dormir y ayudar a tu hijo a conciliar el sueño fácilmente"
+        description: "Descubre 5 tipos de cuentos para dormir que ayudan a los niños a relajarse. Consejos prácticos y ejemplos personalizados con IA."
+        faqs:
+          - question: "¿Cuál es el mejor cuento para dormir a un niño de 3 años?"
+            answer: "Los cuentos cortos (de 3 a 5 minutos) con un héroe tranquilizador que vuelve a casa y se duerme son los más eficaces para los 3 años. Los temas ligados a la noche, las estrellas y los animales familiares calman de forma natural al niño durante la transición de la vigilia al sueño."
+          - question: "¿Cómo hacer que un cuento para dormir sea más eficaz?"
+            answer: "La eficacia de un cuento para dormir se apoya en tres elementos: un ritmo lento y una voz suave, un héroe con el que el niño se identifica (idealmente con su propio nombre) y un final apacible donde el personaje se duerme. Repetir el mismo ritual cada noche refuerza el efecto de señal de sueño."
+          - question: "¿A partir de qué edad se pueden contar cuentos para dormir?"
+            answer: "Los cuentos para dormir pueden empezar desde los 18 meses con historias muy sencillas (2-3 minutos, un personaje, un solo acontecimiento). A partir de los 3 años, el niño sigue una narración completa con inicio, nudo y desenlace. El modo interactivo (elecciones dentro del cuento) es adecuado a partir de los 4-5 años."
+      conte-personnalise-ia-enfant:
+        title: "Cómo la IA genera cuentos personalizados para tu hijo"
+        description: "Comprende cómo GPT-4o crea historias únicas adaptadas a la edad, los gustos y la personalidad de cada niño. Una guía para padres."
+        faqs:
+          - question: "¿Los cuentos generados por la IA están adaptados a la edad del niño?"
+            answer: "Sí. Noctilio adapta automáticamente el vocabulario, la complejidad narrativa y la longitud según la edad indicada en el perfil del niño. Un niño de 3 años recibirá un cuento corto con palabras sencillas, mientras que un niño de 8 años tendrá una historia más larga con giros."
+          - question: "¿Puede la IA incluir el nombre de mi hijo en el cuento?"
+            answer: "Por supuesto. Es incluso la función central de Noctilio: el héroe de cada cuento lleva el nombre de tu hijo. La IA también integra sus personajes favoritos, su universo preferido (espacio, dinosaurios, princesas, piratas, animales) y sus rasgos de personalidad para crear una historia única."
+          - question: "¿Son seguros para los niños los cuentos generados por la IA?"
+            answer: "Sí. GPT-4o está configurado con instrucciones estrictas para generar únicamente contenido positivo, cariñoso y adaptado a niños de 2 a 10 años. Los cuentos evitan toda violencia, miedo excesivo o contenido inapropiado. Cada generación respeta los valores educativos seleccionados por el padre o la madre."
+      histoires-enfant-4-ans:
+        title: "Cuentos para niños de 4 años: lo que realmente les cautiva"
+        description: "¿Qué cuentos van mejor a los 4 años? Duración, personajes, estructura narrativa: todo lo que necesitas saber."
+      histoires-enfant-3-ans:
+        title: "Cuentos para niños de 3 años: el ritual nocturno que calma"
+        description: "A los 3 años, el cuento de la noche es un ritual de transición esencial. Descubre la duración ideal, los mundos tranquilizadores y cómo gestionar el miedo a la oscuridad."
+      histoires-enfant-5-ans:
+        title: "Cuentos para niños de 5 años: los mundos que de verdad cautivan"
+        description: "A los 5 años la imaginación explota. ¿Qué cuentos funcionan mejor? Estructura narrativa, emociones complejas, modo interactivo: una guía completa."
+      histoire-personnalisee-prenom-enfant:
+        title: "Un cuento personalizado con el nombre de tu hijo: por qué lo cambia todo"
+        description: "Oír su propio nombre en un cuento despierta la atención y la memoria del niño. Comprende el poder de la personalización y cómo la IA va más allá."
+      conte-interactif-enfant:
+        title: "Cuentos interactivos para niños: cuando tu hijo elige lo que pasa después"
+        description: "El relato interactivo convierte la escucha en participación. A partir de los 4 años, tu hijo se vuelve coautor de su cuento de la noche. Beneficios y funcionamiento."
+      histoire-courte-enfant-soir:
+        title: "Cuentos cortos para niños: 5 minutos para un ritual nocturno logrado"
+        description: "Un cuento corto bien hecho suele ser más eficaz que uno largo para conciliar el sueño. Estructura, temas y consejos para noches exprés."

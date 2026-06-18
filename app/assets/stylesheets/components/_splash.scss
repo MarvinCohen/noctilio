@@ -1,0 +1,75 @@
+// ============================================================
+// Splash screen PWA — écran d'accueil au lancement (mode app installée)
+// ============================================================
+// Affiché UNIQUEMENT quand l'app tourne en mode "standalone" (installée sur
+// l'écran d'accueil). En navigateur classique, il reste caché : on ne veut pas
+// d'écran de chargement parasite pendant une simple visite web.
+// Le JS dans le layout l'affiche au démarrage puis le fait disparaître en fondu.
+// ============================================================
+
+// Caché par défaut — le JS ne l'active qu'en mode standalone
+.pwa-splash {
+  display: none;
+}
+
+// ------------------------------------------------------------
+// Mode app installée — l'écran de lancement devient visible
+// ------------------------------------------------------------
+// display-mode: standalone est vrai quand l'app est lancée depuis l'icône
+// de l'écran d'accueil (PWA installée), pas depuis le navigateur.
+@media (display-mode: standalone) {
+
+  .pwa-splash {
+    // Plein écran, au-dessus de tout le reste
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    // Centre le logo verticalement et horizontalement
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+
+    // Fond nuit Noctilio — identique au theme-color de la barre système
+    background: radial-gradient(circle at 50% 38%, var(--indigo) 0%, var(--night) 70%);
+
+    // Empêche toute interaction pendant l'affichage du splash
+    pointer-events: none;
+
+    // Transition de disparition — fondu doux piloté par la classe .pwa-splash--hidden
+    transition: opacity 0.5s ease;
+  }
+
+  // Mascotte hibou — légère pulsation pour donner vie à l'attente
+  .pwa-splash-owl {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    // Halo doré diffus derrière la mascotte
+    filter: drop-shadow(0 0 24px rgba(240, 201, 122, 0.4));
+    animation: pwaSplashBreath 2s ease-in-out infinite;
+  }
+
+  // Nom de l'app sous la mascotte — typo éditoriale dorée
+  .pwa-splash-word {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    margin: 0;
+  }
+
+  // État "masqué" — ajouté par le JS pour déclencher le fondu de sortie
+  .pwa-splash--hidden {
+    opacity: 0;
+  }
+}
+
+// Respiration douce de la mascotte pendant le splash
+@keyframes pwaSplashBreath {
+  0%, 100% { transform: scale(1);    opacity: 0.9; }
+  50%      { transform: scale(1.06); opacity: 1; }
+}

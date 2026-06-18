@@ -17,22 +17,26 @@
         <div class="story-generating"
              data-controller="story-status"
              data-story-status-url-value="<%= status_story_path(@story) %>"
-             data-story-status-redirect-value="<%= story_path(@story) %>">
+             data-story-status-redirect-value="<%= story_path(@story) %>"
+             <%# Messages rotatifs passés au JS via des data-values (i18n) %>
+             data-story-status-msg1-value="<%= t("story_show.gen_msg_1") %>"
+             data-story-status-msg2-value="<%= t("story_show.gen_msg_2") %>"
+             data-story-status-msg3-value="<%= t("story_show.gen_msg_3") %>"
+             data-story-status-msg4-value="<%= t("story_show.gen_msg_4") %>">
 
           <span class="story-generating-icon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
           </span>
-          <h1 class="story-generating-title">La magie opère...</h1>
+          <h1 class="story-generating-title"><%= t("story_show.generating_title") %></h1>
 
           <%# Message de progression rotatif — animé par story_status_controller %>
           <%# Donne l'impression que les étapes avancent (texte, illustration…) %>
           <p class="story-generating-message" data-story-status-target="message">
-            ✨ L'histoire s'écrit...
+            <%= t("story_show.gen_msg_1") %>
           </p>
 
           <p class="story-generating-hint">
-            Votre histoire est en cours de création.<br>
-            Cela prend généralement 15 à 30 secondes.
+            <%= t("story_show.generating_hint_html") %>
           </p>
 
           <%# Barre de progression animée en doré %>
@@ -43,7 +47,23 @@
           <%# Spinner doré — remplace le spinner Bootstrap bleu %>
           <div class="story-spinner"></div>
 
-          <p class="story-status-text">Status : <%= @story.status %></p>
+          <%# ---------------------------------------------------------------- %>
+          <%# Skeleton de chargement — esquisse de la future histoire (esprit app) %>
+          <%# Donne à voir la forme de la page à venir (couverture + lignes de texte) %>
+          <%# avec un effet "shimmer" doré, plutôt qu'un simple écran vide. %>
+          <%# aria-hidden : purement décoratif, ignoré par les lecteurs d'écran. %>
+          <%# ---------------------------------------------------------------- %>
+          <div class="story-skeleton" aria-hidden="true">
+            <%# Bloc couverture (image à venir) %>
+            <div class="story-skeleton-cover"></div>
+            <%# Lignes de texte simulées — largeurs variables pour un rendu naturel %>
+            <div class="story-skeleton-line story-skeleton-line--title"></div>
+            <div class="story-skeleton-line"></div>
+            <div class="story-skeleton-line"></div>
+            <div class="story-skeleton-line story-skeleton-line--short"></div>
+          </div>
+
+          <p class="story-status-text"><%= t("story_show.status_label", status: @story.status) %></p>
         </div>
 
       <%# ================================================ %>
@@ -54,11 +74,12 @@
           <span class="story-error-icon">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           </span>
-          <h1 class="story-error-title">Oups, une erreur s'est produite</h1>
-          <p class="story-error-hint">La génération de l'histoire a échoué. Veuillez réessayer.</p>
+          <h1 class="story-error-title"><%= t("story_show.error_title") %></h1>
+          <p class="story-error-hint"><%= t("story_show.error_hint") %></p>
           <div class="d-flex gap-3 justify-content-center">
-            <%= link_to "Réessayer", new_story_path, class: "story-btn-primary" %>
-            <%= link_to "Mes histoires", stories_path, class: "story-btn-secondary" %>
+            <%# "Réessayer" partagé avec la bibliothèque (library.retry) %>
+            <%= link_to t("library.retry"), new_story_path, class: "story-btn-primary" %>
+            <%= link_to t("story_show.my_stories"), stories_path, class: "story-btn-secondary" %>
           </div>
         </div>
 
@@ -69,19 +90,20 @@
 
         <%# Fil d'Ariane + méta %>
         <div class="story-breadcrumb">
-          <%= link_to "← Mes histoires", stories_path, class: "story-back-link" %>
+          <%= link_to t("story_show.back_to_stories"), stories_path, class: "story-back-link" %>
           <span class="story-meta-pill"><%= @story.world_emoji %> <%= @story.world_label %></span>
-          <span class="story-meta-pill">Pour <%= @story.child.name %></span>
+          <%# "Pour %{name}" partagé avec la bibliothèque (library.for_child) %>
+          <span class="story-meta-pill"><%= t("library.for_child", name: @story.child.name) %></span>
           <%# Badge épisode — affiché seulement si l'histoire fait partie d'une saga %>
           <% if @story.sequel? || @story.has_sequel? %>
             <span class="story-meta-pill story-meta-pill--episode">
-              Épisode <%= @story.episode_number %>
+              <%= t("story_show.episode", number: @story.episode_number) %>
             </span>
           <% end %>
         </div>
 
         <%# Titre de l'histoire — Cormorant Garamond italic %>
-        <h1 class="story-title"><%= @story.title || "Mon histoire magique" %></h1>
+        <h1 class="story-title"><%= @story.title || t("story_show.default_title") %></h1>
 
         <%# Navigation entre épisodes — affiché si l'histoire fait partie d'une saga %>
         <% if @story.sequel? || @story.has_sequel? %>
@@ -90,17 +112,17 @@
             <% if @story.sequel? %>
               <%= link_to story_path(@story.parent_story), class: "story-saga-link story-saga-link--prev" do %>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                Épisode <%= @story.episode_number - 1 %>
+                <%= t("story_show.episode", number: @story.episode_number - 1) %>
               <% end %>
             <% else %>
               <span></span>
             <% end %>
             <%# Indicateur de position dans la saga %>
-            <span class="story-saga-label">Épisode <%= @story.episode_number %></span>
+            <span class="story-saga-label"><%= t("story_show.episode", number: @story.episode_number) %></span>
             <%# Lien vers l'épisode suivant s'il existe %>
             <% if @story.has_sequel? %>
               <%= link_to story_path(@story.next_sequel), class: "story-saga-link story-saga-link--next" do %>
-                Épisode <%= @story.episode_number + 1 %>
+                <%= t("story_show.episode", number: @story.episode_number + 1) %>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               <% end %>
             <% else %>
@@ -117,7 +139,7 @@
             viendra, on affiche un encart d'upsell à la place (moment de conversion). %>
         <% if current_user.full_experience_for?(@story) %>
         <div class="story-illustration-section">
-          <div class="story-illustration-label">✦ L'illustration de ton aventure</div>
+          <div class="story-illustration-label"><%= t("story_show.illustration_label") %></div>
 
           <%# CAS 1 : l'image est déjà disponible %>
           <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
@@ -125,13 +147,13 @@
             <div class="story-illustration-wrapper">
               <div class="story-illustration-skeleton" id="story-illustration-skeleton">
                 <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
-                <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
+                <p class="story-illustration-skeleton-text"><%= t("story_show.illustration_loading") %></p>
               </div>
               <%# L'image démarre cachée — un script nonce l'affiche après chargement %>
               <%# On utilise un script nonce (au lieu de onload inline) car la CSP bloque %>
               <%# les handlers inline (onload=, onerror=) sans 'unsafe-inline' %>
               <%= image_tag image_src,
-                    alt:   "Illustration de #{@story.title}",
+                    alt:   t("story_show.illustration_alt", title: @story.title),
                     class: "story-illustration-img",
                     id:    "story-cover-img-#{@story.id}",
                     style: "display:none" %>
@@ -157,7 +179,7 @@
 
                 // En cas d'erreur : affiche un message discret dans le skeleton
                 img.addEventListener('error', function() {
-                  if (skeleton) skeleton.innerHTML = '<p style="color:#8a8578;font-size:0.8rem;">Illustration non disponible</p>';
+                  if (skeleton) skeleton.innerHTML = '<p style="color:#8a8578;font-size:0.8rem;"><%= j t("story_show.illustration_unavailable") %></p>';
                 });
               })();
             </script>
@@ -167,10 +189,12 @@
             <div class="story-illustration-wrapper"
                  data-controller="story-image"
                  data-story-image-status-url-value="<%= status_story_path(@story) %>"
-                 data-story-image-alt-value="Illustration de <%= @story.title %>">
+                 data-story-image-alt-value="<%= t("story_show.illustration_alt", title: @story.title) %>"
+                 <%# Message d'erreur passé au JS si l'image ne se charge pas %>
+                 data-story-image-unavailable-value="<%= t("story_show.illustration_unavailable") %>">
               <div class="story-illustration-skeleton">
                 <div class="story-illustration-skeleton-icon"><%= @story.world_emoji %></div>
-                <p class="story-illustration-skeleton-text">Illustration en cours de création...</p>
+                <p class="story-illustration-skeleton-text"><%= t("story_show.illustration_loading") %></p>
               </div>
             </div>
           <% end %>
@@ -180,12 +204,11 @@
           <div class="story-illustration-section">
             <div class="story-upsell-card">
               <div class="story-upsell-card__icon">🎨</div>
-              <p class="story-upsell-card__title">Cette histoire est en texte seul</p>
+              <p class="story-upsell-card__title"><%= t("story_show.upsell_title") %></p>
               <p class="story-upsell-card__text">
-                Repasse à l'expérience complète, avec une illustration et la lecture
-                audio incluses dans chaque histoire, grâce à Premium.
+                <%= t("story_show.upsell_text") %>
               </p>
-              <%= link_to "Passer en Premium", subscription_path, class: "story-upsell-card__btn" %>
+              <%= link_to t("story_show.upsell_btn"), subscription_path, class: "story-upsell-card__btn" %>
             </div>
           </div>
         <% end %>
@@ -200,9 +223,9 @@
           <%# Si un choix interactif est en attente, on insère le texte du choix ici %>
           <% if @story.interactive? && @pending_choice %>
             <div class="story-choice-voice-text">
-              <p class="story-paragraph">À toi de décider ! <%= @pending_choice.question %></p>
-              <p class="story-paragraph">Option A : <%= @pending_choice.option_a %></p>
-              <p class="story-paragraph">Option B : <%= @pending_choice.option_b %></p>
+              <p class="story-paragraph"><%= t("story_show.decide") %> <%= @pending_choice.question %></p>
+              <p class="story-paragraph"><%= t("story_show.voice_option_a", text: @pending_choice.option_a) %></p>
+              <p class="story-paragraph"><%= t("story_show.voice_option_b", text: @pending_choice.option_b) %></p>
             </div>
           <% end %>
         </div>
@@ -226,7 +249,7 @@
             <button data-story-reader-target="playBtn"
                     data-action="click->story-reader#play"
                     class="audio-bar-play"
-                    title="Écouter l'histoire">
+                    title="<%= t("story_show.audio_play") %>">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </button>
 
@@ -234,18 +257,18 @@
             <button data-story-reader-target="pauseBtn"
                     data-action="click->story-reader#pause"
                     class="audio-bar-play d-none"
-                    title="Pause">
+                    title="<%= t("story_show.audio_pause") %>">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
             </button>
 
             <%# Label "Lecture vocale" — petit texte entre les boutons %>
-            <span class="audio-bar-label">Lecture vocale</span>
+            <span class="audio-bar-label"><%= t("story_show.audio_label") %></span>
 
             <%# Bouton Stop — discret, à droite %>
             <button data-story-reader-target="stopBtn"
                     data-action="click->story-reader#stop"
                     class="audio-bar-stop"
-                    title="Arrêter">
+                    title="<%= t("story_show.audio_stop") %>">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
             </button>
 
@@ -261,7 +284,7 @@
             <span class="audio-bar-preparing-dots">
               <span></span><span></span><span></span>
             </span>
-            <span>En préparation</span>
+            <span><%= t("story_show.audio_preparing") %></span>
           </div>
 
           <%# Ligne 2 : barre de progression + timers %>
@@ -283,7 +306,7 @@
           <div class="audio-bar" style="justify-content: center;">
             <%= link_to subscription_path, style: "display: inline-flex; align-items: center; gap: 0.5rem; color: #f0c97a; text-decoration: none; font-size: 0.85rem;" do %>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Lecture vocale — réservée aux abonnés Premium
+              <%= t("story_show.audio_premium_only") %>
             <% end %>
           </div>
         <% end %>
@@ -295,8 +318,8 @@
             pas de pression — l'upsell "fort" se fait sur la 2e histoire (texte seul). %>
         <% if !current_user.premium? && current_user.welcome_story?(@story) %>
           <div class="story-premium-hint">
-            L'illustration et la lecture audio sont incluses dans chaque histoire avec
-            <%= link_to "Premium", subscription_path, class: "story-premium-hint__link" %> ✨
+            <%= t("story_show.premium_hint_before") %>
+            <%= link_to t("story_show.premium_hint_link"), subscription_path, class: "story-premium-hint__link" %> ✨
           </div>
         <% end %>
 
@@ -306,13 +329,17 @@
           <%# data-story-choice-status-url-value : URL de polling jusqu'à fin de génération %>
           <div class="interactive-choice"
                data-controller="story-choice"
-               data-story-choice-status-url-value="<%= status_story_path(@story) %>">
+               data-story-choice-status-url-value="<%= status_story_path(@story) %>"
+               <%# Textes du spinner pendant la génération de la suite (i18n) %>
+               data-story-choice-loading-sr-value="<%= t("story_show.choice_loading_sr") %>"
+               data-story-choice-loading-title-value="<%= t("story_show.choice_loading_title") %>"
+               data-story-choice-loading-hint-value="<%= t("story_show.choice_loading_hint") %>">
 
             <div class="text-center mb-4">
               <span class="interactive-choice-icon">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </span>
-              <h3 class="interactive-choice-title">À toi de décider !</h3>
+              <h3 class="interactive-choice-title"><%= t("story_show.decide") %></h3>
               <p class="interactive-choice-question"><%= @pending_choice.question %></p>
             </div>
 
@@ -323,7 +350,7 @@
                       data: { action: "submit->story-choice#submit" } do %>
                   <input type="hidden" name="chosen_option" value="a">
                   <button type="submit" class="choice-option-btn">
-                    <div class="choice-option-label">Option A</div>
+                    <div class="choice-option-label"><%= t("story_show.option_a_label") %></div>
                     <div class="choice-option-text"><%= @pending_choice.option_a %></div>
                   </button>
                 <% end %>
@@ -335,7 +362,7 @@
                       data: { action: "submit->story-choice#submit" } do %>
                   <input type="hidden" name="chosen_option" value="b">
                   <button type="submit" class="choice-option-btn">
-                    <div class="choice-option-label">Option B</div>
+                    <div class="choice-option-label"><%= t("story_show.option_b_label") %></div>
                     <div class="choice-option-text"><%= @pending_choice.option_b %></div>
                   </button>
                 <% end %>
@@ -374,14 +401,20 @@
                    data-controller="story-alternative"
                    data-story-alternative-url-value="<%= explore_alternative_story_path(@story) %>"
                    data-story-alternative-choice-id-value="<%= choice.id %>"
-                   data-story-alternative-alternative-label-value="<%= alternative_label %>">
+                   data-story-alternative-alternative-label-value="<%= alternative_label %>"
+                   <%# Chaînes i18n utilisées par le JS (erreurs, label de fermeture, préfixe) %>
+                   data-story-alternative-ask-prefix-value="<%= t("story_show.alternative_ask_prefix") %>"
+                   data-story-alternative-hide-label-value="<%= t("story_show.alternative_hide") %>"
+                   data-story-alternative-error-prefix-value="<%= t("story_show.alternative_error_prefix") %>"
+                   data-story-alternative-error-unknown-value="<%= t("story_show.alternative_error_unknown") %>"
+                   data-story-alternative-network-error-value="<%= t("story_show.alternative_network_error") %>">
 
                 <%# Bouton — clique pour voir l'autre chemin %>
                 <button class="alternative-btn"
                         data-story-alternative-target="btn"
                         data-action="click->story-alternative#toggle"
                         aria-expanded="false">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6Z"/><path d="M12 12v7"/><path d="M12 19H7"/></svg>Et si j'avais choisi "<%= alternative_label %>" ?
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6Z"/><path d="M12 12v7"/><path d="M12 19H7"/></svg><%= t("story_show.alternative_ask_prefix") %> "<%= alternative_label %>" ?
                 </button>
 
                 <%# Panel caché — visible après le clic %>
@@ -390,13 +423,13 @@
                   <%# En-tête du panel — indique la timeline alternative %>
                   <div class="alternative-header">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6Z"/><path d="M12 12v7"/><path d="M12 19H7"/></svg>
-                    <strong>Timeline alternative</strong> — si tu avais choisi "<%= alternative_label %>"
+                    <strong><%= t("story_show.alternative_timeline") %></strong> · <%= t("story_show.alternative_if_chosen") %> "<%= alternative_label %>"
                   </div>
 
                   <%# Spinner de chargement — visible pendant la requête IA %>
                   <div class="alternative-spinner" data-story-alternative-target="spinner" style="display:none">
                     <div class="alternative-spinner-dot"></div>
-                    <span>L'IA imagine l'autre chemin...</span>
+                    <span><%= t("story_show.alternative_loading") %></span>
                   </div>
 
                   <%# Zone d'insertion du contenu HTML renvoyé par l'API %>
@@ -416,12 +449,14 @@
         <% if @story.completed? %>
           <% share_url = shared_story_url(token: @story.share_token) %>
           <%# Texte pré-rempli du message WhatsApp (u() encode pour l'URL) %>
-          <% whatsapp_text = "Découvre cette histoire que j'ai créée pour #{@story.child.name} sur Noctilio : #{share_url}" %>
+          <% whatsapp_text = t("story_show.whatsapp_text", name: @story.child.name, url: share_url) %>
 
           <div class="story-share"
                data-controller="share"
-               data-share-url-value="<%= share_url %>">
-            <p class="story-share-label">Partager cette histoire</p>
+               data-share-url-value="<%= share_url %>"
+               <%# Texte de confirmation "Lien copié !" passé au JS (i18n) %>
+               data-share-copied-value="<%= t("story_show.link_copied") %>">
+            <p class="story-share-label"><%= t("story_show.share_label") %></p>
             <div class="story-share-actions">
               <%# Bouton WhatsApp — simple lien wa.me, ouvre l'app/onglet de partage %>
               <a href="https://wa.me/?text=<%= u(whatsapp_text) %>"
@@ -436,7 +471,7 @@
                       class="story-share-btn story-share-btn--copy"
                       data-share-target="button"
                       data-action="click->share#copy">
-                Copier le lien
+                <%= t("story_show.copy_link") %>
               </button>
             </div>
           </div>
@@ -457,24 +492,24 @@
               <% if @story.has_sequel? %>
                 <%= link_to story_path(@story.next_sequel),
                       class: "story-btn-continue" do %>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="m9 18 6-6-6-6"/></svg>Épisode <%= @story.episode_number + 1 %>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="m9 18 6-6-6-6"/></svg><%= t("story_show.episode", number: @story.episode_number + 1) %>
                 <% end %>
               <% else %>
                 <%= button_to continue_story_path(@story), method: :post, class: "story-btn-continue",
-                      data: { turbo_confirm: "Créer l'épisode #{@story.episode_number + 1} de cette aventure ?" } do %>
+                      data: { turbo_confirm: t("story_show.continue_confirm", number: @story.episode_number + 1) } do %>
                   <%# Étoile ✦ immobile, qui tourne uniquement au survol (cohérent avec le site) %>
-                  <span class="spin-star--hover" style="margin-right:5px">✦</span>Continuer l'aventure
+                  <span class="spin-star--hover" style="margin-right:5px">✦</span><%= t("story_show.continue_adventure") %>
                 <% end %>
               <% end %>
 
               <%# Sauvegarder côte à côte avec Continuer l'aventure %>
               <% if @story.saved? %>
                 <span class="story-btn-success">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>Sauvegardée
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg><%= t("story_show.saved") %>
                 </span>
               <% else %>
                 <%= button_to save_story_story_path(@story), method: :post, class: "story-btn-warning" do %>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Sauvegarder
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><%= t("story_show.save") %>
                 <% end %>
               <% end %>
 
@@ -484,20 +519,21 @@
           <%# ── Ligne 2 : Nouvelle histoire ── %>
           <%= link_to new_story_path, class: "story-btn-primary" do %>
             <%# Étoile ✦ immobile, qui tourne uniquement au survol (cohérent avec le site) %>
-            <span class="spin-star--hover" style="margin-right:5px">✦</span>Nouvelle histoire
+            <%# "Nouvelle histoire" partagé avec la bibliothèque (library.new_story) %>
+            <span class="spin-star--hover" style="margin-right:5px">✦</span><%= t("library.new_story") %>
           <% end %>
 
           <%# ── Ligne 3 : Mes histoires ── %>
           <%= link_to stories_path, class: "story-btn-secondary" do %>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Mes histoires
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><%= t("story_show.my_stories") %>
           <% end %>
 
           <%# ── Ligne 4 : Recommencer — seulement pour les histoires interactives avec choix ── %>
           <%# Inutile pour une histoire standard sans choix : l'utilisateur relit la même chose %>
           <% if @story.completed? && @story.interactive? %>
             <%= button_to replay_story_path(@story), method: :post, class: "story-btn-replay",
-                  data: { turbo_confirm: "Recommencer cette histoire pour faire d'autres choix ?" } do %>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Recommencer
+                  data: { turbo_confirm: t("story_show.replay_confirm") } do %>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><%= t("story_show.replay") %>
             <% end %>
           <% end %>
 

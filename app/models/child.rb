@@ -49,12 +49,14 @@ class Child < ApplicationRecord
     parts = ["#{name}, #{gender_label} de #{age} ans"]
 
     # Ajoute les attributs physiques explicites — indispensables pour la cohérence des illustrations
-    parts << "cheveux #{hair_color}"   if hair_color.present?
-    parts << "yeux #{eye_color}"       if eye_color.present?
-    parts << "peau #{skin_tone}"       if skin_tone.present?
+    # Les valeurs en base sont des clés stables (ex: "black") → on les traduit en libellé FR
+    # via I18n (forcé en :fr car ce prompt narratif est toujours rédigé en français)
+    parts << "cheveux #{hair_color_fr}"   if hair_color.present?
+    parts << "yeux #{eye_color_fr}"       if eye_color.present?
+    parts << "peau #{skin_tone_fr}"       if skin_tone.present?
 
-    # Ajoute les traits de personnalité si définis
-    parts << personality_traits.join(", ") if personality_traits.present?
+    # Ajoute les traits de personnalité si définis — clés stables traduites en libellé FR
+    parts << personality_traits.map { |t| trait_fr(t) }.join(", ") if personality_traits.present?
 
     # Ajoute les hobbies si définis
     parts << "qui adore #{hobbies.join(' et ')}" if hobbies.present?
@@ -117,47 +119,79 @@ class Child < ApplicationRecord
     end
   end
 
-  # ── Traductions des couleurs FR → EN (sans ambiguïté pour le modèle d'image) ──
+  # ── Traduction des clés stables → libellé FR (pour le prompt narratif) ──
+  # Les colonnes hair_color/eye_color/skin_tone stockent désormais des clés stables
+  # (ex: "black", "light_blue"). On force I18n en :fr car avatar_description est
+  # toujours rédigé en français, quelle que soit la langue d'interface courante.
+  # default: la clé brute si jamais une valeur inconnue traînait en base.
 
-  # Cheveux : "blanc/gris" → "platinum white-blonde" pour éviter l'effet "personne âgée".
-  # Un enfant aux cheveux clairs doit rester un enfant (blond platine, pas vieillard).
+  # Cheveux → libellé FR minuscule (ex: "black" → "noir")
+  def hair_color_fr
+    I18n.t("children.appearance.hair.#{hair_color}", locale: :fr, default: hair_color).downcase
+  end
+
+  # Yeux → libellé FR minuscule (ex: "light_blue" → "bleu clair")
+  def eye_color_fr
+    I18n.t("children.appearance.eyes.#{eye_color}", locale: :fr, default: eye_color).downcase
+  end
+
+  # Peau → libellé FR minuscule (ex: "very_light" → "très clair")
+  def skin_tone_fr
+    I18n.t("children.appearance.skin.#{skin_tone}", locale: :fr, default: skin_tone).downcase
+  end
+
+  # Trait de personnalité → libellé FR minuscule (ex: "brave" → "courageux")
+  def trait_fr(trait)
+    I18n.t("children.appearance.traits.#{trait}", locale: :fr, default: trait).downcase
+  end
+
+  # ── Traduction des clés stables → anglais (sans ambiguïté pour le modèle d'image) ──
+  # Mapping EXACT clé → anglais (plus de regex floue : les valeurs en base sont des clés).
+  # On conserve les nuances pensées pour gpt-image-1 : un enfant aux cheveux clairs doit
+  # rester un enfant (blond platine, pas vieillard), peau "warm brown" plutôt que littéral, etc.
+
+  # Cheveux : "white" → "platinum white-blonde" pour éviter l'effet "personne âgée".
   def hair_color_en
-    case hair_color.to_s.downcase
-    when /blanc|gris|argent/                 then "platinum white-blonde"
-    when /blond/                              then "blonde"
-    when /ch[aâ]tain\s*clair/                 then "light brown"
-    when /ch[aâ]tain|marron|brun/             then "brown"
-    when /noir/                               then "jet black"
-    when /roux|rousse|red|ginger/             then "ginger red"
-    else hair_color
-    end
+    {
+      "black"        => "jet black",
+      "dark_brown"   => "dark brown",
+      "brown"        => "brown",
+      "dark_blonde"  => "dark blonde",
+      "blonde"       => "blonde",
+      "light_blonde" => "light blonde",
+      "red"          => "ginger red",
+      "white"        => "platinum white-blonde"
+    }.fetch(hair_color.to_s, hair_color)
   end
 
-  # Yeux : traduit les libellés français courants en anglais.
-  # "clair" géré avant la couleur de base (ex: "bleu clair" → "light blue").
+  # Yeux : mapping exact clé → anglais.
   def eye_color_en
-    case eye_color.to_s.downcase
-    when /bleu\s*clair/                       then "light blue"
-    when /bleu/                               then "blue"
-    when /vert/                               then "green"
-    when /noisette/                           then "hazel"
-    when /marron|brun/                        then "warm brown"
-    when /noir/                               then "dark brown"
-    when /gris/                               then "grey"
-    else eye_color
-    end
+    {
+      "dark_brown"  => "dark brown",
+      "brown"       => "warm brown",
+      "hazel"       => "hazel",
+      "dark_green"  => "dark green",
+      "green"       => "green",
+      "light_green" => "light green",
+      "dark_blue"   => "dark blue",
+      "blue"        => "blue",
+      "light_blue"  => "light blue",
+      "grey"        => "grey"
+    }.fetch(eye_color.to_s, eye_color)
   end
 
-  # Peau : traduction nuancée (l'ordre compte — "foncé" avant "brun" simple).
+  # Peau : traduction nuancée (warm brown pour les tons chauds, fair light pour les clairs).
   def skin_tone_en
-    case skin_tone.to_s.downcase
-    when /éb[eè]ne|noir|très.?foncé/          then "dark ebony"
-    when /brun.?foncé|foncé/                  then "dark brown"
-    when /brun|caramel|métis|mixed|doré/      then "warm brown"
-    when /olive|mat|mediterran/               then "olive"
-    when /clair|blanc|fair|p[aâ]le/           then "fair light"
-    when /rose/                               then "rosy fair"
-    else skin_tone
-    end
+    {
+      "ebony"      => "dark ebony",
+      "dark_brown" => "dark brown",
+      "brown"      => "warm brown",
+      "caramel"    => "warm brown",
+      "golden"     => "warm golden",
+      "olive"      => "olive",
+      "beige"      => "fair light",
+      "light"      => "fair light",
+      "very_light" => "rosy fair"
+    }.fetch(skin_tone.to_s, skin_tone)
   end
 end

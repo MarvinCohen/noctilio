@@ -427,7 +427,9 @@
 
   /* ── Responsive mobile ── */
   @media (max-width: 600px) {
-    .par-page       { padding: 1.25rem 1rem 3rem; }
+    /* Padding horizontal à 0 : le retrait latéral est géré uniformément par
+       .page-card (16px) + .container (~12px), identique à toutes les pages. */
+    .par-page       { padding: 1.25rem 0 3rem; }
     .par-page-title { font-size: clamp(1.4rem, 6vw, 2.8rem); }
 
     /* Stats — 3 en ligne horizontale compacte au lieu de 3 cards empilées */
@@ -438,7 +440,25 @@
     .par-stats-row .col-md-4 { flex: 1; padding: 0; }
     .par-stat-card  { padding: 12px 8px; }
     .par-stat-number { font-size: 1.8rem; }
-    .par-stat-label  { font-size: 0.65rem; line-height: 1.3; }
+    /* min-height = 2 lignes : réserve la même hauteur de label sur les 3 cartes
+       pour qu'elles restent alignées même quand un label tient sur 2 lignes
+       (ex : "minutes de lecture totales") et un autre sur 1 ligne. */
+    .par-stat-label  {
+      font-size:   0.65rem;
+      line-height: 1.3;
+      min-height:  calc(0.65rem * 1.3 * 2); /* hauteur de 2 lignes */
+      display:        flex;
+      align-items:    center;
+      justify-content: center;
+    }
+
+    /* Header "Activité du mois" — empilé sur mobile : sinon le titre et le
+       sous-titre se collent (pas assez de place en flex space-between). */
+    .par-chart-header {
+      flex-direction: column;
+      align-items:    flex-start;
+      gap:            0.15rem;
+    }
 
     /* Héros desktop (par-child-row) — cachés sur mobile, remplacés par le strip */
     .par-heroes-desktop { display: none; }
@@ -465,8 +485,8 @@
   <%# EN-TÊTE %>
   <%# ============================================================ %>
   <div class="mb-4">
-    <h1 class="par-page-title">Tableau de Bord Parental</h1>
-    <p class="par-page-subtitle">Suivi des lectures et de l'activité de vos enfants</p>
+    <h1 class="par-page-title"><%= t("parental.title") %></h1>
+    <p class="par-page-subtitle"><%= t("parental.subtitle") %></p>
   </div>
 
   <%# ============================================================ %>
@@ -475,7 +495,7 @@
   <%# ============================================================ %>
   <div class="par-heroes-mobile mb-4">
     <div class="mb-3">
-      <h2 class="par-section-title mb-0">Mes Héros</h2>
+      <h2 class="par-section-title mb-0"><%= t("parental.heroes") %></h2>
     </div>
 
     <%# Banderole d'avatars — cercle initiale + prénom + âge %>
@@ -489,13 +509,13 @@
                   style: "width:100%; height:100%; border-radius:50%; object-fit:cover;" %>
           </div>
           <span class="par-hero-name"><%= child.name %></span>
-          <span class="par-hero-age"><%= child.age %> ans</span>
+          <span class="par-hero-age"><%= t("parental.age", age: child.age) %></span>
         <% end %>
       <% end %>
       <%# Bouton "+" pour ajouter un héros %>
       <%= link_to new_child_path, class: "par-hero-avatar-card" do %>
         <div class="par-hero-circle" style="font-size:1.8rem; font-family:'DM Sans',sans-serif; font-weight:300; color:rgba(240,201,122,0.35); border-style:dashed;">+</div>
-        <span class="par-hero-name" style="color:rgba(212,207,196,0.35);">Ajouter</span>
+        <span class="par-hero-name" style="color:rgba(212,207,196,0.35);"><%= t("parental.add") %></span>
       <% end %>
     </div>
   </div>
@@ -508,21 +528,21 @@
     <div class="col-md-4">
       <div class="par-stat-card">
         <div class="par-stat-number"><%= @total_reading_minutes %></div>
-        <div class="par-stat-label">minutes de lecture totales</div>
+        <div class="par-stat-label"><%= t("parental.stat_minutes") %></div>
       </div>
     </div>
 
     <div class="col-md-4">
       <div class="par-stat-card">
         <div class="par-stat-number"><%= current_user.stories.completed.count %></div>
-        <div class="par-stat-label">histoires créées</div>
+        <div class="par-stat-label"><%= t("parental.stat_stories") %></div>
       </div>
     </div>
 
     <div class="col-md-4">
       <div class="par-stat-card">
         <div class="par-stat-number"><%= @children.count %></div>
-        <div class="par-stat-label">profils enfants</div>
+        <div class="par-stat-label"><%= t("parental.stat_children") %></div>
       </div>
     </div>
 
@@ -534,17 +554,19 @@
   <%# ============================================================ %>
   <div class="par-chart-card">
     <div class="par-chart-header">
-      <h2 class="par-chart-title">Activité du mois</h2>
+      <h2 class="par-chart-title"><%= t("parental.month_activity") %></h2>
       <% total_month = @weekly_stories.values.sum %>
       <span class="par-chart-total">
-        <%= total_month %> histoire<%= "s" if total_month != 1 %> ces 30 derniers jours
+        <%# Pluralisation gérée par I18n (clés one / other) %>
+        <%= t("parental.month_total", count: total_month) %>
       </span>
     </div>
 
     <%# Grille 10 × 3 = 30 cases, du jour J-29 au jour J %>
     <div class="par-grid-30">
       <% today          = Date.today %>
-      <% day_names_short = %w[Dim Lun Mar Mer Jeu Ven Sam] %>
+      <%# Noms de jours abrégés localisés (fournis par rails-i18n : date.abbr_day_names) %>
+      <% day_names_short = t("date.abbr_day_names") %>
 
       <% 29.downto(0).each do |days_ago| %>
         <% date      = today - days_ago %>
@@ -555,10 +577,10 @@
         <% today_class     = is_today ? "par-grid-day--today" : "" %>
 
         <div class="par-grid-day <%= intensity_class %> <%= today_class %>"
-             title="<%= date.strftime('%d/%m/%Y') %> — <%= count %> histoire<%= 's' if count != 1 %>">
+             title="<%= date.strftime('%d/%m/%Y') %> — <%= t("parental.stories_count", count: count) %>">
           <%# Numéro du jour — ex: "13" %>
           <span class="par-grid-day-num"><%= date.day %></span>
-          <%# Nom abrégé — ex: "Lun" %>
+          <%# Nom abrégé localisé — ex: "lun" / "Mon" %>
           <span class="par-grid-day-name"><%= day_names_short[date.wday] %></span>
         </div>
       <% end %>
@@ -566,13 +588,13 @@
 
     <%# Légende — explique les niveaux d'intensité %>
     <div class="par-grid-legend">
-      <span>Moins</span>
+      <span><%= t("parental.less") %></span>
       <%# 4 swatches : vide → plein %>
       <div class="par-grid-legend-swatch" style="background: rgba(240,201,122,0.08)"></div>
       <div class="par-grid-legend-swatch" style="background: rgba(240,201,122,0.40)"></div>
       <div class="par-grid-legend-swatch" style="background: rgba(240,201,122,0.70)"></div>
       <div class="par-grid-legend-swatch" style="background: #f0c97a"></div>
-      <span>Plus</span>
+      <span><%= t("parental.more") %></span>
     </div>
   </div>
 
@@ -589,8 +611,8 @@
       <div class="par-card">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2 class="par-section-title mb-0">Mes Héros</h2>
-          <%= link_to "+ Ajouter", new_child_path, class: "par-btn-outline" %>
+          <h2 class="par-section-title mb-0"><%= t("parental.heroes") %></h2>
+          <%= link_to t("parental.add_button"), new_child_path, class: "par-btn-outline" %>
         </div>
 
         <% if @children.any? %>
@@ -615,13 +637,13 @@
               <div class="flex-grow-1 min-width-0">
                 <div class="par-child-name"><%= child.name %></div>
                 <div class="par-child-meta">
-                  <%# Age + nombre d'histoires %>
-                  <%= child.age %> ans ·
-                  <%= child.stories.completed.count %> histoire<%= "s" if child.stories.completed.count != 1 %>
+                  <%# Age + nombre d'histoires (pluralisation via I18n) %>
+                  <%= t("parental.age", age: child.age) %> ·
+                  <%= t("parental.stories_count", count: child.stories.completed.count) %>
                   <%# Date de la dernière histoire si elle existe %>
                   <% last = @last_story_by_child[child.id] %>
                   <% if last %>
-                    · dernière le <%= last.created_at.strftime("%d/%m") %>
+                    · <%= t("parental.last_on", date: last.created_at.strftime("%d/%m")) %>
                   <% end %>
                 </div>
                 <%# Badge d'alerte si un choix interactif est en attente pour cet enfant %>
@@ -629,13 +651,13 @@
                   <span class="par-pending-badge">
                     <%# Icône point d'exclamation en SVG %>
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    Choix en attente
+                    <%= t("parental.pending_choice") %>
                   </span>
                 <% end %>
               </div>
 
               <%# Lien vers la fiche enfant %>
-              <%= link_to "Voir →", child_path(child), class: "par-btn-outline" %>
+              <%= link_to t("parental.see"), child_path(child), class: "par-btn-outline" %>
             </div>
           <% end %>
 
@@ -645,18 +667,18 @@
                   class="par-hero-toggle"
                   data-hero-reveal-target="btnMore"
                   data-action="click->hero-reveal#reveal">
-            Voir plus
+            <%= t("parental.see_more") %>
           </button>
           <button type="button"
                   class="par-hero-toggle"
                   data-hero-reveal-target="btnLess"
                   data-action="click->hero-reveal#collapse">
-            Voir moins
+            <%= t("parental.see_less") %>
           </button>
           </div>
         <% else %>
           <p class="par-empty-text">
-            <%= link_to "Créer le premier profil →", new_child_path, class: "par-empty-link" %>
+            <%= link_to t("parental.create_first"), new_child_path, class: "par-empty-link" %>
           </p>
         <% end %>
 
@@ -669,9 +691,9 @@
       <%# Activité récente — 5 dernières histoires -%>
       <div class="par-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2 class="par-section-title mb-0">Activité récente</h2>
+          <h2 class="par-section-title mb-0"><%= t("parental.recent_activity") %></h2>
           <%# tab=all : cohérent avec l'activité affichée (toutes les histoires, pas seulement sauvegardées) %>
-          <%= link_to "Tout voir →", stories_path(tab: "all"), class: "par-btn-outline" %>
+          <%= link_to t("parental.see_all"), stories_path(tab: "all"), class: "par-btn-outline" %>
         </div>
 
         <% if @recent_stories.any? %>
@@ -694,14 +716,14 @@
               <div class="flex-grow-1 min-width-0">
                 <div class="par-activity-title"><%= story.title %></div>
                 <div class="par-activity-meta">
-                  Pour <%= story.child.name %> · <%= story.created_at.strftime("%d/%m/%Y") %>
+                  <%= t("library.for_child", name: story.child.name) %> · <%= story.created_at.strftime("%d/%m/%Y") %>
                 </div>
               </div>
 
             <% end %>
           <% end %>
         <% else %>
-          <p class="par-empty-text">Aucune histoire pour l'instant.</p>
+          <p class="par-empty-text"><%= t("parental.no_stories") %></p>
         <% end %>
 
       </div>
@@ -714,14 +736,14 @@
       <%# Valeurs éducatives explorées — affiché si au moins une valeur existe -%>
       <% if @educational_values.any? %>
         <div class="par-card">
-          <h2 class="par-section-title">Valeurs explorées</h2>
+          <h2 class="par-section-title"><%= t("parental.values_explored") %></h2>
 
-          <%# Table de correspondance valeur → emoji + libellé français %>
+          <%# Table de correspondance valeur → emoji + libellé localisé %>
           <% value_labels = {
-              "courage"    => { emoji: "🦁", label: "Courage" },
-              "sharing"    => { emoji: "🤝", label: "Partage" },
-              "kindness"   => { emoji: "💛", label: "Gentillesse" },
-              "confidence" => { emoji: "⭐", label: "Confiance en soi" }
+              "courage"    => { emoji: "🦁", label: t("parental.value_courage") },
+              "sharing"    => { emoji: "🤝", label: t("parental.value_sharing") },
+              "kindness"   => { emoji: "💛", label: t("parental.value_kindness") },
+              "confidence" => { emoji: "⭐", label: t("parental.value_confidence") }
              } %>
 
           <div class="par-values-wrap">
@@ -740,25 +762,25 @@
 
       <%# Statut abonnement -%>
       <div class="par-card">
-        <h2 class="par-section-title">Mon Abonnement</h2>
+        <h2 class="par-section-title"><%= t("parental.subscription") %></h2>
 
         <% if current_user.premium? %>
           <div class="d-flex align-items-center gap-3">
-            <span class="par-badge-premium">✦ Premium</span>
-            <span style="color: #8a8578; font-size: 0.9rem;">Histoires illimitées</span>
+            <span class="par-badge-premium"><%= t("parental.premium") %></span>
+            <span style="color: #8a8578; font-size: 0.9rem;"><%= t("parental.unlimited") %></span>
           </div>
 
         <% else %>
           <div>
-            <span class="par-badge-free">Gratuit</span>
+            <span class="par-badge-free"><%= t("parental.free") %></span>
             <p class="par-quota-text">
-              <%= @stories_this_week %>/3 histoires cette semaine
+              <%= t("parental.weekly_quota", count: @stories_this_week) %>
             </p>
             <div class="par-quota-bar">
               <div class="par-quota-fill"
                    style="width: <%= (@stories_this_week / 3.0 * 100).round %>%"></div>
             </div>
-            <%= link_to "Passer en Premium →", subscription_path, class: "par-btn-primary" %>
+            <%= link_to t("parental.go_premium"), subscription_path, class: "par-btn-primary" %>
           </div>
         <% end %>
 

@@ -29,6 +29,23 @@ class DashboardController < ApplicationController
     # Phase lunaire réelle (0.0 = nouvelle lune, 0.5 = pleine lune)
     # Passée à la vue pour dessiner la lune correctement sur le canvas
     @moon_phase = current_moon_phase
+
+    # --- Données de la carte "rituel du soir" (Fat Model : tout vient du modèle) ---
+    # Niveau actuel + avancement vers le niveau suivant (pour l'orbe et la barre XP)
+    @level          = current_user.level
+    @level_progress = current_user.level_progress
+    @xp_to_next     = current_user.xp_to_next_level
+
+    # Nombre de trophées obtenus — affiché à côté de la progression
+    @badges_count = current_user.user_badges.count
+
+    # Constellation des 7 derniers soirs (étoiles allumées = soirs avec une histoire)
+    # Habitude douce, jamais punitive : on valorise sans culpabiliser les soirs manqués.
+    @constellation = current_user.recent_story_nights(7)
+
+    # Histoire suggérée "du soir" : la dernière commencée mais non terminée si elle
+    # existe, sinon la plus récente terminée (pour la relire d'un seul tap).
+    @suggested_story = @recent_stories.first
   end
 
   # current_moon_phase est défini dans ApplicationController

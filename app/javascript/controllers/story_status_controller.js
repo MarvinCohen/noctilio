@@ -14,7 +14,12 @@ export default class extends Controller {
   // Déclare les "values" — attributs data- récupérés automatiquement
   static values = {
     url: String,       // URL du endpoint JSON de statut
-    redirect: String   // URL vers laquelle rediriger quand c'est prêt
+    redirect: String,  // URL vers laquelle rediriger quand c'est prêt
+    // Messages de progression traduits (passés par la vue via data-…-msgN-value)
+    msg1: String,
+    msg2: String,
+    msg3: String,
+    msg4: String
   }
 
   // Cible facultative : le paragraphe où afficher les messages de progression
@@ -46,11 +51,12 @@ export default class extends Controller {
     if (!this.hasMessageTarget) return
 
     // Messages affichés successivement, dans l'ordre logique de fabrication
+    // (textes traduits fournis par la vue via les data-values)
     this.messages = [
-      "✨ L'histoire s'écrit...",
-      "🖋️ Les personnages prennent vie...",
-      "🎨 L'illustration se dessine...",
-      "📖 On relit une dernière fois..."
+      this.msg1Value,
+      this.msg2Value,
+      this.msg3Value,
+      this.msg4Value
     ]
     this.messageIndex = 0
     this.messageTarget.textContent = this.messages[0] // affiche le 1er tout de suite

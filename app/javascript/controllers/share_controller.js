@@ -13,8 +13,9 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   // url : l'URL publique de partage (passée depuis la vue)
+  // copied : texte de confirmation "Lien copié !" (traduit, passé depuis la vue)
   // button : le bouton "Copier le lien" dont on change le texte après copie
-  static values = { url: String }
+  static values = { url: String, copied: String }
   static targets = ["button"]
 
   // ── copy() — copie l'URL de partage dans le presse-papiers ──
@@ -32,7 +33,7 @@ export default class extends Controller {
     // Mémorise le texte d'origine pour le restaurer ensuite
     const original = this.buttonTarget.dataset.originalLabel || this.buttonTarget.textContent;
     this.buttonTarget.dataset.originalLabel = original;
-    this.buttonTarget.textContent = "Lien copié !";
+    this.buttonTarget.textContent = this.copiedValue;
 
     // Restaure le texte d'origine après 2 secondes
     setTimeout(() => {

@@ -1,0 +1,85 @@
+// ============================================================
+// Transitions & microinteractions — sensation "app native"
+// ============================================================
+// Deux rôles :
+//   1. Transitions de page Turbo (View Transitions API) — fondu doux entre pages.
+//   2. Retour tactile au tap (scale) sur les boutons et liens principaux.
+// Tout est cosmétique et dégrade proprement sur les navigateurs non compatibles.
+// ============================================================
+
+// ------------------------------------------------------------
+// 1) Transitions de page Turbo (cross-fade nocturne)
+// ------------------------------------------------------------
+// Turbo 8 enveloppe le rendu dans document.startViewTransition() dès que la
+// balise <meta name="view-transition" content="same-origin"> est présente.
+// On personnalise ici l'animation par défaut : un fondu doux plutôt qu'un
+// crossfade brut, pour coller à l'ambiance feutrée de Noctilio.
+
+// Durée du fondu — courte pour rester réactif (sensation app, pas diaporama)
+@keyframes nocti-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes nocti-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+// L'ancienne page s'efface, la nouvelle apparaît — en se chevauchant légèrement
+::view-transition-old(root) {
+  animation: nocti-fade-out 0.18s ease both;
+}
+
+::view-transition-new(root) {
+  animation: nocti-fade-in 0.28s ease both;
+}
+
+// Respecte le réglage système "réduire les animations" — accessibilité
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+// ------------------------------------------------------------
+// 2) Retour tactile au tap (scale) — sensation de bouton qui s'enfonce
+// ------------------------------------------------------------
+// On ajoute une légère réduction d'échelle au moment du tap sur les boutons et
+// liens d'action principaux. Cela donne le côté "réactif" des apps natives
+// (esprit Duolingo) sans rien changer au comportement.
+
+// Liste des sélecteurs concernés — les CTA et boutons d'action de l'app
+.db-cta-btn,
+.story-btn-primary,
+.story-btn-secondary,
+.btn {
+  // Transition douce — s'applique au retour à l'état normal après le relâchement
+  transition: transform 0.12s ease;
+
+  // Au tap (doigt/clic enfoncé) : le bouton se tasse légèrement
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+// Classe utilitaire à poser sur n'importe quel élément cliquable qu'on veut
+// rendre "tactile" sans cibler une classe précise.
+.tap-scale {
+  transition: transform 0.12s ease;
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+// Désactive le retour tactile si l'utilisateur a demandé moins d'animations
+@media (prefers-reduced-motion: reduce) {
+  .db-cta-btn,
+  .story-btn-primary,
+  .story-btn-secondary,
+  .btn,
+  .tap-scale {
+    &:active { transform: none; }
+  }
+}

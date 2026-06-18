@@ -7,10 +7,10 @@
 
   <%# ── En-tête ── %>
   <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 2.2rem; color: #f0c97a; margin-bottom: 0.25rem;">
-    Mon compte
+    <%= t("account.title") %>
   </h1>
   <p style="color: rgba(212, 207, 196, 0.65); margin-bottom: 2rem;">
-    Tes informations personnelles et ton abonnement
+    <%= t("account.subtitle") %>
   </p>
 
   <%# ── Carte : identité ── %>
@@ -43,7 +43,7 @@
   <div style="background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.25rem;">
 
     <h2 style="color: #f0c97a; font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">
-      Abonnement
+      <%= t("account.subscription_heading") %>
     </h2>
 
     <%# Badge de statut — Premium (doré) ou Gratuit (gris) %>
@@ -57,7 +57,7 @@
       <% else %>
         <%# Gratuit : pastille bordée grise %>
         <span style="display: inline-flex; align-items: center; padding: 0.35rem 0.85rem; background: rgba(212, 207, 196, 0.08); color: rgba(212, 207, 196, 0.8); border: 1px solid rgba(212, 207, 196, 0.2); border-radius: 50px; font-size: 0.8rem; font-weight: 500;">
-          Gratuit
+          <%= t("account.free") %>
         </span>
       <% end %>
 
@@ -71,7 +71,7 @@
 
     <%# Lien vers la gestion de l'abonnement (page tarification / Stripe) %>
     <div style="margin-top: 1.25rem;">
-      <%= link_to "Gérer l'abonnement", subscription_path,
+      <%= link_to t("account.manage_subscription"), subscription_path,
             style: "color: #f0c97a; text-decoration: none; font-size: 0.9rem;" %>
     </div>
   </div>
@@ -81,32 +81,49 @@
     <div style="background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.25rem;">
 
       <h2 style="color: #f0c97a; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
-        Mode test
+        <%= t("account.test_mode_heading") %>
       </h2>
       <p style="color: rgba(212, 207, 196, 0.65); font-size: 0.88rem; margin-bottom: 1rem;">
-        Active le mode test pour débloquer toutes les fonctionnalités premium
-        (dont le mode interactif) sans abonnement. Réservé à ton compte.
+        <%= t("account.test_mode_desc") %>
       </p>
 
       <%# Bouton bascule — active ou désactive selon le statut admin actuel %>
       <% if @user.admin? %>
         <%# Déjà admin → bouton pour désactiver (style discret bordé) %>
-        <%= button_to "Désactiver le mode test", account_toggle_test_mode_path,
+        <%= button_to t("account.disable_test_mode"), account_toggle_test_mode_path,
               method: :post,
               style: "padding: 0.6rem 1.2rem; background: transparent; color: rgba(212, 207, 196, 0.8); border: 1px solid rgba(212, 207, 196, 0.25); border-radius: 8px; font-size: 0.9rem; cursor: pointer;" %>
       <% else %>
         <%# Pas encore admin → bouton doré pour activer %>
-        <%= button_to "Activer le mode test", account_toggle_test_mode_path,
+        <%= button_to t("account.enable_test_mode"), account_toggle_test_mode_path,
               method: :post,
               style: "padding: 0.6rem 1.2rem; background: #f0c97a; color: #0b0e1a; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer;" %>
       <% end %>
     </div>
   <% end %>
 
+  <%# ── Carte : langue de l'interface (i18n) ── %>
+  <%# Le sélecteur poste vers /langue et mémorise le choix (session + compte). %>
+  <div style="background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.25rem;">
+    <h2 style="color: #f0c97a; font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">
+      <%= t("account.language_heading") %>
+    </h2>
+    <%= render "shared/locale_switcher" %>
+  </div>
+
   <%# ── Lien : modifier les infos (Devise) ── %>
   <div>
-    <%= link_to "Modifier mes informations", edit_user_registration_path,
+    <%= link_to t("account.edit_info"), edit_user_registration_path,
           style: "color: rgba(212, 207, 196, 0.7); text-decoration: none; font-size: 0.9rem;" %>
+  </div>
+
+  <%# ── Déconnexion ── %>
+  <%# Déplacée ici depuis l'ancien dropdown de l'avatar (top nav). %>
+  <%# button_to en DELETE vers la route Devise de destruction de session. %>
+  <div style="margin-top: 1.5rem;">
+    <%= button_to t("account.logout"), destroy_user_session_path,
+          method: :delete,
+          style: "padding: 0.6rem 1.2rem; background: transparent; color: rgba(212, 207, 196, 0.8); border: 1px solid rgba(212, 207, 196, 0.25); border-radius: 8px; font-size: 0.9rem; cursor: pointer;" %>
   </div>
 
   <%# ── Zone danger : suppression du compte (RGPD — droit à l'oubli) ── %>
@@ -114,17 +131,16 @@
   <%# (associations dependent: :destroy dans User et Child) %>
   <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 107, 107, 0.15);">
     <h2 style="color: rgba(255, 107, 107, 0.85); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem;">
-      Supprimer mon compte
+      <%= t("account.delete_heading") %>
     </h2>
     <p style="color: rgba(212, 207, 196, 0.55); font-size: 0.85rem; margin-bottom: 1rem;">
-      Supprime définitivement ton compte, les profils de tes enfants et toutes
-      les histoires générées (textes, images, audio). Cette action est irréversible.
+      <%= t("account.delete_desc") %>
     </p>
     <%# button_to DELETE vers la route Devise registrations#destroy %>
     <%# turbo_confirm : demande confirmation avant d'envoyer la requête %>
-    <%= button_to "Supprimer définitivement mon compte", user_registration_path,
+    <%= button_to t("account.delete_button"), user_registration_path,
           method: :delete,
-          data: { turbo_confirm: "Es-tu sûr ? Toutes les histoires et profils enfants seront supprimés définitivement. Cette action est irréversible." },
+          data: { turbo_confirm: t("account.delete_confirm") },
           style: "padding: 0.6rem 1.2rem; background: transparent; color: rgba(255, 107, 107, 0.85); border: 1px solid rgba(255, 107, 107, 0.35); border-radius: 8px; font-size: 0.85rem; cursor: pointer;" %>
   </div>
 

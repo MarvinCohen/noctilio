@@ -1,0 +1,71 @@
+<%# ============================================================ %>
+<%# Onboarding première fois — parcours plein écran %>
+<%# ============================================================ %>
+<%# Affiché à la place du dashboard quand l'utilisateur n'a encore aucun héros. %>
+<%# But : accueillir, présenter les 3 étapes du parcours, et donner envie de %>
+<%# créer le 1er héros. Le bouton renvoie vers le formulaire de profil enfant ; %>
+<%# l'univers et la 1re histoire (offerte en accès complet) sont gérés ensuite %>
+<%# par le wizard de création d'histoire existant. %>
+<%# ============================================================ %>
+
+<section class="onb">
+
+  <%# --- Mascotte hibou + nom — signature Noctilio --- %>
+  <div class="onb-logo" aria-hidden="true">
+    <%= image_tag "mascot.svg", alt: "", class: "onb-owl", width: 96, height: 96,
+          style: "object-fit: contain;" %>
+    <p class="onb-word">Noctilio</p>
+  </div>
+
+  <%# --- Accroche de bienvenue --- %>
+  <p class="onb-eyebrow"><%= t("dashboard.onboarding.welcome") %></p>
+  <%# Clé _html : contient <br> et <em>, rendue en HTML brut par t() %>
+  <h1 class="onb-title">
+    <%= t("dashboard.onboarding.title_html") %>
+  </h1>
+  <p class="onb-lead">
+    <%= t("dashboard.onboarding.lead") %>
+  </p>
+
+  <%# --- Les 3 étapes du parcours --- %>
+  <%# Présentées comme une checklist verticale : chaque étape a un numéro doré, %>
+  <%# un titre et une courte explication. %>
+  <ol class="onb-steps">
+
+    <%# Étape 1 — le héros (ce que ce bouton va lancer) %>
+    <li class="onb-step">
+      <span class="onb-step-num">1</span>
+      <div class="onb-step-text">
+        <span class="onb-step-title"><%= t("dashboard.onboarding.step1_title") %></span>
+        <span class="onb-step-desc"><%= t("dashboard.onboarding.step1_desc") %></span>
+      </div>
+    </li>
+
+    <%# Étape 2 — l'univers %>
+    <li class="onb-step">
+      <span class="onb-step-num">2</span>
+      <div class="onb-step-text">
+        <span class="onb-step-title"><%= t("dashboard.onboarding.step2_title") %></span>
+        <span class="onb-step-desc"><%= t("dashboard.onboarding.step2_desc") %></span>
+      </div>
+    </li>
+
+    <%# Étape 3 — la 1re histoire offerte (offre découverte) %>
+    <li class="onb-step">
+      <span class="onb-step-num">3</span>
+      <div class="onb-step-text">
+        <span class="onb-step-title"><%= t("dashboard.onboarding.step3_title") %></span>
+        <span class="onb-step-desc"><%= t("dashboard.onboarding.step3_desc") %></span>
+      </div>
+    </li>
+  </ol>
+
+  <%# --- CTA principal — lance l'étape 1 (création du héros) --- %>
+  <%= link_to new_child_path, class: "db-cta-btn onb-cta" do %>
+    <span class="spin-star--hover">✦</span> <%= t("dashboard.onboarding.cta") %>
+  <% end %>
+
+  <%# Réassurance discrète — gratuit pour démarrer %>
+  <p class="onb-reassurance"><%= t("dashboard.onboarding.reassurance") %></p>
+
+</section>

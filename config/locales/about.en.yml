@@ -1,0 +1,43 @@
+# ============================================================
+# Traductions de la page À PROPOS (publique) — anglais
+# ============================================================
+en:
+  about:
+    meta_title: "About: Marvin Cohen, founder of Noctilio"
+    meta_description: "Marvin Cohen, a developer and dad, created Noctilio to give his child a unique story every evening. Discover the story behind the project, the technology and the values behind Noctilio."
+    schema_job_title: "Founder of Noctilio"
+    schema_description: "Rails developer and dad, creator of Noctilio, an app that generates AI-personalised stories for children."
+
+    header_title: "About"
+    header_subtitle: "Marvin Cohen, Founder of Noctilio"
+
+    who_title: "Who I am"
+    who_p1: "My name is Marvin Cohen. I'm a web developer, trained at Le Wagon Bordeaux, and a dad. It's that second role that pushed me to create Noctilio."
+    who_p2_html: "Like many parents, I've lived through those evenings spent searching for the perfect story, captivating enough for the child to fall asleep smiling, gentle enough not to wind them up further. I wanted something personalised, with my child's name, their favourite characters, a world that looks like them. Store-bought books do their job very well, but they don't know <em>your</em> child."
+
+    why_title: "Why I created Noctilio"
+    why_p1: "The idea came about simply: what if AI could generate, every evening, a unique story centred on your child? With their name as the hero, their interests as the backdrop, and a soothing ending that helps them drift off to sleep."
+    why_p2: "I started building Noctilio solo in early 2026, as my first Rails project after my training. What I wanted to build: a tool I'd have loved to have as a parent, simple, fast, beautiful and safe for children."
+    why_p3_html: "The name comes from the Latin <em>nox</em> (night) and the owl, the emblematic animal of bedtime stories, guardian of dreams in mythologies around the world."
+
+    tech_title: "The technology behind Noctilio"
+    tech_intro: "Noctilio is built with:"
+    tech_rails_html: "<strong>Ruby on Rails 8</strong>: a robust web framework, ideal for a solo project thanks to its conventions and mature ecosystem."
+    tech_gpt_html: "<strong>GPT-4o (OpenAI)</strong>: generates the text of each story. The model is configured with strict instructions to produce only positive, caring content suited to children aged 2 to 10."
+    tech_image_html: "<strong>gpt-image-1 (OpenAI)</strong>: creates a unique illustration for each story, in the chosen style (Ghibli, Pixar, watercolour…)."
+    tech_db_html: "<strong>PostgreSQL + ActiveStorage</strong>: stores the stories and generated images securely."
+    tech_privacy: "Stories are not stored on OpenAI's side after generation. Each call is independent, no personal data about your children is kept by the AI models."
+
+    values_title: "What matters to me"
+    values_safety_html: "<strong>Safety first.</strong> Every story is generated with strict safeguards: no violence, no excessive fear, no inappropriate content. Parents stay in control of the values passed on."
+    values_transparency_html: "<strong>Transparency.</strong> Noctilio is an independent project, with no investors and no dark patterns. What you see is what you get."
+    values_privacy_html: "<strong>Privacy.</strong> Children's names and data are never resold or used for any purpose other than generating the stories."
+    values_improvement_html: "<strong>Continuous improvement.</strong> Noctilio is in active development. Parents' feedback guides the next features."
+
+    contact_title: "Get in touch"
+    contact_p1: "Do you have a question, a suggestion, or do you just want to share how Noctilio has changed your bedtime routine?"
+    contact_p2_html: "Write to me at <strong>marvincohen95@gmail.com</strong> or find Noctilio on social media:"
+    contact_response: "I read every message. I try to reply within 48 hours."
+
+    cta_logged_in: "Create a story"
+    cta_logged_out: "Try Noctilio for free"

@@ -5,8 +5,8 @@
     <div class="col-lg-7">
 
       <%# Titre Cormorant Garamond italic %>
-      <h1 class="ch-form-title">Nouveau héros</h1>
-      <p class="ch-form-subtitle">Créez le profil de votre enfant pour personnaliser ses histoires</p>
+      <h1 class="ch-form-title"><%= t("children.new_title") %></h1>
+      <p class="ch-form-subtitle"><%= t("children.new_subtitle") %></p>
 
       <%# Le formulaire partagé (new + edit) %>
       <%= render "form", child: @child %>

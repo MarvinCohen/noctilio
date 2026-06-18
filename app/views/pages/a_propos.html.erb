@@ -7,8 +7,8 @@
 <%# ============================================================ %>
 
 <%# SEO — titre, description et directive robots %>
-<% content_for :title, "À propos — Marvin Cohen, fondateur de Noctilio" %>
-<% content_for :description, "Marvin Cohen, développeur et papa, a créé Noctilio pour offrir chaque soir une histoire unique à son enfant. Découvrez l'histoire du projet, la technologie et les valeurs derrière Noctilio." %>
+<% content_for :title, t("about.meta_title") %>
+<% content_for :description, t("about.meta_description") %>
 <% content_for :robots, "index, follow" %>
 
 <%# Schema.org Person — données structurées pour les AI Overviews et rich results %>
@@ -20,9 +20,9 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Marvin Cohen",
-    "jobTitle": "Fondateur de Noctilio",
-    "description": "Développeur Rails et papa, créateur de Noctilio — application de génération d'histoires personnalisées pour enfants par IA.",
-    "url": "https://www.noctilio-app.fr/a-propos",
+    "jobTitle": "<%= t('about.schema_job_title') %>",
+    "description": "<%= t('about.schema_description') %>",
+    "url": "<%= localized_url_for('/a-propos', I18n.locale) %>",
     "image": "https://www.noctilio-app.fr/og-image.jpg",
     "knowsAbout": [
       "Ruby on Rails",
@@ -54,9 +54,9 @@
 
     <%# ── En-tête — nom + rôle ── %>
     <div class="legal-header">
-      <h1 class="legal-title">À propos</h1>
+      <h1 class="legal-title"><%= t("about.header_title") %></h1>
       <%# Sous-titre court — renforce immédiatement l'identité de l'auteur %>
-      <p class="legal-date">Marvin Cohen, Fondateur de Noctilio</p>
+      <p class="legal-date"><%= t("about.header_subtitle") %></p>
     </div>
 
     <div class="legal-content">
@@ -64,118 +64,61 @@
       <%# ── Section 1 : Qui je suis ── %>
       <%# Signal E-E-A-T "Experience" : parcours personnel concret %>
       <section class="legal-section">
-        <h2>Qui je suis</h2>
-        <p>
-          Je m'appelle Marvin Cohen. Je suis développeur web, formé au Wagon Bordeaux, et papa.
-          C'est d'ailleurs cette deuxième casquette qui m'a poussé à créer Noctilio.
-        </p>
-        <p>
-          Comme beaucoup de parents, j'ai vécu ces soirs où l'on cherche l'histoire parfaite —
-          assez captivante pour que l'enfant s'endorme le sourire aux lèvres, assez douce pour
-          ne pas l'exciter davantage. J'avais envie de quelque chose de personnalisé, avec le
-          prénom de mon enfant, ses personnages préférés, un univers qui lui ressemble.
-          Les livres du commerce font très bien leur travail, mais ils ne connaissent pas
-          <em>votre</em> enfant.
-        </p>
+        <h2><%= t("about.who_title") %></h2>
+        <p><%= t("about.who_p1") %></p>
+        <%# Clé _html : contient une balise <em> de confiance (marquée html_safe automatiquement) %>
+        <p><%= t("about.who_p2_html") %></p>
       </section>
 
       <%# ── Section 2 : Pourquoi Noctilio ── %>
       <%# Signal E-E-A-T "Experience" : motivation authentique, contexte réel %>
       <section class="legal-section">
-        <h2>Pourquoi j'ai créé Noctilio</h2>
-        <p>
-          L'idée est née simplement : et si l'IA pouvait générer, chaque soir, une histoire
-          unique centrée sur ton enfant ? Avec son prénom comme héros, ses centres d'intérêt
-          comme toile de fond, et une fin apaisante qui l'aide à glisser vers le sommeil.
-        </p>
-        <p>
-          J'ai commencé à développer Noctilio en solo début 2026, comme premier projet Rails
-          post-formation. Ce que je voulais construire : un outil que j'aurais aimé avoir
-          en tant que parent — simple, rapide, beau, et sûr pour les enfants.
-        </p>
-        <p>
-          Le nom vient du latin <em>nox</em> (nuit) et du hibou — animal emblématique des
-          histoires du soir, gardien des rêves dans les mythologies du monde entier.
-        </p>
+        <h2><%= t("about.why_title") %></h2>
+        <p><%= t("about.why_p1") %></p>
+        <p><%= t("about.why_p2") %></p>
+        <%# Clé _html : contient une balise <em> de confiance (marquée html_safe automatiquement) %>
+        <p><%= t("about.why_p3_html") %></p>
       </section>
 
       <%# ── Section 3 : La technologie ── %>
       <%# Signal E-E-A-T "Expertise" : transparence sur les outils utilisés %>
       <section class="legal-section">
-        <h2>La technologie derrière Noctilio</h2>
-        <p>
-          Noctilio est construit avec :
-        </p>
+        <h2><%= t("about.tech_title") %></h2>
+        <p><%= t("about.tech_intro") %></p>
         <ul>
+          <%# Chaque <li> utilise une clé _html : contient une balise <strong> de confiance %>
           <%# Ruby on Rails 8 avec Solid Queue pour les jobs en arrière-plan %>
-          <li>
-            <strong>Ruby on Rails 8</strong> — framework web robuste, idéal pour un projet
-            solo grâce à ses conventions et son écosystème mature.
-          </li>
+          <li><%= t("about.tech_rails_html") %></li>
           <%# GPT-4o pour la génération de texte personnalisé %>
-          <li>
-            <strong>GPT-4o (OpenAI)</strong> — génère le texte de chaque histoire.
-            Le modèle est configuré avec des instructions strictes pour produire uniquement
-            du contenu positif, bienveillant et adapté aux enfants de 2 à 10 ans.
-          </li>
+          <li><%= t("about.tech_gpt_html") %></li>
           <%# gpt-image-1 pour les illustrations %>
-          <li>
-            <strong>gpt-image-1 (OpenAI)</strong> — crée une illustration unique
-            pour chaque histoire, dans le style choisi (Ghibli, Pixar, aquarelle…).
-          </li>
+          <li><%= t("about.tech_image_html") %></li>
           <%# PostgreSQL + ActiveStorage pour les données et images %>
-          <li>
-            <strong>PostgreSQL + ActiveStorage</strong> — stocke les histoires et les
-            images générées de façon sécurisée.
-          </li>
+          <li><%= t("about.tech_db_html") %></li>
         </ul>
-        <p>
-          Les histoires ne sont pas stockées côté OpenAI après génération. Chaque appel
-          est indépendant — aucune donnée personnelle de vos enfants n'est conservée
-          par les modèles d'IA.
-        </p>
+        <p><%= t("about.tech_privacy") %></p>
       </section>
 
       <%# ── Section 4 : Mes valeurs ── %>
       <%# Signal E-E-A-T "Trustworthiness" : engagement envers la sécurité des enfants %>
       <section class="legal-section">
-        <h2>Ce qui compte pour moi</h2>
+        <h2><%= t("about.values_title") %></h2>
         <ul>
-          <li>
-            <strong>Sécurité avant tout.</strong> Chaque histoire est générée avec
-            des garde-fous stricts : pas de violence, pas de peur excessive, aucun
-            contenu inapproprié. Les parents restent maîtres des valeurs transmises.
-          </li>
-          <li>
-            <strong>Transparence.</strong> Noctilio est un projet indépendant, sans
-            investisseurs, sans dark patterns. Ce que vous voyez est ce que vous avez.
-          </li>
-          <li>
-            <strong>Respect de la vie privée.</strong> Les prénoms et données des
-            enfants ne sont jamais revendus ni utilisés à d'autres fins que la
-            génération des histoires.
-          </li>
-          <li>
-            <strong>Amélioration continue.</strong> Noctilio est en développement actif.
-            Les retours des parents guident les prochaines fonctionnalités.
-          </li>
+          <%# Chaque <li> utilise une clé _html : contient une balise <strong> de confiance %>
+          <li><%= t("about.values_safety_html") %></li>
+          <li><%= t("about.values_transparency_html") %></li>
+          <li><%= t("about.values_privacy_html") %></li>
+          <li><%= t("about.values_improvement_html") %></li>
         </ul>
       </section>
 
       <%# ── Section 5 : Contact ── %>
       <%# Signal E-E-A-T "Trustworthiness" : joignabilité réelle de l'auteur %>
       <section class="legal-section">
-        <h2>Me contacter</h2>
-        <p>
-          Tu as une question, une suggestion, ou tu veux simplement raconter
-          comment Noctilio a changé ton rituel du soir ?
-        </p>
-        <p>
-          Écris-moi à
-          <%# Email en clair — signal de confiance fort pour Google et les visiteurs %>
-          <strong>marvincohen95@gmail.com</strong>
-          ou retrouve Noctilio sur les réseaux :
-        </p>
+        <h2><%= t("about.contact_title") %></h2>
+        <p><%= t("about.contact_p1") %></p>
+        <%# Clé _html : contient l'email en <strong> (signal de confiance fort) %>
+        <p><%= t("about.contact_p2_html") %></p>
         <%# Icônes réseaux sociaux — même SVG inline que le footer %>
         <div style="display: flex; gap: 1rem; margin-top: 0.75rem;">
           <a href="https://www.instagram.com/noctilioapp"
@@ -199,17 +142,14 @@
             TikTok
           </a>
         </div>
-        <p style="margin-top: 1rem;">
-        </p>
-        <p>
-          Je lis tous les messages — j'essaie de répondre dans les 48 h.
-        </p>
+        <p style="margin-top: 1rem;"></p>
+        <p><%= t("about.contact_response") %></p>
       </section>
 
       <%# ── CTA — si connecté : dashboard ; sinon : inscription ── %>
       <%# Évite l'erreur Devise "already_authenticated" pour les utilisateurs connectés %>
       <section class="legal-section" style="text-align: center; padding-top: 1rem;">
-        <%= link_to user_signed_in? ? "Créer une histoire" : "Essayer Noctilio gratuitement",
+        <%= link_to user_signed_in? ? t("about.cta_logged_in") : t("about.cta_logged_out"),
               user_signed_in? ? new_story_path : new_user_registration_path,
               style: "display: inline-block; padding: 0.8rem 2rem; background: #f0c97a;
                       color: #0b0e1a; font-weight: 600; border-radius: 8px;

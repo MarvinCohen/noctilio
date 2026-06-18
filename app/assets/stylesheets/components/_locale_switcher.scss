@@ -1,0 +1,37 @@
+// ============================================================
+// Sélecteur de langue (i18n) — shared/_locale_switcher.html.erb
+// DA cosmique : fond dark, accents dorés #f0c97a
+// ============================================================
+
+// Conteneur : les boutons de langue s'alignent et passent à la ligne si besoin
+.locale-switcher {
+  display: flex;
+  flex-wrap: wrap;            // sur mobile, les langues passent à la ligne
+  gap: 0.5rem;
+}
+
+// Bouton d'une langue (button_to génère un <form>, on cible le <button> dedans)
+.locale-switcher-btn {
+  padding: 0.4rem 0.85rem;
+  background: transparent;                        // langue NON active : fond vide
+  color: rgba(212, 207, 196, 0.8);               // texte crème adouci
+  border: 1px solid rgba(212, 207, 196, 0.2);    // fine bordure grise
+  border-radius: 50px;                            // pastille arrondie
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;                     // léger fondu au survol
+}
+
+// Survol : la bordure et le texte s'éclaircissent en doré
+.locale-switcher-btn:hover {
+  color: #f0c97a;
+  border-color: rgba(240, 201, 122, 0.4);
+}
+
+// Langue ACTIVE : pastille dorée pleine (même code couleur que les badges du compte)
+.locale-switcher-btn--active {
+  background: #f0c97a;
+  color: #0b0e1a;            // texte sombre sur fond doré pour le contraste
+  border-color: #f0c97a;
+  font-weight: 600;
+}

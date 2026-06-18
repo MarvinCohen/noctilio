@@ -201,6 +201,33 @@ class StoriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Vérifie que POST /stories fige la langue d'interface sur l'histoire créée
+  # Cas : Paul crée une histoire en passant ?locale=en (switch_locale lit params[:locale])
+  # Pourquoi : le texte est généré dans un job où I18n.locale retombe à :fr — la langue
+  # doit donc être figée sur la Story à la création pour que le service IA la retrouve
+  test "POST /stories enregistre la locale courante sur l'histoire" do
+    # Arrange
+    sign_in_as(users(:paul))
+
+    # Act — on force la langue à l'anglais via le paramètre locale
+    # (switch_locale dans ApplicationController donne la priorité à params[:locale])
+    post stories_path, params: {
+      locale: "en",
+      story: {
+        child_ids: [children(:theo).id],
+        world_theme: "space",
+        educational_value: "courage",
+        duration_minutes: 5,
+        interactive: false
+      }
+    }
+
+    # Assert — la dernière histoire créée pour Théo doit avoir locale "en"
+    story = Story.where(child: children(:theo)).order(:created_at).last
+    assert_equal "en", story.locale,
+                 "La langue d'interface (en) devrait être figée sur l'histoire créée"
+  end
+
   # Vérifie que POST /stories échoue si aucun enfant n'est sélectionné
   # Cas : child_ids vide dans le formulaire
   # Pourquoi : le controller gère ce cas explicitement et re-rend le formulaire

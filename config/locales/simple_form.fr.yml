@@ -1,0 +1,15 @@
+# Traductions FRANÇAISES de simple_form (langue source de l'app).
+# simple_form lit ces clés pour les libellés "obligatoire", oui/non et le
+# message d'erreur global affiché par f.error_notification.
+fr:
+  simple_form:
+    "yes": "Oui"
+    "no": "Non"
+    required:
+      # Texte lu par les lecteurs d'écran pour un champ obligatoire
+      text: "obligatoire"
+      # Astérisque affiché à côté des champs obligatoires
+      mark: "*"
+    error_notification:
+      # Bandeau affiché en haut du formulaire en cas d'erreurs de validation
+      default_message: "Merci de corriger les problèmes ci-dessous :"

@@ -1,0 +1,52 @@
+# ============================================================
+# Traductions de la LANDING (page d'accueil publique) — allemand
+# ============================================================
+de:
+  home:
+    nav_badge: "Bald verfügbar"
+
+    hero:
+      eyebrow: "✦ KI-personalisierte Geschichten ✦"
+      title_html: "<em>Einzigartige</em> Märchen,<br>nur für<br>dein Kind"
+      subtitle: "Jeden Abend eine zauberhafte Geschichte, in Sekunden erstellt, mit dem Namen, den Lieblingsfiguren und der Lieblingswelt deines Kindes. Mit sanfter Stimme vorgelesen, wie von Zauberhand."
+      email_placeholder: "du@email.com"
+      cta: "Früher Zugang →"
+      success: "✦ Danke! Du gehörst zu den Ersten, die Noctilio entdecken."
+      note: "Kein Spam. Nur Magie, im richtigen Moment."
+      counter_suffix: "Familien bereits angemeldet"
+
+    features:
+      personalised:
+        title: "Personalisiert"
+        desc: "Name, Lieblingsfiguren, Traumort: Jede Geschichte ist einzigartig und auf dein Kind zugeschnitten."
+      narrated:
+        title: "Vorgelesen"
+        desc: "Eine sanfte, natürliche Stimme liest die Geschichte vor. Perfekt für Abende, an denen dir die Energie fehlt."
+      fast:
+        title: "In Sekunden"
+        desc: "Die Geschichte ist fertig, bevor das Bad zu Ende ist. Das Abendritual wird zum magischen Moment."
+
+    how:
+      eyebrow: "✦ So einfach wie eine Geschichte"
+      title: "Wie funktioniert es?"
+      step1_title: "Erstelle das Profil deines Helden"
+      step1_desc: "Gib den Namen deines Kindes ein, sein Alter, seine Lieblingsfiguren und die Welt seiner Wahl: Zauberwald, Weltraum, Dinosaurier, Piraten oder Tiere. Du kannst die Welt deiner Fantasie auch frei beschreiben. Noctilio merkt sie sich für alle weiteren Geschichten."
+      step2_title: "Die KI verfasst eine einzigartige Geschichte"
+      step2_desc: "In Sekunden erstellt unsere künstliche Intelligenz (GPT-4o) ein brandneues Märchen, passend zum Alter und zur Lesestufe deines Kindes. Jede Geschichte kommt mit einer eigens dafür erstellten Illustration. Keine gleicht der anderen."
+      step3_title: "Lies oder höre zur Schlafenszeit"
+      step3_desc: "Macht es euch gemütlich. Die Geschichte ist bereit, gemeinsam gelesen oder laut angehört zu werden. Im interaktiven Modus entscheidet dein Kind bei jedem Schritt selbst, wie das Abenteuer weitergeht, wie in einem echten Buch, dessen Held es ist."
+      closing_html: "<strong>Noctilio</strong> ist für Eltern gemacht, die ihren Kindern reichhaltige, personalisierte Lesemomente schenken wollen, ohne Stunden dafür aufzuwenden. Jede Geschichte ist auf das Kind zugeschnitten, auf seinen Namen, sein Alter und seine Persönlichkeit, und bei jeder Erstellung neu. <strong>3 kostenlose Geschichten pro Monat</strong> und unbegrenzte Geschichten mit dem interaktiven Modus im Premium-Abo."
+      blog_link: "Lies unsere Tipps für Eltern →"
+
+    form_js:
+      invalid_email: "Bitte überprüfe das Format deiner E-Mail."
+      subscribed: "✦ Du bist angemeldet"
+      already: "Du bist bereits angemeldet"
+      error: "Ein Fehler ist aufgetreten."
+      connection: "Verbindungsproblem. Bitte versuche es gleich noch einmal."
+
+    schema:
+      app_description: "App, die KI-personalisierte Geschichten für Kinder erstellt. Erstelle einzigartige Märchen mit dem Namen, den Lieblingsfiguren und der Lieblingswelt deines Kindes."
+      offer_desc: "Kostenloser Zugang — 3 Geschichten pro Monat"
+      audience_type: "Eltern von Kindern zwischen 2 und 10 Jahren"
+      org_description: "Noctilio erstellt personalisierte Geschichten für Kinder mithilfe künstlicher Intelligenz."

@@ -196,18 +196,18 @@ class Story < ApplicationRecord
     }.fetch(world_theme.to_s, "✨")
   end
 
-  # Retourne le libellé français de l'univers
+  # Retourne le libellé TRADUIT de l'univers (selon la langue d'interface courante)
+  # Les libellés vivent dans config/locales/*.yml sous la clé "worlds".
   # Pour un thème libre (custom_theme), on retourne un libellé COURT et fixe
-  # "Histoire personnalisée" — et jamais le custom_theme complet (jusqu'à 500
-  # caractères) qui ferait déborder le badge pilule sur les cartes de la bibliothèque
+  # (clé "worlds.custom") — et jamais le custom_theme complet (jusqu'à 500
+  # caractères) qui ferait déborder le badge pilule sur les cartes de la bibliothèque.
+  # Cette méthode n'est appelée que dans les vues (contexte requête où I18n.locale
+  # est bien positionné), donc t() renvoie la bonne langue.
   def world_label
-    {
-      "space" => "Espace",
-      "dinos" => "Dinosaures",
-      "princesses" => "Princesses",
-      "pirates" => "Pirates",
-      "animals" => "Animaux"
-    }.fetch(world_theme.to_s, "Histoire personnalisée")
+    # VALID_WORLD_THEMES garantit que world_theme ∈ {space, dinos, ...} ou nil/custom.
+    # Si le thème est connu on traduit sa clé, sinon on retombe sur "worlds.custom".
+    key = VALID_WORLD_THEMES.include?(world_theme.to_s) ? world_theme.to_s : "custom"
+    I18n.t("worlds.#{key}")
   end
 
   # Retourne les enfants supplémentaires associés à cette histoire

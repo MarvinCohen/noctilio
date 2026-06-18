@@ -11,9 +11,34 @@ Rails.application.routes.draw do
   }
 
   # ============================================================
-  # Page d'accueil publique (landing page)
+  # PAGES PUBLIQUES MULTILINGUES (SEO) — préfixe de langue dans l'URL
   # ============================================================
-  root to: "pages#home"
+  # scope "(:locale)" : le segment :locale est OPTIONNEL (parenthèses).
+  #   - Sans préfixe  -> français (langue par défaut, pas de /fr/ dans l'URL)
+  #   - Avec préfixe  -> /en/…, /es/…, /de/…, /it/…, /pt/… (5 autres langues)
+  # La contrainte locale: /en|es|de|it|pt/ EXCLUT volontairement "fr" :
+  #   ainsi le français n'a jamais de préfixe (URL canonique propre) et une URL
+  #   comme /fr/blog ne matche pas (évite le contenu dupliqué fr vs /fr/).
+  # On enveloppe UNIQUEMENT les pages publiques indexées par Google. L'app privée
+  # (dashboard, histoires…) reste sans préfixe : elle est en noindex, le SEO
+  # multilingue ne la concerne pas.
+  scope "(:locale)", locale: /en|es|de|it|pt/ do
+    # Page d'accueil publique (landing page)
+    root to: "pages#home"
+
+    # Page À propos — présente Marvin Cohen, fondateur de Noctilio (signaux E-E-A-T)
+    get "/a-propos", to: "pages#a_propos", as: :a_propos
+
+    # Pages légales — publiques, obligatoires en France (LCEN 2004)
+    get "/cgu",              to: "pages#cgu",     as: :cgu
+    get "/confidentialite",  to: "pages#privacy", as: :privacy
+    get "/mentions-legales", to: "pages#legal",   as: :legal_notice
+
+    # Blog — articles SEO publics (vues ERB, pas de base de données)
+    # Chaque slug correspond à app/views/blog/_<slug>.html.erb
+    get "/blog",       to: "blog#index", as: :blog
+    get "/blog/:slug", to: "blog#show",  as: :blog_post
+  end
 
   # ============================================================
   # Liste d'attente — reçoit les emails de la landing page
@@ -85,6 +110,14 @@ Rails.application.routes.draw do
   post "/mon-compte/mode-test", to: "account#toggle_test_mode", as: :account_toggle_test_mode
 
   # ============================================================
+  # Langue de l'interface — changement de langue (i18n)
+  # ============================================================
+  # POST /langue — enregistre la langue choisie (en session + sur le compte si
+  # connecté) puis renvoie l'utilisateur sur la page d'où il vient. Utilisé par
+  # le sélecteur de langue (shared/_locale_switcher).
+  post "/langue", to: "locale#update", as: :locale
+
+  # ============================================================
   # Salle des trophées — badges et XP de l'utilisateur
   # ============================================================
   get "/trophees",    to: "trophy_room#index",   as: :trophy_room
@@ -121,26 +154,18 @@ Rails.application.routes.draw do
   post "/avis", to: "feedbacks#create"
 
   # ============================================================
-  # Page À propos — présente Marvin Cohen, fondateur de Noctilio
-  # Contribue aux signaux E-E-A-T (expérience, expertise, autorité, confiance)
+  # NB : les pages publiques multilingues (root, a-propos, légales, blog) sont
+  # définies plus haut dans le bloc scope "(:locale)" pour le SEO multilingue.
   # ============================================================
-  get "/a-propos", to: "pages#a_propos", as: :a_propos
 
   # ============================================================
-  # Pages légales — publiques, pas besoin d'être connecté
+  # Sitemap XML dynamique et multilingue
   # ============================================================
-  get "/cgu",                   to: "pages#cgu",     as: :cgu
-  get "/confidentialite",       to: "pages#privacy",  as: :privacy
-  # Mentions légales — obligatoires en France pour tout site web commercial
-  get "/mentions-legales",      to: "pages#legal",    as: :legal_notice
-
-  # ============================================================
-  # Blog — articles SEO publics, pas besoin d'être connecté
-  # Articles stockés comme vues ERB (pas de base de données)
-  # Chaque slug correspond à un fichier app/views/blog/_<slug>.html.erb
-  # ============================================================
-  get "/blog",          to: "blog#index",   as: :blog
-  get "/blog/:slug",    to: "blog#show",    as: :blog_post
+  # Un seul sitemap couvre toutes les langues (chaque page liste ses versions
+  # linguistiques via hreflang). Remplace l'ancien public/sitemap.xml statique.
+  # Hors scope "(:locale)" : le sitemap n'est pas une page traduite, c'est un
+  # fichier unique référencé dans robots.txt.
+  get "/sitemap.xml", to: "sitemaps#show", defaults: { format: "xml" }, as: :sitemap
 
   # ============================================================
   # Health check — vérifie que l'application fonctionne

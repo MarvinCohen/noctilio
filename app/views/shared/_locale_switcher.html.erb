@@ -1,0 +1,32 @@
+<%# ============================================================ %>
+<%# Sélecteur de langue (i18n) — change la langue de l'interface %>
+<%# Chaque bouton poste vers /langue (LocaleController#update) qui %>
+<%# enregistre le choix puis renvoie sur la page courante. %>
+<%# ============================================================ %>
+
+<%# Dictionnaire : code de langue → nom affiché dans sa propre langue %>
+<%# (un Allemand reconnaît « Deutsch » plus vite que « Allemand ») %>
+<%# ⚠️ On boucle sur CE hash (et non sur I18n.available_locales) : le gem %>
+<%# rails-i18n charge ~150 langues, on ne veut afficher QUE les nôtres. %>
+<% language_names = {
+     fr: "Français",
+     en: "English",
+     es: "Español",
+     de: "Deutsch",
+     it: "Italiano",
+     pt: "Português"
+   } %>
+
+<div class="locale-switcher">
+  <%# On boucle sur nos 6 langues uniquement %>
+  <% language_names.each do |locale, name| %>
+    <%# La langue active est mise en évidence (pastille dorée pleine) %>
+    <% is_active = (I18n.locale == locale) %>
+
+    <%= button_to locale_path(locale: locale),
+          method: :post,
+          class: "locale-switcher-btn #{'locale-switcher-btn--active' if is_active}" do %>
+      <%= name %>
+    <% end %>
+  <% end %>
+</div>

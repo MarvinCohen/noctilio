@@ -1,31 +1,583 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
+# ============================================================
+# ENGLISH translations
+# ============================================================
+# Mirror of fr.yml (the source locale). Every key present in fr.yml should
+# have its English counterpart here. Missing keys fall back to French
+# (see config.i18n.fallbacks in config/application.rb).
+# %{...} are interpolated variables passed from the view.
 
 en:
-  hello: "Hello world"
+  # Navigation — labels shared by the sidebar (top) and the bottom nav (mobile)
+  nav:
+    home: "Home"
+    stories: "Stories"
+    trophies: "Trophies"
+    parental: "Parental area"     # long label (sidebar)
+    parental_short: "Parents"     # short label (mobile bottom nav)
+    create: "Create a story"
+    install: "Install"
+    install_title: "Install Noctilio on your device"
+    subscription: "Subscription"
+    account: "My account"
+    level: "Lvl %{level}"         # level pill (e.g. "Lvl 13")
+    level_title: "Level %{level}" # pill tooltip
+    mobile_aria: "Main mobile navigation"
+
+  # My account page (app/views/account/show.html.erb)
+  account:
+    title: "My account"
+    subtitle: "Your personal information and subscription"
+    subscription_heading: "Subscription"
+    free: "Free"
+    manage_subscription: "Manage subscription"
+    test_mode_heading: "Test mode"
+    test_mode_desc: "Enable test mode to unlock all premium features (including interactive mode) without a subscription. Reserved for your account."
+    disable_test_mode: "Disable test mode"
+    enable_test_mode: "Enable test mode"
+    language_heading: "Language"
+    edit_info: "Edit my information"
+    logout: "Log out"
+    delete_heading: "Delete my account"
+    delete_desc: "Permanently delete your account, your children's profiles and all generated stories (text, images, audio). This action cannot be undone."
+    delete_button: "Permanently delete my account"
+    delete_confirm: "Are you sure? All stories and children's profiles will be permanently deleted. This action cannot be undone."
+
+  # Dashboard (app/views/dashboard/index.html.erb + _onboarding.html.erb)
+  dashboard:
+    # ── Main hero ──
+    hero_eyebrow: "✦ Tonight, the adventure begins ✦"
+    # _html: the key holds HTML (<br>, <em>) rendered raw by t()
+    hero_title_html: "What magic will you<br><em>create</em> tonight?"
+    hero_desc: "Turn your dreams into illustrated adventures with our AI story creator."
+    cta: "Create my story"
+    # %{count} = number of stories created this week (free limit)
+    weekly_limit: "%{count}/3 stories this week ·"
+    go_premium: "Go Premium →"
+    # Auto pluralization via I18n (one / other keys)
+    generating:
+      one: "One story is being generated…"
+      other: "%{count} stories are being generated…"
+    see: "View →"
+    # ── Evening ritual: progress + constellation ──
+    progress: "Your progress"
+    trophies:
+      one: "%{count} trophy"
+      other: "%{count} trophies"
+    # %{xp} = XP remaining, %{level} = next level
+    xp_to_next: "%{xp} XP left before level %{level}"
+    level: "level"
+    last_7_nights: "Your last 7 nights"
+    bedtime_story: "Bedtime story"
+    # ── Resume reading ──
+    resume_eyebrow: "Where you left off"
+    resume_title: "Resume reading"
+    see_all_library: "See the whole library →"
+    # ── My heroes ──
+    heroes_eyebrow: "The stars of your stories"
+    heroes_title: "My heroes"
+    age: "%{age} years old"
+    add_hero: "+ Add a hero"
+    # ── First-time onboarding (no hero yet) ──
+    onboarding:
+      welcome: "✦ Welcome ✦"
+      title_html: "Let's create your<br><em>first story</em> together"
+      lead: "In three steps, Noctilio brings a tailor-made tale to life, with your child as the hero."
+      step1_title: "Create your hero"
+      step1_desc: "Name, age, character traits: the AI will remember them in every story."
+      step2_title: "Choose a world"
+      step2_desc: "Space, dinosaurs, pirates, princesses… or your own theme."
+      step3_title: "Receive your story"
+      step3_desc: "Your very first story comes in the full version: text, illustration and audio reading."
+      cta: "Create my hero"
+      reassurance: "Free to start · no credit card"
+
+  # Library (app/views/stories/index.html.erb)
+  library:
+    title: "My library"
+    # Counters with auto pluralization (one / other keys)
+    count_all:
+      one: "%{count} story generated"
+      other: "%{count} stories generated"
+    count_saved:
+      one: "%{count} saved story"
+      other: "%{count} saved stories"
+    new_story: "New story"
+    tab_saved: "Library"
+    tab_all: "All"
+    failed_count:
+      one: "%{count} failed generation"
+      other: "%{count} failed generations"
+    # %{name} = first name of the child hero of the story
+    for_child: "For %{name}"
+    auto_style: "Auto style"
+    retry: "Retry"
+    delete: "Delete"
+    delete_attempt_confirm: "Permanently delete this attempt?"
+    interactive: "Interactive"
+    # %{number} = episode number in a saga
+    episode: "Ep. %{number}"
+    untitled: "Untitled story"
+    read: "Read"
+    delete_story_confirm: "Permanently delete this story?"
+    empty_title: "Your library is empty"
+    empty_desc: "Generate your first magical story in just a few seconds!"
+    create_story: "Create a story"
+
+  # Parental area (app/views/parental/index.html.erb)
+  parental:
+    title: "Parental Dashboard"
+    subtitle: "Tracking your children's reading and activity"
+    heroes: "My Heroes"
+    add: "Add"
+    add_button: "+ Add"
+    age: "%{age} years old"
+    # ── Global statistics ──
+    stat_minutes: "total reading minutes"
+    stat_stories: "stories created"
+    stat_children: "children profiles"
+    # ── Monthly activity grid ──
+    month_activity: "This month's activity"
+    month_total:
+      one: "%{count} story in the last 30 days"
+      other: "%{count} stories in the last 30 days"
+    less: "Less"
+    more: "More"
+    # Story count pluralization (one / other keys)
+    stories_count:
+      one: "%{count} story"
+      other: "%{count} stories"
+    # %{date} = date of the last story (dd/mm)
+    last_on: "last on %{date}"
+    pending_choice: "Pending choice"
+    see: "View →"
+    see_all: "See all →"
+    see_more: "See more"
+    see_less: "See less"
+    create_first: "Create the first profile →"
+    # ── Recent activity ──
+    recent_activity: "Recent activity"
+    no_stories: "No stories yet."
+    # ── Educational values explored ──
+    values_explored: "Values explored"
+    value_courage: "Courage"
+    value_sharing: "Sharing"
+    value_kindness: "Kindness"
+    value_confidence: "Self-confidence"
+    # ── Subscription ──
+    subscription: "My Subscription"
+    premium: "✦ Premium"
+    unlimited: "Unlimited stories"
+    free: "Free"
+    weekly_quota: "%{count}/3 stories this week"
+    go_premium: "Go Premium →"
+
+  # Trophy room (app/views/trophy_room/index.html.erb)
+  trophies:
+    hero_label: "✦ Trophy Room"
+    title: "Your Trophies"
+    subtitle: "Your feats, your dreams, your universe"
+    level: "Level"
+    xp_accumulated: "XP earned"
+    # %{percent} = progress, %{level} = next level
+    progress_to_next: "%{percent}% to level %{level}"
+    badges_heading: "✦ Magic Badges"
+    earned: "✓ Earned"
+    # %{date} = badge earned date (dd/mm/yyyy)
+    earned_on: "on %{date}"
+    to_unlock: "To unlock"
+    badges_soon: "Badges will be available soon!"
+    see_more: "See the other trophies ✦"
+    see_less: "↑ See less"
+    gallery_heading: "✦ Gallery of Dreams"
+    gallery_subtitle: "The illustrations generated for your stories"
+
+  # Subscription page (app/views/subscriptions/index.html.erb)
+  subscription:
+    title: "Premium Subscription"
+    subtitle_active: "You enjoy all the premium features."
+    subtitle_free: "Unlimited stories, interactive mode and much more."
+    cancel_scheduled: "Cancellation scheduled"
+    premium_active: "Premium active"
+    # _html keys: contain <strong>, rendered raw by t()
+    feature_unlimited_html: "<strong>Unlimited</strong> stories"
+    feature_interactive_html: "<strong>Interactive</strong> mode: the child makes choices"
+    feature_dashboard_html: "<strong>Advanced</strong> parental dashboard"
+    feature_priority_html: "<strong>Priority</strong> access to new worlds"
+    # %{date} = premium access end date
+    grace_until_html: "Your Premium access stays active until <strong>%{date}</strong>."
+    reactivate: "Reactivate my subscription"
+    cancel: "Cancel subscription"
+    cancel_confirm: "Your premium access will remain until the end of the current period. Do you confirm?"
+    price_amount: "€9.99"
+    price_period: "per month · no commitment"
+    quota_label: "Free stories this week"
+    # %{count} = stories created this week
+    quota_count: "%{count} / 3 used"
+    subscribe: "Subscribe — €9.99/month"
+    secure_note: "Secure payment by Stripe · Cancel anytime"
+    # ── Comparison table ──
+    compare_title: "Free or Premium?"
+    col_feature: "Feature"
+    col_free: "Free"
+    col_premium: "Premium"
+    row_stories: "Stories per week"
+    unlimited: "Unlimited"
+    row_profiles: "Custom children profiles"
+    row_illustrations: "AI-generated illustrations"
+    row_interactive: "Interactive mode: the child makes choices"
+    row_audio: "Voice reading of stories"
+    row_dashboard: "Advanced parental dashboard"
+    row_new_worlds: "New worlds in preview"
+    # ── FAQ ──
+    faq_title: "Frequently asked questions"
+    faq_q1: "How does billing work?"
+    faq_a1: "The subscription costs €9.99 per month, automatically charged each month on the anniversary date of your sign-up. Payment is handled by Stripe — we never store your bank details."
+    faq_q2: "Can I cancel anytime?"
+    faq_a2: "Yes, in one click from this page, with no justification or fees. Your Premium access stays active until the end of the period already paid, then your account automatically returns to the free plan."
+    faq_q3: "What happens to my stories if I cancel?"
+    faq_a3: "All your stories remain in your library and stay readable, including the interactive stories already created. Only new creations return to the free plan limits."
+    faq_q4: "Which payment methods do you accept?"
+    faq_a4: "All bank cards (Visa, Mastercard, American Express) via Stripe, the same secure payment platform used by millions of sites worldwide."
+    back: "← Back to dashboard"
+
+  # Story creation wizard (app/views/stories/new.html.erb)
+  # Some keys are also read by JS (story_creation_controller.js) via
+  # data-attributes — see step_word, summary_*, interactive_on/off…
+  wizard:
+    page_title: "Create your story"
+    # step_word: only the word is translated, JS builds "Step X / N"
+    step_word: "Step"
+    next: "Next"
+    back: "Back"
+    # ── Discovery offer banner (_html key: contains <strong>) ──
+    offer_banner_html: "<strong>Your 1st story is free with full access</strong>: illustration, audio reading and interactive mode included."
+    # ── Step 1: heroes ──
+    step1_question: "Who are the heroes?"
+    step1_hint: "You can select several children."
+    # %{age} = age, %{gender} = translated gender label (boy/girl below)
+    child_meta: "%{age} years old · %{gender}"
+    boy: "Boy"
+    girl: "Girl"
+    no_child: "No child profile yet."
+    child_error: "Select at least one child."
+    new_profile: "+ New profile"
+    # ── Step 2: adventure ──
+    step2_question: "Which adventure?"
+    step2_hint: "Describe freely — a dream, a magical place, a superpower…"
+    textarea_placeholder: "E.g. She wants to be an explorer who discovers a secret island with talking animals…"
+    inspire: "✦ Inspire me"
+    # Inspiration chips: label = button text, idea = text inserted into the field
+    ideas:
+      space:
+        label: "Space"
+        idea: "Astronaut on a planet of robots"
+      unicorn:
+        label: "Unicorn"
+        idea: "Princess and her magical unicorn"
+      dinos:
+        label: "Dinosaurs"
+        idea: "Journey to the dinosaurs"
+      pirates:
+        label: "Pirates"
+        idea: "Pirate searching for treasure"
+      forest:
+        label: "Forest"
+        idea: "Guardian of the enchanted forest"
+      wizard:
+        label: "Wizard"
+        idea: "Apprentice wizard at magic school"
+      dragon:
+        label: "Dragon"
+        idea: "A child who tames a dragon"
+      ocean:
+        label: "Ocean"
+        idea: "Diving into an underwater kingdom"
+      superhero:
+        label: "Superhero"
+        idea: "Superhero discovering their powers"
+      moon:
+        label: "Moon"
+        idea: "Trip to the Moon in pajamas"
+      robot:
+        label: "Robot"
+        idea: "A robot learning to feel emotions"
+      time:
+        label: "Time"
+        idea: "Time-travel adventure with a strange machine"
+    # ── Step 3: educational value ──
+    step3_question: "What they will learn"
+    step3_hint: "Choose an educational value at the heart of the story."
+    value_courage: "Courage"
+    value_sharing: "Sharing"
+    value_kindness: "Kindness"
+    value_confidence: "Confidence"
+    # ── Step 4: duration ──
+    step4_question: "How long?"
+    step4_hint: "Choose the story length."
+    minutes: "minutes"
+    duration_short: "Short"
+    duration_medium: "Medium"
+    duration_long: "Long"
+    # ── Step 5: illustration style ──
+    step5_question: "Illustration style"
+    step5_hint: "Choose the visual mood of the image generated for the story."
+    style_ghibli_name: "Studio Ghibli"
+    style_ghibli_desc: "Soft watercolor, pastel tones, dreamlike atmosphere"
+    style_comics_name: "Comics"
+    style_comics_desc: "Bold lines, vivid colors, Spider-Verse style"
+    style_pixar_name: "Pixar / Disney"
+    style_pixar_desc: "Bright 3D render, warm and expressive"
+    style_watercolor_name: "Illustrated tale"
+    style_watercolor_desc: "Vintage watercolor, picture book, warm tones"
+    style_cinematic_name: "Cinematic"
+    style_cinematic_desc: "Realistic render, movie poster, epic details"
+    # %{name} = style name (interpolated into the alt attribute)
+    style_example_alt: "%{name} style example"
+    style_auto_note: "Leave empty for an automatically suited style."
+    # ── Step 6: settings + summary ──
+    step6_question: "Final settings"
+    step6_hint: "Interactive mode and summary."
+    interactive: "Interactive mode"
+    badge_free: "Free"
+    badge_premium: "Premium"
+    interactive_hint_premium: "The child makes choices that change the story"
+    interactive_hint_first: "Included in your free 1st story ✨"
+    interactive_hint_link: "Go Premium"
+    interactive_hint_locked: "to unlock"
+    summary_heroes: "Heroes"
+    summary_adventure: "Adventure"
+    summary_value: "Value"
+    summary_duration: "Duration"
+    summary_interactive: "Interactive"
+    summary_illustration: "Illustration"
+    # Summary default values — also written by JS
+    summary_empty: "—"
+    summary_not_set: "Not set"
+    summary_auto: "Automatic"
+    interactive_on: "On"
+    interactive_off: "Off"
+    # %{count} = chosen duration; abbreviation used in the summary
+    minute_short: "min"
+    generating: "Generating…"
+    generate: "✦ Generate the magical story"
+
+  # Child profiles (app/views/children/*)
+  # Database-coupled values (hair/eye/skin colors, personality traits) are NOT
+  # translated here: they also serve as the stored data.
+  children:
+    # new / edit pages
+    new_title: "New hero"
+    new_subtitle: "Create your child's profile to personalize their stories"
+    # %{name} = child's first name
+    edit_title: "Edit %{name}"
+    edit_subtitle: "Update your hero's profile"
+    # Shared form (_form.html.erb)
+    form:
+      section_basic: "Basic information"
+      name_label: "Hero's first name"
+      name_placeholder: "E.g. Leo, Emma..."
+      age_label: "Age"
+      gender_label: "Gender"
+      gender_boy: "Boy"
+      gender_girl: "Girl"
+      gender_blank: "Choose..."
+      section_appearance: "Appearance"
+      appearance_hint: "These details help the AI illustrate the hero faithfully."
+      hair_label: "Hair"
+      eyes_label: "Eyes"
+      skin_label: "Skin tone"
+      section_personality: "Personality"
+      traits_label: "Character traits"
+      hobbies_label: "Interests"
+      # Interests: only the label is translated, the stored value stays stable
+      hobby_space: "🚀 Space"
+      hobby_dinos: "🦕 Dinos"
+      hobby_sport: "⚽ Sport"
+      hobby_drawing: "🎨 Drawing"
+      hobby_animals: "🐾 Animals"
+      hobby_science: "🔬 Science"
+      hobby_music: "🎵 Music"
+      hobby_books: "📚 Books"
+      description_label: "Additional description (optional)"
+      description_placeholder: "E.g. he loves dinosaurs and dreams of being an astronaut..."
+      # GDPR consent: text before the link + link label (the final period is in the view)
+      consent_before: "I certify that I am the parent or legal guardian of this child and I consent to the processing of their data (first name, age, appearance) to personalize the stories, in accordance with the"
+      consent_link: "privacy policy"
+      submit_create: "Create the profile ✦"
+      submit_update: "Update"
+      cancel: "Cancel"
+    # Appearance and character labels (values STORED as stable keys).
+    # The key (e.g. "brown") is frozen in the DB; only the displayed label is translated.
+    # Used by _form.html.erb (input) and index.html.erb (trait display).
+    appearance:
+      hair:
+        black: "Black"
+        dark_brown: "Dark brown"
+        brown: "Brown"
+        dark_blonde: "Dark blonde"
+        blonde: "Blonde"
+        light_blonde: "Light blonde"
+        red: "Red"
+        white: "White"
+      eyes:
+        dark_brown: "Dark brown"
+        brown: "Brown"
+        hazel: "Hazel"
+        dark_green: "Dark green"
+        green: "Green"
+        light_green: "Light green"
+        dark_blue: "Dark blue"
+        blue: "Blue"
+        light_blue: "Light blue"
+        grey: "Grey"
+      skin:
+        ebony: "Ebony"
+        dark_brown: "Dark brown"
+        brown: "Brown"
+        caramel: "Caramel"
+        golden: "Golden"
+        olive: "Olive"
+        beige: "Beige"
+        light: "Light"
+        very_light: "Very light"
+      traits:
+        brave: "Brave"
+        curious: "Curious"
+        shy: "Shy"
+        funny: "Funny"
+        generous: "Generous"
+        creative: "Creative"
+        adventurous: "Adventurous"
+        gentle: "Gentle"
+    # List (index.html.erb)
+    index_title: "My heroes"
+    index_subtitle: "Your children's profiles to personalize their stories"
+    new_hero: "✦ New hero"
+    # Word only, pluralized (the number is rendered separately in the view)
+    stories_word:
+      one: "story"
+      other: "stories"
+    create: "Create"
+    edit: "Edit"
+    delete: "Delete"
+    # %{name} = child's first name
+    delete_confirm: "Delete %{name} and all their stories?"
+    empty_title: "No hero yet"
+    empty_desc: "Create your child's profile to personalize their adventures. The AI adapts each story to their personality and interests."
+    empty_cta: "✦ Create the first profile"
+    # Profile (show.html.erb)
+    create_story: "Create a story"
+    his_stories: "Their stories"
+    read: "Read →"
+    create_first: "Create the first one ✨"
+    minutes: "min"
+
+  # Story universe labels (Story#world_label)
+  # Shown on library/dashboard cards and pills.
+  # custom = short fixed label for a free-form theme (never the full custom_theme)
+  worlds:
+    space: "Space"
+    dinos: "Dinosaurs"
+    princesses: "Princesses"
+    pirates: "Pirates"
+    animals: "Animals"
+    custom: "Custom story"
+
+  # Story reader page (app/views/stories/show.html.erb)
+  # + strings injected at runtime by the Stimulus controllers
+  # (story_status, story_choice, story_alternative, story_image, share)
+  story_show:
+    # ── State: generation in progress ──
+    generating_title: "Working the magic..."
+    # Rotating messages shown during generation (story_status_controller)
+    gen_msg_1: "✨ Writing the story..."
+    gen_msg_2: "🖋️ Bringing the characters to life..."
+    gen_msg_3: "🎨 Sketching the illustration..."
+    gen_msg_4: "📖 Reading it through one last time..."
+    # <br> → _html key so the line break is allowed in the translation
+    generating_hint_html: "Your story is being created.<br>This usually takes 15 to 30 seconds."
+    # %{status} = technical story status (pending / generating…)
+    status_label: "Status: %{status}"
+    # ── State: generation failed ──
+    error_title: "Oops, something went wrong"
+    error_hint: "Story generation failed. Please try again."
+    my_stories: "My stories"
+    back_to_stories: "← My stories"
+    # %{number} = episode number within the saga
+    episode: "Episode %{number}"
+    default_title: "My magical story"
+    # ── Illustration ──
+    illustration_label: "✦ The illustration of your adventure"
+    illustration_loading: "Illustration being created..."
+    # %{title} = story title (image alt text)
+    illustration_alt: "Illustration of %{title}"
+    illustration_unavailable: "Illustration unavailable"
+    # ── Upsell card (free account, text-only story) ──
+    upsell_title: "This story is text only"
+    upsell_text: "Switch back to the full experience, with an illustration and audio narration included in every story, thanks to Premium."
+    upsell_btn: "Upgrade to Premium"
+    # ── Interactive choice (read-aloud text + buttons) ──
+    decide: "It's your call!"
+    # %{text} = option text, read aloud
+    voice_option_a: "Option A: %{text}"
+    voice_option_b: "Option B: %{text}"
+    option_a_label: "Option A"
+    option_b_label: "Option B"
+    # story-choice controller spinner (generating the continuation)
+    choice_loading_sr: "Generating..."
+    choice_loading_title: "The next part of the adventure is being prepared... ✨"
+    choice_loading_hint: "This usually takes 15 to 30 seconds."
+    # ── Audio player ──
+    audio_play: "Listen to the story"
+    audio_pause: "Pause"
+    audio_stop: "Stop"
+    audio_label: "Voice narration"
+    audio_preparing: "Preparing"
+    audio_premium_only: "Voice narration reserved for Premium subscribers"
+    # ── Gentle Premium note (first free story) ──
+    premium_hint_before: "Illustration and audio narration are included in every story with"
+    premium_hint_link: "Premium"
+    # ── Alternative timeline ──
+    # Button prefix, followed by the label of the option not chosen, in quotes
+    alternative_ask_prefix: "What if I had chosen"
+    alternative_timeline: "Alternative timeline"
+    alternative_if_chosen: "if you had chosen"
+    alternative_loading: "The AI is imagining the other path..."
+    alternative_hide: "Hide the alternative timeline"
+    # Error prefix (the technical detail is appended by the JS)
+    alternative_error_prefix: "Could not generate this alternative:"
+    alternative_error_unknown: "unknown error"
+    alternative_network_error: "Connection error. Try again in a moment."
+    # ── Sharing ──
+    share_label: "Share this story"
+    # %{name} = child's first name, %{url} = public share link
+    whatsapp_text: "Check out this story I created for %{name} on Noctilio: %{url}"
+    copy_link: "Copy link"
+    link_copied: "Link copied!"
+    # ── End navigation ──
+    # %{number} = number of the episode to create
+    continue_confirm: "Create episode %{number} of this adventure?"
+    continue_adventure: "Continue the adventure"
+    saved: "Saved"
+    save: "Save"
+    replay_confirm: "Restart this story to make different choices?"
+    replay: "Restart"
+
+  # User feedback form (app/views/feedbacks/new.html.erb)
+  feedbacks:
+    title: "Give us your feedback"
+    subtitle: "A bug, an idea, a comment? Your feedback helps us improve Noctilio."
+    # Intro of the error block (the detailed messages come from the model)
+    errors_intro: "Your feedback could not be sent:"
+    category_label: "Feedback type"
+    # Categories: only the label is translated, the stored value stays stable
+    category_bug: "Bug or problem"
+    category_suggestion: "Suggestion"
+    category_other: "Other"
+    message_label: "Your message"
+    message_placeholder: "Describe your feedback in a few words..."
+    email_label: "Your email (optional, so we can reply)"
+    email_placeholder: "you@example.com"
+    # Label of the honeypot field (invisible, bot trap)
+    honeypot_label: "Do not fill in this field"
+    submit: "Send my feedback"

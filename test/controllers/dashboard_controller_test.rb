@@ -82,5 +82,10 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     # Assert — pas de 500 même avec des collections vides
     assert_response :success,
                     "Le dashboard devrait fonctionner même sans enfant (collections vides)"
+
+    # Assert — un utilisateur sans héros voit le parcours d'onboarding plein écran
+    # (et non le dashboard normal). On vérifie la présence du bouton de l'étape 1.
+    # Le 2e argument (Regexp) matche le texte du lien sélectionné.
+    assert_select "a.onb-cta", /Créer mon héros/
   end
 end

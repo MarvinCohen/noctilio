@@ -11,31 +11,32 @@
   <%# ── Section 1 : Informations de base ── %>
   <div class="ch-form-section mb-0">
     <h2 class="ch-form-section-title">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Informations de base
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><%= t("children.form.section_basic") %>
     </h2>
 
     <div class="row g-3">
       <div class="col-md-6">
         <%# Prénom du héros — obligatoire %>
         <%= f.input :name,
-              label: "Prénom du héros",
-              placeholder: "Ex: Léo, Emma...",
+              label: t("children.form.name_label"),
+              placeholder: t("children.form.name_placeholder"),
               input_html: { class: "form-control" } %>
       </div>
       <div class="col-md-3">
         <%# Âge — nombre entier entre 1 et 15 %>
         <%= f.input :age,
-              label: "Âge",
+              label: t("children.form.age_label"),
               as: :integer,
               input_html: { class: "form-control", min: 1, max: 15 } %>
       </div>
       <div class="col-md-3">
         <%# Genre — sélection simple avec placeholder %>
+        <%# Les libellés sont traduits ; les valeurs (boy/girl) restent stables %>
         <%= f.input :gender,
-              label: "Genre",
+              label: t("children.form.gender_label"),
               as: :select,
-              collection: [["Garçon", "boy"], ["Fille", "girl"]],
-              include_blank: "Choisir...",
+              collection: [[t("children.form.gender_boy"), "boy"], [t("children.form.gender_girl"), "girl"]],
+              include_blank: t("children.form.gender_blank"),
               input_html: { class: "form-select" } %>
       </div>
     </div>
@@ -50,20 +51,21 @@
   <%# display:inline-flex !important sur .color-badge override la règle globale label{display:block} %>
   <div class="ch-form-section mb-0">
     <h2 class="ch-form-section-title">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17 10.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8.5"/><path d="m3 15 4-4 4 4 4-4"/></svg>Apparence
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17 10.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8.5"/><path d="m3 15 4-4 4 4 4-4"/></svg><%= t("children.form.section_appearance") %>
     </h2>
-    <p class="ch-form-hint">Ces détails permettent à l'IA d'illustrer le héros fidèlement.</p>
+    <p class="ch-form-hint"><%= t("children.form.appearance_hint") %></p>
 
     <%# ── Cheveux ── %>
     <%# Chaque label.color-badge contient un radio caché + un point coloré + le nom %>
     <div class="color-field">
-      <span class="color-field-label">Cheveux</span>
+      <span class="color-field-label"><%= t("children.form.hair_label") %></span>
       <div class="color-field-options">
-        <% [["noir","#1a1108"],["châtain foncé","#3d2314"],["châtain","#6b3a22"],["blond foncé","#9c6f2a"],["blond","#c9a84c"],["blond clair","#e8d5a3"],["roux","#8b3a0f"],["blanc","#e8e4d8"]].each do |lbl, col| %>
+        <%# [clé stable stockée en base, couleur du point] — le libellé est traduit via i18n %>
+        <% [["black","#1a1108"],["dark_brown","#3d2314"],["brown","#6b3a22"],["dark_blonde","#9c6f2a"],["blonde","#c9a84c"],["light_blonde","#e8d5a3"],["red","#8b3a0f"],["white","#e8e4d8"]].each do |key, col| %>
           <label class="color-badge">
-            <input type="radio" name="child[hair_color]" value="<%= lbl %>" <% if child.hair_color == lbl %>checked<% end %>>
+            <input type="radio" name="child[hair_color]" value="<%= key %>" <% if child.hair_color == key %>checked<% end %>>
             <span class="color-badge-dot" style="background:<%= col %>;<%= col == '#e8e4d8' ? 'border:1px solid rgba(0,0,0,0.2)' : '' %>"></span>
-            <%= lbl %>
+            <%= t("children.appearance.hair.#{key}") %>
           </label>
         <% end %>
       </div>
@@ -71,13 +73,14 @@
 
     <%# ── Yeux ── %>
     <div class="color-field">
-      <span class="color-field-label">Yeux</span>
+      <span class="color-field-label"><%= t("children.form.eyes_label") %></span>
       <div class="color-field-options">
-        <% [["marron foncé","#2d1200"],["marron","#6b3a2a"],["noisette","#8b6520"],["vert foncé","#2d5a27"],["vert","#3a8c4a"],["vert clair","#52b788"],["bleu foncé","#1a3a6b"],["bleu","#2d6aab"],["bleu clair","#74b3ce"],["gris","#7a7a8a"]].each do |lbl, col| %>
+        <%# [clé stable stockée en base, couleur du point] — le libellé est traduit via i18n %>
+        <% [["dark_brown","#2d1200"],["brown","#6b3a2a"],["hazel","#8b6520"],["dark_green","#2d5a27"],["green","#3a8c4a"],["light_green","#52b788"],["dark_blue","#1a3a6b"],["blue","#2d6aab"],["light_blue","#74b3ce"],["grey","#7a7a8a"]].each do |key, col| %>
           <label class="color-badge">
-            <input type="radio" name="child[eye_color]" value="<%= lbl %>" <% if child.eye_color == lbl %>checked<% end %>>
+            <input type="radio" name="child[eye_color]" value="<%= key %>" <% if child.eye_color == key %>checked<% end %>>
             <span class="color-badge-dot" style="background:<%= col %>"></span>
-            <%= lbl %>
+            <%= t("children.appearance.eyes.#{key}") %>
           </label>
         <% end %>
       </div>
@@ -85,13 +88,14 @@
 
     <%# ── Teinte de peau ── %>
     <div class="color-field">
-      <span class="color-field-label">Teinte de peau</span>
+      <span class="color-field-label"><%= t("children.form.skin_label") %></span>
       <div class="color-field-options">
-        <% [["ébène","#2d1b0e"],["brun foncé","#4a2c12"],["brun","#7c4a1e"],["caramel","#c68a4a"],["doré","#d4a853"],["olive","#c4a882"],["beige","#e8c99a"],["clair","#f5deb3"],["très clair","#fef0e7"]].each do |lbl, col| %>
+        <%# [clé stable stockée en base, couleur du point] — le libellé est traduit via i18n %>
+        <% [["ebony","#2d1b0e"],["dark_brown","#4a2c12"],["brown","#7c4a1e"],["caramel","#c68a4a"],["golden","#d4a853"],["olive","#c4a882"],["beige","#e8c99a"],["light","#f5deb3"],["very_light","#fef0e7"]].each do |key, col| %>
           <label class="color-badge">
-            <input type="radio" name="child[skin_tone]" value="<%= lbl %>" <% if child.skin_tone == lbl %>checked<% end %>>
+            <input type="radio" name="child[skin_tone]" value="<%= key %>" <% if child.skin_tone == key %>checked<% end %>>
             <span class="color-badge-dot" style="background:<%= col %>;<%= ['#e8c99a','#f5deb3','#fef0e7'].include?(col) ? 'border:1px solid rgba(0,0,0,0.15)' : '' %>"></span>
-            <%= lbl %>
+            <%= t("children.appearance.skin.#{key}") %>
           </label>
         <% end %>
       </div>
@@ -105,14 +109,15 @@
   <%# ── Section 3 : Personnalité ── %>
   <div class="ch-form-section mb-0">
     <h2 class="ch-form-section-title">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Personnalité
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg><%= t("children.form.section_personality") %>
     </h2>
 
     <%# Traits de personnalité — pills checkboxes (badge-check) %>
     <div class="mb-4">
-      <span class="ch-form-hint" style="display:block; margin-bottom: 0.6rem;">Traits de caractère</span>
+      <span class="ch-form-hint" style="display:block; margin-bottom: 0.6rem;"><%= t("children.form.traits_label") %></span>
       <div class="d-flex flex-wrap gap-2">
-        <% %w[Courageux Curieux Timide Drôle Généreux Créatif Aventurier Doux].each do |trait| %>
+        <%# clé stable stockée en base ; le libellé affiché est traduit via i18n %>
+        <% %w[brave curious shy funny generous creative adventurous gentle].each do |trait| %>
           <%# badge-check : checkbox cachée, label joue le rôle de bouton %>
           <%# :has(input:checked) → style doré si sélectionné (via _children.scss) %>
           <label class="badge-check">
@@ -121,7 +126,7 @@
             <% else %>
               <input type="checkbox" name="child[personality_traits][]" value="<%= trait %>" class="d-none">
             <% end %>
-            <%= trait %>
+            <%= t("children.appearance.traits.#{trait}") %>
           </label>
         <% end %>
       </div>
@@ -129,12 +134,13 @@
 
     <%# Centres d'intérêt — même système badge-check %>
     <div class="mb-4">
-      <span class="ch-form-hint" style="display:block; margin-bottom: 0.6rem;">Centres d'intérêt</span>
+      <span class="ch-form-hint" style="display:block; margin-bottom: 0.6rem;"><%= t("children.form.hobbies_label") %></span>
       <div class="d-flex flex-wrap gap-2">
+        <%# Le libellé est traduit via une clé i18n ; la valeur stockée reste stable %>
         <% [
-          ["🚀 Espace", "espace"], ["🦕 Dinos", "dinosaures"], ["⚽ Sport", "sport"],
-          ["🎨 Dessin", "dessin"], ["🐾 Animaux", "animaux"], ["🔬 Science", "science"],
-          ["🎵 Musique", "musique"], ["📚 Livres", "livres"]
+          [t("children.form.hobby_space"), "espace"], [t("children.form.hobby_dinos"), "dinosaures"], [t("children.form.hobby_sport"), "sport"],
+          [t("children.form.hobby_drawing"), "dessin"], [t("children.form.hobby_animals"), "animaux"], [t("children.form.hobby_science"), "science"],
+          [t("children.form.hobby_music"), "musique"], [t("children.form.hobby_books"), "livres"]
         ].each do |label, value| %>
           <label class="badge-check">
             <% if child.hobbies&.include?(value) %>
@@ -150,9 +156,9 @@
 
     <%# Description libre — textarea sombre %>
     <%= f.input :child_description,
-          label: "Description supplémentaire (optionnel)",
+          label: t("children.form.description_label"),
           as: :text,
-          placeholder: "Ex: il adore les dinosaures et rêve d'être astronaute...",
+          placeholder: t("children.form.description_placeholder"),
           input_html: { class: "form-control", rows: 3 } %>
   </div>
 
@@ -168,10 +174,8 @@
         <%# c'est ce "0" qui déclenche l'erreur de validation acceptance %>
         <%= f.check_box :parental_consent, style: "margin-top: 3px; flex-shrink: 0; accent-color: #f0c97a;" %>
         <span>
-          Je certifie être le parent ou tuteur légal de cet enfant et je consens
-          au traitement de ses données (prénom, âge, apparence) pour la
-          personnalisation des histoires, conformément à la
-          <%= link_to "politique de confidentialité", "/confidentialite", target: "_blank", style: "color: #f0c97a;" %>.
+          <%= t("children.form.consent_before") %>
+          <%= link_to t("children.form.consent_link"), "/confidentialite", target: "_blank", style: "color: #f0c97a;" %>.
         </span>
       </label>
     </div>
@@ -180,11 +184,11 @@
   <%# ── Boutons d'action ── %>
   <div class="ch-form-actions mt-3">
     <%# Bouton submit — fond doré pill %>
-    <%= f.submit child.new_record? ? "Créer le profil ✦" : "Mettre à jour",
+    <%= f.submit child.new_record? ? t("children.form.submit_create") : t("children.form.submit_update"),
           class: "ch-btn-submit" %>
 
     <%# Bouton annuler — outline doré transparent %>
-    <%= link_to "Annuler", children_path, class: "ch-btn-cancel" %>
+    <%= link_to t("children.form.cancel"), children_path, class: "ch-btn-cancel" %>
   </div>
 
 <% end %>

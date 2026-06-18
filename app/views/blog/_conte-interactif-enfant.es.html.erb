@@ -1,0 +1,83 @@
+<%# ============================================================ %>
+<%# Artículo 7 : El cuento interactivo para niños %>
+<%# Objetivo : "cuento interactivo niño", "historia con opciones niño" %>
+<%# ============================================================ %>
+
+<p>
+  ¿Recuerdas los libros de "elige tu propia aventura"? Esa sensación única de tener entre las manos una historia que cambia según tus decisiones. El cuento interactivo ofrece exactamente eso a tu hijo, pero en voz alta, a la hora de dormir, con una historia hecha para él.
+</p>
+
+<h2>¿Qué es un cuento interactivo?</h2>
+
+<p>
+  Un cuento interactivo es una historia en la que el niño toma decisiones que orientan el resto del relato. En un momento clave de la aventura, el narrador (o la aplicación) plantea una pregunta: "¿Qué debe hacer el héroe?" y propone dos opciones. El niño elige, y la historia continúa en la dirección que ha escogido.
+</p>
+
+<p>
+  No es solo un juego. Es una forma de transformar la escucha pasiva en participación activa, y de enseñar algo esencial: las decisiones tienen consecuencias.
+</p>
+
+<h2>Por qué el formato interactivo es especialmente eficaz</h2>
+
+<ul>
+  <li><strong>La atención es máxima</strong>: el niño sabe que tendrá que tomar una decisión, así que escucha cada detalle para hacer la elección "correcta"</li>
+  <li><strong>El compromiso emocional es mayor</strong>: ha sido su elección la que ha llevado al héroe a esa situación, es coautor de la historia</li>
+  <li><strong>El pensamiento crítico se desarrolla</strong>: sopesar dos opciones, anticipar las consecuencias, asumir la decisión: todo esto se practica de forma lúdica</li>
+  <li><strong>La rejugabilidad es infinita</strong>: eligiendo de otra forma, la historia cambia. El mismo relato se convierte en varias aventuras</li>
+</ul>
+
+<div class="article-callout">
+  <p>✦ <strong>Nota pedagógica:</strong> los cuentos interactivos son especialmente útiles para los niños que tienen dificultad para dormirse porque "piensan demasiado". Al darles algo que decidir, se canaliza esa energía mental hacia la historia en lugar de hacia los pensamientos ansiosos de la hora de dormir.</p>
+</div>
+
+<h2>¿A partir de qué edad?</h2>
+
+<p>
+  El formato interactivo funciona bien a partir de los 4 años. Antes, el niño entiende la pregunta pero puede sentirse desestabilizado ante la idea de que "su" elección cambia la historia: puede querer conocer los dos finales y no ser capaz de decidir.
+</p>
+
+<p>
+  A partir de los 4 o 5 años, lo vive con entusiasmo. A los 7 u 8 años, algunos niños ya anticipan las consecuencias y razonan de verdad antes de elegir.
+</p>
+
+<h2>Cómo funciona el modo interactivo de Noctilio</h2>
+
+<p>
+  Cuando el modo interactivo está activado en Noctilio, GPT-4o genera la historia con un momento de bifurcación narrativa integrado. A mitad del relato, la historia se detiene en una pregunta del tipo:
+</p>
+
+<p style="padding-left: 1.5rem; border-left: 2px solid rgba(240,201,122,0.3); font-style: italic; color: #c4bfb4;">
+  "¿Qué debe hacer Léa? ¿Entrar en la cueva misteriosa para buscar el unicornio desaparecido, o volver al pueblo a pedir ayuda a los ancianos?"
+</p>
+
+<p>
+  El niño elige. La aplicación genera entonces la continuación de la historia teniendo en cuenta esa elección: una continuación inédita, coherente con la decisión tomada, y que lleva a una conclusión adaptada a la elección de esa noche.
+</p>
+
+<h2>Los beneficios a largo plazo</h2>
+
+<p>
+  Más allá del propio cuento, el formato interactivo desarrolla en el niño varias competencias esenciales:
+</p>
+
+<ul>
+  <li><strong>La toma de decisiones</strong>: acostumbrarse a elegir sin paralizarse</li>
+  <li><strong>La empatía narrativa</strong>: comprender que sus acciones afectan a los demás personajes</li>
+  <li><strong>La resiliencia</strong>: si la elección lleva al héroe a una situación difícil, el niño aprende que los errores forman parte de la aventura, y que se supera</li>
+  <li><strong>La creatividad</strong>: algunos niños empiezan a inventar sus propias historias con opciones después de haber descubierto el formato</li>
+</ul>
+
+<p>
+  El cuento interactivo es el formato del cuento de la noche del futuro. Y está disponible desde esta noche con Noctilio.
+</p>
+
+<%# Maillage interne — enlaces a artículos complementarios %>
+<div class="article-related">
+  <p class="article-related-title">Lee también</p>
+  <div class="article-related-links">
+    <%= link_to "Un cuento personalizado con el nombre de tu hijo: por qué lo cambia todo →",
+          blog_post_path("histoire-personnalisee-prenom-enfant"), class: "article-related-link" %>
+    <%= link_to "Cuentos para niños de 5 años: los mundos que de verdad cautivan →",
+          blog_post_path("histoires-enfant-5-ans"), class: "article-related-link" %>
+  </div>
+</div>

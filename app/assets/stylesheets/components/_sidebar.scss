@@ -275,7 +275,7 @@ $cream-nav:  #fdf6e3;
   gap: 8px;
 }
 
-// Avatar initiales — petit orbe doré
+// Avatar initiales — petit orbe doré, lien direct vers "Mon compte"
 .sidebar-user-avatar {
   width: 32px;
   height: 32px;
@@ -290,20 +290,17 @@ $cream-nav:  #fdf6e3;
   justify-content: center;
   flex-shrink: 0;
   letter-spacing: 0.5px;
-}
+  cursor: pointer;
+  text-decoration: none;        // C'est un <a> : pas de soulignement
+  transition: background 0.2s ease, border-color 0.2s ease;
 
-// Bouton déconnexion — icône discrète
-.sidebar-logout-btn {
-  color: rgba($cream-nav, 0.3);
-  display: flex;
-  align-items: center;
-  padding: 4px;
-  border-radius: 6px;
-  transition: color 0.15s ease;
-  flex-shrink: 0;
-  text-decoration: none;
-
-  &:hover { color: #ff7070; }
+  // Léger renforcement au survol pour signaler que c'est cliquable
+  &:hover {
+    text-decoration: none;
+    background: rgba($gold-nav, 0.2);
+    border-color: rgba($gold-nav, 0.5);
+    color: $gold-nav;
+  }
 }
 
 // ============================================================
@@ -321,16 +318,31 @@ $cream-nav:  #fdf6e3;
   // La pastille niveau reste visible (compacte) à côté de l'avatar
 }
 
+// Mobile — dès que la bottom tab bar apparaît (≤768px), le top nav devient
+// redondant : Accueil / Histoires / Trophées et le bouton "Créer une histoire"
+// sont déjà accessibles en bas. On les masque pour que la barre du haut tienne
+// dans la largeur (avant : le CTA + la pastille débordaient hors écran).
+// On garde : logo (repère), couronne Abonnement, pastille niveau et avatar
+// (qui donne accès à Mon compte, Trophées, Espace parent, Déconnexion).
+@media (max-width: 768px) {
+  .sidebar-nav     { display: none; }   // liens redondants avec la bottom nav
+  .sidebar-cta-btn { display: none; }   // bouton central "Créer" déjà en bas
+}
+
 // Mobile large — cache le nom du logo
 @media (max-width: 600px) {
   .sidebar-logo-name { display: none; }
 
-  // Réduit les marges de .page-card pour maximiser l'espace contenu sur mobile
-  // Sur 375px : 24px × 2 = 48px perdus → passe à 10px × 2 = 20px perdus
+  // Sur mobile, la .page-card ne sert plus que de gouttière latérale (16px) :
+  // on retire sa bordure et ses coins arrondis. Les pages ont déjà leurs
+  // propres cartes internes (carte héros, badges, stats…) ; garder en plus
+  // le cadre de la page-card créait un effet "boîte dans une boîte" redondant.
+  // Le contenu repose donc directement sur le fond nuit, comme le dashboard.
   .page-card {
-    margin: 10px;
-    border-radius: 14px;
-    padding: 4px 0;
+    margin: 16px;
+    border: none;          // supprime le cadre redondant sur mobile
+    border-radius: 0;
+    padding: 0;
   }
 }
 
@@ -359,51 +371,8 @@ $cream-nav:  #fdf6e3;
     gap: 4px;
   }
 
-  // Réduit encore plus les marges de page-card
-  .page-card { margin: 6px; border-radius: 12px; }
+  // Marge latérale conservée à 16px (la bordure est déjà retirée par la
+  // règle ≤600px, qui s'applique aussi ici).
+  .page-card { margin: 16px; }
 }
 
-// ============================================================
-// Dropdown de l'avatar — styles sombres cohérents avec la DA
-// ============================================================
-.sidebar-dropdown-menu {
-  background: #111527;
-  border: 1px solid rgba($gold-nav, 0.15);
-  border-radius: 12px;
-  min-width: 160px;
-  padding: 6px;
-
-  // Retire la flèche du dropdown-toggle sur l'avatar
-  .dropdown-toggle::after { display: none; }
-
-  .dropdown-item {
-    color: #d4cfc4;
-    font-size: 0.85rem;
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
-    display: flex;
-    align-items: center;
-
-    &:hover {
-      background: rgba($gold-nav, 0.08);
-      color: $gold-nav;
-    }
-  }
-
-  .dropdown-divider { border-color: rgba($gold-nav, 0.1); margin: 4px 0; }
-}
-
-// Déconnexion — rouge discret dans le dropdown
-.sidebar-dropdown-logout {
-  color: rgba(220, 100, 100, 0.8) !important;
-  &:hover { color: #ff7070 !important; background: rgba(220, 100, 100, 0.06) !important; }
-}
-
-// L'avatar devient un bouton cliquable — retire les styles button natifs
-.sidebar-user-avatar {
-  cursor: pointer;
-  border: none;
-  background: rgba($gold-nav, 0.12);
-  // Retire la flèche Bootstrap du dropdown-toggle
-  &.dropdown-toggle::after { display: none; }
-}

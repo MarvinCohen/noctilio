@@ -173,7 +173,13 @@ class StoryGeneratorService
 
     <<~PROMPT
       Tu es le meilleur conteur d'histoires épiques et magiques pour enfants au monde.
-      Tu écris en français, dans le style des grands films d'animation (Pixar, Miyazaki, Disney).
+      Tu écris dans le style des grands films d'animation (Pixar, Miyazaki, Disney).
+
+      LANGUE DE L'HISTOIRE (priorité absolue) : écris TOUT le texte de l'histoire
+      (titre, chapitres, dialogues, narration) EN #{language_name.upcase}.
+      N'utilise AUCUNE autre langue dans le récit, même si ces consignes sont
+      rédigées en français — ces consignes te guident, elles ne se retrouvent pas
+      dans l'histoire.
 
       RÈGLES NON-NÉGOCIABLES — respecte-les à la lettre :
 
@@ -342,6 +348,11 @@ class StoryGeneratorService
       Option A : (première action possible, audacieuse)
       Option B : (deuxième action possible, tout aussi tentante)
       [FIN CHOIX]
+
+      IMPORTANT — repères techniques : garde les balises [CHOIX], [FIN CHOIX] et
+      les étiquettes "Question :", "Option A :", "Option B :" EXACTEMENT telles
+      quelles (en français, sans les traduire). SEUL leur contenu (le texte de la
+      question et des options) est rédigé dans la langue de l'histoire.
     PROMPT
   end
 
@@ -397,6 +408,11 @@ class StoryGeneratorService
                Option A : (première action possible)
                Option B : (deuxième action possible, tout aussi tentante)
                [FIN CHOIX]
+
+               IMPORTANT — repères techniques : garde les balises [CHOIX], [FIN CHOIX]
+               et les étiquettes "Question :", "Option A :", "Option B :" EXACTEMENT
+               telles quelles (en français, sans les traduire). SEUL leur contenu est
+               rédigé dans la langue de l'histoire.
              BODY
            else
              # Dernière étape : on conclut l'histoire
@@ -469,6 +485,25 @@ class StoryGeneratorService
       "animals" => "MONDE DES ANIMAUX — les personnages secondaires et l'univers tournent autour des animaux. " \
                    "Forêt, savane, océan ou jungle selon le contexte. Les animaux parlent et s'aventurent avec le héros."
     }[@story.world_theme] || @story.world_theme
+  end
+
+  # Retourne le nom (en français) de la langue dans laquelle l'IA doit écrire l'histoire.
+  # Lue depuis @story.locale, figée à la création (cf. migration add_locale_to_stories) :
+  # le job tourne en arrière-plan où I18n.locale retombe à :fr, on ne peut donc PAS
+  # se fier à la locale courante — la langue de l'histoire vit sur la Story.
+  # Le nom est en français car il est injecté dans le prompt système (lui-même en
+  # français) : "écris TOUT le texte EN ANGLAIS". Llama 3.3 est multilingue et suit
+  # cette consigne tout en rédigeant le récit dans la langue demandée.
+  # Repli sur "français" si la locale est inconnue (sécurité).
+  def language_name
+    {
+      "fr" => "français",
+      "en" => "anglais",
+      "es" => "espagnol",
+      "de" => "allemand",
+      "it" => "italien",
+      "pt" => "portugais"
+    }.fetch(@story.locale.to_s, "français")
   end
 
   # Retourne le libellé français de la valeur éducative

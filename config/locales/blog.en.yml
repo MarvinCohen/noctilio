@@ -1,0 +1,73 @@
+# ============================================================
+# Traductions du BLOG — anglais
+# ============================================================
+# Chrome du blog + (à venir) titres/descriptions des articles sous blog.articles.
+en:
+  blog:
+    brand_suffix: "Noctilio Blog"
+    reading_time: "%{count} min read"
+
+    index:
+      title: "Noctilio Blog — Bedtime story tips for children"
+      description: "Practical tips for parents: bedtime stories, AI-personalised tales, ideas for every age. The Noctilio blog."
+      schema_name: "Noctilio Blog"
+      schema_description: "Practical tips for parents about children's stories: bedtime rituals, AI-personalised tales, ideas by age group."
+      eyebrow: "✦ The Noctilio blog"
+      heading: "Tips for parents"
+      subtitle: "Bedtime stories, personalised tales, ideas for every age — everything you need for magical reading moments."
+      read_article: "Read the article →"
+      back_home: "← Back to home"
+
+    show:
+      cta_title: "Want to try it?"
+      cta_desc: "Noctilio generates personalised stories for your child in seconds — for free."
+      cta_button: "Join the waitlist →"
+      related_title: "Read also"
+      all_articles: "← All articles"
+      home_link: "Home →"
+
+    breadcrumb:
+      home: "Home"
+      blog: "Blog"
+
+    # --- Titres + descriptions traduits de chaque article (clé = slug) ---
+    # (en FR, ces valeurs viennent du contrôleur ; ici on les traduit)
+    articles:
+      histoires-du-soir-enfant:
+        title: "5 bedtime story ideas to help your child fall asleep easily"
+        description: "Discover 5 types of bedtime stories that help children drift off peacefully. Practical tips and AI-personalised examples."
+        faqs:
+          - question: "What is the best story to help a 3-year-old fall asleep?"
+            answer: "Short stories (3 to 5 minutes) with a reassuring hero who comes home and falls asleep are the most effective for 3-year-olds. Themes linked to the night, the stars and familiar animals naturally soothe the child during the wake-to-sleep transition."
+          - question: "How can I make a bedtime story more effective?"
+            answer: "An effective bedtime story rests on three elements: a slow pace and a gentle voice, a hero the child identifies with (ideally bearing their own name), and a calming ending where the character falls asleep. Repeating the same ritual every evening reinforces the sleep-signal effect."
+          - question: "From what age can you tell bedtime stories?"
+            answer: "Bedtime stories can start as early as 18 months with very simple tales (2-3 minutes, one character, a single event). From age 3, the child follows a full narrative with a beginning, a turning point and an ending. Interactive mode (choices within the story) is suited from age 4-5."
+      conte-personnalise-ia-enfant:
+        title: "How AI generates personalised tales for your child"
+        description: "Understand how GPT-4o creates unique stories tailored to each child's age, tastes and personality. A guide for parents."
+        faqs:
+          - question: "Are AI-generated stories suited to the child's age?"
+            answer: "Yes. Noctilio automatically adapts the vocabulary, narrative complexity and length to the age set in the child's profile. A 3-year-old will receive a short story with simple words, while an 8-year-old will get a longer story with twists and turns."
+          - question: "Can the AI include my child's name in the story?"
+            answer: "Absolutely. It is even Noctilio's core feature: the hero of every story bears your child's name. The AI also weaves in their favourite characters, their favourite world (space, dinosaurs, princesses, pirates, animals) and their personality traits to create a unique story."
+          - question: "Are AI-generated stories safe for children?"
+            answer: "Yes. GPT-4o is configured with strict instructions to generate only positive, caring content suited to children aged 2 to 10. The stories avoid any violence, excessive fear or inappropriate content. Each generation respects the educational values selected by the parent."
+      histoires-enfant-4-ans:
+        title: "Stories for 4-year-olds: what truly captivates them"
+        description: "Which stories suit 4-year-olds best? Length, characters, narrative structure — everything you need to know."
+      histoires-enfant-3-ans:
+        title: "Stories for 3-year-olds: the bedtime ritual that soothes"
+        description: "At age 3, the bedtime story is an essential transition ritual. Discover the ideal length, reassuring worlds and how to handle fear of the dark."
+      histoires-enfant-5-ans:
+        title: "Stories for 5-year-olds: the worlds that truly captivate"
+        description: "At 5, imagination explodes. Which stories work best? Narrative structure, complex emotions, interactive mode — a complete guide."
+      histoire-personnalisee-prenom-enfant:
+        title: "A personalised story with your child's name: why it changes everything"
+        description: "Hearing their own name in a story sparks a child's attention and memory. Understand the power of personalisation and how AI takes it further."
+      conte-interactif-enfant:
+        title: "Interactive tales for children: when your child chooses what happens next"
+        description: "Interactive storytelling turns listening into participation. From age 4, your child becomes co-author of their bedtime story. Benefits and how it works."
+      histoire-courte-enfant-soir:
+        title: "Short stories for children: 5 minutes for a successful bedtime ritual"
+        description: "A well-crafted short story is often more effective than a long one for falling asleep. Structure, themes and tips for express evenings."

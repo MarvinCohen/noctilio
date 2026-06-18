@@ -1,0 +1,72 @@
+# ============================================================
+# Traductions du BLOG — portugais (tutoiement, comme devise.pt.yml)
+# ============================================================
+pt:
+  blog:
+    brand_suffix: "Blog Noctilio"
+    reading_time: "%{count} min de leitura"
+
+    index:
+      title: "Blog Noctilio — Dicas de histórias para crianças"
+      description: "Dicas práticas para os pais: histórias para dormir, contos personalizados com IA, ideias para cada idade. O blog da Noctilio."
+      schema_name: "Blog Noctilio"
+      schema_description: "Dicas práticas para os pais sobre histórias infantis: rituais de dormir, contos personalizados com IA, ideias por faixa etária."
+      eyebrow: "✦ O blog da Noctilio"
+      heading: "Dicas para os pais"
+      subtitle: "Histórias para dormir, contos personalizados, ideias para cada idade — tudo o que precisas para momentos de leitura mágicos."
+      read_article: "Ler o artigo →"
+      back_home: "← Voltar ao início"
+
+    show:
+      cta_title: "Queres experimentar?"
+      cta_desc: "A Noctilio gera histórias personalizadas para o teu filho em segundos — gratuitamente."
+      cta_button: "Entrar na lista de espera →"
+      related_title: "Lê também"
+      all_articles: "← Todos os artigos"
+      home_link: "Início →"
+
+    breadcrumb:
+      home: "Início"
+      blog: "Blog"
+
+    # --- Títulos + descrições traduzidos de cada artigo (chave = slug) ---
+    # (em FR estes valores vêm do controlador; aqui são traduzidos)
+    articles:
+      histoires-du-soir-enfant:
+        title: "5 ideias de histórias para dormir e ajudar o teu filho a adormecer facilmente"
+        description: "Descobre 5 tipos de histórias para dormir que ajudam as crianças a adormecer serenamente. Dicas práticas e exemplos personalizados com IA."
+        faqs:
+          - question: "Qual é a melhor história para adormecer uma criança de 3 anos?"
+            answer: "As histórias curtas (de 3 a 5 minutos) com um herói tranquilizador que volta para casa e adormece são as mais eficazes para os 3 anos. Os temas ligados à noite, às estrelas e aos animais familiares acalmam naturalmente a criança durante a transição da vigília para o sono."
+          - question: "Como tornar uma história para dormir mais eficaz?"
+            answer: "A eficácia de uma história para dormir assenta em três elementos: um ritmo lento e uma voz suave, um herói com quem a criança se identifica (idealmente com o seu próprio nome) e um final apaziguador em que a personagem adormece. Repetir o mesmo ritual todas as noites reforça o efeito de sinal de sono."
+          - question: "A partir de que idade se podem contar histórias para dormir?"
+            answer: "As histórias para dormir podem começar logo aos 18 meses com histórias muito simples (2-3 minutos, uma personagem, um único acontecimento). A partir dos 3 anos, a criança segue uma narrativa completa com início, desenvolvimento e fim. O modo interativo (escolhas dentro da história) é adequado a partir dos 4-5 anos."
+      conte-personnalise-ia-enfant:
+        title: "Como a IA gera contos personalizados para o teu filho"
+        description: "Percebe como o GPT-4o cria histórias únicas adaptadas à idade, aos gostos e à personalidade de cada criança. Um guia para os pais."
+        faqs:
+          - question: "As histórias geradas pela IA estão adaptadas à idade da criança?"
+            answer: "Sim. A Noctilio adapta automaticamente o vocabulário, a complexidade narrativa e a duração de acordo com a idade indicada no perfil da criança. Uma criança de 3 anos receberá uma história curta com palavras simples, enquanto uma criança de 8 anos terá uma história mais longa com reviravoltas."
+          - question: "A IA pode incluir o nome do meu filho na história?"
+            answer: "Sem dúvida. É mesmo a funcionalidade central da Noctilio: o herói de cada história tem o nome do teu filho. A IA integra também as suas personagens favoritas, o seu universo preferido (espaço, dinossauros, princesas, piratas, animais) e os seus traços de personalidade para criar uma história única."
+          - question: "As histórias geradas pela IA são seguras para as crianças?"
+            answer: "Sim. O GPT-4o está configurado com instruções rigorosas para gerar apenas conteúdo positivo, carinhoso e adequado a crianças dos 2 aos 10 anos. As histórias evitam qualquer violência, medo excessivo ou conteúdo inadequado. Cada geração respeita os valores educativos selecionados pelo pai ou pela mãe."
+      histoires-enfant-4-ans:
+        title: "Histórias para crianças de 4 anos: o que realmente as cativa"
+        description: "Que histórias funcionam melhor aos 4 anos? Duração, personagens, estrutura narrativa: tudo o que precisas de saber."
+      histoires-enfant-3-ans:
+        title: "Histórias para crianças de 3 anos: o ritual da noite que acalma"
+        description: "Aos 3 anos, a história para dormir é um ritual de transição essencial. Descobre a duração ideal, os mundos tranquilizadores e como lidar com o medo do escuro."
+      histoires-enfant-5-ans:
+        title: "Histórias para crianças de 5 anos: os mundos que cativam de verdade"
+        description: "Aos 5 anos a imaginação explode. Que histórias funcionam melhor? Estrutura narrativa, emoções complexas, modo interativo: um guia completo."
+      histoire-personnalisee-prenom-enfant:
+        title: "Uma história personalizada com o nome do teu filho: porque muda tudo"
+        description: "Ouvir o próprio nome numa história desperta a atenção e a memória da criança. Percebe o poder da personalização e como a IA vai mais longe."
+      conte-interactif-enfant:
+        title: "Contos interativos para crianças: quando o teu filho escolhe o que acontece a seguir"
+        description: "A narração interativa transforma a escuta em participação. A partir dos 4 anos, o teu filho torna-se coautor da sua história para dormir. Vantagens e funcionamento."
+      histoire-courte-enfant-soir:
+        title: "Histórias curtas para crianças: 5 minutos para um ritual da noite bem-sucedido"
+        description: "Uma história curta bem feita é muitas vezes mais eficaz do que uma longa para adormecer. Estrutura, temas e dicas para noites expresso."

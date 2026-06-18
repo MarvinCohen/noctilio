@@ -20,6 +20,18 @@
 <%# Canvas sillage doré — trail qui suit le curseur comme sur la landing %>
 <canvas id="db-trail" class="db-trail-canvas"></canvas>
 
+<%# ================================================================ %>
+<%# ONBOARDING PREMIÈRE FOIS — utilisateur sans aucun héros %>
+<%# ================================================================ %>
+<%# Détection : @children est vide (compte neuf). On affiche un parcours %>
+<%# plein écran qui présente les 3 étapes (héros → univers → 1re histoire %>
+<%# offerte) puis renvoie vers le formulaire de création de héros. %>
+<%# Dès qu'un héros existe, c'est le dashboard normal qui s'affiche. %>
+<% if @children.empty? %>
+  <%= render "dashboard/onboarding" %>
+
+<% else %>
+
 <%# ---------------------------------------------------------------- %>
 <%# HERO — flotte dans le vide, pas de carte %>
 <%# ---------------------------------------------------------------- %>
@@ -55,41 +67,32 @@
   <div class="db-hero-text">
 
     <%# Eyebrow — petit texte doré espacé, style landing %>
-    <p class="db-eyebrow">✦ Ce soir, l'aventure commence ✦</p>
+    <p class="db-eyebrow"><%= t("dashboard.hero_eyebrow") %></p>
 
     <%# Titre principal — Cormorant Garamond, énorme, aérien %>
+    <%# Clé _html : contient <br> et <em>, rendue en HTML brut par t() %>
     <h1 class="db-hero-title">
-      Quelle magie allez-vous<br>
-      <em>créer</em> ce soir&nbsp;?
+      <%= t("dashboard.hero_title_html") %>
     </h1>
 
     <%# Description %>
     <p class="db-hero-desc">
-      Transformez vos rêves en aventures illustrées grâce à notre créateur d'histoires IA.
+      <%= t("dashboard.hero_desc") %>
     </p>
 
-    <% if @children.empty? %>
-      <%# Aucun héros créé — invite à créer le premier profil enfant %>
-      <p class="db-onboarding__hint">
-        Commence par créer le profil de ton héros — l'IA s'en souviendra à chaque histoire.
+    <%# CTA normal — pill doré, même style que landing %>
+    <%# (Le cas "aucun héros" n'arrive jamais ici : l'onboarding plein écran %>
+    <%# est rendu à la place du dashboard quand @children est vide — voir plus haut.) %>
+    <%= link_to new_story_path, class: "db-cta-btn" do %>
+      <span class="spin-star--hover">✦</span> <%= t("dashboard.cta") %>
+    <% end %>
+
+    <%# Limite gratuite — discrète %>
+    <% unless current_user.premium? %>
+      <p class="db-limit-text">
+        <%= t("dashboard.weekly_limit", count: @stories_this_week) %>
+        <%= link_to t("dashboard.go_premium"), subscription_path, class: "db-limit-link" %>
       </p>
-      <%= link_to new_child_path, class: "db-cta-btn" do %>
-        <span class="spin-star--hover">✦</span> Créer mon héros
-      <% end %>
-
-    <% else %>
-      <%# CTA normal — pill doré, même style que landing %>
-      <%= link_to new_story_path, class: "db-cta-btn" do %>
-        <span class="spin-star--hover">✦</span> Créer mon histoire
-      <% end %>
-
-      <%# Limite gratuite — discrète %>
-      <% unless current_user.premium? %>
-        <p class="db-limit-text">
-          <%= @stories_this_week %>/3 histoires cette semaine ·
-          <%= link_to "Passer en Premium →", subscription_path, class: "db-limit-link" %>
-        </p>
-      <% end %>
     <% end %>
 
   </div>
@@ -98,12 +101,100 @@
   <% if @pending_stories.any? %>
     <div class="db-generating-alert">
       <span class="db-generating-dot"></span>
-      <%= pluralize(@pending_stories.count, "histoire est", "histoires sont") %> en cours de génération…
-      <%= link_to "Voir →", story_path(@pending_stories.first), class: "db-generating-link" %>
+      <%# Pluralisation gérée par I18n (clés one / other) %>
+      <%= t("dashboard.generating", count: @pending_stories.count) %>
+      <%= link_to t("dashboard.see"), story_path(@pending_stories.first), class: "db-generating-link" %>
     </div>
   <% end %>
 
 </section>
+
+<%# ================================================================ %>
+<%# RITUEL DU SOIR — carte progression + constellation (esprit app mobile) %>
+<%# Affichée seulement si l'utilisateur a déjà un héros (compte configuré). %>
+<%# 1) Orbe de niveau + barre XP : montre l'avancement de façon ludique. %>
+<%# 2) Constellation des 7 derniers soirs : habitude douce, jamais punitive. %>
+<%# 3) Suggestion "histoire du soir" : reprise en 1 tap. %>
+<%# ================================================================ %>
+<% if @children.any? %>
+  <section class="db-ritual" data-reveal="up">
+
+    <%# --- Carte progression : orbe de niveau + barre XP + trophées --- %>
+    <div class="db-ritual-card">
+
+      <%# Orbe de niveau — pastille dorée avec le chiffre du niveau au centre %>
+      <div class="db-ritual-orb">
+        <span class="db-ritual-orb-level"><%= @level %></span>
+        <span class="db-ritual-orb-label"><%= t("dashboard.level") %></span>
+      </div>
+
+      <%# Bloc droite : barre XP + méta (XP restant, nombre de trophées) %>
+      <div class="db-ritual-progress">
+
+        <%# Ligne titre + nombre de trophées %>
+        <div class="db-ritual-progress-head">
+          <span class="db-ritual-progress-title"><%= t("dashboard.progress") %></span>
+          <%# Lien vers la salle des trophées — compteur de badges obtenus %>
+          <%= link_to trophy_room_path, class: "db-ritual-trophies" do %>
+            <span class="db-ritual-trophies-icon">✦</span>
+            <%# Pluralisation gérée par I18n (clés one / other) %>
+            <%= t("dashboard.trophies", count: @badges_count) %>
+          <% end %>
+        </div>
+
+        <%# Barre XP — largeur pilotée par level_progress (0 à 100 %) %>
+        <%# inline style uniquement pour la largeur dynamique (impossible en SCSS pur) %>
+        <div class="db-ritual-xpbar" role="progressbar"
+             aria-valuenow="<%= @level_progress %>" aria-valuemin="0" aria-valuemax="100">
+          <div class="db-ritual-xpbar-fill" style="width: <%= @level_progress %>%;"></div>
+        </div>
+
+        <%# XP restant avant le prochain niveau — message d'encouragement %>
+        <p class="db-ritual-xp-text">
+          <%= t("dashboard.xp_to_next", xp: @xp_to_next, level: @level + 1) %>
+        </p>
+      </div>
+    </div>
+
+    <%# --- Constellation des 7 derniers soirs --- %>
+    <%# Chaque étoile = un soir. Allumée si une histoire a été créée ce jour-là. %>
+    <div class="db-constellation">
+      <p class="db-constellation-label"><%= t("dashboard.last_7_nights") %></p>
+      <div class="db-constellation-stars">
+        <% @constellation.each do |lit| %>
+          <%# Étoile dorée si soir "allumé", sinon point discret (pas de croix rouge : %>
+          <%# on valorise, on ne punit jamais un soir manqué). %>
+          <span class="db-constellation-star <%= 'db-constellation-star--lit' if lit %>">✦</span>
+        <% end %>
+      </div>
+    </div>
+
+    <%# --- Suggestion "histoire du soir" — reprise en 1 tap --- %>
+    <% if @suggested_story.present? %>
+      <%= link_to story_path(@suggested_story), class: "db-suggestion" do %>
+        <%# Vignette de couverture (ou emoji d'univers en repli) %>
+        <% if @suggested_story.cover_image_source.present? %>
+          <%= image_tag @suggested_story.cover_image_source, alt: @suggested_story.title,
+                class: "db-suggestion-cover" %>
+        <% else %>
+          <span class="db-suggestion-cover db-suggestion-cover--emoji">
+            <%= @suggested_story.world_emoji %>
+          </span>
+        <% end %>
+
+        <%# Texte : libellé + titre de l'histoire suggérée %>
+        <span class="db-suggestion-text">
+          <span class="db-suggestion-eyebrow"><%= t("dashboard.bedtime_story") %></span>
+          <span class="db-suggestion-title"><%= @suggested_story.title %></span>
+        </span>
+
+        <%# Flèche de reprise %>
+        <span class="db-suggestion-arrow">→</span>
+      <% end %>
+    <% end %>
+
+  </section>
+<% end %>
 
 <%# ---------------------------------------------------------------- %>
 <%# Séparateur vertical doré — inspiré de la landing %>
@@ -119,8 +210,8 @@
   <section class="db-section db-section--centered">
 
     <div class="db-section-head db-section-head--centered" data-reveal="up">
-      <p class="db-eyebrow db-eyebrow--small">Là où vous en étiez</p>
-      <h2 class="db-section-title">Reprendre la lecture</h2>
+      <p class="db-eyebrow db-eyebrow--small"><%= t("dashboard.resume_eyebrow") %></p>
+      <h2 class="db-section-title"><%= t("dashboard.resume_title") %></h2>
     </div>
 
     <%# Grille de cartes histoires — flex centré, wrap sur mobile %>
@@ -156,7 +247,7 @@
 
     <%# Lien vers la bibliothèque complète %>
     <div style="text-align: center; margin-top: 1.75rem;">
-      <%= link_to "Voir toute la bibliothèque →", stories_path,
+      <%= link_to t("dashboard.see_all_library"), stories_path,
             style: "color: #f0c97a; text-decoration: none; font-size: 0.9rem;" %>
     </div>
 
@@ -173,8 +264,8 @@
   <section class="db-section db-section--centered db-section--last">
 
     <div class="db-section-head db-section-head--centered" data-reveal="up">
-      <p class="db-eyebrow db-eyebrow--small">Les stars de vos histoires</p>
-      <h2 class="db-section-title">Mes héros</h2>
+      <p class="db-eyebrow db-eyebrow--small"><%= t("dashboard.heroes_eyebrow") %></p>
+      <h2 class="db-section-title"><%= t("dashboard.heroes_title") %></h2>
     </div>
 
     <%# Pills enfants — avatar initiale + prénom, cliquables vers le profil %>
@@ -190,7 +281,7 @@
                 height: 34,
                 style: "width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" %>
           <span style="color: #d4cfc4; font-size: 0.92rem; font-weight: 500;">
-            <%= child.name %> · <%= child.age %> ans
+            <%= child.name %> · <%= t("dashboard.age", age: child.age) %>
           </span>
         <% end %>
       <% end %>
@@ -198,7 +289,7 @@
       <%# Bouton "+" pour ajouter un nouveau profil enfant %>
       <%= link_to new_child_path,
             style: "display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.1rem; background: transparent; border: 1px dashed rgba(240, 201, 122, 0.35); border-radius: 50px; text-decoration: none; color: #f0c97a; font-size: 0.92rem;" do %>
-        + Ajouter un héros
+        <%= t("dashboard.add_hero") %>
       <% end %>
     </div>
 
@@ -207,6 +298,9 @@
 
 <%# Espace final %>
 <div style="height: 80px;"></div>
+
+<% end %>
+<%# Fin du branchement onboarding / dashboard normal %>
 
 <%# ============================================================ %>
 <%# JS — Étoiles + Trail doré (même logique que la landing) %>

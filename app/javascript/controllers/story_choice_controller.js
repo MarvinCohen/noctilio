@@ -14,7 +14,13 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   // "statusUrl" : URL du endpoint JSON de statut (ex: /stories/1/status)
-  static values = { statusUrl: String }
+  // loadingSr / loadingTitle / loadingHint : textes traduits du spinner (i18n)
+  static values = {
+    statusUrl:    String,
+    loadingSr:    String,
+    loadingTitle: String,
+    loadingHint:  String
+  }
 
   // ============================================================
   // submit(event) — appelé par data-action="submit->story-choice#submit"
@@ -63,10 +69,10 @@ export default class extends Controller {
     this.element.innerHTML = `
       <div class="text-center py-5">
         <div class="spinner-border text-primary mb-3" role="status">
-          <span class="visually-hidden">Génération en cours...</span>
+          <span class="visually-hidden">${this.loadingSrValue}</span>
         </div>
-        <p class="text-muted fw-semibold">La suite de l'aventure se prépare... ✨</p>
-        <p class="text-muted small">Cela prend généralement 15 à 30 secondes.</p>
+        <p class="text-muted fw-semibold">${this.loadingTitleValue}</p>
+        <p class="text-muted small">${this.loadingHintValue}</p>
       </div>
     `
   }

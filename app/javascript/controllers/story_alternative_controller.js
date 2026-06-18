@@ -22,7 +22,13 @@ export default class extends Controller {
   static values = {
     url:              String,
     choiceId:         Number,
-    alternativeLabel: String
+    alternativeLabel: String,
+    // Chaînes traduites injectées dynamiquement par le controller (i18n)
+    askPrefix:        String, // "Et si j'avais choisi" (préfixe du bouton)
+    hideLabel:        String, // "Masquer la timeline alternative"
+    errorPrefix:      String, // "Impossible de générer cette alternative :"
+    errorUnknown:     String, // "erreur inconnue" (fallback si pas de détail)
+    networkError:     String  // "Erreur de connexion..."
   }
 
   // Cibles DOM manipulées par ce controller
@@ -75,14 +81,14 @@ export default class extends Controller {
         // Affiche le message d'erreur à la place du spinner
         this.contentTarget.innerHTML = `
           <p style="color: rgba(220,100,100,0.8); font-size: 0.85rem; margin: 0;">
-            Impossible de générer cette alternative : ${data.error || "erreur inconnue"}
+            ${this.errorPrefixValue} ${data.error || this.errorUnknownValue}
           </p>`
       }
     } catch (err) {
       // Erreur réseau
       this.contentTarget.innerHTML = `
         <p style="color: rgba(220,100,100,0.8); font-size: 0.85rem; margin: 0;">
-          Erreur de connexion. Réessaie dans quelques instants.
+          ${this.networkErrorValue}
         </p>`
     }
 
@@ -90,7 +96,7 @@ export default class extends Controller {
     this.spinnerTarget.style.display = "none"
 
     // Met à jour le label du bouton pour indiquer qu'on peut refermer
-    this.btnTarget.textContent = "Masquer la timeline alternative"
+    this.btnTarget.textContent = this.hideLabelValue
   }
 
   // ============================================================
@@ -106,8 +112,8 @@ export default class extends Controller {
     this.panelTarget.style.display = "none"
     this._open = false
     this.btnTarget.setAttribute("aria-expanded", "false")
-    // Remet le label original du bouton
-    this.btnTarget.textContent = `Et si j'avais choisi "${this.alternativeLabelValue}" ?`
+    // Remet le label original du bouton (préfixe traduit + libellé de l'option)
+    this.btnTarget.textContent = `${this.askPrefixValue} "${this.alternativeLabelValue}" ?`
   }
 
   // ============================================================

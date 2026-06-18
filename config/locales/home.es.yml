@@ -1,0 +1,52 @@
+# ============================================================
+# Traductions de la LANDING (page d'accueil publique) — espagnol
+# ============================================================
+es:
+  home:
+    nav_badge: "Próximamente"
+
+    hero:
+      eyebrow: "✦ Cuentos personalizados con IA ✦"
+      title_html: "Cuentos <em>únicos</em>,<br>solo para<br>tu hijo"
+      subtitle: "Cada noche, un cuento mágico generado en segundos, con el nombre, los personajes y el mundo favoritos de tu hijo. Narrado con una voz suave, como por arte de magia."
+      email_placeholder: "tu@email.com"
+      cta: "Acceso anticipado →"
+      success: "✦ ¡Gracias! Serás de los primeros en descubrir Noctilio."
+      note: "Sin spam. Solo magia, en el momento justo."
+      counter_suffix: "familias ya inscritas"
+
+    features:
+      personalised:
+        title: "Personalizado"
+        desc: "Nombre, personajes favoritos, lugar de ensueño: cada cuento es único y hecho a la medida de tu hijo."
+      narrated:
+        title: "Narrado"
+        desc: "Una voz suave y natural lee el cuento en voz alta. Perfecto para las noches en que ya no te quedan fuerzas."
+      fast:
+        title: "En segundos"
+        desc: "El cuento está listo antes de que termine el baño. La rutina de la noche se convierte en un momento mágico."
+
+    how:
+      eyebrow: "✦ Tan simple como un cuento"
+      title: "¿Cómo funciona?"
+      step1_title: "Crea el perfil de tu héroe"
+      step1_desc: "Indica el nombre de tu hijo, su edad, sus personajes favoritos y el mundo que elija: bosque encantado, espacio, dinosaurios, piratas o animales. También puedes describir libremente el mundo de tu imaginación. Noctilio lo recuerda para todos los cuentos siguientes."
+      step2_title: "La IA compone un cuento único"
+      step2_desc: "En segundos, nuestra inteligencia artificial (GPT-4o) genera un cuento inédito, adaptado a la edad de tu hijo y a su nivel de lectura. Cada cuento va acompañado de una ilustración creada especialmente para la ocasión. Nunca hay dos iguales."
+      step3_title: "Lee o escucha a la hora de dormir"
+      step3_desc: "Poneos cómodos. El cuento está listo para leerlo juntos o escucharlo en voz alta. En el modo interactivo, tu hijo elige cómo sigue la aventura en cada paso, como en un libro de verdad del que es el héroe."
+      closing_html: "<strong>Noctilio</strong> está pensado para los padres que quieren ofrecer a sus hijos momentos de lectura ricos y personalizados, sin dedicarle horas. Cada cuento se adapta al niño, a su nombre, su edad y su personalidad, y se renueva en cada generación. <strong>3 cuentos al mes gratis</strong>, y cuentos ilimitados con el modo interactivo en la suscripción Premium."
+      blog_link: "Lee nuestros consejos para padres →"
+
+    form_js:
+      invalid_email: "Comprueba el formato de tu correo."
+      subscribed: "✦ Te has inscrito correctamente"
+      already: "Ya estás inscrito"
+      error: "Se ha producido un error."
+      connection: "Problema de conexión. Inténtalo de nuevo en un momento."
+
+    schema:
+      app_description: "Aplicación que genera cuentos personalizados para niños con inteligencia artificial. Crea cuentos únicos con el nombre, los personajes y el mundo favoritos de tu hijo."
+      offer_desc: "Acceso gratuito — 3 cuentos al mes"
+      audience_type: "Padres de niños de 2 a 10 años"
+      org_description: "Noctilio genera cuentos personalizados para niños gracias a la inteligencia artificial."

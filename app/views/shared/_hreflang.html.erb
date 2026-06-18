@@ -1,0 +1,22 @@
+<%# ============================================================ %>
+<%# Balises SEO multilingue — canonical + hreflang                %>
+<%# ============================================================ %>
+<%# À inclure dans le <head> des PAGES PUBLIQUES indexées uniquement. %>
+<%# - canonical : URL de référence de la page dans la langue affichée %>
+<%#   (évite que Google traite /blog et /en/blog comme des doublons). %>
+<%# - hreflang  : une balise par langue disponible -> indique à Google %>
+<%#   toutes les versions linguistiques de CETTE page et leurs URLs. %>
+<%# - x-default : version servie quand aucune langue ne correspond au %>
+<%#   navigateur du visiteur (ici le français, langue source du site). %>
+<%# Les URLs sont calculées par SeoHelper à partir du chemin courant. %>
+
+<%# URL canonique de la page dans la langue actuellement affichée %>
+<link rel="canonical" href="<%= canonical_url %>">
+
+<%# Une balise alternate par langue déclarée dans available_locales %>
+<% I18n.available_locales.each do |loc| %>
+  <link rel="alternate" hreflang="<%= loc %>" href="<%= localized_url(loc) %>">
+<% end %>
+
+<%# x-default : repli sur la version française (langue par défaut) %>
+<link rel="alternate" hreflang="x-default" href="<%= localized_url(I18n.default_locale) %>">

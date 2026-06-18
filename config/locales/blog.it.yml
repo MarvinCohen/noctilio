@@ -1,0 +1,72 @@
+# ============================================================
+# Traductions du BLOG — italien
+# ============================================================
+it:
+  blog:
+    brand_suffix: "Blog Noctilio"
+    reading_time: "%{count} min di lettura"
+
+    index:
+      title: "Blog Noctilio — Consigli sulle storie per bambini"
+      description: "Consigli pratici per i genitori: storie della buonanotte, racconti personalizzati con l'IA, idee per ogni età. Il blog di Noctilio."
+      schema_name: "Blog Noctilio"
+      schema_description: "Consigli pratici per i genitori sulle storie per bambini: rituali della buonanotte, racconti personalizzati con l'IA, idee per fascia d'età."
+      eyebrow: "✦ Il blog di Noctilio"
+      heading: "Consigli per i genitori"
+      subtitle: "Storie della buonanotte, racconti personalizzati, idee per ogni età: tutto ciò che serve per momenti di lettura magici."
+      read_article: "Leggi l'articolo →"
+      back_home: "← Torna alla home"
+
+    show:
+      cta_title: "Vuoi provarlo?"
+      cta_desc: "Noctilio genera storie personalizzate per il tuo bambino in pochi secondi, gratis."
+      cta_button: "Iscriviti alla lista d'attesa →"
+      related_title: "Leggi anche"
+      all_articles: "← Tutti gli articoli"
+      home_link: "Home →"
+
+    breadcrumb:
+      home: "Home"
+      blog: "Blog"
+
+    # --- Titoli + descrizioni tradotti di ogni articolo (chiave = slug) ---
+    # (in FR questi valori vengono dal controller; qui vengono tradotti)
+    articles:
+      histoires-du-soir-enfant:
+        title: "5 idee di storie della buonanotte per far addormentare facilmente il tuo bambino"
+        description: "Scopri 5 tipi di storie della buonanotte che aiutano i bambini ad addormentarsi serenamente. Consigli pratici ed esempi personalizzati con l'IA."
+        faqs:
+          - question: "Qual è la storia migliore per far addormentare un bambino di 3 anni?"
+            answer: "Le storie brevi (da 3 a 5 minuti) con un eroe rassicurante che torna a casa e si addormenta sono le più efficaci per i 3 anni. I temi legati alla notte, alle stelle e agli animali familiari calmano naturalmente il bambino durante la transizione dalla veglia al sonno."
+          - question: "Come rendere più efficace una storia della buonanotte?"
+            answer: "L'efficacia di una storia della buonanotte si basa su tre elementi: un ritmo lento e una voce dolce, un eroe in cui il bambino si identifica (idealmente con il proprio nome) e un finale rasserenante in cui il personaggio si addormenta. Ripetere lo stesso rituale ogni sera rafforza l'effetto di segnale del sonno."
+          - question: "Da quale età si possono raccontare storie della buonanotte?"
+            answer: "Le storie della buonanotte possono iniziare già a 18 mesi con racconti molto semplici (2-3 minuti, un personaggio, un solo evento). Dai 3 anni il bambino segue una narrazione completa con inizio, svolgimento e finale. La modalità interattiva (scelte all'interno della storia) è adatta dai 4-5 anni."
+      conte-personnalise-ia-enfant:
+        title: "Come l'IA genera racconti personalizzati per il tuo bambino"
+        description: "Scopri come GPT-4o crea storie uniche adatte all'età, ai gusti e alla personalità di ogni bambino. Una guida per i genitori."
+        faqs:
+          - question: "Le storie generate dall'IA sono adatte all'età del bambino?"
+            answer: "Sì. Noctilio adatta automaticamente il vocabolario, la complessità narrativa e la lunghezza in base all'età indicata nel profilo del bambino. Un bambino di 3 anni riceverà una storia breve con parole semplici, mentre un bambino di 8 anni avrà una storia più lunga con colpi di scena."
+          - question: "L'IA può inserire il nome del mio bambino nella storia?"
+            answer: "Assolutamente. È anzi la funzione centrale di Noctilio: l'eroe di ogni storia porta il nome del tuo bambino. L'IA integra anche i suoi personaggi preferiti, il suo universo preferito (spazio, dinosauri, principesse, pirati, animali) e i suoi tratti di personalità per creare una storia unica."
+          - question: "Le storie generate dall'IA sono sicure per i bambini?"
+            answer: "Sì. GPT-4o è configurato con istruzioni rigorose per generare soltanto contenuti positivi, premurosi e adatti ai bambini dai 2 ai 10 anni. Le storie evitano ogni violenza, paura eccessiva o contenuto inappropriato. Ogni generazione rispetta i valori educativi selezionati dal genitore."
+      histoires-enfant-4-ans:
+        title: "Storie per bambini di 4 anni: ciò che li cattura davvero"
+        description: "Quali storie sono più adatte ai 4 anni? Durata, personaggi, struttura narrativa: tutto quello che devi sapere."
+      histoires-enfant-3-ans:
+        title: "Storie per bambini di 3 anni: il rituale della sera che rassicura"
+        description: "A 3 anni la storia della buonanotte è un rituale di transizione essenziale. Scopri la durata ideale, i mondi rassicuranti e come gestire la paura del buio."
+      histoires-enfant-5-ans:
+        title: "Storie per bambini di 5 anni: i mondi che catturano davvero"
+        description: "A 5 anni la fantasia esplode. Quali storie funzionano meglio? Struttura narrativa, emozioni complesse, modalità interattiva: una guida completa."
+      histoire-personnalisee-prenom-enfant:
+        title: "Una storia personalizzata con il nome del tuo bambino: perché cambia tutto"
+        description: "Sentire il proprio nome in una storia accende l'attenzione e la memoria del bambino. Scopri il potere della personalizzazione e come l'IA va oltre."
+      conte-interactif-enfant:
+        title: "Racconti interattivi per bambini: quando tuo figlio sceglie come continua la storia"
+        description: "Il racconto interattivo trasforma l'ascolto in partecipazione. Dai 4 anni, tuo figlio diventa coautore della sua storia della buonanotte. Vantaggi e funzionamento."
+      histoire-courte-enfant-soir:
+        title: "Storie brevi per bambini: 5 minuti per un rituale della sera riuscito"
+        description: "Una storia breve ben fatta è spesso più efficace di una lunga per addormentarsi. Struttura, temi e consigli per serate veloci."

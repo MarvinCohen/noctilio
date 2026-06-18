@@ -12,9 +12,10 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  // "statusUrl" : URL du endpoint JSON de statut (ex: /stories/1/status)
-  // "alt"       : texte alternatif pour l'image (accessibilité)
-  static values = { statusUrl: String, alt: String }
+  // "statusUrl"   : URL du endpoint JSON de statut (ex: /stories/1/status)
+  // "alt"         : texte alternatif pour l'image (accessibilité)
+  // "unavailable" : message affiché si l'image ne peut pas se charger (i18n)
+  static values = { statusUrl: String, alt: String, unavailable: String }
 
   // connect() est appelé automatiquement par Stimulus quand le controller est attaché au DOM
   connect() {
@@ -81,7 +82,7 @@ export default class extends Controller {
     // Crée un élément <img> et le configure
     const img = document.createElement("img")
     img.src       = url
-    img.alt       = this.altValue || "Illustration de l'histoire"
+    img.alt       = this.altValue
     img.className = "story-illustration-img"
 
     // L'image est cachée jusqu'à ce qu'elle soit complètement chargée
@@ -96,7 +97,7 @@ export default class extends Controller {
 
     // En cas d'erreur de chargement (URL cassée, 404, etc.) — affiche un message
     img.onerror = () => {
-      if (skeleton) skeleton.innerHTML = "<p style=\"color:#777;font-size:0.8rem;\">Illustration non disponible</p>"
+      if (skeleton) skeleton.innerHTML = `<p style="color:#777;font-size:0.8rem;">${this.unavailableValue}</p>`
     }
 
     // Ajoute l'image dans le wrapper (ce controller)

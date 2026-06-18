@@ -9,15 +9,17 @@
 // ============================================================
 
 // Nom du cache — change ce nom pour forcer la mise à jour du cache
-// lors d'un nouveau déploiement (ex: "noctilio-v2")
-const CACHE_NAME = "noctilio-v1";
+// lors d'un nouveau déploiement (ex: "noctilio-v3").
+// Bumpé en v2 : nouvelles icônes PWA dédiées + correction de la liste de pré-cache.
+const CACHE_NAME = "noctilio-v2";
 
-// Liste des URLs à mettre en cache immédiatement à l'installation
-// On cache uniquement les pages "coquilles" essentielles
+// Liste des URLs "coquilles" à mettre en cache dès l'installation.
+// IMPORTANT : addAll échoue en bloc si UNE seule URL renvoie une erreur (404).
+// On ne liste donc que des routes réellement existantes (avant : "/dashboard"
+// et "/offline" n'existaient pas → le pré-cache échouait toujours en silence).
 const URLS_TO_CACHE = [
-  "/",           // Landing page
-  "/dashboard",  // Page principale après connexion
-  "/offline"     // Page affichée si l'utilisateur est hors ligne (optionnel)
+  "/",      // Landing page (publique)
+  "/home"   // Dashboard — page principale après connexion (= start_url du manifest)
 ];
 
 // ============================================================
@@ -83,20 +85,34 @@ self.addEventListener("fetch", function(event) {
   event.respondWith(
     fetch(event.request)
       .then(function(networkResponse) {
-        // Si le réseau répond, on met la réponse en cache pour plus tard
-        // clone() est nécessaire car une Response ne peut être lue qu'une fois
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then(function(cache) {
-          cache.put(event.request, responseToCache);
-        });
+        // On ne met en cache que les réponses "saines" (status 200, type basique).
+        // Évite de cacher des redirections (302 vers la connexion), des erreurs
+        // ou des réponses opaques qui rendraient la lecture hors-ligne incohérente.
+        if (networkResponse.ok && networkResponse.type === "basic") {
+          // clone() est nécessaire car une Response ne peut être lue qu'une fois
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, responseToCache);
+          });
+        }
         return networkResponse;
       })
       .catch(function() {
-        // Le réseau a échoué — on cherche dans le cache
+        // Le réseau a échoué (hors ligne) — on cherche d'abord la page exacte
+        // en cache. C'est ce qui permet de relire une histoire déjà ouverte.
         return caches.match(event.request).then(function(cachedResponse) {
-          // Si on a une version en cache, on la retourne
           if (cachedResponse) return cachedResponse;
-          // Sinon, on retourne une réponse vide générique (évite un écran blanc)
+
+          // Pas de version exacte en cache. Pour une navigation (ouverture d'une
+          // page), on sert la coquille du dashboard en repli plutôt qu'un écran
+          // blanc — l'utilisateur garde un point d'entrée vers l'app.
+          if (event.request.mode === "navigate") {
+            return caches.match("/home").then(function(shell) {
+              return shell || new Response("", { status: 503, statusText: "Hors ligne" });
+            });
+          }
+
+          // Autres requêtes (image, audio non caché…) : réponse vide générique
           return new Response("", { status: 503, statusText: "Service indisponible" });
         });
       })

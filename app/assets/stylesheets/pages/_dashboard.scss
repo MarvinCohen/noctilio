@@ -1603,3 +1603,409 @@ $text-dim: rgba(#fdf6e3, 0.45);
   }
 
 }
+
+// ============================================================
+// RITUEL DU SOIR — carte progression + constellation (esprit app mobile)
+// ============================================================
+// Bloc unique placé sous le hero. Contient trois sous-parties empilées :
+// progression (orbe niveau + barre XP), constellation (7 soirs), suggestion.
+// Centré et borné en largeur pour rester lisible sur grand écran.
+
+.db-ritual {
+  position: relative;
+  z-index: 4;
+  // Largeur confortable, centrée — le bloc respire au milieu du vide cosmique
+  max-width: 560px;
+  margin: 8px auto 0;
+  padding: 0 24px;
+
+  // Espace vertical entre les 3 sous-parties (carte / constellation / suggestion)
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+// --- Carte progression : orbe de niveau (gauche) + barre XP (droite) ---
+.db-ritual-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  // Surface "verre nuit" — cohérente avec la bottom nav et le lecteur audio
+  background: linear-gradient(135deg, rgba($deep, 0.85) 0%, rgba($indigo, 0.55) 100%);
+  border: 1px solid rgba($gold-lp, 0.15);
+  border-radius: 20px;
+  padding: 18px 20px;
+}
+
+// Orbe de niveau — pastille dorée ronde, chiffre du niveau au centre
+.db-ritual-orb {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+
+  // Dégradé doré + halo diffus — donne le côté "précieux" de l'orbe
+  background: radial-gradient(circle at 35% 30%, $cream-lp 0%, $gold-lp 60%, darken($gold-lp, 12%) 100%);
+  box-shadow: 0 0 18px rgba($gold-lp, 0.45);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+
+  // Le chiffre du niveau — gros, en couleur nuit pour contraster sur l'or
+  .db-ritual-orb-level {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: $night;
+  }
+
+  // Petit label "niveau" sous le chiffre
+  .db-ritual-orb-label {
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba($night, 0.65);
+  }
+}
+
+// Bloc droite — titre, barre XP, texte de progression
+.db-ritual-progress {
+  flex: 1 1 auto;
+  min-width: 0; // autorise le texte à se tronquer sans casser le flex
+}
+
+// Ligne titre + lien trophées
+.db-ritual-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.db-ritual-progress-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: $cream-lp;
+}
+
+// Lien vers la salle des trophées — compteur discret de badges
+.db-ritual-trophies {
+  font-size: 0.78rem;
+  color: $gold-lp;
+  text-decoration: none;
+  white-space: nowrap;
+
+  .db-ritual-trophies-icon {
+    margin-right: 2px;
+  }
+}
+
+// Barre XP — rail sombre + remplissage doré
+.db-ritual-xpbar {
+  height: 8px;
+  border-radius: 50px;
+  background: rgba($cream-lp, 0.1);
+  overflow: hidden;
+
+  // Remplissage doré — la largeur est posée en inline style (valeur dynamique)
+  .db-ritual-xpbar-fill {
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg, $gold-lp, $cream-lp);
+    // Transition douce si la valeur change (ex : retour sur la page après une histoire)
+    transition: width 0.6s ease;
+  }
+}
+
+// Texte XP restant — petit, discret, encourageant
+.db-ritual-xp-text {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: $text-dim;
+}
+
+// --- Constellation des 7 derniers soirs ---
+.db-constellation {
+  text-align: center;
+}
+
+.db-constellation-label {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: $text-dim;
+}
+
+// Rangée d'étoiles — réparties régulièrement
+.db-constellation-stars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+// Étoile d'un soir — éteinte par défaut (point discret)
+.db-constellation-star {
+  font-size: 1.05rem;
+  color: rgba($cream-lp, 0.18);
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+
+  // Soir "allumé" : étoile dorée avec un léger halo (valorisation positive)
+  &--lit {
+    color: $gold-lp;
+    text-shadow: 0 0 8px rgba($gold-lp, 0.6);
+  }
+}
+
+// --- Suggestion "histoire du soir" — bandeau cliquable, reprise en 1 tap ---
+.db-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  background: linear-gradient(135deg, rgba($deep, 0.85) 0%, rgba($indigo, 0.55) 100%);
+  border: 1px solid rgba($gold-lp, 0.15);
+  border-radius: 16px;
+  padding: 12px 16px;
+  text-decoration: none;
+
+  // Léger retour tactile au tap (cohérent avec les autres boutons de l'app)
+  transition: transform 0.15s ease, border-color 0.2s ease;
+  &:active {
+    transform: scale(0.98);
+    border-color: rgba($gold-lp, 0.4);
+  }
+
+  // Vignette de couverture (image ou emoji d'univers en repli)
+  .db-suggestion-cover {
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: cover;
+    display: block;
+
+    // Variante emoji (pas d'image attachée) — fond doux + emoji centré
+    &--emoji {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      background: rgba($gold-lp, 0.08);
+    }
+  }
+
+  // Bloc texte central — prend l'espace restant
+  .db-suggestion-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .db-suggestion-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: $gold-lp;
+  }
+
+  // Titre de l'histoire — tronqué sur une ligne pour garder le bandeau compact
+  .db-suggestion-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: $cream-lp;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Flèche de reprise — alignée à droite
+  .db-suggestion-arrow {
+    flex: 0 0 auto;
+    font-size: 1.2rem;
+    color: $gold-lp;
+  }
+}
+
+// --- Mobile (≤600px) : on resserre les marges et tailles ---
+@media (max-width: 600px) {
+  .db-ritual {
+    padding: 0 16px;
+    gap: 14px;
+  }
+
+  .db-ritual-card {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .db-ritual-orb {
+    width: 56px;
+    height: 56px;
+
+    .db-ritual-orb-level { font-size: 1.5rem; }
+  }
+
+  .db-constellation-stars { gap: 10px; }
+}
+
+// ============================================================
+// ONBOARDING PREMIÈRE FOIS — parcours plein écran (compte sans héros)
+// ============================================================
+// Rendu à la place du dashboard quand l'utilisateur n'a encore aucun héros.
+// Centré, mobile-first, ambiance nocturne (le ciel étoilé global s'affiche
+// déjà derrière, via le layout). Borné en largeur pour rester lisible.
+
+.onb {
+  position: relative;
+  z-index: 4;
+  // Bloc centré horizontalement, largeur confortable
+  max-width: 520px;
+  margin: 0 auto;
+  // Centre verticalement le contenu dans la hauteur disponible
+  min-height: calc(100vh - 72px); // 72px = hauteur de la top nav (sidebar)
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px 80px;
+}
+
+// --- Logo : mascotte + nom ---
+.onb-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+
+.onb-owl {
+  // Halo doré diffus derrière la mascotte
+  filter: drop-shadow(0 0 20px rgba($gold-lp, 0.35));
+}
+
+.onb-word {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+  color: $gold-lp;
+  margin: 0;
+}
+
+// --- Accroche ---
+.onb-eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $gold-lp;
+  margin: 0 0 10px;
+}
+
+.onb-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 2.4rem;
+  line-height: 1.15;
+  color: $cream-lp;
+  margin: 0 0 14px;
+
+  // Le mot mis en valeur — italique doré
+  em {
+    font-style: italic;
+    color: $gold-lp;
+  }
+}
+
+.onb-lead {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: rgba($cream-lp, 0.7);
+  margin: 0 0 32px;
+  max-width: 420px;
+}
+
+// --- Les 3 étapes ---
+.onb-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 34px;
+  // Aligné à gauche pour la lisibilité de la checklist
+  text-align: left;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.onb-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+// Numéro de l'étape — pastille dorée ronde
+.onb-step-num {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, $cream-lp 0%, $gold-lp 70%);
+  color: $night;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba($gold-lp, 0.4);
+}
+
+.onb-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.onb-step-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: $cream-lp;
+}
+
+.onb-step-desc {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: rgba($cream-lp, 0.6);
+}
+
+// --- CTA + réassurance ---
+.onb-cta {
+  // S'appuie sur .db-cta-btn (pill doré) ; on ajuste juste l'espacement
+  margin-bottom: 14px;
+}
+
+.onb-reassurance {
+  font-size: 0.78rem;
+  color: $text-dim;
+  margin: 0;
+}
+
+// --- Mobile (≤600px) : on resserre les tailles ---
+@media (max-width: 600px) {
+  .onb {
+    padding: 32px 20px 80px;
+  }
+
+  .onb-title { font-size: 2rem; }
+  .onb-lead  { font-size: 0.95rem; margin-bottom: 26px; }
+}

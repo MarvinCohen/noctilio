@@ -322,17 +322,17 @@
       <%# Bloc texte gauche %>
       <div>
         <%# Label chapeau en petites caps dorées %>
-        <div class="tr-hero-label">✦ Salle des Trophées</div>
+        <div class="tr-hero-label"><%= t("trophies.hero_label") %></div>
         <%# Titre éditorial en Cormorant Garamond italic %>
-        <h1 class="tr-page-title">Tes Trophées</h1>
-        <p class="tr-page-subtitle">Tes exploits, tes rêves, ton univers</p>
+        <h1 class="tr-page-title"><%= t("trophies.title") %></h1>
+        <p class="tr-page-subtitle"><%= t("trophies.subtitle") %></p>
       </div>
 
       <%# Orbe de niveau — cercle doré avec glow, chiffre centré %>
       <%# C'est l'élément hero visuel — communique le niveau d'un coup d'œil %>
       <div class="tr-level-orb flex-shrink-0">
         <span class="tr-level-number"><%= @level %></span>
-        <span class="tr-level-caption">Niveau</span>
+        <span class="tr-level-caption"><%= t("trophies.level") %></span>
       </div>
 
     </div>
@@ -346,7 +346,7 @@
       <%# XP accumulés — Cormorant doré, affiché en grand %>
       <div class="flex-shrink-0">
         <div class="tr-xp-value"><%= number_with_delimiter(@xp_points, delimiter: "\u202f") %></div>
-        <div class="tr-xp-label">XP accumulés</div>
+        <div class="tr-xp-label"><%= t("trophies.xp_accumulated") %></div>
       </div>
 
       <%# Barre de progression vers le prochain niveau (prend le reste de la largeur) %>
@@ -354,7 +354,7 @@
         <div class="tr-progress">
           <div class="tr-progress-fill" style="width: <%= @level_progress %>%"></div>
         </div>
-        <span class="tr-progress-label"><%= @level_progress %>% vers le niveau <%= @level + 1 %></span>
+        <span class="tr-progress-label"><%= t("trophies.progress_to_next", percent: @level_progress, level: @level + 1) %></span>
       </div>
 
     </div>
@@ -373,7 +373,7 @@
        data-controller="badge-reveal"
        data-badge-reveal-limit-value="8">
 
-    <h2 class="tr-section-title">✦ Badges Magiques</h2>
+    <h2 class="tr-section-title"><%= t("trophies.badges_heading") %></h2>
 
     <div class="row g-3">
       <% @all_badges.each do |badge| %>
@@ -399,12 +399,12 @@
               <%# Retrouve le UserBadge pour afficher la date d'obtention %>
               <% user_badge = @earned_user_badges.find { |ub| ub.badge_id == badge.id } %>
               <%# Tag vert "Obtenu" %>
-              <span class="tr-badge-tag tr-badge-tag--earned">✓ Obtenu</span>
+              <span class="tr-badge-tag tr-badge-tag--earned"><%= t("trophies.earned") %></span>
               <%# Date en petit, discrète %>
-              <span class="tr-badge-date">le <%= user_badge.earned_at.strftime("%d/%m/%Y") %></span>
+              <span class="tr-badge-date"><%= t("trophies.earned_on", date: user_badge.earned_at.strftime("%d/%m/%Y")) %></span>
             <% else %>
               <%# Tag gris "À débloquer" %>
-              <span class="tr-badge-tag tr-badge-tag--locked">À débloquer</span>
+              <span class="tr-badge-tag tr-badge-tag--locked"><%= t("trophies.to_unlock") %></span>
             <% end %>
 
           </div>
@@ -414,7 +414,7 @@
       <%# Message affiché si aucun badge n'est encore défini en base %>
       <% if @all_badges.empty? %>
         <div class="col-12 tr-empty">
-          Les badges seront bientôt disponibles !
+          <%= t("trophies.badges_soon") %>
         </div>
       <% end %>
     </div>
@@ -425,7 +425,7 @@
       <button class="tr-reveal-btn"
               data-badge-reveal-target="btnMore"
               data-action="click->badge-reveal#reveal">
-        Voir les autres trophées ✦
+        <%= t("trophies.see_more") %>
       </button>
 
       <%# "Voir moins" — masqué au chargement, visible après dépliement %>
@@ -433,7 +433,7 @@
       <button class="tr-reveal-btn"
               data-badge-reveal-target="btnLess"
               data-action="click->badge-reveal#collapse">
-        ↑ Voir moins
+        <%= t("trophies.see_less") %>
       </button>
     </div>
 
@@ -448,8 +448,8 @@
   <%# ============================================================ %>
   <% if @illustrated_stories.any? %>
     <div class="mb-5">
-      <h2 class="tr-section-title">✦ Galerie de Rêves</h2>
-      <p class="tr-page-subtitle mb-4">Les illustrations générées pour tes histoires</p>
+      <h2 class="tr-section-title"><%= t("trophies.gallery_heading") %></h2>
+      <p class="tr-page-subtitle mb-4"><%= t("trophies.gallery_subtitle") %></p>
 
       <div class="row g-3">
         <% @illustrated_stories.each do |story| %>
@@ -471,7 +471,7 @@
               <%# Corps de la carte : titre tronqué + enfant associé %>
               <div class="tr-gallery-body">
                 <div class="tr-gallery-title text-truncate"><%= story.title %></div>
-                <div class="tr-gallery-meta">Pour <%= story.child.name %></div>
+                <div class="tr-gallery-meta"><%= t("library.for_child", name: story.child.name) %></div>
               </div>
 
             <% end %>

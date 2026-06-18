@@ -119,15 +119,15 @@
   <div class="feedback-card">
 
     <%# ── En-tête ── %>
-    <h1 class="feedback-title">Donnez-nous votre avis</h1>
+    <h1 class="feedback-title"><%= t("feedbacks.title") %></h1>
     <p class="feedback-subtitle">
-      Un bug, une idée, une remarque ? Vos retours nous aident à améliorer Noctilio.
+      <%= t("feedbacks.subtitle") %>
     </p>
 
     <%# ── Erreurs de validation (réaffichées après un POST invalide) ── %>
     <% if @feedback.errors.any? %>
       <div class="feedback-errors">
-        Votre retour n'a pas pu être envoyé :
+        <%= t("feedbacks.errors_intro") %>
         <ul>
           <% @feedback.errors.full_messages.each do |msg| %>
             <li><%= msg %></li>
@@ -140,36 +140,37 @@
     <%= form_with model: @feedback, url: feedback_path, method: :post do |f| %>
 
       <%# Catégorie du retour — menu déroulant alimenté par Feedback::CATEGORIES %>
-      <%= f.label :category, "Type de retour", class: "feedback-label" %>
+      <%# Seuls les libellés sont traduits, les valeurs stockées (bug/suggestion/autre) restent stables %>
+      <%= f.label :category, t("feedbacks.category_label"), class: "feedback-label" %>
       <%= f.select :category,
             options_for_select(
-              [["Bug ou problème", "bug"], ["Suggestion", "suggestion"], ["Autre", "autre"]],
+              [[t("feedbacks.category_bug"), "bug"], [t("feedbacks.category_suggestion"), "suggestion"], [t("feedbacks.category_other"), "autre"]],
               @feedback.category
             ),
             {},
             class: "feedback-field" %>
 
       <%# Message — champ obligatoire (validé côté modèle) %>
-      <%= f.label :message, "Votre message", class: "feedback-label" %>
+      <%= f.label :message, t("feedbacks.message_label"), class: "feedback-label" %>
       <%= f.text_area :message, class: "feedback-field",
-            placeholder: "Décrivez votre retour en quelques mots..." %>
+            placeholder: t("feedbacks.message_placeholder") %>
 
       <%# Email — optionnel, pré-rempli si l'utilisateur est connecté %>
-      <%= f.label :email, "Votre email (optionnel, pour vous répondre)", class: "feedback-label" %>
+      <%= f.label :email, t("feedbacks.email_label"), class: "feedback-label" %>
       <%= f.email_field :email, class: "feedback-field",
-            placeholder: "vous@exemple.fr" %>
+            placeholder: t("feedbacks.email_placeholder") %>
 
       <%# ── Honeypot anti-spam ── %>
       <%# Champ "website" invisible : un humain ne le voit pas et ne le remplit pas, %>
       <%# un bot le remplit automatiquement → le controller ignore alors le retour. %>
       <%# aria-hidden + tabindex=-1 + autocomplete=off pour ne pas gêner l'accessibilité. %>
       <div class="feedback-hp" aria-hidden="true">
-        <label for="website">Ne pas remplir ce champ</label>
+        <label for="website"><%= t("feedbacks.honeypot_label") %></label>
         <%= text_field_tag :website, nil, tabindex: -1, autocomplete: "off" %>
       </div>
 
       <%# Bouton d'envoi %>
-      <%= f.submit "Envoyer mon retour", class: "feedback-submit" %>
+      <%= f.submit t("feedbacks.submit"), class: "feedback-submit" %>
 
     <% end %>
 

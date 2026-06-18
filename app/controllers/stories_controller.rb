@@ -95,6 +95,13 @@ class StoriesController < ApplicationController
     permitted = story_params.except(:child_ids)
     @story = child.stories.build(permitted)
 
+    # Fige la langue de l'histoire = langue d'interface courante (résolue par
+    # ApplicationController#switch_locale : params > session > compte > navigateur).
+    # CRUCIAL : le texte est généré dans un job en arrière-plan où I18n.locale
+    # retombe à :fr. En stockant la langue ici, le service IA et les jobs de
+    # suite/relecture la retrouveront de façon fiable.
+    @story.locale = I18n.locale.to_s
+
     # Associe les enfants supplémentaires
     @story.extra_child_ids = current_user.children
                                          .where(id: extra_ids)

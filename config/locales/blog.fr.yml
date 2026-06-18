@@ -1,0 +1,42 @@
+# ============================================================
+# Traductions du BLOG — français (langue source)
+# ============================================================
+# Fichier de locale dédié au blog (séparé de fr.yml pour ne pas l'alourdir).
+# Contient :
+#   - le "chrome" du blog (titres de page, CTA, fil d'Ariane, libellés) ;
+#   - PAS les titres/descriptions des articles : en FR ils proviennent de
+#     BlogController::ARTICLES (source unique), via le `default:` des helpers.
+# Les autres langues (blog.en.yml, blog.es.yml…) ajoutent en plus la clé
+# `blog.articles.<slug>` pour traduire titre + description de chaque article.
+fr:
+  blog:
+    # Suffixe de marque ajouté au <title> des articles (ex : "… — Blog Noctilio")
+    brand_suffix: "Blog Noctilio"
+    # Temps de lecture — %{count} = nombre de minutes
+    reading_time: "%{count} min de lecture"
+
+    # --- Page liste des articles (/blog) ---
+    index:
+      title: "Blog Noctilio — Conseils histoires pour enfants"
+      description: "Conseils pratiques pour les parents : histoires du soir, contes personnalisés par IA, idées pour chaque âge. Le blog de Noctilio."
+      schema_name: "Blog Noctilio"
+      schema_description: "Conseils pratiques pour les parents sur les histoires pour enfants : rituels du soir, contes personnalisés par IA, idées par tranche d'âge."
+      eyebrow: "✦ Le blog Noctilio"
+      heading: "Conseils pour les parents"
+      subtitle: "Histoires du soir, contes personnalisés, idées pour chaque âge — tout ce qu'il faut savoir pour des moments de lecture magiques."
+      read_article: "Lire l'article →"
+      back_home: "← Retour à l'accueil"
+
+    # --- Page d'un article (/blog/:slug) ---
+    show:
+      cta_title: "Envie d'essayer ?"
+      cta_desc: "Noctilio génère des histoires personnalisées pour ton enfant en quelques secondes — gratuitement."
+      cta_button: "Rejoindre la liste d'attente →"
+      related_title: "À lire aussi"
+      all_articles: "← Tous les articles"
+      home_link: "Accueil →"
+
+    # --- Fil d'Ariane (breadcrumb) — utilisé dans le Schema.org ---
+    breadcrumb:
+      home: "Accueil"
+      blog: "Blog"

@@ -86,6 +86,20 @@ class StoryTest < ActiveSupport::TestCase
                  "La durée nil devrait être acceptée (champ optionnel)"
   end
 
+  # Vérifie que la langue d'une histoire est "fr" par défaut
+  # Cas : histoire construite sans locale explicite
+  # Pourquoi : la colonne locale a default "fr" — toute histoire doit démarrer
+  # en français si aucune langue n'est précisée (sécurité côté service IA)
+  test "locale vaut fr par défaut" do
+    # Arrange — on construit puis sauvegarde une histoire sans préciser de locale
+    child = children(:leo)
+    story = child.stories.create!(world_theme: "space", status: :pending)
+
+    # Assert — la valeur par défaut de la colonne doit s'appliquer
+    assert_equal "fr", story.locale,
+                 "Une histoire sans locale explicite devrait être en français"
+  end
+
   # ===========================================================
   # SECTION 2 — ENUM DE STATUT
   # ===========================================================
@@ -344,6 +358,38 @@ class StoryTest < ActiveSupport::TestCase
 
     # Assert
     assert_equal "✨", story.world_emoji
+  end
+
+  # Vérifie que world_label retourne le libellé traduit selon la langue courante
+  # Cas : univers "space" en français (locale par défaut des tests) puis en anglais
+  # Pourquoi : le libellé d'univers est affiché sur les cartes — il doit suivre la langue
+  test "world_label retourne le libellé traduit selon la locale" do
+    # Arrange
+    child = children(:leo)
+    story = child.stories.build(world_theme: "space", status: :pending)
+
+    # Assert FR — locale par défaut des tests
+    assert_equal "Espace", story.world_label,
+                 "En français, l'univers space doit s'afficher 'Espace'"
+
+    # Assert EN — on bascule temporairement la locale
+    I18n.with_locale(:en) do
+      assert_equal "Space", story.world_label,
+                   "En anglais, l'univers space doit s'afficher 'Space'"
+    end
+  end
+
+  # Vérifie que world_label retombe sur "Histoire personnalisée" pour un thème libre
+  # Cas : world_theme nil (l'utilisateur a décrit son propre univers via custom_theme)
+  # Pourquoi : on n'affiche jamais le custom_theme complet (trop long) sur les pilules
+  test "world_label retourne le libellé custom pour un univers libre" do
+    # Arrange — pas de world_theme prédéfini
+    child = children(:leo)
+    story = child.stories.build(world_theme: nil, status: :pending)
+
+    # Assert — libellé court et fixe (clé worlds.custom)
+    assert_equal "Histoire personnalisée", story.world_label,
+                 "Un thème libre doit afficher le libellé custom court"
   end
 
   # ===========================================================

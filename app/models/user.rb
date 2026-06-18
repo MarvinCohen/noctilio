@@ -129,7 +129,57 @@ class User < ApplicationRecord
   # Centralisé ici (Fat Model) pour être réutilisé par la sidebar ET la salle
   # des trophées, qui calculaient le niveau chacune de leur côté avant.
   def level
-    (xp_points / 500) + 1
+    (xp_points / XP_PER_LEVEL) + 1
+  end
+
+  # ============================================================
+  # Progression — données pour la carte "rituel du soir" du dashboard
+  # ============================================================
+  # Palier d'XP par niveau — constante centrale pour rester cohérent avec level.
+  # On l'utilise aussi dans level ci-dessus pour ne jamais dupliquer le 500.
+  XP_PER_LEVEL = 500
+
+  # XP accumulés DANS le niveau courant (de 0 à 499).
+  # Exemple : 1 200 XP total → niveau 3 → 200 XP dans le niveau courant.
+  def xp_in_current_level
+    xp_points % XP_PER_LEVEL
+  end
+
+  # XP qu'il reste à gagner avant d'atteindre le niveau suivant.
+  # Sert à afficher "encore 300 XP avant le niveau 4" sur le dashboard.
+  def xp_to_next_level
+    XP_PER_LEVEL - xp_in_current_level
+  end
+
+  # Avancement vers le niveau suivant, en pourcentage (0 à 100).
+  # Pilote la largeur de la barre de progression XP du dashboard.
+  def level_progress
+    (xp_in_current_level * 100 / XP_PER_LEVEL)
+  end
+
+  # ============================================================
+  # Constellation du soir — habitude douce, jamais punitive
+  # ============================================================
+  # Renvoie un tableau de `days` booléens, du plus ancien au plus récent :
+  # true si AU MOINS une histoire TERMINÉE a été créée ce jour-là.
+  # But : afficher une constellation (étoiles allumées) qui valorise les soirs
+  # de lecture SANS culpabiliser les soirs manqués (pas de "streak" cassé).
+  def recent_story_nights(days = 7)
+    # Date du plus ancien jour de la fenêtre (ex : il y a 6 jours pour 7 jours)
+    start_date = (days - 1).days.ago.to_date
+
+    # On récupère en une seule requête les dates de création des histoires
+    # TERMINÉES de la fenêtre, converties en jour (sans l'heure), dédoublonnées.
+    # On filtre sur .completed : une génération échouée ou en attente ne doit
+    # pas allumer une étoile (sinon la constellation mentirait sur le rituel).
+    lit_dates = stories.completed.where(created_at: start_date.beginning_of_day..)
+                       .pluck(:created_at)
+                       .map(&:to_date)
+                       .to_set
+
+    # Pour chaque jour de la fenêtre (du plus ancien au plus récent),
+    # true si une histoire existe ce jour-là.
+    (0...days).map { |offset| lit_dates.include?((days - 1 - offset).days.ago.to_date) }
   end
 
   # ============================================================

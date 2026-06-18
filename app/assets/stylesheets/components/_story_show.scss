@@ -84,6 +84,58 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .story-status-text { color: #8a8578; font-size: 0.8rem; margin-top: 1rem; }
 
+  /* ── Skeleton de chargement — esquisse de la future histoire ── */
+  /* Conteneur centré, borné en largeur comme la future page de lecture */
+  .story-skeleton {
+    max-width: 420px;
+    margin: 2.5rem auto 0;
+    text-align: left;
+  }
+  /* Chaque élément du skeleton partage le même fond "shimmer" doré qui balaie */
+  /* horizontalement (gradient animé), signalant un chargement en cours. */
+  .story-skeleton-cover,
+  .story-skeleton-line {
+    background: linear-gradient(
+      90deg,
+      rgba(240, 201, 122, 0.06) 25%,
+      rgba(240, 201, 122, 0.16) 37%,
+      rgba(240, 201, 122, 0.06) 63%
+    );
+    background-size: 400% 100%;
+    border-radius: 8px;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+  /* Bloc couverture — ratio paysage, comme la vraie illustration */
+  .story-skeleton-cover {
+    width: 100%;
+    height: 150px;
+    border-radius: 14px;
+    margin-bottom: 1.25rem;
+  }
+  /* Ligne de texte standard */
+  .story-skeleton-line {
+    height: 14px;
+    margin-bottom: 0.85rem;
+  }
+  /* Ligne "titre" — plus haute et plus large pour évoquer le titre de l'histoire */
+  .story-skeleton-line--title {
+    height: 22px;
+    width: 70%;
+    margin-bottom: 1.25rem;
+  }
+  /* Dernière ligne plus courte — rend l'esquisse plus naturelle */
+  .story-skeleton-line--short { width: 55%; }
+  /* Balayage horizontal du shimmer (gauche → droite) */
+  @keyframes skeleton-shimmer {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+  /* Accessibilité : pas d'animation si l'utilisateur a réduit les animations */
+  @media (prefers-reduced-motion: reduce) {
+    .story-skeleton-cover,
+    .story-skeleton-line { animation: none; }
+  }
+
   /* ── État "erreur" ── */
   .story-error { text-align: center; padding: 5rem 1rem; }
   .story-error-icon { font-size: 4rem; display: block; margin-bottom: 1.5rem; opacity: 0.7; }

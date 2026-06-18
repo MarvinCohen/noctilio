@@ -30,27 +30,24 @@ export default class extends Controller {
     "summaryStyle"     // Résumé : style illustration
   ]
 
+  // Valeurs Stimulus — chaînes traduites transmises par la vue via data-*-value.
+  // Permet au contrôleur de n'avoir AUCUN texte en dur (support multilingue).
+  static values = {
+    stepWord:      String, // mot "Étape" / "Step" (le JS compose "Étape X / N")
+    summaryEmpty:  String, // placeholder vide du récap ("—")
+    summaryNotSet: String, // "Non renseigné" / "Not set"
+    summaryAuto:   String, // "Automatique" / "Automatic"
+    interactiveOn: String, // "Activé" / "On"
+    interactiveOff:String, // "Désactivé" / "Off"
+    minuteShort:   String, // abréviation "min"
+    generating:    String  // "Génération en cours…"
+  }
+
   // Nombre total d'étapes — mis à jour dans connect()
   totalSteps = 5
 
   // Étape courante (1-indexée)
   currentStep = 1
-
-  // Libellés des valeurs éducatives pour le récap
-  valueLabels = {
-    courage:    "Courage",
-    sharing:    "Partage",
-    kindness:   "Gentillesse",
-    confidence: "Confiance"
-  }
-
-  // Libellés des styles d'illustration pour le récap
-  styleLabels = {
-    ghibli:     "Studio Ghibli",
-    comics:     "Comics",
-    pixar:      "Pixar / Disney",
-    watercolor: "Conte illustré"
-  }
 
   // ============================================================
   // connect() — initialisation au chargement de la page
@@ -72,8 +69,8 @@ export default class extends Controller {
     if (toggle) {
       toggle.addEventListener('change', () => {
         if (this.hasSummaryInteractiveTarget) {
-          // Met à jour "Activé" / "Désactivé" dès le clic sur le toggle
-          this.summaryInteractiveTarget.textContent = toggle.checked ? "Activé" : "Désactivé"
+          // Met à jour le libellé traduit (activé / désactivé) dès le clic
+          this.summaryInteractiveTarget.textContent = toggle.checked ? this.interactiveOnValue : this.interactiveOffValue
         }
       })
     }
@@ -277,7 +274,8 @@ export default class extends Controller {
       this.progressFillTarget.style.width = pct + "%"
     }
     if (this.hasStepTitleTarget) {
-      this.stepTitleTarget.textContent = `Étape ${this.currentStep} / ${this.totalSteps}`
+      // Compose le libellé avec le mot traduit ("Étape" / "Step")
+      this.stepTitleTarget.textContent = `${this.stepWordValue} ${this.currentStep} / ${this.totalSteps}`
     }
   }
 
@@ -319,7 +317,7 @@ export default class extends Controller {
         const label = input.closest("label")
         return label ? label.querySelector(".child-name")?.textContent?.trim() : ""
       }).filter(Boolean)
-      this.summaryChildrenTarget.textContent = names.join(", ") || "—"
+      this.summaryChildrenTarget.textContent = names.join(", ") || this.summaryEmptyValue
     }
 
     // Thème libre
@@ -328,35 +326,33 @@ export default class extends Controller {
       const val = textarea?.value?.trim()
       this.summaryThemeTarget.textContent = val
         ? (val.length > 60 ? val.substring(0, 60) + "…" : val)
-        : "Non renseigné"
+        : this.summaryNotSetValue
     }
 
-    // Valeur éducative
+    // Valeur éducative — on lit le libellé déjà traduit dans le label coché
     if (this.hasSummaryValueTarget) {
       const radio = this.element.querySelector('input[name="story[educational_value]"]:checked')
-      this.summaryValueTarget.textContent = radio
-        ? (this.valueLabels[radio.value] || radio.value)
-        : "—"
+      const label = radio?.closest("label")?.querySelector(".value-label")?.textContent?.trim()
+      this.summaryValueTarget.textContent = label || this.summaryEmptyValue
     }
 
-    // Durée
+    // Durée — abréviation "min" traduite
     if (this.hasSummaryDurationTarget) {
       const radio = this.element.querySelector('input[name="story[duration_minutes]"]:checked')
-      this.summaryDurationTarget.textContent = radio ? radio.value + " min" : "—"
+      this.summaryDurationTarget.textContent = radio ? `${radio.value} ${this.minuteShortValue}` : this.summaryEmptyValue
     }
 
-    // Mode interactif
+    // Mode interactif — libellés traduits (activé / désactivé)
     if (this.hasSummaryInteractiveTarget) {
       const checkbox = this.element.querySelector('input[name="story[interactive]"][type="checkbox"]')
-      this.summaryInteractiveTarget.textContent = checkbox?.checked ? "Activé" : "Désactivé"
+      this.summaryInteractiveTarget.textContent = checkbox?.checked ? this.interactiveOnValue : this.interactiveOffValue
     }
 
-    // Style illustration — affiche le libellé français du style choisi, ou "Automatique" si aucun
+    // Style illustration — on lit le nom traduit dans le label coché, sinon "Automatique"
     if (this.hasSummaryStyleTarget) {
       const radio = this.element.querySelector('input[name="story[image_style]"]:checked')
-      this.summaryStyleTarget.textContent = radio
-        ? (this.styleLabels[radio.value] || radio.value)
-        : "Automatique"
+      const label = radio?.closest("label")?.querySelector(".style-name")?.textContent?.trim()
+      this.summaryStyleTarget.textContent = label || this.summaryAutoValue
     }
   }
 
@@ -382,7 +378,7 @@ export default class extends Controller {
       this.submitBtnTarget.innerHTML = `
         <span style="display:inline-flex;align-items:center;gap:8px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          Génération en cours…
+          ${this.generatingValue}
         </span>
       `
     }

@@ -10,7 +10,7 @@
 <%# current_page?, qui ne matche pas les pages de détail comme /stories/:id). %>
 <%# ============================================================ %>
 
-<nav class="bottom-nav" aria-label="Navigation principale mobile">
+<nav class="bottom-nav" aria-label="<%= t('nav.mobile_aria') %>">
 
   <%# --- Onglet Accueil (dashboard) --- %>
   <%= link_to dashboard_path, class: "bottom-nav-item #{'active' if controller_name == 'dashboard'}" do %>
@@ -20,7 +20,7 @@
       <path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/>
       <path d="M9 21v-6h6v6"/>
     </svg>
-    <span class="bottom-nav-label">Accueil</span>
+    <span class="bottom-nav-label"><%= t("nav.home") %></span>
   <% end %>
 
   <%# --- Onglet Histoires (bibliothèque) --- %>
@@ -30,11 +30,11 @@
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
     </svg>
-    <span class="bottom-nav-label">Histoires</span>
+    <span class="bottom-nav-label"><%= t("nav.stories") %></span>
   <% end %>
 
   <%# --- Onglet central Créer — surélevé, pastille dorée (geste principal) --- %>
-  <%= link_to new_story_path, class: "bottom-nav-create #{'active' if action_name == 'new'}", "aria-label": "Créer une histoire" do %>
+  <%= link_to new_story_path, class: "bottom-nav-create #{'active' if action_name == 'new'}", "aria-label": t("nav.create") do %>
     <%# Étoile ✦ signature Noctilio %>
     <span class="bottom-nav-create-star">✦</span>
   <% end %>
@@ -50,17 +50,21 @@
       <path d="M8 19h8"/>
       <line x1="8" y1="22" x2="16" y2="22"/>
     </svg>
-    <span class="bottom-nav-label">Trophées</span>
+    <span class="bottom-nav-label"><%= t("nav.trophies") %></span>
   <% end %>
 
-  <%# --- Onglet Profil (mon compte) --- %>
-  <%= link_to account_path, class: "bottom-nav-item #{'active' if controller_name == 'account'}" do %>
-    <%# Icône personne %>
+  <%# --- Onglet Espace parent (suivi de lecture + gestion des enfants) --- %>
+  <%# Remplace l'ancien onglet "Profil" : le suivi parental est l'écran le plus %>
+  <%# utile au pouce. Mon compte reste accessible via l'avatar du top nav. %>
+  <%= link_to parental_path, class: "bottom-nav-item #{'active' if controller_name == 'parental'}" do %>
+    <%# Icône utilisateurs (deux personnes) — évoque le suivi familial %>
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
     </svg>
-    <span class="bottom-nav-label">Profil</span>
+    <span class="bottom-nav-label"><%= t("nav.parental_short") %></span>
   <% end %>
 
 </nav>

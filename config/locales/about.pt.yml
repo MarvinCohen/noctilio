@@ -1,0 +1,43 @@
+# ============================================================
+# Traductions de la page À PROPOS (publique) — portugais (tutoiement)
+# ============================================================
+pt:
+  about:
+    meta_title: "Sobre: Marvin Cohen, fundador da Noctilio"
+    meta_description: "Marvin Cohen, programador e pai, criou a Noctilio para oferecer todas as noites uma história única ao seu filho. Descobre a história do projeto, a tecnologia e os valores por trás da Noctilio."
+    schema_job_title: "Fundador da Noctilio"
+    schema_description: "Programador Rails e pai, criador da Noctilio, uma app que gera histórias personalizadas para crianças com IA."
+
+    header_title: "Sobre"
+    header_subtitle: "Marvin Cohen, Fundador da Noctilio"
+
+    who_title: "Quem sou"
+    who_p1: "Chamo-me Marvin Cohen. Sou programador web, formado na Le Wagon Bordéus, e pai. É precisamente esse segundo papel que me levou a criar a Noctilio."
+    who_p2_html: "Como muitos pais, vivi aquelas noites em que se procura a história perfeita, cativante o suficiente para a criança adormecer a sorrir, suave o suficiente para não a agitar ainda mais. Queria algo personalizado, com o nome do meu filho, as suas personagens favoritas, um mundo parecido com ele. Os livros à venda fazem muito bem o seu trabalho, mas não conhecem <em>o teu</em> filho."
+
+    why_title: "Porque criei a Noctilio"
+    why_p1: "A ideia surgiu de forma simples: e se a IA pudesse gerar, todas as noites, uma história única centrada no teu filho? Com o seu nome como herói, os seus interesses como pano de fundo, e um final tranquilizador que o ajude a deslizar para o sono."
+    why_p2: "Comecei a desenvolver a Noctilio sozinho no início de 2026, como primeiro projeto Rails depois da formação. O que eu queria construir: uma ferramenta que teria adorado ter como pai, simples, rápida, bonita e segura para as crianças."
+    why_p3_html: "O nome vem do latim <em>nox</em> (noite) e da coruja, animal emblemático das histórias para dormir, guardiã dos sonhos nas mitologias de todo o mundo."
+
+    tech_title: "A tecnologia por trás da Noctilio"
+    tech_intro: "A Noctilio é construída com:"
+    tech_rails_html: "<strong>Ruby on Rails 8</strong>: uma framework web robusta, ideal para um projeto individual graças às suas convenções e ao seu ecossistema maduro."
+    tech_gpt_html: "<strong>GPT-4o (OpenAI)</strong>: gera o texto de cada história. O modelo está configurado com instruções rigorosas para produzir apenas conteúdo positivo, carinhoso e adequado a crianças dos 2 aos 10 anos."
+    tech_image_html: "<strong>gpt-image-1 (OpenAI)</strong>: cria uma ilustração única para cada história, no estilo escolhido (Ghibli, Pixar, aguarela…)."
+    tech_db_html: "<strong>PostgreSQL + ActiveStorage</strong>: armazena as histórias e as imagens geradas de forma segura."
+    tech_privacy: "As histórias não são armazenadas do lado da OpenAI após a geração. Cada chamada é independente, os modelos de IA não guardam nenhum dado pessoal dos teus filhos."
+
+    values_title: "O que me importa"
+    values_safety_html: "<strong>Segurança acima de tudo.</strong> Cada história é gerada com salvaguardas rigorosas: sem violência, sem medo excessivo, sem conteúdo inadequado. Os pais mantêm o controlo dos valores transmitidos."
+    values_transparency_html: "<strong>Transparência.</strong> A Noctilio é um projeto independente, sem investidores, sem dark patterns. O que vês é o que tens."
+    values_privacy_html: "<strong>Respeito pela privacidade.</strong> Os nomes e dados das crianças nunca são revendidos nem utilizados para fins que não sejam a geração das histórias."
+    values_improvement_html: "<strong>Melhoria contínua.</strong> A Noctilio está em desenvolvimento ativo. Os comentários dos pais guiam as próximas funcionalidades."
+
+    contact_title: "Contactar-me"
+    contact_p1: "Tens uma pergunta, uma sugestão, ou queres simplesmente contar como a Noctilio mudou o teu ritual da noite?"
+    contact_p2_html: "Escreve-me para <strong>marvincohen95@gmail.com</strong> ou encontra a Noctilio nas redes:"
+    contact_response: "Leio todas as mensagens. Tento responder no prazo de 48 h."
+
+    cta_logged_in: "Criar uma história"
+    cta_logged_out: "Experimenta a Noctilio gratuitamente"

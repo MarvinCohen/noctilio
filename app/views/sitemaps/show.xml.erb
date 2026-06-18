@@ -1,0 +1,38 @@
+<%# ============================================================ %>
+<%# Sitemap XML multilingue — généré par SitemapsController       %>
+<%# ============================================================ %>
+<%# Chaque page publique est listée une fois en français (loc), avec un bloc %>
+<%# xhtml:link rel="alternate" par langue : Google découvre ainsi toutes les %>
+<%# versions linguistiques de la page et leurs URLs (/blog, /en/blog, …). %>
+<%# strip_heredoc non utilisé : on génère directement le XML attendu. %>
+<%= '<?xml version="1.0" encoding="UTF-8"?>'.html_safe %>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<%# --- Pages statiques (landing, à-propos, légales, index blog) --- %>
+<% @static_pages.each do |page| %>
+  <url>
+    <loc><%= localized_url_for(page[:path], I18n.default_locale) %></loc>
+    <% @locales.each do |loc| %>
+    <xhtml:link rel="alternate" hreflang="<%= loc %>" href="<%= localized_url_for(page[:path], loc) %>"/>
+    <% end %>
+    <xhtml:link rel="alternate" hreflang="x-default" href="<%= localized_url_for(page[:path], I18n.default_locale) %>"/>
+    <lastmod><%= page[:lastmod] %></lastmod>
+    <changefreq><%= page[:changefreq] %></changefreq>
+    <priority><%= page[:priority] %></priority>
+  </url>
+<% end %>
+<%# --- Articles du blog (depuis BlogController::ARTICLES) --- %>
+<% @articles.each do |article| %>
+  <% article_path = "/blog/#{article[:slug]}" %>
+  <url>
+    <loc><%= localized_url_for(article_path, I18n.default_locale) %></loc>
+    <% @locales.each do |loc| %>
+    <xhtml:link rel="alternate" hreflang="<%= loc %>" href="<%= localized_url_for(article_path, loc) %>"/>
+    <% end %>
+    <xhtml:link rel="alternate" hreflang="x-default" href="<%= localized_url_for(article_path, I18n.default_locale) %>"/>
+    <lastmod><%= article[:published_at].iso8601 %></lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+<% end %>
+</urlset>

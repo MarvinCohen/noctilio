@@ -7,9 +7,20 @@
 
 
 <%# ── Wrapper principal — data-controller Stimulus ── %>
+<%# Les data-*-value transmettent au JS les chaînes traduites qu'il doit écrire
+    dynamiquement (titre d'étape, libellés du récap, état du bouton…). Ainsi le
+    contrôleur Stimulus n'a plus aucun texte français en dur. %>
 <div class="container wizard-page"
      data-controller="story-creation"
-     data-action="change->story-creation#onRadioChange submit->story-creation#validateForm">
+     data-action="change->story-creation#onRadioChange submit->story-creation#validateForm"
+     data-story-creation-step-word-value="<%= t("wizard.step_word") %>"
+     data-story-creation-summary-empty-value="<%= t("wizard.summary_empty") %>"
+     data-story-creation-summary-not-set-value="<%= t("wizard.summary_not_set") %>"
+     data-story-creation-summary-auto-value="<%= t("wizard.summary_auto") %>"
+     data-story-creation-interactive-on-value="<%= t("wizard.interactive_on") %>"
+     data-story-creation-interactive-off-value="<%= t("wizard.interactive_off") %>"
+     data-story-creation-minute-short-value="<%= t("wizard.minute_short") %>"
+     data-story-creation-generating-value="<%= t("wizard.generating") %>">
 
   <div class="row justify-content-center">
     <div class="col-lg-7 col-xl-6">
@@ -20,8 +31,9 @@
 
           <%# Titre + label étape %>
           <div>
-            <h1 class="wizard-page-title">Crée ton histoire</h1>
-            <p class="wizard-step-label" data-story-creation-target="stepTitle">Étape 1 / 5</p>
+            <h1 class="wizard-page-title"><%= t("wizard.page_title") %></h1>
+            <%# Rendu initial : le JS réécrit ce libellé dès connect() (6 étapes) %>
+            <p class="wizard-step-label" data-story-creation-target="stepTitle"><%= t("wizard.step_word") %> 1 / 6</p>
           </div>
 
           <%# Cercles indicateurs — 6 étapes désormais %>
@@ -49,10 +61,7 @@
       <% if !current_user.premium? && current_user.first_story_pending? %>
         <div class="wizard-offer-banner">
           <span class="wizard-offer-banner__icon">🎁</span>
-          <span>
-            <strong>Ta 1re histoire est offerte en accès complet</strong> :
-            illustration, lecture audio et mode interactif inclus.
-          </span>
+          <span><%= t("wizard.offer_banner_html") %></span>
         </div>
       <% end %>
 
@@ -68,8 +77,8 @@
         <%# ================================================ %>
         <div class="wizard-step" data-story-creation-target="step" data-step="1">
           <div class="wizard-card">
-            <h2 class="wizard-question">Qui sont les héros ?</h2>
-            <p class="wizard-hint">Tu peux sélectionner plusieurs enfants.</p>
+            <h2 class="wizard-question"><%= t("wizard.step1_question") %></h2>
+            <p class="wizard-hint"><%= t("wizard.step1_hint") %></p>
 
             <div class="d-flex flex-column gap-2">
               <% if @children.any? %>
@@ -82,21 +91,22 @@
                            data-gender="<%= child.gender %>"
                            data-action="change->story-creation#onCheckboxChange">
 
-                    <%# Avatar SVG %>
+                    <%# Avatar DiceBear personnalisé — même rendu que la page "Mes enfants" %>
+                    <%# dicebear_avatar_url(child) génère l'URL selon couleur de peau/cheveux/genre %>
+                    <%# L'image remplit le cercle de 38px (object-fit: cover) %>
                     <div class="child-selector-avatar">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="7" r="4"/>
-                        <path d="M4 20c0-3.5 3.1-6 8-6s8 2.5 8 6"/>
-                        <% if child.gender == "girl" %>
-                          <path d="M9 7c0-1.1.9-2 2-2 1.5 0 2.5 1 2 3"/>
-                        <% end %>
-                      </svg>
+                      <%= image_tag dicebear_avatar_url(child),
+                            alt: child.name,
+                            width: 38,
+                            height: 38,
+                            style: "border-radius: 50%; object-fit: cover;" %>
                     </div>
 
                     <%# Infos enfant %>
                     <div>
                       <div class="child-name"><%= child.name %></div>
-                      <div class="child-meta"><%= child.age %> ans · <%= child.gender == "boy" ? "Garçon" : "Fille" %></div>
+                      <%# Genre traduit via les clés wizard.boy / wizard.girl %>
+                      <div class="child-meta"><%= t("wizard.child_meta", age: child.age, gender: child.gender == "boy" ? t("wizard.boy") : t("wizard.girl")) %></div>
                     </div>
 
                     <%# Coche de sélection %>
@@ -107,23 +117,23 @@
                 <% end %>
               <% else %>
                 <%# Aucun enfant — invite à en créer un %>
-                <p style="color:#8a8578; font-size:0.88rem;">Aucun profil enfant encore.</p>
+                <p style="color:#8a8578; font-size:0.88rem;"><%= t("wizard.no_child") %></p>
               <% end %>
             </div>
 
             <%# Message d'erreur — caché par défaut %>
             <p class="wizard-error d-none" data-story-creation-target="childError">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              Sélectionne au moins un enfant.
+              <%= t("wizard.child_error") %>
             </p>
 
-            <%= link_to "+ Nouveau profil", new_child_path, class: "wizard-link-secondary" %>
+            <%= link_to t("wizard.new_profile"), new_child_path, class: "wizard-link-secondary" %>
           </div>
 
           <%# Navigation %>
           <div class="wizard-nav">
             <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
-              Suivant
+              <%= t("wizard.next") %>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -134,13 +144,13 @@
         <%# ================================================ %>
         <div class="wizard-step d-none" data-story-creation-target="step" data-step="2">
           <div class="wizard-card">
-            <h2 class="wizard-question">Quelle aventure ?</h2>
-            <p class="wizard-hint">Décris librement — un rêve, un lieu magique, un super-pouvoir…</p>
+            <h2 class="wizard-question"><%= t("wizard.step2_question") %></h2>
+            <p class="wizard-hint"><%= t("wizard.step2_hint") %></p>
 
             <%= f.text_area :custom_theme,
                   rows: 4,
                   class: "wizard-textarea",
-                  placeholder: "Ex : Elle veut être une exploratrice qui découvre une île secrète avec des animaux parlants…" %>
+                  placeholder: t("wizard.textarea_placeholder") %>
 
             <%# Idées cliquables — cachées derrière un bouton "Inspire moi" %>
             <%# <details>/<summary> : ouverture/fermeture native, zéro JS %>
@@ -148,31 +158,32 @@
 
               <%# Le bouton visible — clique pour dérouler les inspirations %>
               <summary class="wizard-inspire-btn">
-                ✦ Inspire moi
+                <%= t("wizard.inspire") %>
               </summary>
 
-              <%# Grille de chips — emoji + label court, le texte complet est inséré au clic %>
+              <%# Grille de chips — emoji + clé de traduction ; label et idea sont
+                  récupérés via t("wizard.ideas.<clé>.label" / ".idea") %>
               <div class="wizard-inspire-grid">
                 <% [
-                  { emoji: "🚀", label: "Espace",       idea: "Astronaute sur une planète de robots" },
-                  { emoji: "🦄", label: "Licorne",       idea: "Princesse et sa licorne magique" },
-                  { emoji: "🦕", label: "Dinosaures",    idea: "Voyage chez les dinosaures" },
-                  { emoji: "🏴‍☠️", label: "Pirates",    idea: "Pirate cherchant un trésor" },
-                  { emoji: "🌳", label: "Forêt",         idea: "Gardien de la forêt enchantée" },
-                  { emoji: "🧙", label: "Sorcier",       idea: "Apprenti sorcier à l'école de magie" },
-                  { emoji: "🐉", label: "Dragon",        idea: "Un enfant qui apprivoise un dragon" },
-                  { emoji: "🌊", label: "Océan",         idea: "Plongée dans un royaume sous-marin" },
-                  { emoji: "🦸", label: "Super-héros",   idea: "Super-héros qui découvre ses pouvoirs" },
-                  { emoji: "🌙", label: "Lune",          idea: "Voyage sur la Lune en pyjama" },
-                  { emoji: "🤖", label: "Robot",         idea: "Un robot qui apprend à ressentir des émotions" },
-                  { emoji: "⏳", label: "Temps",         idea: "Aventure dans le temps avec une machine bizarre" }
+                  { emoji: "🚀", key: "space" },
+                  { emoji: "🦄", key: "unicorn" },
+                  { emoji: "🦕", key: "dinos" },
+                  { emoji: "🏴‍☠️", key: "pirates" },
+                  { emoji: "🌳", key: "forest" },
+                  { emoji: "🧙", key: "wizard" },
+                  { emoji: "🐉", key: "dragon" },
+                  { emoji: "🌊", key: "ocean" },
+                  { emoji: "🦸", key: "superhero" },
+                  { emoji: "🌙", key: "moon" },
+                  { emoji: "🤖", key: "robot" },
+                  { emoji: "⏳", key: "time" }
                 ].each do |item| %>
                   <button type="button"
                           class="idea-chip"
                           data-action="click->story-creation#insertIdea"
-                          data-idea="<%= item[:idea] %>">
+                          data-idea="<%= t("wizard.ideas.#{item[:key]}.idea") %>">
                     <span class="idea-chip-emoji"><%= item[:emoji] %></span>
-                    <span class="idea-chip-label"><%= item[:label] %></span>
+                    <span class="idea-chip-label"><%= t("wizard.ideas.#{item[:key]}.label") %></span>
                   </button>
                 <% end %>
               </div>
@@ -184,10 +195,10 @@
           <div class="wizard-nav">
             <button type="button" class="wizard-btn-back" data-action="click->story-creation#prevStep">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              Retour
+              <%= t("wizard.back") %>
             </button>
             <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
-              Suivant
+              <%= t("wizard.next") %>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -198,8 +209,8 @@
         <%# ================================================ %>
         <div class="wizard-step d-none" data-story-creation-target="step" data-step="3">
           <div class="wizard-card">
-            <h2 class="wizard-question">Ce qu'ils vont apprendre</h2>
-            <p class="wizard-hint">Choisir une valeur éducative au cœur de l'histoire.</p>
+            <h2 class="wizard-question"><%= t("wizard.step3_question") %></h2>
+            <p class="wizard-hint"><%= t("wizard.step3_hint") %></p>
 
             <div class="value-grid">
               <%# Courage %>
@@ -208,7 +219,7 @@
                 <div class="value-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
                 </div>
-                <span class="value-label">Courage</span>
+                <span class="value-label"><%= t("wizard.value_courage") %></span>
               </label>
 
               <%# Partage %>
@@ -217,7 +228,7 @@
                 <div class="value-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
                 </div>
-                <span class="value-label">Partage</span>
+                <span class="value-label"><%= t("wizard.value_sharing") %></span>
               </label>
 
               <%# Gentillesse %>
@@ -226,7 +237,7 @@
                 <div class="value-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </div>
-                <span class="value-label">Gentillesse</span>
+                <span class="value-label"><%= t("wizard.value_kindness") %></span>
               </label>
 
               <%# Confiance %>
@@ -235,7 +246,7 @@
                 <div class="value-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
                 </div>
-                <span class="value-label">Confiance</span>
+                <span class="value-label"><%= t("wizard.value_confidence") %></span>
               </label>
             </div>
           </div>
@@ -244,10 +255,10 @@
           <div class="wizard-nav">
             <button type="button" class="wizard-btn-back" data-action="click->story-creation#prevStep">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              Retour
+              <%= t("wizard.back") %>
             </button>
             <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
-              Suivant
+              <%= t("wizard.next") %>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -258,20 +269,21 @@
         <%# ================================================ %>
         <div class="wizard-step d-none" data-story-creation-target="step" data-step="4">
           <div class="wizard-card">
-            <h2 class="wizard-question">Combien de temps ?</h2>
-            <p class="wizard-hint">Choisir la durée de l'histoire.</p>
+            <h2 class="wizard-question"><%= t("wizard.step4_question") %></h2>
+            <p class="wizard-hint"><%= t("wizard.step4_hint") %></p>
 
             <div class="duration-grid">
+              <%# sub : clé de traduction du libellé (court/moyen/long) %>
               <% [
-                { mins: 5,  sub: "Court"  },
-                { mins: 10, sub: "Moyen"  },
-                { mins: 15, sub: "Long"   }
+                { mins: 5,  sub: "wizard.duration_short"  },
+                { mins: 10, sub: "wizard.duration_medium" },
+                { mins: 15, sub: "wizard.duration_long"   }
               ].each do |d| %>
                 <label class="duration-card <%= 'selected' if @story.duration_minutes == d[:mins] %>">
                   <%= f.radio_button :duration_minutes, d[:mins], checked: d[:mins] == 5 %>
                   <span class="duration-number"><%= d[:mins] %></span>
-                  <span class="duration-unit">minutes</span>
-                  <span class="duration-sub"><%= d[:sub] %></span>
+                  <span class="duration-unit"><%= t("wizard.minutes") %></span>
+                  <span class="duration-sub"><%= t(d[:sub]) %></span>
                 </label>
               <% end %>
             </div>
@@ -281,10 +293,10 @@
           <div class="wizard-nav">
             <button type="button" class="wizard-btn-back" data-action="click->story-creation#prevStep">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              Retour
+              <%= t("wizard.back") %>
             </button>
             <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
-              Suivant
+              <%= t("wizard.next") %>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -295,8 +307,8 @@
         <%# ================================================ %>
         <div class="wizard-step d-none" data-story-creation-target="step" data-step="5">
           <div class="wizard-card">
-            <h2 class="wizard-question">Style de l'illustration</h2>
-            <p class="wizard-hint">Choisis l'ambiance visuelle de l'image générée pour l'histoire.</p>
+            <h2 class="wizard-question"><%= t("wizard.step5_question") %></h2>
+            <p class="wizard-hint"><%= t("wizard.step5_hint") %></p>
 
             <%# Grille de 4 tuiles — une par style visuel %>
             <div class="style-grid">
@@ -305,13 +317,17 @@
               <%# data-style permet au JS de trouver l'image à mettre à jour %>
               <%# L'image affichée (_girl ou _boy) change selon le genre de l'enfant sélectionné %>
 
+              <%# name/desc récupérés via t("wizard.style_<clé>_name" / "_desc") %>
               <% [
-                   { key: "ghibli",     name: "Studio Ghibli",  desc: "Aquarelle douce, tons pastels, atmosphère onirique" },
-                   { key: "comics",     name: "Comics",          desc: "Traits forts, couleurs vives, style Spider-Verse" },
-                   { key: "pixar",      name: "Pixar / Disney",  desc: "Rendu 3D lumineux, chaleureux, expressif" },
-                   { key: "watercolor", name: "Conte illustré",  desc: "Aquarelle vintage, livre d'images, tons chauds" },
-                   { key: "cinematic",  name: "Cinématique",     desc: "Rendu réaliste, poster de film, détails épiques" }
+                   { key: "ghibli" },
+                   { key: "comics" },
+                   { key: "pixar" },
+                   { key: "watercolor" },
+                   { key: "cinematic" }
                  ].each do |style| %>
+                <%# Libellés traduits du style courant %>
+                <% style_name = t("wizard.style_#{style[:key]}_name") %>
+                <% style_desc = t("wizard.style_#{style[:key]}_desc") %>
 
                 <label class="style-card <%= 'selected' if @story.image_style == style[:key] %>">
                   <%= f.radio_button :image_style, style[:key] %>
@@ -330,7 +346,7 @@
                       <%# loading="lazy" : chargement différé — ne charge que si visible dans le viewport %>
                       <%# width/height : évite le CLS (Cumulative Layout Shift) en réservant l'espace %>
                       <img src="/images/style_examples/<%= style[:key] %>_girl.jpg"
-                           alt="Exemple style <%= style[:name] %>"
+                           alt="<%= t("wizard.style_example_alt", name: style_name) %>"
                            class="style-card-img"
                            width="400" height="400"
                            loading="lazy"
@@ -345,8 +361,8 @@
                     <% end %>
 
                     <div class="style-card-text">
-                      <div class="style-name"><%= style[:name] %></div>
-                      <div class="style-desc"><%= style[:desc] %></div>
+                      <div class="style-name"><%= style_name %></div>
+                      <div class="style-desc"><%= style_desc %></div>
                     </div>
                   </div>
                 </label>
@@ -357,7 +373,7 @@
 
             <%# Note : si aucun style choisi, le service applique le fallback automatique %>
             <p style="font-size:0.75rem; color:#8a8578; margin-top:1rem; text-align:center;">
-              Laisse vide pour un style adapté automatiquement.
+              <%= t("wizard.style_auto_note") %>
             </p>
           </div>
 
@@ -365,10 +381,10 @@
           <div class="wizard-nav">
             <button type="button" class="wizard-btn-back" data-action="click->story-creation#prevStep">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              Retour
+              <%= t("wizard.back") %>
             </button>
             <button type="button" class="wizard-btn-next" data-action="click->story-creation#nextStep">
-              Suivant
+              <%= t("wizard.next") %>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -379,8 +395,8 @@
         <%# ================================================ %>
         <div class="wizard-step d-none" data-story-creation-target="step" data-step="6">
           <div class="wizard-card">
-            <h2 class="wizard-question">Les derniers réglages</h2>
-            <p class="wizard-hint">Mode interactif et récapitulatif.</p>
+            <h2 class="wizard-question"><%= t("wizard.step6_question") %></h2>
+            <p class="wizard-hint"><%= t("wizard.step6_hint") %></p>
 
             <%# Toggle mode interactif %>
             <%# interactive_unlocked : le mode interactif est débloqué si l'utilisateur
@@ -390,21 +406,21 @@
               <div>
                 <div class="wizard-toggle-label">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:-2px"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
-                  Mode interactif
+                  <%= t("wizard.interactive") %>
                   <%# Badge contextuel : "Offert" pour la 1re histoire gratuite, "Premium" pour les gratuits ayant déjà des histoires %>
                   <% if !current_user.premium? && current_user.first_story_pending? %>
-                    <span class="wizard-premium-badge">Offert</span>
+                    <span class="wizard-premium-badge"><%= t("wizard.badge_free") %></span>
                   <% elsif !current_user.premium? %>
-                    <span class="wizard-premium-badge">Premium</span>
+                    <span class="wizard-premium-badge"><%= t("wizard.badge_premium") %></span>
                   <% end %>
                 </div>
                 <div class="wizard-toggle-hint">
                   <% if current_user.premium? %>
-                    L'enfant fait des choix qui changent l'histoire
+                    <%= t("wizard.interactive_hint_premium") %>
                   <% elsif current_user.first_story_pending? %>
-                    Inclus dans ta 1re histoire offerte ✨
+                    <%= t("wizard.interactive_hint_first") %>
                   <% else %>
-                    <%= link_to "Passer en Premium", subscription_path, style: "color:rgba(240,201,122,0.65);" %> pour débloquer
+                    <%= link_to t("wizard.interactive_hint_link"), subscription_path, style: "color:rgba(240,201,122,0.65);" %> <%= t("wizard.interactive_hint_locked") %>
                   <% end %>
                 </div>
               </div>
@@ -421,42 +437,42 @@
             <%# Récapitulatif %>
             <div class="summary-card">
               <div class="summary-row">
-                <span class="summary-key">Héros</span>
-                <span class="summary-val" data-story-creation-target="summaryChildren">—</span>
+                <span class="summary-key"><%= t("wizard.summary_heroes") %></span>
+                <span class="summary-val" data-story-creation-target="summaryChildren"><%= t("wizard.summary_empty") %></span>
               </div>
               <div class="summary-row">
-                <span class="summary-key">Aventure</span>
-                <span class="summary-val" data-story-creation-target="summaryTheme">—</span>
+                <span class="summary-key"><%= t("wizard.summary_adventure") %></span>
+                <span class="summary-val" data-story-creation-target="summaryTheme"><%= t("wizard.summary_empty") %></span>
               </div>
               <div class="summary-row">
-                <span class="summary-key">Valeur</span>
-                <span class="summary-val" data-story-creation-target="summaryValue">—</span>
+                <span class="summary-key"><%= t("wizard.summary_value") %></span>
+                <span class="summary-val" data-story-creation-target="summaryValue"><%= t("wizard.summary_empty") %></span>
               </div>
               <div class="summary-row">
-                <span class="summary-key">Durée</span>
-                <span class="summary-val" data-story-creation-target="summaryDuration">—</span>
+                <span class="summary-key"><%= t("wizard.summary_duration") %></span>
+                <span class="summary-val" data-story-creation-target="summaryDuration"><%= t("wizard.summary_empty") %></span>
               </div>
               <div class="summary-row">
-                <span class="summary-key">Interactif</span>
-                <span class="summary-val" data-story-creation-target="summaryInteractive">Désactivé</span>
+                <span class="summary-key"><%= t("wizard.summary_interactive") %></span>
+                <span class="summary-val" data-story-creation-target="summaryInteractive"><%= t("wizard.interactive_off") %></span>
               </div>
               <div class="summary-row">
-                <span class="summary-key">Illustration</span>
+                <span class="summary-key"><%= t("wizard.summary_illustration") %></span>
                 <%# Mis à jour dynamiquement par le Stimulus controller %>
-                <span class="summary-val" data-story-creation-target="summaryStyle">Automatique</span>
+                <span class="summary-val" data-story-creation-target="summaryStyle"><%= t("wizard.summary_auto") %></span>
               </div>
             </div>
           </div>
 
           <%# Navigation — Retour + Générer %>
           <div class="wizard-nav" style="flex-direction:column; gap:0.75rem;">
-            <%= f.submit "✦ Générer l'histoire magique",
+            <%= f.submit t("wizard.generate"),
                   class: "wizard-btn-generate",
                   data: { "story-creation-target": "submitBtn" } %>
 
             <button type="button" class="wizard-btn-back" style="margin:0 auto;" data-action="click->story-creation#prevStep">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              Retour
+              <%= t("wizard.back") %>
             </button>
           </div>
         </div>

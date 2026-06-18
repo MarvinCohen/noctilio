@@ -12,29 +12,29 @@ module ChildrenHelper
   # @param child [Child] l'objet enfant avec ses attributs
   # @return [String] URL complète de l'avatar SVG DiceBear
   def dicebear_avatar_url(child)
-    # --- Mapping couleurs de cheveux (libellé FR → hex DiceBear) ---
+    # --- Mapping couleurs de cheveux (clé stable → hex DiceBear) ---
     hair_map = {
-      "noir" => "0e0e0e",
-      "châtain foncé" => "3d2314",
-      "châtain" => "6b3a22",
-      "blond foncé" => "9c6f2a",
-      "blond" => "c9a84c",
-      "blond clair" => "e8d5a3",
-      "roux" => "8b3a0f",
-      "blanc" => "ece8e0"
+      "black" => "0e0e0e",
+      "dark_brown" => "3d2314",
+      "brown" => "6b3a22",
+      "dark_blonde" => "9c6f2a",
+      "blonde" => "c9a84c",
+      "light_blonde" => "e8d5a3",
+      "red" => "8b3a0f",
+      "white" => "ece8e0"
     }
 
-    # --- Mapping teintes de peau (libellé FR → hex DiceBear) ---
+    # --- Mapping teintes de peau (clé stable → hex DiceBear) ---
     skin_map = {
-      "ébène" => "2d1b0e",
-      "brun foncé" => "4a2c12",
-      "brun" => "7c4a1e",
+      "ebony" => "2d1b0e",
+      "dark_brown" => "4a2c12",
+      "brown" => "7c4a1e",
       "caramel" => "c68a4a",
-      "doré" => "d4a853",
+      "golden" => "d4a853",
       "olive" => "c4a882",
       "beige" => "e8c99a",
-      "clair" => "f5deb3",
-      "très clair" => "fef0e7"
+      "light" => "f5deb3",
+      "very_light" => "fef0e7"
     }
 
     # Récupère les hex correspondants — fallback sur valeurs neutres si attribut absent

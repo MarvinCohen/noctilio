@@ -3,9 +3,10 @@
 <%# Le contenu de l'article est dans le partial _<slug>.html.erb %>
 <%# ============================================================ %>
 
-<%# SEO — titre et description spécifiques à chaque article %>
-<% content_for :title, "#{@article[:title]} — Blog Noctilio" %>
-<% content_for :description, @article[:description] %>
+<%# SEO — titre et description spécifiques à chaque article (localisés) %>
+<%# blog_article_title / _description renvoient la version traduite ou, à défaut, le FR du contrôleur %>
+<% content_for :title, "#{blog_article_title(@article)} — #{t('blog.brand_suffix')}" %>
+<% content_for :description, blog_article_description(@article) %>
 <% content_for :robots, "index, follow" %>
 
 <%# og:type "article" — indique aux réseaux sociaux que c'est un article de blog %>
@@ -19,12 +20,12 @@
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": "<%= @article[:title].gsub('"', '\"') %>",
-    "description": "<%= @article[:description].gsub('"', '\"') %>",
-    "url": "https://www.noctilio-app.fr/blog/<%= @article[:slug] %>",
+    "headline": "<%= blog_article_title(@article).gsub('"', '\"') %>",
+    "description": "<%= blog_article_description(@article).gsub('"', '\"') %>",
+    "url": "<%= localized_url_for("/blog/#{@article[:slug]}", I18n.locale) %>",
     "datePublished": "<%= @article[:published_at].strftime("%Y-%m-%dT00:00:00+02:00") %>",
     "dateModified": "<%= @article[:published_at].strftime("%Y-%m-%dT00:00:00+02:00") %>",
-    "inLanguage": "fr",
+    "inLanguage": "<%= I18n.locale %>",
     "author": {
       "@type": "Person",
       "name": "Marvin Cohen",
@@ -50,7 +51,7 @@
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://www.noctilio-app.fr/blog/<%= @article[:slug] %>"
+      "@id": "<%= localized_url_for("/blog/#{@article[:slug]}", I18n.locale) %>"
     },
     "breadcrumb": {
       "@type": "BreadcrumbList",
@@ -58,20 +59,20 @@
         {
           "@type": "ListItem",
           "position": 1,
-          "name": "Accueil",
-          "item": "https://www.noctilio-app.fr/"
+          "name": "<%= t('blog.breadcrumb.home') %>",
+          "item": "<%= localized_url_for("/", I18n.locale) %>"
         },
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "Blog",
-          "item": "https://www.noctilio-app.fr/blog"
+          "name": "<%= t('blog.breadcrumb.blog') %>",
+          "item": "<%= localized_url_for("/blog", I18n.locale) %>"
         },
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "<%= @article[:title].gsub('"', '\"') %>",
-          "item": "https://www.noctilio-app.fr/blog/<%= @article[:slug] %>"
+          "name": "<%= blog_article_title(@article).gsub('"', '\"') %>",
+          "item": "<%= localized_url_for("/blog/#{@article[:slug]}", I18n.locale) %>"
         }
       ]
     }
@@ -81,13 +82,16 @@
   <%# Schema FAQPage — injecté uniquement si l'article définit des questions/réponses %>
   <%# Avantage : meilleure citabilité par les AI Overviews de Google et les LLM (ChatGPT, Perplexity) %>
   <%# même si Google a restreint les FAQ rich results aux sites gouvernementaux/santé %>
-  <% if @article[:faqs].present? %>
+  <%# blog_article_faqs renvoie les FAQs traduites dans la langue courante %>
+  <%# (repli sur le FR du contrôleur), pour que le schema soit dans la bonne langue %>
+  <% faqs = blog_article_faqs(@article) %>
+  <% if faqs.present? %>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      <% @article[:faqs].each_with_index do |faq, i| %>
+      <% faqs.each_with_index do |faq, i| %>
       {
         "@type": "Question",
         "name": "<%= faq[:question].gsub('"', '\"') %>",
@@ -95,7 +99,7 @@
           "@type": "Answer",
           "text": "<%= faq[:answer].gsub('"', '\"') %>"
         }
-      }<%= i < @article[:faqs].length - 1 ? "," : "" %>
+      }<%= i < faqs.length - 1 ? "," : "" %>
       <% end %>
     ]
   }
@@ -323,31 +327,34 @@
     <header class="article-header">
       <div class="article-meta">
         <span class="article-date">
-          <%= @article[:published_at].strftime("%d %B %Y") %>
+          <%# I18n.l localise le nom du mois selon la langue (avril/April/abril…) %>
+          <%= I18n.l(@article[:published_at], format: "%d %B %Y") %>
         </span>
         <span class="article-reading">
-          <%= @article[:reading_time] %> min de lecture
+          <%= t("blog.reading_time", count: @article[:reading_time]) %>
         </span>
       </div>
-      <h1 class="article-title"><%= @article[:title] %></h1>
-      <p class="article-description"><%= @article[:description] %></p>
+      <h1 class="article-title"><%= blog_article_title(@article) %></h1>
+      <p class="article-description"><%= blog_article_description(@article) %></p>
     </header>
 
     <%# Corps de l'article — chargé depuis le partial correspondant au slug %>
+    <%# Rails sélectionne automatiquement la variante de langue : _<slug>.<locale>.html.erb %>
+    <%# si elle existe, sinon retombe sur _<slug>.html.erb (français). %>
     <div class="article-body">
       <%= render "blog/#{@partial}" %>
     </div>
 
     <%# CTA en bas — invite à essayer Noctilio %>
     <div class="article-cta">
-      <p class="article-cta-title">Envie d'essayer ?</p>
-      <p class="article-cta-desc">Noctilio génère des histoires personnalisées pour ton enfant en quelques secondes — gratuitement.</p>
-      <%= link_to "Rejoindre la liste d'attente →", root_path, class: "article-cta-btn" %>
+      <p class="article-cta-title"><%= t("blog.show.cta_title") %></p>
+      <p class="article-cta-desc"><%= t("blog.show.cta_desc") %></p>
+      <%= link_to t("blog.show.cta_button"), root_path, class: "article-cta-btn" %>
     </div>
 
     <div class="article-footer">
-      <%= link_to "← Tous les articles", blog_path, class: "article-nav-link" %>
-      <%= link_to "Accueil →", root_path, class: "article-nav-link" %>
+      <%= link_to t("blog.show.all_articles"), blog_path, class: "article-nav-link" %>
+      <%= link_to t("blog.show.home_link"), root_path, class: "article-nav-link" %>
     </div>
 
   </div>

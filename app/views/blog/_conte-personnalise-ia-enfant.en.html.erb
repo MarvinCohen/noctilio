@@ -1,0 +1,87 @@
+<%# ============================================================ %>
+<%# Article 2 : How AI generates personalised tales for your child %>
+<%# Target: "personalised tale AI", "AI stories child", "GPT children's stories" %>
+<%# ============================================================ %>
+
+<p>
+  Over the past few years, artificial intelligence has entered many areas of everyday life. Yet its application to generating children's stories remains little known — and the results can be remarkable. Here is how it works in practice.
+</p>
+
+<h2>What is an AI-personalised tale?</h2>
+
+<p>
+  An AI-personalised tale is a story generated in real time by a language model (such as OpenAI's GPT-4o) from information provided about the child. Unlike a traditional book that tells the same story to every reader, each generation produces a unique tale tailored to a specific child.
+</p>
+
+<p>
+  In practice, the application receives information such as:
+</p>
+
+<ul>
+  <li>The child's name and age</li>
+  <li>Their favourite characters (dinosaurs, unicorns, robots…)</li>
+  <li>The chosen setting (space, forest, sea, medieval times…)</li>
+  <li>The desired educational value (courage, sharing, self-confidence…)</li>
+  <li>The length and reading level adapted to their age</li>
+</ul>
+
+<p>
+  And within seconds, a unique story is generated — with the child's name as the main hero.
+</p>
+
+<h2>How GPT-4o builds a story</h2>
+
+<p>
+  GPT-4o is a language model trained on billions of texts, including a large amount of children's literature, fairy tales, and narrative fiction. It has "learned" narrative structures: introducing a hero, encountering an obstacle, resolution, and moral.
+</p>
+
+<p>
+  When Noctilio gives it a "prompt" (a detailed instruction), the model generates a coherent text adapted to the stated age, with appropriate vocabulary and calibrated length. For a 4-year-old, sentences will be short and vocabulary simple. For an 8-year-old, the story will be longer and the plot twists more elaborate.
+</p>
+
+<div class="article-callout">
+  <p>✦ <strong>Important:</strong> GPT-4o never generates exactly the same story twice. Even with identical parameters, every generation is unique — as if a storyteller were improvising each evening.</p>
+</div>
+
+<h2>The illustration: an image generated for each story</h2>
+
+<p>
+  In addition to the text, Noctilio generates a unique illustration for each story using <strong>gpt-image-1</strong>, OpenAI's image generation model. The image is created from the story's content and the visual style chosen by the parent: Ghibli, Comics, Pixar, Watercolour, or Cinematic.
+</p>
+
+<p>
+  The result is an image that matches exactly the main scene of the story — not a generic picture found on the internet, but an illustration created specially for that tale.
+</p>
+
+<h2>Limitations to be aware of</h2>
+
+<p>
+  AI is powerful, but it is not perfect. Here is what parents should know:
+</p>
+
+<ul>
+  <li><strong>Narrative consistency:</strong> very long stories can sometimes show slight inconsistencies. Noctilio calibrates the length to avoid this problem.</li>
+  <li><strong>Repetition of structures:</strong> if you generate many stories with the same parameters, similar patterns may appear. Varying the settings and educational values helps keep things fresh.</li>
+  <li><strong>Content:</strong> despite filters and safety instructions, we recommend that parents read the stories alongside their children, especially for younger ones.</li>
+</ul>
+
+<h2>Why this is different from traditional books</h2>
+
+<p>
+  Children's books are wonderful, and nothing replaces the quality of a picture book carefully crafted by a human author and illustrator. Noctilio does not seek to replace books — but to complement the bedtime ritual when improvised stories run dry, when the usual book has already been read 47 times, or when your child wants a story featuring exactly their favourite characters in a world they invented themselves.
+</p>
+
+<p>
+  AI offers a level of personalisation and availability that books simply cannot match. Every evening, a new story crafted for your child.
+</p>
+
+<%# Internal linking — links to related articles %>
+<div class="article-related">
+  <p class="article-related-title">Read also</p>
+  <div class="article-related-links">
+    <%= link_to "A personalised story with your child's name: why it changes everything →",
+          blog_post_path("histoire-personnalisee-prenom-enfant"), class: "article-related-link" %>
+    <%= link_to "Interactive tales for children: when your child chooses what happens next →",
+          blog_post_path("conte-interactif-enfant"), class: "article-related-link" %>
+  </div>
+</div>

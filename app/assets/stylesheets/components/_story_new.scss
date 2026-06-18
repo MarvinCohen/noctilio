@@ -207,6 +207,8 @@
     justify-content: center;
     color: #f0c97a;
     flex-shrink: 0;
+    /* overflow caché : l'avatar DiceBear (image ronde) est rogné proprement au cercle */
+    overflow: hidden;
   }
 
   /* Coche à droite quand sélectionné */
@@ -810,8 +812,9 @@
     .wizard-header-top { flex-direction: column; gap: 0.75rem; }
     .wizard-indicators { align-self: flex-end; }
 
-    /* Wizard page — padding horizontal ajouté pour que le titre ne soit pas collé au bord */
-    .wizard-page { padding: 1rem 1.25rem 3rem; }
+    /* Wizard page — padding horizontal à 0 : la marge latérale uniforme vient de
+       .page-card (16px) + .container Bootstrap (~12px), comme les autres pages */
+    .wizard-page { padding: 1rem 0 3rem; }
 
     /* Textarea aventure — 3 lignes au lieu de 4 pour gagner de la place */
     .wizard-textarea { min-height: 85px; }

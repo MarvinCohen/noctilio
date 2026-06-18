@@ -3,9 +3,9 @@
 <%# Page publique, layout landing (sans sidebar) %>
 <%# ============================================================ %>
 
-<%# SEO — titre et meta pour la page liste du blog %>
-<% content_for :title, "Blog Noctilio — Conseils histoires pour enfants" %>
-<% content_for :description, "Conseils pratiques pour les parents : histoires du soir, contes personnalisés par IA, idées pour chaque âge. Le blog de Noctilio." %>
+<%# SEO — titre et meta pour la page liste du blog (localisés) %>
+<% content_for :title, t("blog.index.title") %>
+<% content_for :description, t("blog.index.description") %>
 <% content_for :robots, "index, follow" %>
 
 <%# Schema.org Blog — données structurées pour la page liste du blog %>
@@ -15,10 +15,10 @@
   {
     "@context": "https://schema.org",
     "@type": "Blog",
-    "name": "Blog Noctilio",
-    "description": "Conseils pratiques pour les parents sur les histoires pour enfants : rituels du soir, contes personnalisés par IA, idées par tranche d'âge.",
-    "url": "https://www.noctilio-app.fr/blog",
-    "inLanguage": "fr",
+    "name": "<%= t('blog.index.schema_name') %>",
+    "description": "<%= t('blog.index.schema_description') %>",
+    "url": "<%= localized_url_for("/blog", I18n.locale) %>",
+    "inLanguage": "<%= I18n.locale %>",
     "publisher": {
       "@type": "Organization",
       "name": "Noctilio",
@@ -30,14 +30,14 @@
         {
           "@type": "ListItem",
           "position": 1,
-          "name": "Accueil",
-          "item": "https://www.noctilio-app.fr/"
+          "name": "<%= t('blog.breadcrumb.home') %>",
+          "item": "<%= localized_url_for("/", I18n.locale) %>"
         },
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "Blog",
-          "item": "https://www.noctilio-app.fr/blog"
+          "name": "<%= t('blog.breadcrumb.blog') %>",
+          "item": "<%= localized_url_for("/blog", I18n.locale) %>"
         }
       ]
     }
@@ -188,9 +188,9 @@
   <div class="blog-container">
 
     <div class="blog-header">
-      <p class="blog-eyebrow">✦ Le blog Noctilio</p>
-      <h1 class="blog-title">Conseils pour les parents</h1>
-      <p class="blog-subtitle">Histoires du soir, contes personnalisés, idées pour chaque âge — tout ce qu'il faut savoir pour des moments de lecture magiques.</p>
+      <p class="blog-eyebrow"><%= t("blog.index.eyebrow") %></p>
+      <h1 class="blog-title"><%= t("blog.index.heading") %></h1>
+      <p class="blog-subtitle"><%= t("blog.index.subtitle") %></p>
     </div>
 
     <div class="blog-grid">
@@ -199,21 +199,22 @@
         <%= link_to blog_post_path(article[:slug]), class: "blog-card" do %>
           <div class="blog-card-meta">
             <span class="blog-card-date">
-              <%= article[:published_at].strftime("%d %B %Y") %>
+              <%# I18n.l localise le nom du mois selon la langue affichée %>
+              <%= I18n.l(article[:published_at], format: "%d %B %Y") %>
             </span>
             <span class="blog-card-reading">
-              <%= article[:reading_time] %> min de lecture
+              <%= t("blog.reading_time", count: article[:reading_time]) %>
             </span>
           </div>
-          <h2 class="blog-card-title"><%= article[:title] %></h2>
-          <p class="blog-card-desc"><%= article[:description] %></p>
-          <span class="blog-card-cta">Lire l'article →</span>
+          <h2 class="blog-card-title"><%= blog_article_title(article) %></h2>
+          <p class="blog-card-desc"><%= blog_article_description(article) %></p>
+          <span class="blog-card-cta"><%= t("blog.index.read_article") %></span>
         <% end %>
       <% end %>
     </div>
 
     <div class="blog-footer">
-      <%= link_to "← Retour à l'accueil", root_path, class: "blog-back" %>
+      <%= link_to t("blog.index.back_home"), root_path, class: "blog-back" %>
     </div>
 
   </div>

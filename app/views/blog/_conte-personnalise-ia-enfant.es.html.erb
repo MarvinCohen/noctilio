@@ -1,0 +1,87 @@
+<%# ============================================================ %>
+<%# Artículo 2 : Cómo la IA genera cuentos personalizados para tu hijo %>
+<%# Objetivo : "cuento personalizado IA", "historias IA niños", "GPT cuentos infantiles" %>
+<%# ============================================================ %>
+
+<p>
+  En los últimos años, la inteligencia artificial ha entrado en muchos ámbitos de la vida cotidiana. Pero su aplicación a la generación de cuentos para niños sigue siendo poco conocida, y sin embargo, los resultados pueden ser sorprendentes. Aquí te explicamos cómo funciona en la práctica.
+</p>
+
+<h2>¿Qué es un cuento personalizado por IA?</h2>
+
+<p>
+  Un cuento personalizado por IA es una historia generada en tiempo real por un modelo de lenguaje (como GPT-4o de OpenAI) a partir de información proporcionada sobre el niño. A diferencia de un libro clásico que cuenta la misma historia a todos los lectores, cada generación produce un cuento inédito, adaptado a un niño concreto.
+</p>
+
+<p>
+  En la práctica, la aplicación recibe información como:
+</p>
+
+<ul>
+  <li>El nombre y la edad del niño</li>
+  <li>Sus personajes favoritos (dinosaurios, unicornios, robots...)</li>
+  <li>El universo elegido (espacio, bosque, mar, Edad Media...)</li>
+  <li>El valor educativo deseado (valentía, compartir, confianza en uno mismo...)</li>
+  <li>La duración y el nivel de lectura adaptado a su edad</li>
+</ul>
+
+<p>
+  Y en pocos segundos, se genera una historia única, con el nombre del niño como héroe principal.
+</p>
+
+<h2>Cómo GPT-4o construye una historia</h2>
+
+<p>
+  GPT-4o es un modelo de lenguaje entrenado con miles de millones de textos, entre ellos una gran cantidad de literatura infantil, cuentos y relatos narrativos. Ha "aprendido" las estructuras narrativas: la introducción de un héroe, el encuentro con un obstáculo, la resolución y la moraleja.
+</p>
+
+<p>
+  Cuando Noctilio le da un "prompt" (una instrucción detallada), el modelo genera un texto coherente, adaptado a la edad indicada, con un vocabulario apropiado y una longitud calibrada. Para un niño de 4 años, las frases serán cortas y el vocabulario sencillo. Para un niño de 8 años, la historia será más larga y los giros más elaborados.
+</p>
+
+<div class="article-callout">
+  <p>✦ <strong>Importante:</strong> GPT-4o nunca genera dos veces exactamente la misma historia. Aunque los parámetros sean idénticos, cada generación es única, como si un narrador improvisara cada noche.</p>
+</div>
+
+<h2>La ilustración: una imagen generada para cada historia</h2>
+
+<p>
+  Además del texto, Noctilio genera una ilustración única para cada historia gracias a <strong>gpt-image-1</strong>, el modelo de generación de imágenes de OpenAI. La imagen se crea a partir del contenido de la historia y del estilo visual elegido por el padre o la madre: Ghibli, Cómic, Pixar, Acuarela o Cinematográfico.
+</p>
+
+<p>
+  El resultado es una imagen que corresponde exactamente a la escena principal de la historia, no una imagen genérica encontrada en internet, sino una ilustración creada especialmente para ese cuento.
+</p>
+
+<h2>Los límites que debes conocer</h2>
+
+<p>
+  La IA es poderosa, pero no es perfecta. Esto es lo que debes saber como padre o madre:
+</p>
+
+<ul>
+  <li><strong>Coherencia narrativa:</strong> las historias muy largas pueden presentar a veces ligeras incoherencias. Noctilio calibra la longitud para evitar este problema.</li>
+  <li><strong>Repetición de estructuras:</strong> si generas muchas historias con los mismos parámetros, pueden aparecer esquemas similares. Variar los universos y los valores educativos ayuda a mantener la frescura.</li>
+  <li><strong>Contenido:</strong> a pesar de los filtros y las instrucciones de seguridad, recomendamos a los padres que lean los cuentos junto a sus hijos, especialmente para los más pequeños.</li>
+</ul>
+
+<h2>Por qué es diferente de los libros tradicionales</h2>
+
+<p>
+  Los libros para niños son maravillosos, y nada reemplaza la calidad de un álbum ilustrado cuidadosamente creado por un autor y un ilustrador humanos. Noctilio no pretende reemplazar los libros, sino complementar el ritual nocturno cuando las historias improvisadas se quedan sin inspiración, cuando el libro habitual ya se ha leído 47 veces, o cuando tu hijo quiere una historia con exactamente sus personajes favoritos en el universo que él mismo ha inventado.
+</p>
+
+<p>
+  La IA ofrece una personalización y una disponibilidad que los libros no pueden dar. Cada noche, una historia nueva, hecha a medida para tu hijo.
+</p>
+
+<%# Maillage interne — enlaces a artículos complementarios %>
+<div class="article-related">
+  <p class="article-related-title">Lee también</p>
+  <div class="article-related-links">
+    <%= link_to "Un cuento personalizado con el nombre de tu hijo: por qué lo cambia todo →",
+          blog_post_path("histoire-personnalisee-prenom-enfant"), class: "article-related-link" %>
+    <%= link_to "Cuentos interactivos para niños: cuando tu hijo elige lo que pasa después →",
+          blog_post_path("conte-interactif-enfant"), class: "article-related-link" %>
+  </div>
+</div>

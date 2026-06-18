@@ -257,11 +257,11 @@
     <span class="sub-hero-icon">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
     </span>
-    <h1 class="sub-hero-title">Abonnement Premium</h1>
+    <h1 class="sub-hero-title"><%= t("subscription.title") %></h1>
     <% if @is_premium %>
-      <p class="sub-hero-subtitle">Tu bénéficies de toutes les fonctionnalités premium.</p>
+      <p class="sub-hero-subtitle"><%= t("subscription.subtitle_active") %></p>
     <% else %>
-      <p class="sub-hero-subtitle">Histoires illimitées, mode interactif et bien plus.</p>
+      <p class="sub-hero-subtitle"><%= t("subscription.subtitle_free") %></p>
     <% end %>
   </div>
 
@@ -277,13 +277,13 @@
         <% if @subscription&.on_grace_period? %>
           <%# Résiliation programmée : on reste premium jusqu'à la date de fin (badge doré) %>
           <span class="sub-badge-active" style="background: rgba(240, 201, 122, 0.12); color: #f0c97a; border-color: rgba(240, 201, 122, 0.45);">
-            Résiliation programmée
+            <%= t("subscription.cancel_scheduled") %>
           </span>
         <% else %>
           <%# Abonnement pleinement actif (badge vert) %>
           <span class="sub-badge-active">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Premium actif
+            <%= t("subscription.premium_active") %>
           </span>
         <% end %>
       </div>
@@ -292,19 +292,19 @@
       <ul class="sub-features">
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Histoires <strong>illimitées</strong></span>
+          <span class="sub-feature-label"><%= t("subscription.feature_unlimited_html") %></span>
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Mode <strong>interactif</strong> : l'enfant fait des choix</span>
+          <span class="sub-feature-label"><%= t("subscription.feature_interactive_html") %></span>
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Dashboard parental <strong>avancé</strong></span>
+          <span class="sub-feature-label"><%= t("subscription.feature_dashboard_html") %></span>
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Accès <strong>prioritaire</strong> aux nouveaux univers</span>
+          <span class="sub-feature-label"><%= t("subscription.feature_priority_html") %></span>
         </li>
       </ul>
 
@@ -312,20 +312,19 @@
         <%# Résiliation déjà programmée : on rappelle la date de fin d'accès %>
         <%# et on propose de FAIRE MARCHE ARRIÈRE (réactiver) plutôt que de re-résilier. %>
         <p class="sub-note" style="text-align: center;">
-          Ton accès Premium reste actif jusqu'au
-          <strong><%= @subscription.ends_at.strftime("%d/%m/%Y") %></strong>.
+          <%= t("subscription.grace_until_html", date: @subscription.ends_at.strftime("%d/%m/%Y")) %>
         </p>
-        <%= button_to "Réactiver mon abonnement",
+        <%= button_to t("subscription.reactivate"),
               subscription_resume_path,
               method: :post,
               class: "sub-btn-cta" %>
       <% else %>
         <%# Abonnement actif : bouton de résiliation discret en bas de carte %>
-        <%= button_to "Résilier l'abonnement",
+        <%= button_to t("subscription.cancel"),
               subscription_cancel_path,
               method: :post,
               class: "sub-btn-cancel",
-              data: { confirm: "Ton accès premium sera maintenu jusqu'à la fin de la période en cours. Confirmes-tu ?" } %>
+              data: { confirm: t("subscription.cancel_confirm") } %>
       <% end %>
 
     <%# ── Cas 2 : utilisateur gratuit — afficher le CTA ── %>
@@ -333,38 +332,38 @@
 
       <%# Prix — 9,99€/mois %>
       <div class="sub-price">
-        <div class="sub-price-amount">9,99€</div>
-        <div class="sub-price-period">par mois · sans engagement</div>
+        <div class="sub-price-amount"><%= t("subscription.price_amount") %></div>
+        <div class="sub-price-period"><%= t("subscription.price_period") %></div>
       </div>
 
       <%# Jauge histoires gratuites (max 3/semaine) %>
       <div class="sub-quota">
-        <div class="sub-quota-label">Histoires gratuites cette semaine</div>
+        <div class="sub-quota-label"><%= t("subscription.quota_label") %></div>
         <div class="sub-quota-bar">
           <%# Calcul du pourcentage utilisé sur 3 histoires max %>
           <% pct = [(@stories_this_week.to_f / 3 * 100).round, 100].min %>
           <div class="sub-quota-fill" style="width: <%= pct %>%"></div>
         </div>
-        <div class="sub-quota-count"><%= @stories_this_week %> / 3 utilisées</div>
+        <div class="sub-quota-count"><%= t("subscription.quota_count", count: @stories_this_week) %></div>
       </div>
 
       <%# Liste des features incluses en premium %>
       <ul class="sub-features">
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Histoires <strong>illimitées</strong></span>
+          <span class="sub-feature-label"><%= t("subscription.feature_unlimited_html") %></span>
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Mode <strong>interactif</strong> : l'enfant fait des choix</span>
+          <span class="sub-feature-label"><%= t("subscription.feature_interactive_html") %></span>
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Dashboard parental <strong>avancé</strong></span>
+          <span class="sub-feature-label"><%= t("subscription.feature_dashboard_html") %></span>
         </li>
         <li class="sub-feature-item">
           <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label">Accès <strong>prioritaire</strong> aux nouveaux univers</span>
+          <span class="sub-feature-label"><%= t("subscription.feature_priority_html") %></span>
         </li>
       </ul>
 
@@ -374,13 +373,13 @@
       <%# Indispensable : le checkout redirige vers un domaine EXTERNE (Stripe). %>
       <%# Turbo soumet en fetch() et ne sait pas suivre une redirection cross-origin %>
       <%# → sans ça, le clic ne fait "rien". On force donc une soumission navigateur classique. %>
-      <%= button_to "S'abonner — 9,99€/mois",
+      <%= button_to t("subscription.subscribe"),
             subscription_checkout_path,
             method: :post,
             form: { data: { turbo: false } },
             class: "sub-btn-cta" %>
 
-      <p class="sub-note">Paiement sécurisé par Stripe · Résiliable à tout moment</p>
+      <p class="sub-note"><%= t("subscription.secure_note") %></p>
 
     <% end %>
 
@@ -389,48 +388,48 @@
   <%# ── Tableau comparatif Gratuit vs Premium ── %>
   <%# Visible par tous : aide les gratuits à se décider, rappelle aux premium ce qu'ils ont %>
   <div class="sub-compare">
-    <h2 class="sub-section-title">Gratuit ou Premium ?</h2>
+    <h2 class="sub-section-title"><%= t("subscription.compare_title") %></h2>
     <table class="sub-compare-table">
       <thead>
         <tr>
-          <th>Fonctionnalité</th>
-          <th class="sub-col-free">Gratuit</th>
-          <th class="sub-col-premium">Premium</th>
+          <th><%= t("subscription.col_feature") %></th>
+          <th class="sub-col-free"><%= t("subscription.col_free") %></th>
+          <th class="sub-col-premium"><%= t("subscription.col_premium") %></th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Histoires par semaine</td>
+          <td><%= t("subscription.row_stories") %></td>
           <td class="sub-col-free">3</td>
-          <td class="sub-check">Illimitées</td>
+          <td class="sub-check"><%= t("subscription.unlimited") %></td>
         </tr>
         <tr>
-          <td>Profils enfants personnalisés</td>
+          <td><%= t("subscription.row_profiles") %></td>
           <td class="sub-check">✓</td>
           <td class="sub-check">✓</td>
         </tr>
         <tr>
-          <td>Illustrations générées par IA</td>
+          <td><%= t("subscription.row_illustrations") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
         <tr>
-          <td>Mode interactif : l'enfant fait des choix</td>
+          <td><%= t("subscription.row_interactive") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
         <tr>
-          <td>Lecture vocale des histoires</td>
+          <td><%= t("subscription.row_audio") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
         <tr>
-          <td>Dashboard parental avancé</td>
+          <td><%= t("subscription.row_dashboard") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
         <tr>
-          <td>Nouveaux univers en avant-première</td>
+          <td><%= t("subscription.row_new_worlds") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
@@ -441,46 +440,38 @@
   <%# ── Mini FAQ — questions fréquentes sur la facturation ── %>
   <%# details/summary natifs : accordéon sans JavaScript %>
   <div class="sub-faq">
-    <h2 class="sub-section-title">Questions fréquentes</h2>
+    <h2 class="sub-section-title"><%= t("subscription.faq_title") %></h2>
 
     <details class="sub-faq-item">
-      <summary>Comment fonctionne la facturation ?</summary>
+      <summary><%= t("subscription.faq_q1") %></summary>
       <div class="sub-faq-answer">
-        L'abonnement coûte 9,99€ par mois, prélevé automatiquement chaque mois
-        à la date anniversaire de ton inscription. Le paiement est géré par
-        Stripe — nous ne stockons jamais tes coordonnées bancaires.
+        <%= t("subscription.faq_a1") %>
       </div>
     </details>
 
     <details class="sub-faq-item">
-      <summary>Puis-je annuler à tout moment ?</summary>
+      <summary><%= t("subscription.faq_q2") %></summary>
       <div class="sub-faq-answer">
-        Oui, en un clic depuis cette page, sans justification ni frais.
-        Ton accès Premium reste actif jusqu'à la fin de la période déjà payée,
-        puis ton compte repasse automatiquement en formule gratuite.
+        <%= t("subscription.faq_a2") %>
       </div>
     </details>
 
     <details class="sub-faq-item">
-      <summary>Que deviennent mes histoires si j'annule ?</summary>
+      <summary><%= t("subscription.faq_q3") %></summary>
       <div class="sub-faq-answer">
-        Toutes tes histoires restent dans ta bibliothèque et restent lisibles,
-        y compris les histoires interactives déjà créées. Seules les nouvelles
-        créations repassent aux limites de la formule gratuite.
+        <%= t("subscription.faq_a3") %>
       </div>
     </details>
 
     <details class="sub-faq-item">
-      <summary>Quels moyens de paiement acceptez-vous ?</summary>
+      <summary><%= t("subscription.faq_q4") %></summary>
       <div class="sub-faq-answer">
-        Toutes les cartes bancaires (Visa, Mastercard, American Express) via
-        Stripe, la même plateforme de paiement sécurisée que des millions de
-        sites dans le monde.
+        <%= t("subscription.faq_a4") %>
       </div>
     </details>
   </div>
 
   <%# Lien retour %>
-  <%= link_to "← Retour au dashboard", dashboard_path, class: "sub-back-link" %>
+  <%= link_to t("subscription.back"), dashboard_path, class: "sub-back-link" %>
 
 </div>

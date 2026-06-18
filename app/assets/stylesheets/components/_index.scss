@@ -6,6 +6,9 @@
 @import "star_spin";   // Étoile animée ✦ des boutons "Créer une histoire"
 @import "sidebar";     // Sidebar navigation pour les utilisateurs connectés
 @import "bottom_nav";  // Bottom tab bar mobile (type app native)
+@import "transitions"; // Transitions de page Turbo + retour tactile au tap
+@import "splash";      // Splash screen PWA (mode app installée uniquement)
 @import "footer";      // Footer global affiché sur toutes les pages
 @import "story_show";  // Styles de la page de lecture d'une histoire (extraits du inline)
 @import "story_new";   // Styles du formulaire de création d'histoire (extraits du inline)
+@import "locale_switcher"; // Sélecteur de langue (i18n)
