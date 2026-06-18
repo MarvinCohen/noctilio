@@ -530,7 +530,10 @@
   .audio-bar {
     top: auto;         // Annule top:140px du desktop
     right: auto;       // Annule right:60px du desktop
-    bottom: 0;
+    // Posée JUSTE au-dessus de la bottom-nav (62px de haut) — et au-dessus du
+    // bouton "Créer" surélevé de 22px — sinon la navbar masquait tout le lecteur.
+    // + safe-area-inset-bottom pour la barre home des iPhone.
+    bottom: calc(84px + env(safe-area-inset-bottom));
     left: 0;           // Colle au bord gauche (pas de marge latérale)
     width: 100vw;
     border-radius: 0;  // Rectangle plat — pas de pill sur mobile
