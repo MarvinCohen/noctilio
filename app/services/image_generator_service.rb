@@ -107,18 +107,22 @@ class ImageGeneratorService
     skin_negatives = @story.all_children.filter_map do |child|
       next unless child.skin_tone.present?
 
-      tone = child.skin_tone.downcase
-      case tone
-      when /éb[eè]ne|noir|très.?foncé|dark/
-        # Négatif renforcé pour peau ébène : liste exhaustive des tons clairs à bloquer
-        # FLUX tend à ignorer la peau foncée si le prompt contient des éléments "européens"
+      # skin_tone est une CLÉ STABLE depuis le refactor Phase 3b (ex: "ebony", "golden"),
+      # plus un mot français : on compare donc à la clé EXACTE, pas à une regex floue
+      # (l'ancienne regex FR ne matchait plus rien → les peaux n'étaient plus protégées).
+      case child.skin_tone.to_s
+      when "ebony", "dark_brown"
+        # Peau très foncée : liste exhaustive des tons clairs à bloquer.
+        # FLUX/gpt-image-1 tendent à éclaircir la peau foncée si le prompt évoque des traits "européens".
         "light skin, white skin, pale skin, fair skin, tan skin, tanned, caucasian, asian skin, light complexion, european features"
-      when /brun.?foncé|foncé/
-        # Peau brun foncé : bloque seulement les tons très clairs — pas aussi agressif qu'ébène
+      when "brown", "caramel"
+        # Peau brune chaude : on bloque seulement les tons très clairs (moins agressif que l'ébène).
         "very pale skin, very light skin, fair skin, white skin"
-      when /clair|blanc|fair|pale/
+      when "beige", "light", "very_light"
+        # Peau claire : on bloque les tons foncés pour qu'elle ne soit pas rendue bronzée/foncée.
         "dark skin, black skin, brown skin, tanned skin"
-      when /métis|mixed|doré|olive|mat/
+      when "golden", "olive"
+        # Peau dorée/olive (intermédiaire) : on bloque les deux extrêmes pour rester fidèle.
         "very dark skin, very pale skin"
       end
     end.uniq
@@ -352,10 +356,21 @@ class ImageGeneratorService
       prompt = "A portrait of #{heroes}. #{composition} Art style: #{style}."
     end
 
-    # Garantie peau ébène : FLUX/gpt-image-1 ignorent souvent la peau très foncée.
-    # On la réaffirme en TÊTE de prompt (premiers tokens = plus de poids).
-    has_dark_skin = @story.all_children.any? { |c| c.skin_tone&.match?(/éb[eè]ne|noir|très.?foncé/i) }
-    prompt = "BLACK CHILD WITH DARK EBONY SKIN as the main character. #{prompt}" if has_dark_skin
+    # Renfort peau foncée : FLUX/gpt-image-1 éclaircissent souvent la peau très foncée.
+    # On la réaffirme en TÊTE de prompt (premiers tokens = plus de poids), mais en
+    # NOMMANT chaque enfant concerné — JAMAIS "main character" global, sinon la couleur
+    # d'un enfant serait appliquée à tort à l'autre (bug de l'histoire 61 : Marvin ébène
+    # forçait Isaac, peau dorée, à être rendu noir).
+    # NB : skin_tone est une clé stable depuis le refactor (ex: "ebony"), plus un mot FR.
+    dark_children = @story.all_children.select { |c| %w[ebony dark_brown].include?(c.skin_tone.to_s) }
+    if dark_children.any?
+      # Pour chaque enfant à peau foncée : on rappelle son prénom ET sa teinte précise.
+      emphasis = dark_children.map do |c|
+        shade = c.skin_tone.to_s == "ebony" ? "dark ebony black" : "dark brown"
+        "#{c.name} has #{shade} skin"
+      end.join("; ")
+      prompt = "IMPORTANT — skin tones: #{emphasis}. #{prompt}"
+    end
 
     # Suite d'épisode : on demande le même design de personnage que l'épisode précédent
     if @story.sequel? && @story.parent_story&.image_prompt.present?
