@@ -137,7 +137,8 @@ class ImageGeneratorService
                "elderly, old man, old woman, adult, grown-up, wrinkles, aged face, beard, mustache, " \
                "extra fingers, missing fingers, fused fingers, extra hands, deformed hands, malformed hands, " \
                "double sword, two swords, extra blades, broken sword, malformed weapon, floating weapon, " \
-               "extra limbs, duplicated limbs, disconnected limbs"
+               "extra limbs, duplicated limbs, disconnected limbs, " \
+               "malformed robot, broken mecha, melted machinery, asymmetrical robot, disjointed machine parts"
 
     # Négatifs spécifiques au style choisi
     # Pour watercolor : on bloque explicitement les styles anime/CGI qui dominent sinon
@@ -344,6 +345,8 @@ class ImageGeneratorService
                     "The child is the hero, prominently featured and clearly recognizable, face clearly visible " \
                     "(if piloting a mecha or vehicle, show the child's face up close through the cockpit canopy; " \
                     "otherwise show the child in a full dynamic heroic pose). " \
+                    "Any robot or mecha is well-proportioned and symmetrical with a clean intact design, " \
+                    "complete with both arms and legs, no broken, melted or malformed parts. " \
                     "Thrilling dynamic adventure composition filling the frame, epic heroic energy, sparks and motion, " \
                     "dramatic sky and lighting, child-safe, wholesome family adventure. Magical heroic storybook adventure."
       prompt = "An epic action illustration featuring #{heroes}. #{composition} Art style: #{style}."
