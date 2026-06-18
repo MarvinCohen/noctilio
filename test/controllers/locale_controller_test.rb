@@ -21,16 +21,35 @@ class LocaleControllerTest < ActionDispatch::IntegrationTest
   # Cas : visiteur (non connecté) choisit l'anglais via POST /langue.
   # Pourquoi : c'est le comportement de base du sélecteur de langue.
   test "POST /langue avec une langue valide mémorise le choix en session" do
-    # Act — on poste la langue "en" (anglais), avec un referer pour le redirect_back
+    # Act — on poste la langue "en" (anglais), avec un referer (accueil FR)
     post locale_path, params: { locale: "en" }, headers: { "HTTP_REFERER" => root_path }
 
     # Assert — la session contient bien la langue choisie
     assert_equal :en, session[:locale],
                  "La langue valide choisie devrait être mémorisée en session"
-    # Assert — on est renvoyé sur la page d'origine (le referer littéral "/").
-    # NB : on compare à la chaîne brute du referer, pas à root_path : ce dernier
-    # serait recalculé avec la nouvelle locale (:en) et produirait "/en".
-    assert_redirected_to "/"
+    # Assert — on est renvoyé sur l'accueil PRÉFIXÉ de la nouvelle langue (/en).
+    # La page publique tire sa langue du préfixe d'URL : la redirection doit donc
+    # pointer vers /en pour que l'accueil s'affiche en anglais.
+    assert_redirected_to "/en"
+  end
+
+  # Vérifie le correctif du bug "bloqué sur une langue" : depuis une page publique
+  # déjà préfixée (/es/blog), choisir une autre langue redirige vers la même page
+  # avec le nouveau préfixe (/de/blog) — et non vers l'ancienne URL espagnole.
+  # Pourquoi : sur les pages publiques, le préfixe d'URL est prioritaire sur la
+  # session ; sans réécriture du préfixe, la page resterait dans l'ancienne langue.
+  test "POST /langue depuis une page préfixée redirige vers la même page dans la nouvelle langue" do
+    # Act — on est sur /es/blog (espagnol) et on choisit l'allemand
+    post locale_path, params: { locale: "de" },
+         headers: { "HTTP_REFERER" => "http://www.example.com/es/blog" }
+
+    # Assert — redirection vers /de/blog (même page, préfixe allemand)
+    assert_redirected_to "/de/blog"
+
+    # Assert — la page cible s'affiche bien en allemand après suivi de la redirection
+    follow_redirect!
+    assert_includes response.body, "Blog",
+                     "La page blog devrait répondre dans la nouvelle langue (allemand)"
   end
 
   # Vérifie que la langue mémorisée est réellement appliquée à la requête suivante.
