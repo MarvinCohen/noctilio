@@ -313,154 +313,246 @@
 }
 
 // ============================================================
-// Lecteur audio — barre flottante centrée en bas
+// Lecteur audio — bouton flottant (FAB) avec anneau de progression
 // DA cosmique : glassmorphism sombre, accents dorés, icônes SVG
+// Au repos : un bouton rond doré entouré d'un anneau qui se remplit
+// au fil de la lecture. Au clic : il se déplie en barre complète.
 // ============================================================
 
-.audio-bar {
-  // Fixé dans la marge droite en HAUT de page — sous la navbar
+// Conteneur fixe ancré en bas à droite de l'écran, au-dessus du contenu.
+// z-index 1050 : sous la bottom-nav mobile (1100), mais on le positionne
+// au-dessus d'elle (bottom calc) pour qu'aucune ne masque l'autre.
+.audio-player {
   position: fixed;
-  right: 60px;
-  top: 140px;
+  right: 24px;
+  bottom: 24px;
   z-index: 1050;
 
-  // Compact pour tenir dans la marge droite
-  width: 190px;
-  padding: 12px 16px;
-
-  // Fond glassmorphism — fond nuit + flou
-  background: rgba(11, 14, 26, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  // Bordure dorée subtile + pill shape
-  border: 1px solid rgba(240, 201, 122, 0.2);
-  border-radius: 20px;
-
-  // Halo doré discret — signature visuelle Noctilio
-  box-shadow:
-    0 0 0 1px rgba(240, 201, 122, 0.06),
-    0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 24px rgba(240, 201, 122, 0.06);
-
-  // Disposition : colonne — play+timer en haut, barre en bas
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-// Ligne des contrôles — play/pause à gauche, label au centre, stop à droite
-.audio-bar-controls {
+  // Aligne la bulle de temps + le bouton à droite (la bulle s'affiche à gauche du rond)
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
+  justify-content: flex-end;
 }
 
-// Label "Lecture vocale" — prend l'espace restant, centré entre play et stop
-.audio-bar-label {
-  flex: 1;
+// ── Bulle de temps "0:00 / 3:20" ─────────────────────────────────────────
+// Apparaît uniquement pendant la lecture quand le lecteur est replié,
+// pour montrer la progression sans avoir à déplier la barre.
+.audio-time-bubble {
   font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: rgba(240, 201, 122, 0.5);        // Doré atténué — discret
+  color: #f0c97a;                         // Doré — lisible sur fond sombre
+  white-space: nowrap;
+  background: rgba(20, 24, 40, 0.95);
+  border: 1px solid rgba(240, 201, 122, 0.18);
+  padding: 5px 10px;
+  border-radius: 10px;
+  margin-right: 10px;
+  font-variant-numeric: tabular-nums;     // Chiffres à largeur fixe — évite les sauts
+  opacity: 0;                             // Cachée par défaut
+  transform: translateX(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-// Bouton Play / Pause — cercle doré plein, icône SVG centrée
-.audio-bar-play {
-  width: 40px;
-  height: 40px;
+// Visible seulement quand ça joue ET que le lecteur est replié
+.audio-player.is-playing .audio-time-bubble {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+// Quand le lecteur est déplié, la bulle laisse place à la barre complète
+.audio-player.expanded .audio-time-bubble {
+  display: none;
+}
+
+// ── Bouton flottant rond (FAB) + anneau SVG ──────────────────────────────
+.audio-fab-wrap {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex: 0 0 auto;
+}
+
+// L'anneau SVG : pivoté de -90° pour que le remplissage démarre en HAUT
+.audio-fab-ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+// Trait commun aux deux cercles (piste + remplissage)
+.audio-fab-ring circle {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+// Cercle de fond — piste grise discrète
+.audio-fab-ring-track {
+  stroke: rgba(255, 255, 255, 0.12);
+}
+
+// Cercle de progression — doré, contrôlé par stroke-dashoffset (JS)
+// circonférence = 2 × π × r = 2 × π × 26 ≈ 163.4
+.audio-fab-ring-fill {
+  stroke: #f0c97a;
+  stroke-dasharray: 163.4;                // Longueur totale du trait = circonférence
+  stroke-dashoffset: 163.4;               // 0 % au départ (mis à jour par le JS)
+  filter: drop-shadow(0 0 4px rgba(240, 201, 122, 0.5));  // Halo doré
+  transition: stroke-dashoffset 0.3s linear;
+}
+
+// Le bouton rond doré au centre de l'anneau
+.audio-fab-btn {
+  position: absolute;
+  inset: 8px;                             // Laisse l'anneau visible autour
   border-radius: 50%;
   border: none;
-  background: #f0c97a;                    // Doré plein — action principale
-  color: #0b0e1a;                         // Texte sombre pour le contraste
+  cursor: pointer;
+  background: #f0c97a;                     // Doré plein — action principale
+  color: #0b0e1a;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 4px 16px rgba(240, 201, 122, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 
-  // Halo doré au survol — renforce le caractère "magique"
-  &:hover {
-    transform: scale(1.08);
-    box-shadow: 0 0 16px rgba(240, 201, 122, 0.4);
-  }
-
-  &:active  { transform: scale(0.94); }
+  &:hover  { box-shadow: 0 0 18px rgba(240, 201, 122, 0.55); }
+  &:active { transform: scale(0.92); }
 
   // État chargement — opacité réduite, curseur wait
-  &:disabled {
-    opacity: 0.5;
-    cursor: wait;
-    transform: none;
-    box-shadow: none;
-  }
+  &:disabled { opacity: 0.5; cursor: wait; }
 
-  // Décalage visuel du triangle SVG pour le centrer optiquement
-  svg { margin-left: 2px; }
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: #0b0e1a;
+    margin-left: 2px;                     // Centre optiquement le triangle "play"
+  }
 }
 
-// Zone centrale : timer gauche + barre + timer droit
-// Disposition horizontale au sein du widget vertical
-.audio-bar-center {
+// Quand le lecteur est déplié, on cache le bouton rond au profit du panneau
+.audio-player.expanded .audio-fab-wrap {
+  display: none;
+}
+
+// ── Panneau déplié — barre de lecture complète ────────────────────────────
+.audio-panel {
+  display: none;                          // Caché tant que le lecteur n'est pas déplié
+  align-items: center;
+  gap: 12px;
+  width: 340px;
+
+  // Fond glassmorphism sombre + halo doré — signature Noctilio
+  background: rgba(20, 24, 40, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(240, 201, 122, 0.18);
+  border-radius: 18px;
+  padding: 10px 14px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(240, 201, 122, 0.1);
+}
+
+// Affiché en flex dès que le lecteur passe en mode déplié
+.audio-player.expanded .audio-panel {
+  display: flex;
+}
+
+// Bouton Play / Pause du panneau — cercle doré plein
+.audio-panel-play {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f0c97a;
+  border: none;
+  cursor: pointer;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 6px;
-  width: 100%;
+  justify-content: center;
+  transition: transform 0.15s ease;
+
+  &:active   { transform: scale(0.92); }
+  &:disabled { opacity: 0.5; cursor: wait; }
+
+  svg { width: 15px; height: 15px; fill: #0b0e1a; }
 }
 
-// Timer (temps écoulé et durée totale)
-.audio-bar-time {
-  font-size: 0.72rem;
-  font-variant-numeric: tabular-nums;     // Chiffres à largeur fixe — évite les sauts visuels
-  color: rgba(212, 207, 196, 0.5);        // Crème atténué
-  flex-shrink: 0;
-  white-space: nowrap;
+// Zone centrale : label + barre + timers
+.audio-panel-mid {
+  flex: 1;
+  min-width: 0;                           // Autorise la barre à rétrécir sans déborder
+}
+
+// Petit label "Lecture vocale" au-dessus de la barre
+.audio-panel-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f0c97a;
+  margin-bottom: 6px;
 }
 
 // Barre de progression cliquable
-.audio-bar-track {
-  flex: 1;
-  height: 3px;
-  background: rgba(240, 201, 122, 0.12);  // Fond doré très transparent
-  border-radius: 4px;
-  cursor: pointer;
+.audio-panel-track {
+  height: 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.12);
   position: relative;
-  transition: height 0.15s ease;
-
-  // Au survol : barre plus épaisse pour faciliter le clic
-  &:hover {
-    height: 5px;
-  }
+  cursor: pointer;
 }
 
-// Portion jouée — s'élargit de gauche à droite avec un shimmer doré
-.audio-bar-fill {
-  height: 100%;
+// Portion jouée — s'élargit de gauche à droite (dégradé doré chaud)
+.audio-panel-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
   width: 0%;
-  background: linear-gradient(90deg, #e8b95a, #f0c97a);  // Dégradé doré chaud
-  border-radius: 4px;
+  background: linear-gradient(90deg, #e8b95a, #f0c97a);
+  border-radius: 5px;
   transition: width 0.25s linear;
-  pointer-events: none;                   // Le clic passe au conteneur (.audio-bar-track)
+  pointer-events: none;                   // Le clic passe au conteneur (.audio-panel-track)
+}
+
+// Timers (temps écoulé à gauche, durée totale à droite)
+.audio-panel-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: rgba(212, 207, 196, 0.5);        // Crème atténué
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+// Bouton ✕ — replie le lecteur (la lecture continue en fond)
+.audio-panel-close {
+  background: none;
+  border: none;
+  color: rgba(212, 207, 196, 0.5);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  flex: 0 0 auto;
+  transition: color 0.15s ease;
+
+  &:hover { color: rgba(212, 207, 196, 0.9); }
 }
 
 // ── Badge "En préparation" ───────────────────────────────────────────────
-// Affiché entre les contrôles et la barre de progression pendant que l'audio
-// se génère en arrière-plan (GenerateAudioJob ~25s).
-// Caché dès que story_reader_controller détecte audio_url dans /status.
-.audio-bar-preparing {
+// Affiché dans le panneau pendant que l'audio se génère en arrière-plan
+// (GenerateAudioJob ~25s). Caché dès que story_reader détecte audio_url.
+.audio-panel-prep {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: rgba(212, 207, 196, 0.5);
   letter-spacing: 0.03em;
 }
 
 // Trois points qui pulsent en décalé — indiquent l'activité de génération
-.audio-bar-preparing-dots {
+.audio-panel-prep-dots {
   display: flex;
   gap: 3px;
   align-items: center;
@@ -483,72 +575,59 @@
   40%           { opacity: 1;    transform: scale(1.1);  }
 }
 
-// ── Animation "Prêt" sur le bouton Play ──────────────────────────────────
+// ── Animation "Prêt" sur le bouton flottant ──────────────────────────────
 // Déclenché par story_reader_controller (markReady pour l'audio principal,
 // markContinuationReady pour la suite) dès que l'audio est disponible.
-// Anneau doré qui s'élargit (20px de portée) pour bien attirer l'œil.
+// Anneau doré qui s'élargit pour bien attirer l'œil sur le FAB replié.
 @keyframes audioReadyPulse {
   0%   { box-shadow: 0 0 0 0    rgba(240, 201, 122, 0.85); }
-  70%  { box-shadow: 0 0 0 20px rgba(240, 201, 122, 0);    }
+  70%  { box-shadow: 0 0 0 16px rgba(240, 201, 122, 0);    }
   100% { box-shadow: 0 0 0 0    rgba(240, 201, 122, 0);    }
 }
 
-// Pulse en boucle jusqu'à ce que l'enfant clique sur Play (le controller retire
-// la classe au clic). Persistant : l'audio peut être prêt pendant que l'enfant
-// lit le texte sans regarder le bouton — un pulse limité serait souvent manqué.
-.audio-bar-play--ready-loop {
+// Pulse en boucle jusqu'à ce que l'enfant clique sur le bouton (le controller
+// retire la classe au clic). Persistant : l'audio peut être prêt pendant que
+// l'enfant lit le texte sans regarder le bouton.
+.audio-fab-btn--ready-loop {
   animation: audioReadyPulse 1.4s ease-out infinite;
 }
 
-// Bouton Stop — cercle discret, fond semi-transparent
-.audio-bar-stop {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(212, 207, 196, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.13);
-    color: rgba(212, 207, 196, 0.85);
-  }
-
-  &:active { transform: scale(0.92); }
+// ── Pastille d'upsell (compte gratuit hors offre découverte) ──────────────
+// Remplace le lecteur : invite discrète à passer Premium pour la lecture vocale.
+.audio-upsell {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1050;
+  background: rgba(20, 24, 40, 0.95);
+  border: 1px solid rgba(240, 201, 122, 0.18);
+  border-radius: 24px;
+  padding: 10px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
-// Sur mobile — barre compacte collée en bas, pleine largeur
-// IMPORTANT : réinitialiser top et right hérités du desktop —
-// sinon l'élément s'étire de top:140px jusqu'en bas et couvre tout le contenu.
+// Sur mobile — on remonte le lecteur AU-DESSUS de la bottom-nav (62px de haut)
+// + le bouton "Créer" surélevé, sinon la navbar masquerait le lecteur.
+// + safe-area-inset-bottom pour la barre home des iPhone.
 @media (max-width: 576px) {
-  .audio-bar {
-    top: auto;         // Annule top:140px du desktop
-    right: auto;       // Annule right:60px du desktop
-    // Posée JUSTE au-dessus de la bottom-nav (62px de haut) — et au-dessus du
-    // bouton "Créer" surélevé de 22px — sinon la navbar masquait tout le lecteur.
-    // + safe-area-inset-bottom pour la barre home des iPhone.
-    bottom: calc(84px + env(safe-area-inset-bottom));
-    left: 0;           // Colle au bord gauche (pas de marge latérale)
-    width: 100vw;
-    border-radius: 0;  // Rectangle plat — pas de pill sur mobile
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-    padding: 8px 16px 12px; // Plus compact qu'avant (était 10px 14px 18px)
-    gap: 6px;               // Espace réduit entre les lignes de contrôles
+  .audio-player {
+    right: 16px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
   }
 
-  // Timers visibles sur mobile — réduits en taille pour tenir dans la barre compacte
-  .audio-bar-time { display: block; font-size: 0.65rem; }
+  // Déplié : la barre prend toute la largeur (left + right = marges symétriques)
+  .audio-player.expanded {
+    left: 16px;
+  }
 
-  // Réduit le bouton play légèrement pour la barre compacte
-  .audio-bar-play { width: 34px; height: 34px; }
+  .audio-panel {
+    width: 100%;                          // Remplit l'espace entre left et right
+  }
+
+  .audio-upsell {
+    right: 16px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
 }
 
 // ============================================================

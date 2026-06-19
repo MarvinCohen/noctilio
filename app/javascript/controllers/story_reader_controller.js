@@ -1,25 +1,31 @@
 // ============================================================
-// Controller Stimulus — lecteur audio sticky
+// Controller Stimulus — lecteur audio flottant (FAB)
 // ============================================================
 // Utilise OpenAI TTS côté serveur + HTML5 Audio API côté client.
-// Affiche un lecteur fixe à droite de la page avec :
-//   - Bouton Play / Pause / Stop
-//   - Barre de progression cliquable
-//   - Timer temps écoulé / durée totale
+// Affiche un bouton flottant rond en bas à droite avec :
+//   - Anneau de progression qui se remplit pendant la lecture
+//   - Au clic : déplie une barre complète (Play / Pause, barre, timers)
+//   - Bulle "écoulé / total" quand le lecteur est replié
 // ============================================================
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   // Cibles déclarées :
   // - "text"        : div du contenu de l'histoire (utilisé par story_choice_controller)
-  // - "playBtn"     : bouton play / reprendre
+  // - "fab"         : bouton flottant rond (état replié) — déplie + lance la lecture
+  // - "ring"        : cercle SVG de progression autour du FAB (anneau doré)
+  // - "bubble"      : bulle "0:00 / 3:20" affichée pendant la lecture (lecteur replié)
+  // - "playBtn"     : bouton play / reprendre (dans le panneau déplié)
   // - "pauseBtn"    : bouton pause (masqué par défaut)
-  // - "stopBtn"     : bouton stop
   // - "progressBar" : barre de progression (div intérieure qui s'élargit)
   // - "track"       : barre de progression cliquable (conteneur)
   // - "currentTime" : span temps écoulé (ex: "1:23")
   // - "totalTime"   : span durée totale (ex: "6:12")
-  static targets = ["text", "playBtn", "pauseBtn", "stopBtn", "progressBar", "track", "currentTime", "totalTime", "preparingBadge"]
+  static targets = ["text", "fab", "ring", "bubble", "playBtn", "pauseBtn", "progressBar", "track", "currentTime", "totalTime", "preparingBadge"]
+
+  // Circonférence de l'anneau de progression : 2 × π × r (r = 26 dans le SVG).
+  // Sert à calculer le stroke-dashoffset qui remplit l'anneau (0 → vide, plein → 0).
+  RING_CIRC = 163.4
 
   connect() {
     // Objet Audio HTML5 courant
@@ -103,12 +109,31 @@ export default class extends Controller {
       this.preparingBadgeTarget.classList.add("d-none")
     }
 
-    // Pulse doré PERSISTANT sur le bouton Play jusqu'à ce que l'enfant clique.
+    // Pulse doré PERSISTANT sur le bouton flottant jusqu'à ce que l'enfant clique.
     // (avant : 3 pulses de 0,75s puis retrait — trop court, souvent manqué)
-    // Le pulse est retiré au premier clic sur Play (voir clearContinuationPulse).
-    if (this.hasPlayBtnTarget) {
-      this.playBtnTarget.classList.add("audio-bar-play--ready-loop")
+    // Le pulse est retiré au premier clic (voir clearContinuationPulse).
+    if (this.hasFabTarget) {
+      this.fabTarget.classList.add("audio-fab-btn--ready-loop")
     }
+  }
+
+  // ============================================================
+  // expandAndPlay() — déplie le lecteur et lance la lecture
+  // ============================================================
+  // Clic sur le bouton flottant : on déplie la barre complète puis on joue.
+  // Si l'audio joue déjà (panneau replié pendant la lecture), on ne fait que
+  // déplier — sinon play() relancerait l'histoire depuis le début.
+  expandAndPlay() {
+    this.element.classList.add("expanded")
+    if (this.audio && !this.audio.paused) return
+    this.play()
+  }
+
+  // ============================================================
+  // collapse() — replie le lecteur (la lecture continue en fond)
+  // ============================================================
+  collapse() {
+    this.element.classList.remove("expanded")
   }
 
   // ============================================================
@@ -236,9 +261,10 @@ export default class extends Controller {
 
     // Durée totale dès que les métadonnées sont chargées
     this.audio.addEventListener("loadedmetadata", () => {
-      if (this.hasTotalTimeTarget) {
-        this.totalTimeTarget.textContent = this.formatTime(this.audio.duration)
-      }
+      const total = this.formatTime(this.audio.duration)
+      if (this.hasTotalTimeTarget) this.totalTimeTarget.textContent = total
+      // Renseigne la durée dans la bulle dès le départ ("0:00 / 3:20")
+      if (this.hasBubbleTarget) this.bubbleTarget.textContent = `0:00 / ${total}`
     })
 
     // Progression à chaque seconde
@@ -267,18 +293,6 @@ export default class extends Controller {
     if (this.audio) {
       this.audio.pause()
       this.updateButtons(false)
-    }
-  }
-
-  // ============================================================
-  // stop() — arrête et remet à zéro
-  // ============================================================
-  stop() {
-    if (this.audio) {
-      this.audio.pause()
-      this.audio.currentTime = 0
-      this.updateButtons(false)
-      this.resetProgress()
     }
   }
 
@@ -369,8 +383,8 @@ export default class extends Controller {
   // car la suite peut arriver pendant que l'enfant lit le texte sans écouter.
   // Le pulse s'arrête au clic sur Play (voir clearContinuationPulse dans play()).
   markContinuationReady() {
-    if (this.hasPlayBtnTarget) {
-      this.playBtnTarget.classList.add("audio-bar-play--ready-loop")
+    if (this.hasFabTarget) {
+      this.fabTarget.classList.add("audio-fab-btn--ready-loop")
     }
   }
 
@@ -378,8 +392,8 @@ export default class extends Controller {
   // clearContinuationPulse — retire le pulse "suite prête"
   // ============================================================
   clearContinuationPulse() {
-    if (this.hasPlayBtnTarget) {
-      this.playBtnTarget.classList.remove("audio-bar-play--ready-loop")
+    if (this.hasFabTarget) {
+      this.fabTarget.classList.remove("audio-fab-btn--ready-loop")
     }
   }
 
@@ -463,24 +477,40 @@ export default class extends Controller {
 
     const ratio = this.audio.currentTime / this.audio.duration
 
-    // Largeur de la barre en pourcentage
+    // Largeur de la barre en pourcentage (panneau déplié)
     if (this.hasProgressBarTarget) {
       this.progressBarTarget.style.width = `${ratio * 100}%`
     }
 
-    // Temps écoulé affiché
+    // Anneau autour du bouton flottant : on réduit le dashoffset pour le remplir
+    // (plein = 0). Math.max évite tout offset négatif si ratio dépasse 1.
+    if (this.hasRingTarget) {
+      this.ringTarget.style.strokeDashoffset = Math.max(0, this.RING_CIRC * (1 - ratio))
+    }
+
+    const current = this.formatTime(this.audio.currentTime)
+
+    // Temps écoulé affiché dans le panneau
     if (this.hasCurrentTimeTarget) {
-      this.currentTimeTarget.textContent = this.formatTime(this.audio.currentTime)
+      this.currentTimeTarget.textContent = current
+    }
+
+    // Bulle "écoulé / total" (lecteur replié)
+    if (this.hasBubbleTarget) {
+      this.bubbleTarget.textContent = `${current} / ${this.formatTime(this.audio.duration)}`
     }
   }
 
   // ============================================================
-  // resetProgress() — remet la barre et le timer à zéro
+  // resetProgress() — remet la barre, l'anneau et les timers à zéro
   // ============================================================
   resetProgress() {
     if (this.hasProgressBarTarget)  this.progressBarTarget.style.width = "0%"
+    // Anneau remis à vide (dashoffset = circonférence complète)
+    if (this.hasRingTarget)         this.ringTarget.style.strokeDashoffset = this.RING_CIRC
     if (this.hasCurrentTimeTarget)  this.currentTimeTarget.textContent  = "0:00"
     if (this.hasTotalTimeTarget)    this.totalTimeTarget.textContent    = "--:--"
+    if (this.hasBubbleTarget)       this.bubbleTarget.textContent       = "0:00 / --:--"
   }
 
   // ============================================================
@@ -489,18 +519,23 @@ export default class extends Controller {
   updateButtons(isPlaying) {
     this.playing = isPlaying
 
+    // Bascule play ↔ pause dans le panneau déplié
     if (this.hasPlayBtnTarget)  this.playBtnTarget.classList.toggle("d-none", isPlaying)
     if (this.hasPauseBtnTarget) this.pauseBtnTarget.classList.toggle("d-none", !isPlaying)
+
+    // Classe "is-playing" sur le conteneur : fait apparaître la bulle de temps
+    // quand le lecteur est replié (voir _stories.scss).
+    this.element.classList.toggle("is-playing", isPlaying)
   }
 
   // ============================================================
-  // setLoading(isLoading) — état chargement sur le bouton Play
+  // setLoading(isLoading) — état chargement sur les boutons Play
   // ============================================================
+  // On désactive les boutons (FAB + panneau) et on s'appuie sur le CSS :disabled
+  // pour l'indice visuel. On ne touche PAS au contenu HTML (il contient les SVG).
   setLoading(isLoading) {
-    if (this.hasPlayBtnTarget) {
-      this.playBtnTarget.disabled    = isLoading
-      this.playBtnTarget.textContent = isLoading ? "⏳" : "▶"
-    }
+    if (this.hasFabTarget)     this.fabTarget.disabled     = isLoading
+    if (this.hasPlayBtnTarget) this.playBtnTarget.disabled = isLoading
   }
 
   // ============================================================
