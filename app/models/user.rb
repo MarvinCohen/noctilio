@@ -95,7 +95,19 @@ class User < ApplicationRecord
   # (offre re-débloquée) — limite assumée au lancement, risque faible.
   def welcome_story?(story)
     # story.id peut être nil si l'histoire n'est pas encore sauvegardée → false
-    story.id.present? && story.id == stories.minimum(:id)
+    # On compare à l'id de la 1re histoire, mémoïsé pour ne pas relancer la requête
+    # `stories.minimum(:id)` à chaque appel (full_experience_for? l'appelle souvent).
+    story.id.present? && story.id == first_story_id
+  end
+
+  # Id de la TOUTE PREMIÈRE histoire du compte (plus petite clé primaire), ou nil
+  # si le compte n'a encore aucune histoire. Mémoïsé via `defined?` plutôt que `||=`
+  # car la valeur peut légitimement être nil : avec `||=` un compte sans histoire
+  # relancerait la requête à chaque appel. `defined?` met en cache même un nil.
+  def first_story_id
+    return @first_story_id if defined?(@first_story_id)
+
+    @first_story_id = stories.minimum(:id)
   end
 
   # Décide si une histoire donnée a droit à l'expérience complète
@@ -120,8 +132,12 @@ class User < ApplicationRecord
 
   # Calcule les points d'expérience (XP) de l'utilisateur
   # Règle : 100 XP par histoire terminée + 50 XP par badge obtenu
+  # Mémoïsation (@xp_points ||=) : le résultat fait 2 requêtes SQL (count des
+  # histoires terminées + count des badges). Comme level, xp_in_current_level,
+  # xp_to_next_level et level_progress rappellent tous xp_points, on ne le calcule
+  # qu'UNE fois par instance puis on réutilise la valeur en cache.
   def xp_points
-    (stories.completed.count * 100) + (user_badges.count * 50)
+    @xp_points ||= (stories.completed.count * 100) + (user_badges.count * 50)
   end
 
   # Niveau de l'utilisateur, dérivé de l'XP.

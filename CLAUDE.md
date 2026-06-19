@@ -4,7 +4,7 @@
 
 Application Rails de génération d'histoires pour enfants par intelligence artificielle.
 Les histoires sont personnalisées selon le profil de l'enfant (prénom, âge, personnalité).
-L'IA génère le texte (GPT-4o) ET une illustration (gpt-image-1) pour chaque histoire.
+L'IA génère le texte (Groq — Llama 3.3 70B) ET une illustration (gpt-image-1) pour chaque histoire.
 Option : mode interactif où l'enfant fait des choix qui changent la suite de l'histoire.
 
 ## Développeur
@@ -16,7 +16,8 @@ Marvin Cohen — développeur junior Rails, premier projet solo post-formation L
 
 - Rails 8.1 + Le Wagon template + Devise (auth)
 - PostgreSQL
-- OpenAI : GPT-4o (texte) + gpt-image-1 (images, base64)
+- IA texte : Groq (Llama 3.3 70B) via le gem ruby-openai pointé sur l'API Groq (clé GROQ_API_KEY)
+- IA images : gpt-image-1 (OpenAI, base64) → fal.ai FLUX (fallback) → Pollinations (dernier recours)
 - Solid Queue (jobs background — intégré Rails 8, pas Sidekiq)
 - ActiveStorage (stockage images générées)
 - Pay gem + Stripe (abonnements — pas encore configuré)
@@ -63,7 +64,7 @@ Badge + UserBadge
 
 ## Services IA
 
-- `app/services/story_generator_service.rb` — génère le texte via GPT-4o
+- `app/services/story_generator_service.rb` — génère le texte via Groq (Llama 3.3 70B)
 - `app/services/image_generator_service.rb` — génère l'image via gpt-image-1 (base64)
 
 ## Jobs (Solid Queue)
@@ -95,7 +96,10 @@ GET  /mentions-legales    → Mentions légales (publique, indexée)
 ## Variables d'environnement
 
 ```
-OPENAI_API_KEY=sk-...          # Obligatoire pour générer histoires et images
+GROQ_API_KEY=gsk_...           # Obligatoire pour générer le TEXTE des histoires (Llama 3.3 via Groq)
+OPENAI_API_KEY=sk-...          # Génération des IMAGES (gpt-image-1). Si absent → fallback FLUX/Pollinations
+FAL_API_KEY=...                # Optionnel — fallback images FLUX (fal.ai) si gpt-image-1 échoue
+SENTRY_DSN=https://...         # Optionnel — monitoring des erreurs en prod (Sentry). Absent → désactivé
 
 # --- Stripe (abonnement Premium) ---
 # Le gem Pay lit ces variables d'ENV en priorité (sinon credentials).
@@ -118,7 +122,7 @@ UMAMI_WEBSITE_ID=...           # ID du site Umami Cloud (analytics) — défini 
 2. `StoriesController#create` sauvegarde en base (status: pending)
 3. `GenerateStoryJob.perform_later(story.id)` est lancé
 4. Le job passe en status: generating
-5. `StoryGeneratorService` appelle GPT-4o → retourne texte + titre
+5. `StoryGeneratorService` appelle Groq (Llama 3.3 70B) → retourne texte + titre
 6. Si mode interactif : parse le bloc `[CHOIX]...[FIN CHOIX]` et crée un `StoryChoice`
 7. `ImageGeneratorService` appelle gpt-image-1 → décode base64 → attache à ActiveStorage
 8. Story passe en status: completed

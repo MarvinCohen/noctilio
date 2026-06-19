@@ -74,6 +74,14 @@ gem "stripe", "~> 12.0"
 # Bloque les IP qui spamment la connexion ou les endpoints coûteux (OpenAI)
 gem "rack-attack", "~> 6.8"
 
+# Monitoring des erreurs en production — capture les exceptions et les remonte
+# sur le tableau de bord Sentry pour être alerté des bugs réels des utilisateurs.
+# sentry-ruby = client de base ; sentry-rails = intégration Rails (jobs, requêtes).
+# Reste un no-op tant que la variable d'env SENTRY_DSN n'est pas définie
+# (voir config/initializers/sentry.rb) → aucun impact en dev/test.
+gem "sentry-ruby"
+gem "sentry-rails"
+
 group :development, :test do
   gem "dotenv-rails"
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -92,6 +100,11 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Détecte les requêtes N+1 et les eager loadings inutiles pendant le développement.
+  # Affiche une alerte (log + bandeau navigateur) dès qu'une vue déclenche une
+  # requête par enregistrement au lieu d'un `includes` → aide à corriger les perfs tôt.
+  gem "bullet"
 end
 
 group :test do
