@@ -14,7 +14,12 @@ class StoriesController < ApplicationController
   # — Premium : illimité (can_create_story? renvoie toujours true)
   # NB : la 1re histoire d'un compte passe toujours (c'est la #1 de la semaine),
   # donc l'offre découverte n'est jamais bloquée par ce filtre.
-  before_action :check_story_limit!, only: [:new, :create]
+  # On couvre aussi replay et continue : ces deux actions créent de NOUVELLES
+  # histoires (build_replay / build_sequel) qui comptent dans le quota. Sans ce
+  # filtre, un compte gratuit épuisé pourrait relancer des générations à volonté
+  # via les boutons « Rejouer » / « Suite ». (retry ne crée pas de nouvelle
+  # histoire : il relance une histoire échouée déjà comptée → hors quota.)
+  before_action :check_story_limit!, only: [:new, :create, :replay, :continue]
 
   # GET /stories — bibliothèque personnelle de l'utilisateur
   # Supporte ?tab=saved (défaut) et ?tab=all (toutes les histoires terminées)

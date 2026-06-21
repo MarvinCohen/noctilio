@@ -57,11 +57,30 @@ class Rack::Attack
   # ──────────────────────────────────────────────────────────
   # 4. Spam sur la génération d'histoires (endpoint coûteux)
   # ──────────────────────────────────────────────────────────
-  # Chaque histoire génère des appels OpenAI payants (GPT-4o + DALL-E 3).
+  # Chaque histoire génère un appel IA texte payant (Groq — Llama 3.3) et,
+  # pour les comptes premium, une illustration payante (gpt-image-1).
   # On limite à 10 créations par heure par IP pour éviter un abus
-  # qui ferait exploser la facture OpenAI.
+  # qui ferait exploser la facture IA.
   throttle("stories/ip", limit: 10, period: 1.hour) do |req|
     req.ip if req.path == "/stories" && req.post?
+  end
+
+  # ──────────────────────────────────────────────────────────
+  # 4 bis. Spam sur les autres routes de génération (replay/continue/retry/choose)
+  # ──────────────────────────────────────────────────────────
+  # POST /stories (ci-dessus) n'est PAS le seul endpoint qui lance un job IA.
+  # Ces actions « membre » déclenchent elles aussi une génération payante :
+  #   - replay   → recrée une histoire complète (texte + image)
+  #   - continue → crée un nouvel épisode (texte + image)
+  #   - retry    → relance une histoire échouée (texte + image)
+  #   - choose   → lance la suite interactive (texte + image)
+  # Sans throttle dédié, un script pourrait spammer /stories/:id/replay et faire
+  # exploser la facture. On limite à 15 appels par heure par IP (un peu plus
+  # large que la création directe car ces actions sont aussi des usages légitimes
+  # répétés : refaire des choix, enchaîner des épisodes…).
+  # La regex matche /stories/<id numérique>/<action> en POST uniquement.
+  throttle("story-generate/ip", limit: 15, period: 1.hour) do |req|
+    req.ip if req.post? && req.path.match?(%r{\A/stories/\d+/(replay|continue|retry|choose)\z})
   end
 
   # ──────────────────────────────────────────────────────────
