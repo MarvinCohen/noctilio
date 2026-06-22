@@ -41,7 +41,7 @@ class BlogController < ApplicationController
     {
       slug: "conte-personnalise-ia-enfant",
       title: "Comment l'IA génère des contes personnalisés pour votre enfant",
-      description: "Comprendre comment GPT-4o crée des histoires uniques adaptées à l'âge, aux goûts et à la personnalité de chaque enfant. Guide pour les parents.",
+      description: "Comprendre comment l'IA crée des histoires uniques adaptées à l'âge, aux goûts et à la personnalité de chaque enfant. Guide pour les parents.",
       published_at: Date.new(2026, 4, 14),
       reading_time: 6,
       # FAQs — questions parents sur l'IA et les histoires générées
@@ -56,7 +56,7 @@ class BlogController < ApplicationController
         },
         {
           question: "Les histoires générées par l'IA sont-elles sûres pour les enfants ?",
-          answer: "Oui. GPT-4o est configuré avec des instructions strictes pour générer uniquement du contenu positif, bienveillant et adapté aux enfants de 2 à 10 ans. Les histoires évitent toute violence, peur excessive, ou contenu inapproprié. Chaque génération respecte les valeurs éducatives sélectionnées par le parent."
+          answer: "Oui. L'IA est configurée avec des instructions strictes pour générer uniquement du contenu positif, bienveillant et adapté aux enfants de 2 à 10 ans. Les histoires évitent toute violence, peur excessive, ou contenu inapproprié. Chaque génération respecte les valeurs éducatives sélectionnées par le parent."
         }
       ]
     },
@@ -101,6 +101,28 @@ class BlogController < ApplicationController
       description: "Une histoire courte bien construite est souvent plus efficace qu'une longue pour l'endormissement. Structure, thèmes et conseils pour les soirs express.",
       published_at: Date.new(2026, 5, 26),
       reading_time: 4
+    },
+    {
+      slug: "routine-coucher-enfant",
+      title: "Routine du coucher enfant : les étapes qui apaisent (et où placer l'histoire)",
+      description: "Une routine du coucher régulière facilite l'endormissement. Découvrez les étapes clés, leur ordre idéal, et pourquoi l'histoire doit toujours venir en dernier.",
+      published_at: Date.new(2026, 6, 2), # Suit le rythme ~hebdomadaire des autres articles
+      reading_time: 6,
+      # FAQs — questions fréquentes des parents, citables par les AI Overviews et les LLM
+      faqs: [
+        {
+          question: "Quelles sont les étapes d'une bonne routine du coucher ?",
+          answer: "Une routine du coucher efficace enchaîne des étapes calmes et toujours dans le même ordre : dîner léger, bain tiède, brossage des dents, pyjama, puis un moment calme (histoire ou câlin), et enfin l'extinction de la lumière. La régularité de cette séquence signale au cerveau de l'enfant que le sommeil approche."
+        },
+        {
+          question: "À quel moment de la routine raconter l'histoire du soir ?",
+          answer: "L'histoire du soir doit venir en toute fin de routine, juste avant l'extinction des lumières. C'est la dernière étape de transition entre l'éveil et le sommeil : une histoire calme, avec une voix douce et une fin apaisante, prépare directement l'enfant à fermer les yeux. La placer trop tôt casse l'effet d'endormissement."
+        },
+        {
+          question: "Combien de temps doit durer une routine du coucher ?",
+          answer: "Une routine du coucher dure idéalement entre 20 et 45 minutes selon l'âge de l'enfant. Trop courte, elle ne laisse pas le temps de redescendre en énergie ; trop longue, elle relance l'excitation. L'essentiel n'est pas la durée mais la régularité : les mêmes étapes, dans le même ordre, chaque soir."
+        }
+      ]
     }
   ].freeze
 
