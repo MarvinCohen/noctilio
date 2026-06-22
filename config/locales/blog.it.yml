@@ -44,14 +44,14 @@ it:
             answer: "Le storie della buonanotte possono iniziare già a 18 mesi con racconti molto semplici (2-3 minuti, un personaggio, un solo evento). Dai 3 anni il bambino segue una narrazione completa con inizio, svolgimento e finale. La modalità interattiva (scelte all'interno della storia) è adatta dai 4-5 anni."
       conte-personnalise-ia-enfant:
         title: "Come l'IA genera racconti personalizzati per il tuo bambino"
-        description: "Scopri come GPT-4o crea storie uniche adatte all'età, ai gusti e alla personalità di ogni bambino. Una guida per i genitori."
+        description: "Scopri come Llama 3.3 crea storie uniche adatte all'età, ai gusti e alla personalità di ogni bambino. Una guida per i genitori."
         faqs:
           - question: "Le storie generate dall'IA sono adatte all'età del bambino?"
             answer: "Sì. Noctilio adatta automaticamente il vocabolario, la complessità narrativa e la lunghezza in base all'età indicata nel profilo del bambino. Un bambino di 3 anni riceverà una storia breve con parole semplici, mentre un bambino di 8 anni avrà una storia più lunga con colpi di scena."
           - question: "L'IA può inserire il nome del mio bambino nella storia?"
             answer: "Assolutamente. È anzi la funzione centrale di Noctilio: l'eroe di ogni storia porta il nome del tuo bambino. L'IA integra anche i suoi personaggi preferiti, il suo universo preferito (spazio, dinosauri, principesse, pirati, animali) e i suoi tratti di personalità per creare una storia unica."
           - question: "Le storie generate dall'IA sono sicure per i bambini?"
-            answer: "Sì. GPT-4o è configurato con istruzioni rigorose per generare soltanto contenuti positivi, premurosi e adatti ai bambini dai 2 ai 10 anni. Le storie evitano ogni violenza, paura eccessiva o contenuto inappropriato. Ogni generazione rispetta i valori educativi selezionati dal genitore."
+            answer: "Sì. Llama 3.3 è configurato con istruzioni rigorose per generare soltanto contenuti positivi, premurosi e adatti ai bambini dai 2 ai 10 anni. Le storie evitano ogni violenza, paura eccessiva o contenuto inappropriato. Ogni generazione rispetta i valori educativi selezionati dal genitore."
       histoires-enfant-4-ans:
         title: "Storie per bambini di 4 anni: ciò che li cattura davvero"
         description: "Quali storie sono più adatte ai 4 anni? Durata, personaggi, struttura narrativa: tutto quello che devi sapere."

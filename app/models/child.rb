@@ -31,6 +31,26 @@ class Child < ApplicationRecord
   # où la checkbox envoie toujours "0" (décochée) ou "1" (cochée).
   validates :parental_consent, acceptance: { message: "doit être accepté pour créer un profil enfant" }, on: :create
 
+  # Bornes sur les tableaux personality_traits et hobbies (champs jsonb).
+  # Le formulaire n'envoie qu'une liste fermée de cases à cocher, mais ces
+  # tableaux finissent injectés dans le prompt IA (avatar_description). Sans
+  # borne, un POST forgé hors formulaire pourrait y glisser un tableau géant
+  # ou des chaînes très longues → explosion du nombre de tokens (coût IA) et
+  # prompt pollué. On limite donc le nombre d'éléments ET leur longueur,
+  # comme on l'avait fait pour custom_theme côté Story.
+  validate :personality_traits_within_bounds
+  validate :hobbies_within_bounds
+
+  # ============================================================
+  # Constantes — bornes des tableaux injectés dans le prompt IA
+  # ============================================================
+  # Nombre max d'éléments accepté dans personality_traits / hobbies. Les listes
+  # de cases à cocher du formulaire en comptent bien moins ; cette marge protège
+  # contre un POST forgé sans gêner un usage légitime.
+  MAX_LIST_ITEMS = 20
+  # Longueur max d'un élément (un trait ou un hobby) — évite les chaînes géantes.
+  MAX_ITEM_LENGTH = 50
+
   # ============================================================
   # Scopes
   # ============================================================
@@ -100,6 +120,38 @@ class Child < ApplicationRecord
   end
 
   private
+
+  # Vérifie que personality_traits reste dans les bornes (nombre + longueur).
+  # Délègue à la méthode générique partagée avec hobbies.
+  def personality_traits_within_bounds
+    validate_string_list(:personality_traits, personality_traits)
+  end
+
+  # Vérifie que hobbies reste dans les bornes (nombre + longueur).
+  def hobbies_within_bounds
+    validate_string_list(:hobbies, hobbies)
+  end
+
+  # Validation générique d'un tableau de chaînes injecté dans le prompt IA.
+  # - ignore les valeurs vides/nil (champ non rempli = valide)
+  # - refuse plus de MAX_LIST_ITEMS éléments
+  # - refuse tout élément dépassant MAX_ITEM_LENGTH caractères
+  # attribute = symbole de la colonne (pour rattacher l'erreur au bon champ)
+  # list = la valeur courante du tableau
+  def validate_string_list(attribute, list)
+    # Champ vide ou non renseigné → rien à valider
+    return if list.blank?
+
+    # Trop d'éléments → on borne pour éviter l'explosion de tokens
+    if list.size > MAX_LIST_ITEMS
+      errors.add(attribute, "ne peut pas contenir plus de #{MAX_LIST_ITEMS} éléments")
+    end
+
+    # Un élément trop long → on bloque (chaîne géante = prompt pollué)
+    if list.any? { |item| item.to_s.length > MAX_ITEM_LENGTH }
+      errors.add(attribute, "contient un élément trop long (max #{MAX_ITEM_LENGTH} caractères)")
+    end
+  end
 
   # Retourne le genre en français pour la description narrative
   def gender_label

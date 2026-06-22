@@ -44,14 +44,14 @@ es:
             answer: "Los cuentos para dormir pueden empezar desde los 18 meses con historias muy sencillas (2-3 minutos, un personaje, un solo acontecimiento). A partir de los 3 años, el niño sigue una narración completa con inicio, nudo y desenlace. El modo interactivo (elecciones dentro del cuento) es adecuado a partir de los 4-5 años."
       conte-personnalise-ia-enfant:
         title: "Cómo la IA genera cuentos personalizados para tu hijo"
-        description: "Comprende cómo GPT-4o crea historias únicas adaptadas a la edad, los gustos y la personalidad de cada niño. Una guía para padres."
+        description: "Comprende cómo Llama 3.3 crea historias únicas adaptadas a la edad, los gustos y la personalidad de cada niño. Una guía para padres."
         faqs:
           - question: "¿Los cuentos generados por la IA están adaptados a la edad del niño?"
             answer: "Sí. Noctilio adapta automáticamente el vocabulario, la complejidad narrativa y la longitud según la edad indicada en el perfil del niño. Un niño de 3 años recibirá un cuento corto con palabras sencillas, mientras que un niño de 8 años tendrá una historia más larga con giros."
           - question: "¿Puede la IA incluir el nombre de mi hijo en el cuento?"
             answer: "Por supuesto. Es incluso la función central de Noctilio: el héroe de cada cuento lleva el nombre de tu hijo. La IA también integra sus personajes favoritos, su universo preferido (espacio, dinosaurios, princesas, piratas, animales) y sus rasgos de personalidad para crear una historia única."
           - question: "¿Son seguros para los niños los cuentos generados por la IA?"
-            answer: "Sí. GPT-4o está configurado con instrucciones estrictas para generar únicamente contenido positivo, cariñoso y adaptado a niños de 2 a 10 años. Los cuentos evitan toda violencia, miedo excesivo o contenido inapropiado. Cada generación respeta los valores educativos seleccionados por el padre o la madre."
+            answer: "Sí. Llama 3.3 está configurado con instrucciones estrictas para generar únicamente contenido positivo, cariñoso y adaptado a niños de 2 a 10 años. Los cuentos evitan toda violencia, miedo excesivo o contenido inapropiado. Cada generación respeta los valores educativos seleccionados por el padre o la madre."
       histoires-enfant-4-ans:
         title: "Cuentos para niños de 4 años: lo que realmente les cautiva"
         description: "¿Qué cuentos van mejor a los 4 años? Duración, personajes, estructura narrativa: todo lo que necesitas saber."

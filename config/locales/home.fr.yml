@@ -35,7 +35,7 @@ fr:
       step1_title: "Crée le profil de ton héros"
       step1_desc: "Renseigne le prénom de ton enfant, son âge, ses personnages préférés et l'univers de son choix : forêt enchantée, espace, dinosaures, pirates ou animaux. Tu peux aussi décrire librement le monde de ton imagination. Noctilio s'en souvient pour toutes les histoires suivantes."
       step2_title: "L'IA compose une histoire unique"
-      step2_desc: "En quelques secondes, notre intelligence artificielle (GPT-4o) génère un conte inédit, adapté à l'âge de ton enfant et à son niveau de lecture. Chaque histoire est accompagnée d'une illustration générée spécialement pour l'occasion. Il n'y en a jamais deux pareilles."
+      step2_desc: "En quelques secondes, notre intelligence artificielle (Llama 3.3) génère un conte inédit, adapté à l'âge de ton enfant et à son niveau de lecture. Chaque histoire est accompagnée d'une illustration générée spécialement pour l'occasion. Il n'y en a jamais deux pareilles."
       step3_title: "Lis ou écoute au moment du coucher"
       step3_desc: "Installez-vous confortablement. L'histoire est prête à être lue ensemble ou écoutée à voix haute. En mode interactif, ton enfant choisit lui-même la suite de l'aventure à chaque étape, comme dans un vrai livre dont il est le héros."
       closing_html: "<strong>Noctilio</strong> est pensé pour les parents qui veulent offrir à leurs enfants des moments de lecture riches et personnalisés, sans y passer des heures. Chaque histoire est adaptée à l'enfant, son prénom, son âge, sa personnalité, et renouvelée à chaque génération. <strong>3 histoires par mois gratuitement</strong>, et des histoires illimitées avec le mode interactif en abonnement Premium."

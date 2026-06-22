@@ -12,6 +12,12 @@ class ChildrenController < ApplicationController
   def index
     # Récupère les enfants du plus récent au plus ancien
     @children = current_user.children.ordered
+
+    # Nombre d'histoires terminées PAR enfant, en UNE seule requête groupée.
+    # Avant : la vue appelait child.stories.completed.count dans la boucle
+    # (1 requête SQL par enfant = N+1). Ici on récupère un hash { child_id => count }
+    # d'un coup, et la vue lit @completed_counts[child.id] (0 par défaut).
+    @completed_counts = current_user.stories.completed.group(:child_id).count
   end
 
   # GET /children/:id — affiche le profil d'un enfant et ses histoires

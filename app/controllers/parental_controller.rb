@@ -57,6 +57,12 @@ class ParentalController < ApplicationController
 
     # Total d'histoires créées cette semaine (pour afficher le quota gratuit hebdomadaire)
     @stories_this_week = current_user.stories_this_week
+
+    # Nombre d'histoires terminées PAR enfant, en UNE seule requête groupée.
+    # Avant : la vue appelait child.stories.completed.count dans la boucle des
+    # héros (1 requête SQL par enfant = N+1). On récupère un hash
+    # { child_id => count } d'un coup, et la vue lit @completed_counts[child.id].
+    @completed_counts = current_user.stories.completed.group(:child_id).count
   end
 
   private

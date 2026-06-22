@@ -23,7 +23,7 @@ es:
     tech_title: "La tecnología detrás de Noctilio"
     tech_intro: "Noctilio está construido con:"
     tech_rails_html: "<strong>Ruby on Rails 8</strong>: un framework web robusto, ideal para un proyecto en solitario gracias a sus convenciones y a su ecosistema maduro."
-    tech_gpt_html: "<strong>GPT-4o (OpenAI)</strong>: genera el texto de cada cuento. El modelo está configurado con instrucciones estrictas para producir únicamente contenido positivo, cariñoso y adaptado a niños de 2 a 10 años."
+    tech_gpt_html: "<strong>Llama 3.3 70B (via Groq)</strong>: genera el texto de cada cuento. El modelo está configurado con instrucciones estrictas para producir únicamente contenido positivo, cariñoso y adaptado a niños de 2 a 10 años."
     tech_image_html: "<strong>gpt-image-1 (OpenAI)</strong>: crea una ilustración única para cada cuento, en el estilo elegido (Ghibli, Pixar, acuarela…)."
     tech_db_html: "<strong>PostgreSQL + ActiveStorage</strong>: almacena los cuentos y las imágenes generadas de forma segura."
     tech_privacy: "Los cuentos no se almacenan en el lado de OpenAI tras su generación. Cada llamada es independiente, los modelos de IA no conservan ningún dato personal de tus hijos."

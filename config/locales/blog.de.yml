@@ -44,14 +44,14 @@ de:
             answer: "Gutenachtgeschichten können schon ab 18 Monaten mit sehr einfachen Geschichten beginnen (2-3 Minuten, eine Figur, ein einziges Ereignis). Ab 3 Jahren folgt das Kind einer vollständigen Erzählung mit Anfang, Wendepunkt und Ende. Der interaktive Modus (Entscheidungen innerhalb der Geschichte) eignet sich ab 4-5 Jahren."
       conte-personnalise-ia-enfant:
         title: "Wie die KI personalisierte Märchen für dein Kind erstellt"
-        description: "Verstehe, wie GPT-4o einzigartige Geschichten passend zu Alter, Vorlieben und Persönlichkeit jedes Kindes erschafft. Ein Leitfaden für Eltern."
+        description: "Verstehe, wie Llama 3.3 einzigartige Geschichten passend zu Alter, Vorlieben und Persönlichkeit jedes Kindes erschafft. Ein Leitfaden für Eltern."
         faqs:
           - question: "Sind die von der KI erstellten Geschichten dem Alter des Kindes angepasst?"
             answer: "Ja. Noctilio passt Wortschatz, erzählerische Komplexität und Länge automatisch an das im Kinderprofil angegebene Alter an. Ein 3-jähriges Kind erhält eine kurze Geschichte mit einfachen Wörtern, während ein 8-jähriges Kind eine längere Geschichte mit Wendungen bekommt."
           - question: "Kann die KI den Namen meines Kindes in die Geschichte einbauen?"
             answer: "Absolut. Das ist sogar die zentrale Funktion von Noctilio: Der Held jeder Geschichte trägt den Namen deines Kindes. Die KI bezieht außerdem seine Lieblingsfiguren, seine Lieblingswelt (Weltraum, Dinosaurier, Prinzessinnen, Piraten, Tiere) und seine Persönlichkeitsmerkmale mit ein, um eine einzigartige Geschichte zu erschaffen."
           - question: "Sind die von der KI erstellten Geschichten sicher für Kinder?"
-            answer: "Ja. GPT-4o ist mit strengen Anweisungen konfiguriert, um nur positive, liebevolle und für Kinder von 2 bis 10 Jahren geeignete Inhalte zu erzeugen. Die Geschichten vermeiden jede Gewalt, übermäßige Angst oder unangemessene Inhalte. Jede Erzeugung respektiert die von den Eltern gewählten erzieherischen Werte."
+            answer: "Ja. Llama 3.3 ist mit strengen Anweisungen konfiguriert, um nur positive, liebevolle und für Kinder von 2 bis 10 Jahren geeignete Inhalte zu erzeugen. Die Geschichten vermeiden jede Gewalt, übermäßige Angst oder unangemessene Inhalte. Jede Erzeugung respektiert die von den Eltern gewählten erzieherischen Werte."
       histoires-enfant-4-ans:
         title: "Geschichten für 4-Jährige: was sie wirklich fesselt"
         description: "Welche Geschichten passen am besten zu 4-Jährigen? Länge, Figuren, Erzählstruktur: alles, was du wissen musst."

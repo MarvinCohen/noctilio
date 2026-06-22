@@ -65,7 +65,8 @@
 
             <%# Compteur d'histoires complètes — badge doré %>
             <%# Nombre rendu en gras, mot pluralisé via i18n (one/other) %>
-            <% completed_count = child.stories.completed.count %>
+            <%# Lu depuis le hash pré-calculé dans le controller (évite le N+1) %>
+            <% completed_count = @completed_counts[child.id] || 0 %>
             <p class="ch-story-count">
               <strong><%= completed_count %></strong>
               <%= t("children.stories_word", count: completed_count) %>

@@ -44,14 +44,14 @@ pt:
             answer: "As histórias para dormir podem começar logo aos 18 meses com histórias muito simples (2-3 minutos, uma personagem, um único acontecimento). A partir dos 3 anos, a criança segue uma narrativa completa com início, desenvolvimento e fim. O modo interativo (escolhas dentro da história) é adequado a partir dos 4-5 anos."
       conte-personnalise-ia-enfant:
         title: "Como a IA gera contos personalizados para o teu filho"
-        description: "Percebe como o GPT-4o cria histórias únicas adaptadas à idade, aos gostos e à personalidade de cada criança. Um guia para os pais."
+        description: "Percebe como o Llama 3.3 cria histórias únicas adaptadas à idade, aos gostos e à personalidade de cada criança. Um guia para os pais."
         faqs:
           - question: "As histórias geradas pela IA estão adaptadas à idade da criança?"
             answer: "Sim. A Noctilio adapta automaticamente o vocabulário, a complexidade narrativa e a duração de acordo com a idade indicada no perfil da criança. Uma criança de 3 anos receberá uma história curta com palavras simples, enquanto uma criança de 8 anos terá uma história mais longa com reviravoltas."
           - question: "A IA pode incluir o nome do meu filho na história?"
             answer: "Sem dúvida. É mesmo a funcionalidade central da Noctilio: o herói de cada história tem o nome do teu filho. A IA integra também as suas personagens favoritas, o seu universo preferido (espaço, dinossauros, princesas, piratas, animais) e os seus traços de personalidade para criar uma história única."
           - question: "As histórias geradas pela IA são seguras para as crianças?"
-            answer: "Sim. O GPT-4o está configurado com instruções rigorosas para gerar apenas conteúdo positivo, carinhoso e adequado a crianças dos 2 aos 10 anos. As histórias evitam qualquer violência, medo excessivo ou conteúdo inadequado. Cada geração respeita os valores educativos selecionados pelo pai ou pela mãe."
+            answer: "Sim. O Llama 3.3 está configurado com instruções rigorosas para gerar apenas conteúdo positivo, carinhoso e adequado a crianças dos 2 aos 10 anos. As histórias evitam qualquer violência, medo excessivo ou conteúdo inadequado. Cada geração respeita os valores educativos selecionados pelo pai ou pela mãe."
       histoires-enfant-4-ans:
         title: "Histórias para crianças de 4 anos: o que realmente as cativa"
         description: "Que histórias funcionam melhor aos 4 anos? Duração, personagens, estrutura narrativa: tudo o que precisas de saber."

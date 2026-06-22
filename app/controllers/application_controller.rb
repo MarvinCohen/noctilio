@@ -127,13 +127,4 @@ class ApplicationController < ActionController::Base
 
     phase.round(4) # 4 décimales suffisent pour l'affichage
   end
-
-  # Vérifie que l'utilisateur peut encore créer des histoires ce mois-ci
-  # Gratuit : 3 histoires max / mois — Pour l'instant tout le monde peut créer
-  # (Stripe sera configuré plus tard)
-  def check_story_limit!
-    return if current_user.can_create_story?
-
-    redirect_to stories_path, alert: "Vous avez atteint votre limite de 3 histoires gratuites ce mois-ci."
-  end
 end

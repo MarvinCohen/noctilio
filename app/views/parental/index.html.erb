@@ -638,8 +638,9 @@
                 <div class="par-child-name"><%= child.name %></div>
                 <div class="par-child-meta">
                   <%# Age + nombre d'histoires (pluralisation via I18n) %>
+                  <%# Compte lu depuis le hash pré-calculé du controller (évite le N+1) %>
                   <%= t("parental.age", age: child.age) %> ·
-                  <%= t("parental.stories_count", count: child.stories.completed.count) %>
+                  <%= t("parental.stories_count", count: @completed_counts[child.id] || 0) %>
                   <%# Date de la dernière histoire si elle existe %>
                   <% last = @last_story_by_child[child.id] %>
                   <% if last %>
