@@ -126,6 +126,20 @@
           style: "padding: 0.6rem 1.2rem; background: transparent; color: rgba(212, 207, 196, 0.8); border: 1px solid rgba(212, 207, 196, 0.25); border-radius: 8px; font-size: 0.9rem; cursor: pointer;" %>
   </div>
 
+  <%# ── Carte : mes données (RGPD — droit d'accès / portabilité) ── %>
+  <%# Lien de téléchargement de toutes les données perso au format JSON. %>
+  <%# GET vers account_export_path → send_data déclenche le téléchargement. %>
+  <div style="background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; padding: 1.5rem; margin-top: 2rem; margin-bottom: 1.25rem;">
+    <h2 style="color: #f0c97a; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+      <%= t("account.data_heading") %>
+    </h2>
+    <p style="color: rgba(212, 207, 196, 0.65); font-size: 0.88rem; margin-bottom: 1rem;">
+      <%= t("account.data_desc") %>
+    </p>
+    <%= link_to t("account.data_button"), account_export_path,
+          style: "display: inline-block; padding: 0.6rem 1.2rem; background: transparent; color: #f0c97a; border: 1px solid rgba(240, 201, 122, 0.35); border-radius: 8px; font-size: 0.9rem; text-decoration: none;" %>
+  </div>
+
   <%# ── Zone danger : suppression du compte (RGPD — droit à l'oubli) ── %>
   <%# Supprime le compte ET en cascade : enfants → histoires → images/audio %>
   <%# (associations dependent: :destroy dans User et Child) %>

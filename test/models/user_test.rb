@@ -391,4 +391,90 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 0, xp,
                  "Un utilisateur sans activité devrait avoir 0 XP"
   end
+
+  # ===========================================================
+  # SECTION 8 — MÉTHODE gdpr_export (export RGPD)
+  # ===========================================================
+
+  # Vérifie que l'export contient les 3 blocs attendus (compte, enfants, gamification)
+  # Cas : Marie a un compte, des enfants et un badge dans les fixtures
+  # Pourquoi : structure de base de l'export — le JSON téléchargé doit être complet
+  test "gdpr_export retourne les blocs compte, enfants et gamification" do
+    # Arrange
+    user = users(:marie)
+
+    # Act
+    export = user.gdpr_export
+
+    # Assert — les 3 clés racines doivent être présentes
+    assert export.key?(:compte),      "L'export devrait contenir un bloc :compte"
+    assert export.key?(:enfants),     "L'export devrait contenir un bloc :enfants"
+    assert export.key?(:gamification), "L'export devrait contenir un bloc :gamification"
+  end
+
+  # Vérifie que le bloc compte contient l'email mais JAMAIS le mot de passe chiffré
+  # Cas : Marie exporte ses données
+  # Pourquoi : sécurité — on ne doit jamais exposer encrypted_password dans l'export
+  test "gdpr_export inclut l'email mais exclut le mot de passe chiffré" do
+    # Arrange
+    user = users(:marie)
+
+    # Act
+    compte = user.gdpr_export[:compte]
+
+    # Assert 1 — l'email est bien présent
+    assert_equal "marie@example.com", compte[:email],
+                 "L'export devrait contenir l'email de l'utilisateur"
+
+    # Assert 2 — aucune clé ne doit ressembler à un mot de passe (sécurité)
+    assert_not compte.key?(:encrypted_password),
+               "L'export ne doit JAMAIS contenir le mot de passe chiffré"
+    assert_not compte.key?(:password),
+               "L'export ne doit JAMAIS contenir de mot de passe"
+  end
+
+  # Vérifie que l'export ne contient QUE les enfants de l'utilisateur (scoping)
+  # Cas : Marie a Léo et Emma ; Théo appartient à Paul
+  # Pourquoi : sécurité — un utilisateur ne doit jamais exporter les données d'un autre
+  test "gdpr_export ne contient que les enfants de l'utilisateur" do
+    # Arrange
+    user = users(:marie)
+
+    # Act — on récupère les noms des enfants exportés
+    noms_enfants = user.gdpr_export[:enfants].map { |enfant| enfant[:nom] }
+
+    # Assert — Léo et Emma présents, Théo (enfant de Paul) absent
+    assert_includes noms_enfants, "Léo"
+    assert_includes noms_enfants, "Emma"
+    assert_not_includes noms_enfants, "Théo",
+                        "L'export de Marie ne doit pas contenir l'enfant d'un autre compte"
+  end
+
+  # Vérifie que les histoires sont imbriquées sous chaque enfant
+  # Cas : Léo (enfant de Marie) a plusieurs histoires
+  # Pourquoi : le contenu des histoires fait partie des données personnelles à exporter
+  test "gdpr_export imbrique les histoires sous chaque enfant" do
+    # Arrange — on isole l'enfant Léo dans l'export
+    user = users(:marie)
+    leo_export = user.gdpr_export[:enfants].find { |enfant| enfant[:nom] == "Léo" }
+
+    # Act + Assert — Léo a des histoires dans les fixtures
+    assert leo_export[:histoires].any?,
+           "Les histoires de Léo devraient être imbriquées dans son export"
+  end
+
+  # Vérifie que le bloc gamification contient les badges avec leur clé
+  # Cas : Marie a le badge first_story (condition_key: "first_story")
+  # Pourquoi : XP et badges font partie des données à exporter
+  test "gdpr_export inclut les badges obtenus avec leur clé" do
+    # Arrange
+    user = users(:marie)
+
+    # Act — on récupère les clés des badges exportés
+    cles_badges = user.gdpr_export[:gamification][:badges].map { |badge| badge[:cle] }
+
+    # Assert — le badge first_story de Marie doit apparaître
+    assert_includes cles_badges, "first_story",
+                    "L'export devrait contenir le badge first_story obtenu par Marie"
+  end
 end

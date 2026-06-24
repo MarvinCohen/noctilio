@@ -108,6 +108,9 @@ Rails.application.routes.draw do
   # POST /mon-compte/mode-test — bascule le mode test (admin) pour débloquer
   # les fonctionnalités premium. Restreint à une liste blanche d'emails côté serveur.
   post "/mon-compte/mode-test", to: "account#toggle_test_mode", as: :account_toggle_test_mode
+  # GET /mon-compte/export — télécharge toutes les données personnelles de
+  # l'utilisateur au format JSON (droit d'accès / portabilité RGPD).
+  get  "/mon-compte/export",    to: "account#export",           as: :account_export
 
   # ============================================================
   # Langue de l'interface — changement de langue (i18n)

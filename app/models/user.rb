@@ -199,6 +199,80 @@ class User < ApplicationRecord
   end
 
   # ============================================================
+  # Export RGPD — droit d'accès et portabilité (art. 15 et 20)
+  # ============================================================
+  # Assemble TOUTES les données personnelles de l'utilisateur dans un Hash
+  # structuré, destiné à être sérialisé en JSON et téléchargé par l'utilisateur.
+  # La politique de confidentialité (section 8) promet ce droit : cette méthode
+  # le concrétise.
+  #
+  # SÉCURITÉ / périmètre : on part TOUJOURS de `self` et de ses propres
+  # associations (children, stories, user_badges). Aucune donnée d'un autre
+  # compte n'est jamais lue. On exclut volontairement les données sensibles
+  # inutiles à l'export : mot de passe chiffré, tokens Devise, provider/uid
+  # OAuth et le flag admin.
+  #
+  # PERF : `children.includes(:stories)` charge enfants + histoires en 2 requêtes
+  # (au lieu d'une requête par enfant), pour éviter les N+1 lors de la boucle.
+  def gdpr_export
+    {
+      # Bloc 1 — informations du compte
+      compte: {
+        email:        email,
+        prenom:       first_name,
+        nom:          last_name,
+        langue:       locale,
+        premium:      premium?,
+        cree_le:      created_at
+      },
+      # Bloc 2 — profils enfants + leurs histoires (chargés en une fois)
+      enfants: children.includes(:stories).map do |child|
+        {
+          nom:                  child.name,
+          age:                  child.age,
+          genre:                child.gender,
+          couleur_cheveux:      child.hair_color,
+          couleur_yeux:         child.eye_color,
+          teint:                child.skin_tone,
+          traits_personnalite:  child.personality_traits,
+          loisirs:              child.hobbies,
+          description:          child.child_description,
+          cree_le:              child.created_at,
+          # Histoires de cet enfant — uniquement le contenu et les métadonnées,
+          # sans les choix interactifs (export volontairement léger).
+          histoires: child.stories.map do |story|
+            {
+              titre:              story.title,
+              contenu:            story.content,
+              univers:            story.world_theme,
+              valeur_educative:   story.educational_value,
+              langue:             story.locale,
+              duree_minutes:      story.duration_minutes,
+              theme_libre:        story.custom_theme,
+              statut:             story.status,
+              mode_interactif:    story.interactive,
+              cree_le:            story.created_at
+            }
+          end
+        }
+      end,
+      # Bloc 3 — gamification (XP, niveau, badges obtenus)
+      gamification: {
+        xp_total: xp_points,
+        niveau:   level,
+        # Pour chaque badge : sa clé stable + la date à laquelle il a été obtenu
+        # (user_badges.created_at = moment de l'attribution).
+        badges: user_badges.includes(:badge).map do |user_badge|
+          {
+            cle:        user_badge.badge.condition_key,
+            obtenu_le:  user_badge.created_at
+          }
+        end
+      }
+    }
+  end
+
+  # ============================================================
   # Méthode de classe — connexion / création via Google OAuth
   # ============================================================
   # Appelée par OmniauthCallbacksController après le retour de Google.

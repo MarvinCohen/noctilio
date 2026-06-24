@@ -45,6 +45,27 @@ class AccountController < ApplicationController
     redirect_to account_path, notice: message
   end
 
+  # ============================================================
+  # GET /mon-compte/export
+  # Télécharge toutes les données personnelles de l'utilisateur au format JSON
+  # (droit d'accès et portabilité — RGPD art. 15 et 20).
+  # ============================================================
+  def export
+    # Toute la logique d'assemblage vit dans le modèle (Fat Model) : le controller
+    # se contente d'appeler la méthode et de déclencher le téléchargement.
+    # current_user garantit que seules SES données sont exportées.
+    data = current_user.gdpr_export
+
+    # send_data déclenche un téléchargement de fichier (Content-Disposition:
+    # attachment) au lieu d'afficher le JSON dans le navigateur.
+    # JSON.pretty_generate : JSON indenté, lisible par un humain.
+    # Nom de fichier daté pour que l'utilisateur s'y retrouve s'il exporte plusieurs fois.
+    send_data JSON.pretty_generate(data),
+              filename: "noctilio-mes-donnees-#{Date.current}.json",
+              type: "application/json",
+              disposition: "attachment"
+  end
+
   private
 
   # ============================================================

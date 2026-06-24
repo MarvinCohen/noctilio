@@ -107,4 +107,45 @@ class AccountControllerTest < ActionDispatch::IntegrationTest
     user.reload
     assert_not user.admin?, "La deuxième bascule devrait désactiver le mode test"
   end
+
+  # ===========================================================
+  # SECTION 3 — GET /mon-compte/export (export RGPD)
+  # ===========================================================
+
+  # Vérifie que l'export redirige vers la connexion si non connecté
+  # Cas : visiteur anonyme
+  # Pourquoi : les données personnelles ne doivent être accessibles qu'au propriétaire connecté
+  test "GET /mon-compte/export redirige vers connexion si non connecté" do
+    # Act
+    get account_export_path
+
+    # Assert
+    assert_redirected_to new_user_session_path,
+                         "L'export doit être protégé par l'authentification"
+  end
+
+  # Vérifie que l'export renvoie un téléchargement JSON pour un utilisateur connecté
+  # Cas : Marie connectée télécharge ses données
+  # Pourquoi : cas nominal — la réponse doit être un fichier JSON en pièce jointe
+  test "GET /mon-compte/export renvoie un fichier JSON pour un utilisateur connecté" do
+    # Arrange
+    sign_in_as(users(:marie))
+
+    # Act
+    get account_export_path
+
+    # Assert 1 — réponse 200 + type JSON
+    assert_response :success
+    assert_equal "application/json", response.media_type,
+                 "L'export devrait être servi en application/json"
+
+    # Assert 2 — en-tête de téléchargement (pièce jointe, pas affichage écran)
+    assert_match(/attachment/, response.headers["Content-Disposition"].to_s,
+                 "L'export devrait être proposé en téléchargement (attachment)")
+
+    # Assert 3 — le JSON contient bien l'email de Marie (données réellement exportées)
+    donnees = JSON.parse(response.body)
+    assert_equal "marie@example.com", donnees.dig("compte", "email"),
+                 "Le JSON exporté devrait contenir l'email de l'utilisateur connecté"
+  end
 end
