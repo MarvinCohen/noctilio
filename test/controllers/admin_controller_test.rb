@@ -20,6 +20,16 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
   # SECTION 1 — Visiteur non connecté
   # ===========================================================
 
+  # Vérifie qu'un visiteur anonyme ne peut pas atteindre le dashboard /admin
+  # Cas : aucune session → authenticate_user! (ApplicationController) intercepte
+  # Pourquoi : les statistiques d'usage ne doivent jamais fuiter publiquement
+  test "GET /admin redirige vers la connexion si non connecté" do
+    get admin_root_path
+
+    assert_redirected_to new_user_session_path,
+                         "Le dashboard admin devrait être inaccessible sans connexion"
+  end
+
   # Vérifie qu'un visiteur anonyme ne peut pas atteindre /admin/waitlist
   # Cas : aucune session → authenticate_user! (ApplicationController) intercepte
   # Pourquoi : les emails de la liste d'attente ne doivent jamais fuiter
@@ -43,6 +53,19 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
   # ===========================================================
   # SECTION 2 — Utilisateur connecté mais NON admin
   # ===========================================================
+
+  # Vérifie qu'un compte standard (Marie) est refusé sur le dashboard /admin
+  # Cas : connecté mais admin? == false → require_admin! redirige vers le dashboard
+  # Pourquoi : un utilisateur lambda ne doit pas voir les stats globales du site
+  test "GET /admin redirige un non-admin vers le dashboard" do
+    sign_in_as(users(:marie))
+
+    get admin_root_path
+
+    assert_redirected_to dashboard_path,
+                         "Un non-admin devrait être renvoyé vers son dashboard"
+    assert_equal "Accès non autorisé.", flash[:alert]
+  end
 
   # Vérifie qu'un compte standard (Marie) est refusé sur /admin/waitlist
   # Cas : connecté mais admin? == false → require_admin! redirige vers le dashboard
@@ -73,6 +96,18 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
   # ===========================================================
   # SECTION 3 — Utilisateur admin (accès autorisé)
   # ===========================================================
+
+  # Vérifie que l'admin accède bien au dashboard de stats
+  # Cas : admin? == true → require_admin! laisse passer → la page se charge
+  # Pourquoi : la garde ne doit pas bloquer les ayants droit
+  test "GET /admin s'affiche pour un admin" do
+    sign_in_as(users(:admin_user))
+
+    get admin_root_path
+
+    assert_response :success,
+                    "Un admin devrait pouvoir consulter le dashboard de stats"
+  end
 
   # Vérifie que l'admin accède bien à la liste d'attente
   # Cas : admin? == true → require_admin! laisse passer → la page se charge

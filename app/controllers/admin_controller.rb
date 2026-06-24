@@ -8,6 +8,18 @@ class AdminController < ApplicationController
   before_action :require_admin!
 
   # ============================================================
+  # GET /admin
+  # Dashboard d'accueil admin : affiche les statistiques d'usage de Noctilio
+  # (vue d'ensemble, préférences histoires, mode interactif & choix).
+  # Sert aussi de hub : liens vers /admin/waitlist et /admin/feedbacks.
+  # ============================================================
+  def index
+    # Tout le calcul est délégué au PORO AdminStats (Fat Model, Skinny Controller).
+    # La vue appellera @stats.overview, @stats.world_themes, etc.
+    @stats = AdminStats.new
+  end
+
+  # ============================================================
   # GET /admin/waitlist
   # Affiche tous les emails inscrits sur la liste d'attente
   # triés du plus récent au plus ancien

@@ -1,0 +1,344 @@
+<%# ============================================================ %>
+<%# Dashboard admin — page d'accueil /admin %>
+<%# Affiche les statistiques d'usage de Noctilio en 3 sections : %>
+<%#   1. Vue d'ensemble (compteurs clés) %>
+<%#   2. Préférences histoires (classements en barres %) %>
+<%#   3. Mode interactif & choix %>
+<%# Sert aussi de hub : liens vers /admin/waitlist et /admin/feedbacks. %>
+<%# Tout le calcul vient du PORO AdminStats (@stats), pas de logique ici. %>
+<%# DA cosmique : cartes dark, accents dorés (cohérent avec waitlist/feedbacks). %>
+<%# ============================================================ %>
+
+<style nonce="<%= content_security_policy_nonce %>">
+  /* ── Wrapper de page ── */
+  .admin-page { padding: 2.5rem 0 4rem; }
+
+  /* ── En-tête ── */
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  /* Titre Cormorant Garamond italic — cohérent avec les autres pages admin */
+  .admin-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: #fdf6e3;
+    margin: 0 0 0.2rem;
+    line-height: 1.1;
+  }
+  .admin-subtitle { color: #8a8578; font-size: 0.9rem; margin: 0; }
+
+  /* ── Liens du hub (vers waitlist / feedbacks) ── */
+  .admin-hub-links { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  /* Pill doré outline — même look que le bouton "copier" de la waitlist */
+  .admin-hub-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 1.1rem;
+    background: transparent;
+    color: #f0c97a;
+    border: 1px solid rgba(240, 201, 122, 0.35);
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .admin-hub-link:hover {
+    background: rgba(240, 201, 122, 0.08);
+    border-color: rgba(240, 201, 122, 0.6);
+    color: #f0c97a;
+  }
+
+  /* ── Titre de section ── */
+  .admin-section-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: #f0c97a;
+    margin: 2.5rem 0 1rem;
+  }
+
+  /* ── Grille de cartes compteurs (section 1) ── */
+  .admin-stats-grid {
+    display: grid;
+    /* Colonnes auto-ajustables : min 150px, s'adaptent à la largeur écran */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  /* Carte compteur unique — fond dark, bordure dorée discrète */
+  .admin-stat-card {
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    border-radius: 16px;
+    padding: 1.25rem 1.4rem;
+  }
+  /* Grand chiffre doré */
+  .admin-stat-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #f0c97a;
+    line-height: 1;
+    margin: 0 0 0.35rem;
+  }
+  /* Libellé du compteur — texte dim */
+  .admin-stat-label {
+    color: #8a8578;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  /* ── Carte de classement (sections 2 et 3) ── */
+  .admin-rank-card {
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    border-radius: 16px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.5rem;
+  }
+  /* Titre interne de la carte de classement */
+  .admin-rank-title {
+    color: #fdf6e3;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1.1rem;
+  }
+
+  /* ── Une ligne de barre (libellé + barre + valeur) ── */
+  .admin-bar-row { margin-bottom: 0.9rem; }
+  .admin-bar-row:last-child { margin-bottom: 0; }
+  /* Ligne du haut : libellé à gauche, compteur + % à droite */
+  .admin-bar-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.35rem;
+  }
+  .admin-bar-label { color: #fdf6e3; font-size: 0.88rem; }
+  .admin-bar-value { color: #8a8578; font-size: 0.8rem; }
+  /* Piste de la barre (fond) */
+  .admin-bar-track {
+    background: #0d1020;
+    border-radius: 50px;
+    height: 10px;
+    overflow: hidden;
+  }
+  /* Remplissage doré — la largeur (%) est posée en style inline depuis le ERB */
+  .admin-bar-fill {
+    background: #f0c97a;
+    height: 100%;
+    border-radius: 50px;
+  }
+
+  /* ── Message vide (aucune donnée pour un classement) ── */
+  .admin-empty-inline { color: #8a8578; font-size: 0.85rem; margin: 0; }
+</style>
+
+<%
+  # ── Tables de correspondance clé → libellé français ─────────────
+  # Les colonnes stockent des clés techniques (space, courage, ghibli...).
+  # On les traduit ici pour l'affichage. Construites une fois, réutilisées
+  # par le helper render_ranking ci-dessous.
+
+  # Univers — la clé nil correspond au thème libre (custom_theme)
+  world_labels = {
+    "space"      => "Espace",
+    "dinos"      => "Dinosaures",
+    "princesses" => "Princesses",
+    "pirates"    => "Pirates",
+    "animals"    => "Animaux",
+    nil          => "Thème libre"
+  }
+
+  # Valeurs éducatives
+  value_labels = {
+    "courage"    => "Courage",
+    "sharing"    => "Partage",
+    "kindness"   => "Gentillesse",
+    "confidence" => "Confiance"
+  }
+
+  # Styles d'illustration
+  style_labels = {
+    "ghibli"    => "Ghibli",
+    "comics"    => "Comics",
+    "pixar"     => "Pixar",
+    "watercolor" => "Aquarelle",
+    "cinematic" => "Cinématique"
+  }
+%>
+
+<div class="container admin-page">
+
+  <%# ── En-tête + liens vers les autres pages admin ── %>
+  <div class="admin-header">
+    <div>
+      <h1 class="admin-title">Dashboard admin</h1>
+      <p class="admin-subtitle">Statistiques d'usage de Noctilio</p>
+    </div>
+    <%# Hub : accès rapide aux deux autres pages admin %>
+    <div class="admin-hub-links">
+      <%= link_to "Liste d'attente", admin_waitlist_path, class: "admin-hub-link" %>
+      <%= link_to "Retours", admin_feedbacks_path, class: "admin-hub-link" %>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
+  <%# SECTION 1 — Vue d'ensemble (compteurs clés) %>
+  <%# ============================================================ %>
+  <h2 class="admin-section-title">Vue d'ensemble</h2>
+
+  <%# overview renvoie un hash de compteurs simples — on l'affiche en grille de cartes %>
+  <% overview = @stats.overview %>
+  <div class="admin-stats-grid">
+    <div class="admin-stat-card">
+      <p class="admin-stat-value"><%= overview[:users_total] %></p>
+      <p class="admin-stat-label">Comptes</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-value"><%= overview[:admins] %></p>
+      <p class="admin-stat-label">Admins</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-value"><%= overview[:active_subscriptions] %></p>
+      <p class="admin-stat-label">Abonnements actifs</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-value"><%= overview[:children_total] %></p>
+      <p class="admin-stat-label">Profils enfants</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-value"><%= overview[:stories_total] %></p>
+      <p class="admin-stat-label">Histoires</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-value"><%= overview[:stories_completed] %></p>
+      <p class="admin-stat-label">Terminées</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-value"><%= overview[:stories_failed] %></p>
+      <p class="admin-stat-label">Échouées</p>
+    </div>
+    <div class="admin-stat-card">
+      <p class="admin-stat-value"><%= overview[:failure_rate] %>%</p>
+      <p class="admin-stat-label">Taux d'échec</p>
+    </div>
+  </div>
+
+  <%# ============================================================ %>
+  <%# SECTION 2 — Préférences histoires (classements en barres %) %>
+  <%# ============================================================ %>
+  <h2 class="admin-section-title">Préférences histoires</h2>
+
+  <%
+    # Helper local de rendu d'un classement en barres.
+    # ranking : tableau [[clé, nombre], ...] déjà trié (renvoyé par AdminStats).
+    # labels  : hash clé → libellé français.
+    # Le % de chaque barre est calculé par rapport au TOTAL du classement
+    # (somme des compteurs), pour que les barres se comparent entre elles.
+    render_ranking = lambda do |title, ranking, labels|
+      total = ranking.sum { |_key, count| count } # somme des occurrences
+      capture do
+  %>
+    <div class="admin-rank-card">
+      <h3 class="admin-rank-title"><%= title %></h3>
+      <% if ranking.any? %>
+        <% ranking.each do |key, count| %>
+          <%# Pourcentage de cette ligne dans le classement (0 si total nul) %>
+          <% percent = total.zero? ? 0 : (count * 100.0 / total).round %>
+          <div class="admin-bar-row">
+            <div class="admin-bar-head">
+              <%# Libellé traduit ; fallback sur la clé brute si non mappée %>
+              <span class="admin-bar-label"><%= labels.fetch(key, key) %></span>
+              <span class="admin-bar-value"><%= count %> · <%= percent %>%</span>
+            </div>
+            <div class="admin-bar-track">
+              <%# Largeur de la barre = pourcentage (style inline, nonce non requis) %>
+              <div class="admin-bar-fill" style="width: <%= percent %>%;"></div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="admin-empty-inline">Aucune donnée pour l'instant.</p>
+      <% end %>
+    </div>
+  <%
+      end
+    end
+  %>
+
+  <%# Les durées sont des entiers (5/10/15) → on ajoute " min" au libellé %>
+  <% duration_labels = { 5 => "5 min", 10 => "10 min", 15 => "15 min" } %>
+
+  <%= render_ranking.call("Univers", @stats.world_themes, world_labels) %>
+  <%= render_ranking.call("Valeurs éducatives", @stats.educational_values, value_labels) %>
+  <%= render_ranking.call("Styles d'illustration", @stats.image_styles, style_labels) %>
+  <%= render_ranking.call("Durées", @stats.durations, duration_labels) %>
+
+  <%# ============================================================ %>
+  <%# SECTION 3 — Mode interactif & choix %>
+  <%# ============================================================ %>
+  <h2 class="admin-section-title">Mode interactif & choix</h2>
+
+  <%# Carte 1 : part d'histoires interactives vs classiques %>
+  <div class="admin-rank-card">
+    <h3 class="admin-rank-title">Histoires interactives</h3>
+    <% interactive_pct = @stats.interactive_percentage %>
+    <div class="admin-bar-row">
+      <div class="admin-bar-head">
+        <span class="admin-bar-label">Part d'histoires interactives</span>
+        <span class="admin-bar-value"><%= interactive_pct %>%</span>
+      </div>
+      <div class="admin-bar-track">
+        <div class="admin-bar-fill" style="width: <%= interactive_pct %>%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <%# Carte 2 : répartition des choix résolus entre option A et option B %>
+  <% choices = @stats.choice_split %>
+  <% choices_total = choices.values.sum %>
+  <div class="admin-rank-card">
+    <h3 class="admin-rank-title">Choix résolus : option A vs B</h3>
+    <% if choices_total.positive? %>
+      <% { "a" => "Option A", "b" => "Option B" }.each do |key, label| %>
+        <% count = choices[key] || 0 %>
+        <% percent = (count * 100.0 / choices_total).round %>
+        <div class="admin-bar-row">
+          <div class="admin-bar-head">
+            <span class="admin-bar-label"><%= label %></span>
+            <span class="admin-bar-value"><%= count %> · <%= percent %>%</span>
+          </div>
+          <div class="admin-bar-track">
+            <div class="admin-bar-fill" style="width: <%= percent %>%;"></div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="admin-empty-inline">Aucun choix résolu pour l'instant.</p>
+    <% end %>
+  </div>
+
+  <%# Carte 3 : taux de résolution des choix (résolus / total proposés) %>
+  <div class="admin-rank-card">
+    <h3 class="admin-rank-title">Taux de résolution des choix</h3>
+    <% resolution_rate = @stats.choice_resolution_rate %>
+    <div class="admin-bar-row">
+      <div class="admin-bar-head">
+        <span class="admin-bar-label">Choix effectivement décidés par l'enfant</span>
+        <span class="admin-bar-value"><%= resolution_rate %>%</span>
+      </div>
+      <div class="admin-bar-track">
+        <div class="admin-bar-fill" style="width: <%= resolution_rate %>%;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>

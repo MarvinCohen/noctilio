@@ -140,6 +140,9 @@ Rails.application.routes.draw do
   # ============================================================
   # Admin — pages privées accessibles uniquement par marvincohen95@gmail.com
   # ============================================================
+  # GET /admin — dashboard d'accueil admin (statistiques d'usage + liens vers
+  # les autres pages admin). `as: :admin_root` génère le helper admin_root_path.
+  get "/admin", to: "admin#index", as: :admin_root
   # GET /admin/waitlist — liste des emails inscrits sur la waitlist
   get "/admin/waitlist", to: "admin#waitlist", as: :admin_waitlist
   # GET /admin/feedbacks — liste des retours utilisateurs laissés via /avis

@@ -28,6 +28,16 @@
   }
   .admin-subtitle { color: #8a8578; font-size: 0.9rem; margin: 0; }
 
+  /* Lien retour vers le dashboard admin — petit, doré, discret */
+  .admin-back-link {
+    display: inline-block;
+    color: rgba(240, 201, 122, 0.7);
+    font-size: 0.82rem;
+    text-decoration: none;
+    margin-bottom: 0.6rem;
+  }
+  .admin-back-link:hover { color: #f0c97a; text-decoration: underline; }
+
   /* Badge compteur — fond doré, texte sombre */
   .admin-count-badge {
     display: inline-flex;
@@ -100,6 +110,8 @@
   <%# ── En-tête ── %>
   <div class="admin-header">
     <div>
+      <%# Lien retour vers le dashboard admin (hub) %>
+      <%= link_to "← Admin", admin_root_path, class: "admin-back-link" %>
       <h1 class="admin-title">Retours utilisateurs</h1>
       <p class="admin-subtitle">Avis laissés depuis la page /avis</p>
     </div>
