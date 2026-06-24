@@ -268,28 +268,42 @@
       <h2 class="db-section-title"><%= t("dashboard.heroes_title") %></h2>
     </div>
 
-    <%# Pills enfants — avatar initiale + prénom, cliquables vers le profil %>
-    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.85rem;" data-reveal="up">
-      <% @children.each do |child| %>
+    <%# Cartes héros — avatar rond en grand, prénom + âge dessous, cliquables vers le profil %>
+    <%# Format carte (plus chaleureux que les anciennes pills) : grille flex centrée, wrap sur mobile %>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem;" data-reveal="up">
+      <% @children.each_with_index do |child, i| %>
+        <%# Carte verticale cliquable → fiche du héros. --reveal-delay décale l'apparition de chaque carte. %>
         <%= link_to child_path(child),
-              style: "display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.5rem 1.1rem 0.5rem 0.5rem; background: #111527; border: 1px solid rgba(240, 201, 122, 0.18); border-radius: 50px; text-decoration: none;" do %>
-          <%# Avatar DiceBear personnalisé (mêmes couleurs peau/cheveux que la fiche enfant) %>
-          <%# dicebear_avatar_url(child) construit l'URL SVG selon le profil de l'enfant %>
+              data: { reveal: "up" },
+              style: "--reveal-delay: #{i * 80}ms; display: flex; flex-direction: column; align-items: center; gap: 0.65rem; width: 150px; padding: 1.4rem 1rem 1.2rem; background: #111527; border: 1px solid rgba(240, 201, 122, 0.18); border-radius: 18px; text-decoration: none; transition: transform 0.2s ease, border-color 0.2s ease;" do %>
+          <%# Avatar DiceBear personnalisé (mêmes couleurs peau/cheveux que la fiche enfant). %>
+          <%# Cerclé d'un anneau doré discret pour le mettre en valeur. %>
           <%= image_tag dicebear_avatar_url(child),
                 alt: child.name,
-                width: 34,
-                height: 34,
-                style: "width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" %>
-          <span style="color: #d4cfc4; font-size: 0.92rem; font-weight: 500;">
-            <%= child.name %> · <%= t("dashboard.age", age: child.age) %>
+                width: 72,
+                height: 72,
+                style: "width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: rgba(240, 201, 122, 0.06); border: 2px solid rgba(240, 201, 122, 0.3); flex-shrink: 0;" %>
+          <%# Prénom en évidence %>
+          <span style="color: #fdf6e3; font-size: 1rem; font-weight: 600; line-height: 1.2; text-align: center;">
+            <%= child.name %>
+          </span>
+          <%# Âge en sous-titre discret %>
+          <span style="color: rgba(212, 207, 196, 0.6); font-size: 0.82rem;">
+            <%= t("dashboard.age", age: child.age) %>
           </span>
         <% end %>
       <% end %>
 
-      <%# Bouton "+" pour ajouter un nouveau profil enfant %>
+      <%# Carte "Ajouter un héros" — même gabarit, bordure pointillée pour la distinguer %>
       <%= link_to new_child_path,
-            style: "display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.1rem; background: transparent; border: 1px dashed rgba(240, 201, 122, 0.35); border-radius: 50px; text-decoration: none; color: #f0c97a; font-size: 0.92rem;" do %>
-        <%= t("dashboard.add_hero") %>
+            style: "display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; width: 150px; padding: 1.4rem 1rem 1.2rem; background: transparent; border: 1px dashed rgba(240, 201, 122, 0.35); border-radius: 18px; text-decoration: none; color: #f0c97a; transition: border-color 0.2s ease, background 0.2s ease;" do %>
+        <%# Cercle avec un "+" — fait écho à l'avatar rond des autres cartes %>
+        <span style="display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; border: 2px dashed rgba(240, 201, 122, 0.4); font-size: 1.8rem; line-height: 1; color: #f0c97a;">+</span>
+        <span style="font-size: 0.9rem; font-weight: 500; text-align: center;">
+          <%# Le "+" est déjà affiché dans le cercle ci-dessus → on retire celui en %>
+          <%# tête du libellé traduit (toutes les locales commencent par "+ ") %>
+          <%= t("dashboard.add_hero").sub(/\A\+\s*/, "") %>
+        </span>
       <% end %>
     </div>
 
