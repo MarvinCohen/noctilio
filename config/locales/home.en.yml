@@ -35,7 +35,7 @@ en:
       step2_desc: "In seconds, our artificial intelligence (Llama 3.3) generates a brand-new tale, suited to your child's age and reading level. Each story comes with an illustration created especially for the occasion. No two are ever alike."
       step3_title: "Read or listen at bedtime"
       step3_desc: "Get comfortable. The story is ready to read together or listen to aloud. In interactive mode, your child chooses what happens next at every step, like a real book where they are the hero."
-      closing_html: "<strong>Noctilio</strong> is built for parents who want to give their children rich, personalised reading moments without spending hours on it. Every story is tailored to the child, their name, age and personality, and renewed with every generation. <strong>3 free stories a month</strong>, and unlimited stories with interactive mode on the Premium plan."
+      closing_html: "<strong>Noctilio</strong> is built for parents who want to give their children rich, personalised reading moments without spending hours on it. Every story is tailored to the child, their name, age and personality, and renewed with every generation. <strong>3 free stories a week</strong>, and unlimited stories with interactive mode on the Premium plan."
       blog_link: "Read our tips for parents →"
 
     form_js:
@@ -47,6 +47,6 @@ en:
 
     schema:
       app_description: "App that generates AI-personalised stories for children. Create unique tales with your child's name, favourite characters and preferred world."
-      offer_desc: "Free access — 3 stories per month"
+      offer_desc: "Free access — 3 stories per week"
       audience_type: "Parents of children aged 2 to 10"
       org_description: "Noctilio generates personalised stories for children using artificial intelligence."

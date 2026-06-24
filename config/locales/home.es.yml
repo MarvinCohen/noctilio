@@ -35,7 +35,7 @@ es:
       step2_desc: "En segundos, nuestra inteligencia artificial (Llama 3.3) genera un cuento inédito, adaptado a la edad de tu hijo y a su nivel de lectura. Cada cuento va acompañado de una ilustración creada especialmente para la ocasión. Nunca hay dos iguales."
       step3_title: "Lee o escucha a la hora de dormir"
       step3_desc: "Poneos cómodos. El cuento está listo para leerlo juntos o escucharlo en voz alta. En el modo interactivo, tu hijo elige cómo sigue la aventura en cada paso, como en un libro de verdad del que es el héroe."
-      closing_html: "<strong>Noctilio</strong> está pensado para los padres que quieren ofrecer a sus hijos momentos de lectura ricos y personalizados, sin dedicarle horas. Cada cuento se adapta al niño, a su nombre, su edad y su personalidad, y se renueva en cada generación. <strong>3 cuentos al mes gratis</strong>, y cuentos ilimitados con el modo interactivo en la suscripción Premium."
+      closing_html: "<strong>Noctilio</strong> está pensado para los padres que quieren ofrecer a sus hijos momentos de lectura ricos y personalizados, sin dedicarle horas. Cada cuento se adapta al niño, a su nombre, su edad y su personalidad, y se renueva en cada generación. <strong>3 cuentos a la semana gratis</strong>, y cuentos ilimitados con el modo interactivo en la suscripción Premium."
       blog_link: "Lee nuestros consejos para padres →"
 
     form_js:
@@ -47,6 +47,6 @@ es:
 
     schema:
       app_description: "Aplicación que genera cuentos personalizados para niños con inteligencia artificial. Crea cuentos únicos con el nombre, los personajes y el mundo favoritos de tu hijo."
-      offer_desc: "Acceso gratuito — 3 cuentos al mes"
+      offer_desc: "Acceso gratuito — 3 cuentos a la semana"
       audience_type: "Padres de niños de 2 a 10 años"
       org_description: "Noctilio genera cuentos personalizados para niños gracias a la inteligencia artificial."

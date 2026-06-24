@@ -38,7 +38,7 @@ fr:
       step2_desc: "En quelques secondes, notre intelligence artificielle (Llama 3.3) génère un conte inédit, adapté à l'âge de ton enfant et à son niveau de lecture. Chaque histoire est accompagnée d'une illustration générée spécialement pour l'occasion. Il n'y en a jamais deux pareilles."
       step3_title: "Lis ou écoute au moment du coucher"
       step3_desc: "Installez-vous confortablement. L'histoire est prête à être lue ensemble ou écoutée à voix haute. En mode interactif, ton enfant choisit lui-même la suite de l'aventure à chaque étape, comme dans un vrai livre dont il est le héros."
-      closing_html: "<strong>Noctilio</strong> est pensé pour les parents qui veulent offrir à leurs enfants des moments de lecture riches et personnalisés, sans y passer des heures. Chaque histoire est adaptée à l'enfant, son prénom, son âge, sa personnalité, et renouvelée à chaque génération. <strong>3 histoires par mois gratuitement</strong>, et des histoires illimitées avec le mode interactif en abonnement Premium."
+      closing_html: "<strong>Noctilio</strong> est pensé pour les parents qui veulent offrir à leurs enfants des moments de lecture riches et personnalisés, sans y passer des heures. Chaque histoire est adaptée à l'enfant, son prénom, son âge, sa personnalité, et renouvelée à chaque génération. <strong>3 histoires par semaine gratuitement</strong>, et des histoires illimitées avec le mode interactif en abonnement Premium."
       blog_link: "Lire nos conseils pour les parents →"
 
     # Messages injectés en JavaScript (formulaire liste d'attente)
@@ -52,6 +52,6 @@ fr:
     # Textes des données structurées Schema.org
     schema:
       app_description: "Application de génération d'histoires personnalisées pour enfants par intelligence artificielle. Créez des contes uniques avec le prénom, les personnages et l'univers préférés de votre enfant."
-      offer_desc: "Accès gratuit — 3 histoires par mois"
+      offer_desc: "Accès gratuit — 3 histoires par semaine"
       audience_type: "Parents d'enfants de 2 à 10 ans"
       org_description: "Noctilio génère des histoires personnalisées pour enfants grâce à l'intelligence artificielle."
