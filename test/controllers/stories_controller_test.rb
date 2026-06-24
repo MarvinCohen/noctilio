@@ -457,6 +457,25 @@ class StoriesControllerTest < ActionDispatch::IntegrationTest
                     "La génération audio doit être refusée (403) pour un compte gratuit"
   end
 
+  # Vérifie que l'exploration alternative (appel Groq payant) est bloquée pour un gratuit
+  # Cas : Marie (gratuite) poste sur /stories/:id/explore_alternative
+  # Pourquoi : comme l'audio, la 1re génération d'une timeline alternative coûte un
+  # appel IA — réservé à l'expérience complète (Premium ou 1re histoire offerte)
+  test "POST /stories/:id/explore_alternative retourne 403 pour un compte gratuit" do
+    # Arrange — Marie (gratuite), histoire qui N'EST PAS sa 1re histoire offerte
+    # (completed_saved, comme le test audio) → l'expérience complète n'est pas accordée.
+    # La garde Premium s'exécute AVANT la lecture du choix, donc un choice_id quelconque suffit.
+    sign_in_as(users(:marie))
+    story = stories(:completed_saved)
+
+    # Act — tentative d'exploration alternative sans être premium
+    post explore_alternative_story_path(story), params: { choice_id: 1 }
+
+    # Assert — la garde doit répondre 403 Forbidden (aucun appel Groq effectué)
+    assert_response :forbidden,
+                    "L'exploration alternative doit être refusée (403) pour un compte gratuit"
+  end
+
   # ===========================================================
   # SECTION 5ter — AUDIO DE LA SUITE INTERACTIVE (Partie B)
   # ===========================================================

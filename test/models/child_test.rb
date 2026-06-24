@@ -68,6 +68,24 @@ class ChildTest < ActiveSupport::TestCase
            "Un nom de 51 caractères devrait être refusé (maximum: 50)"
   end
 
+  # Vérifie qu'une description libre de plus de 500 caractères est refusée
+  # Cas : child_description > 500 caractères
+  # Pourquoi : child_description est injectée telle quelle dans les prompts IA —
+  # sans borne, un POST forgé pourrait gonfler le coût en tokens ou tenter une
+  # injection de prompt. La limite (500) est alignée sur custom_theme côté Story.
+  test "une description enfant de plus de 500 caractères est invalide" do
+    # Arrange
+    child = children(:leo)
+    child.child_description = "a" * 501  # 501 caractères — dépasse la limite
+
+    # Act
+    child.valid?
+
+    # Assert
+    assert child.errors[:child_description].any?,
+           "Une description de 501 caractères devrait être refusée (maximum: 500)"
+  end
+
   # Vérifie qu'un enfant sans âge est invalide
   # Cas : age manquant
   # Pourquoi : l'âge est obligatoire — il détermine le niveau de langage des histoires

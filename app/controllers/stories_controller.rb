@@ -294,6 +294,16 @@ class StoriesController < ApplicationController
   # Si déjà généré, renvoie le texte en cache (évite un appel IA redondant)
   # Répond en JSON pour être consommé par story-alternative-controller.js
   def explore_alternative
+    # SÉCURITÉ BUSINESS — comme l'audio, l'exploration alternative déclenche un
+    # appel IA payant (Groq) à chaque première génération. On la réserve donc aux
+    # comptes qui ont droit à l'expérience complète (Premium OU 1re histoire offerte),
+    # vérifié CÔTÉ SERVEUR : masquer le bouton dans la vue ne suffirait pas, l'URL
+    # resterait appelable. 403 Forbidden — interprété comme un refus par le JS.
+    unless current_user.full_experience_for?(@story)
+      render json: { success: false, error: "Fonctionnalité réservée au Premium." }, status: :forbidden
+      return
+    end
+
     # Récupère le choix ciblé — doit appartenir à cette histoire
     story_choice = @story.story_choices.find(params[:choice_id])
 

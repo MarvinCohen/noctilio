@@ -31,6 +31,13 @@ class Child < ApplicationRecord
   # où la checkbox envoie toujours "0" (décochée) ou "1" (cochée).
   validates :parental_consent, acceptance: { message: "doit être accepté pour créer un profil enfant" }, on: :create
 
+  # Borne la longueur de child_description : c'est le seul champ texte LIBRE de
+  # l'enfant, et il est injecté tel quel dans les prompts IA (avatar_description ET
+  # image_description). Sans borne, un POST forgé pourrait y glisser un texte géant
+  # (explosion du nombre de tokens = coût IA) ou une tentative d'injection de prompt.
+  # Même limite que custom_theme côté Story (500 caractères).
+  validates :child_description, length: { maximum: 500 }, allow_blank: true
+
   # Bornes sur les tableaux personality_traits et hobbies (champs jsonb).
   # Le formulaire n'envoie qu'une liste fermée de cases à cocher, mais ces
   # tableaux finissent injectés dans le prompt IA (avatar_description). Sans
