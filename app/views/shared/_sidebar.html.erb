@@ -87,6 +87,21 @@
       <span class="sidebar-install-label"><%= t("nav.install") %></span>
     </button>
 
+    <%# Bouton Admin — visible UNIQUEMENT pour les comptes admin.
+        Raccourci direct vers le dashboard de statistiques /admin.
+        Réutilise le style ghost doré du bouton Abonnement (sidebar-sub-btn).
+        La garde require_admin! protège déjà la page côté serveur ; ce bouton
+        ne fait que masquer le lien aux non-admins. %>
+    <% if current_user.admin? %>
+      <%= link_to admin_root_path, class: "sidebar-sub-btn", title: "Admin" do %>
+        <%# Icône bouclier — évoque l'espace d'administration %>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span class="sidebar-sub-label">Admin</span>
+      <% end %>
+    <% end %>
+
     <%# Bouton Abonnement — accès rapide à la page Premium (style ghost doré) %>
     <%= link_to subscription_path, class: "sidebar-sub-btn", title: t("nav.subscription") do %>
       <%# Icône couronne — évoque le Premium %>
