@@ -13,3 +13,11 @@ production:
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: every hour at minute 12
+
+  # Rappel "histoire du soir" — tous les jours à 19h30 (fuseau Europe/Paris).
+  # Le fuseau est précisé en fin d'expression cron pour ne pas dépendre de l'heure
+  # serveur (Railway tourne en UTC). Le job filtre lui-même les destinataires
+  # (abonnés push sans histoire créée depuis 3 jours).
+  evening_story_reminder:
+    class: EveningStoryReminderJob
+    schedule: "30 19 * * * Europe/Paris"

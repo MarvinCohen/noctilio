@@ -113,6 +113,15 @@ Rails.application.routes.draw do
   get  "/mon-compte/export",    to: "account#export",           as: :account_export
 
   # ============================================================
+  # Notifications push (PWA) — abonnement / désabonnement
+  # ============================================================
+  # POST   : enregistre l'abonnement du navigateur (rappel "histoire du soir")
+  # DELETE : supprime l'abonnement de cet appareil
+  # Pilotées par le Stimulus push_controller (page /mon-compte).
+  post   "/push_subscriptions", to: "push_subscriptions#create",  as: :push_subscriptions
+  delete "/push_subscriptions", to: "push_subscriptions#destroy"
+
+  # ============================================================
   # Langue de l'interface — changement de langue (i18n)
   # ============================================================
   # POST /langue — enregistre la langue choisie (en session + sur le compte si

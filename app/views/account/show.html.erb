@@ -111,6 +111,32 @@
     <%= render "shared/locale_switcher" %>
   </div>
 
+  <%# ── Carte : rappels du soir (notifications push) ── %>
+  <%# Bouton bascule piloté par le Stimulus push_controller : il demande la %>
+  <%# permission au navigateur, s'abonne, et envoie l'abonnement au serveur. %>
+  <%# La clé publique VAPID est passée en data-value (lue côté JS). %>
+  <div style="background: #111527; border: 1px solid rgba(240, 201, 122, 0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.25rem;"
+       data-controller="push"
+       data-push-vapid-public-key-value="<%= ENV["VAPID_PUBLIC_KEY"] %>"
+       data-push-enable-label-value="<%= t("account.push_enable") %>"
+       data-push-disable-label-value="<%= t("account.push_disable") %>"
+       data-push-unsupported-label-value="<%= t("account.push_unsupported") %>">
+    <h2 style="color: #f0c97a; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+      <%= t("account.push_heading") %>
+    </h2>
+    <p style="color: rgba(212, 207, 196, 0.65); font-size: 0.88rem; margin-bottom: 1rem;">
+      <%= t("account.push_desc") %>
+    </p>
+    <%# Bouton désactivé au départ : le JS l'active et fixe le bon libellé au montage. %>
+    <button type="button"
+            data-push-target="button"
+            data-action="click->push#toggle"
+            disabled
+            style="padding: 0.6rem 1.2rem; background: transparent; color: #f0c97a; border: 1px solid rgba(240, 201, 122, 0.35); border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+      <%= t("account.push_enable") %>
+    </button>
+  </div>
+
   <%# ── Lien : modifier les infos (Devise) ── %>
   <div>
     <%= link_to t("account.edit_info"), edit_user_registration_path,

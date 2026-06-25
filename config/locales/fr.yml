@@ -42,6 +42,11 @@ fr:
     data_heading: "Mes données"
     data_desc: "Télécharge l'ensemble de tes données personnelles (compte, profils enfants, histoires, badges) dans un fichier JSON. Tu peux exercer ce droit à tout moment."
     data_button: "Télécharger mes données (JSON)"
+    push_heading: "Rappels du soir"
+    push_desc: "Reçois une petite notification le soir pour ne pas oublier l'histoire du coucher. On ne te dérange que si tu n'as pas créé d'histoire depuis quelques jours."
+    push_enable: "Activer les rappels du soir"
+    push_disable: "Désactiver les rappels"
+    push_unsupported: "Notifications non disponibles sur ce navigateur"
     delete_heading: "Supprimer mon compte"
     delete_desc: "Supprime définitivement ton compte, les profils de tes enfants et toutes les histoires générées (textes, images, audio). Cette action est irréversible."
     delete_button: "Supprimer définitivement mon compte"
@@ -268,7 +273,7 @@ fr:
     new_profile: "+ Nouveau profil"
     # ── Étape 2 : aventure ──
     step2_question: "Quelle aventure ?"
-    step2_hint: "Décris librement — un rêve, un lieu magique, un super-pouvoir…"
+    step2_hint: "Décris librement un rêve, un lieu magique, un super-pouvoir…"
     textarea_placeholder: "Ex : Elle veut être une exploratrice qui découvre une île secrète avec des animaux parlants…"
     inspire: "✦ Inspire moi"
     # Chips d'inspiration : label = texte du bouton, idea = texte inséré dans le champ

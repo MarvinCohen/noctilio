@@ -82,6 +82,12 @@ gem "rack-attack", "~> 6.8"
 gem "sentry-ruby"
 gem "sentry-rails"
 
+# Notifications push web (PWA) — envoi de rappels "histoire du soir" via le
+# Web Push Protocol (chiffré, authentifié par une paire de clés VAPID).
+# Clés à fournir en ENV : VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY
+# Génération des clés : bundle exec rails runner "require 'web-push'; pp WebPush.generate_key"
+gem "web-push", "~> 3.0"
+
 group :development, :test do
   gem "dotenv-rails"
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

@@ -477,4 +477,137 @@ class UserTest < ActiveSupport::TestCase
     assert_includes cles_badges, "first_story",
                     "L'export devrait contenir le badge first_story obtenu par Marie"
   end
+
+  # ============================================================
+  # SECTION 9 — Trackable / Lockable / Confirmable + OmniAuth
+  # Couvre les modules Devise ajoutés (chantiers D, B, A) et la
+  # logique de confirmation dans from_omniauth.
+  # ============================================================
+
+  # --- Confirmable : période de grâce de 7 jours (config/initializers/devise.rb) ---
+
+  # Vérifie qu'un nouveau compte email est NON confirmé mais reste actif
+  # pendant la période de grâce (allow_unconfirmed_access_for = 7.days).
+  # Pourquoi : on ne veut pas bloquer l'utilisateur dès l'inscription,
+  # il a 7 jours pour cliquer sur le lien de confirmation.
+  test "un nouveau compte email n'est pas confirmé mais reste actif (grâce 7 jours)" do
+    # Arrange — création d'un compte email/mot de passe classique
+    user = User.create!(
+      first_name: "Nina",
+      last_name: "Test",
+      email: "nina@example.com",
+      password: "motdepasse123",
+      password_confirmation: "motdepasse123"
+    )
+
+    # Assert — l'email n'est pas encore confirmé...
+    assert_not user.confirmed?,
+               "Un compte email fraîchement créé ne doit pas être confirmé automatiquement"
+    # ...mais il peut quand même se connecter (encore dans les 7 jours de grâce)
+    assert user.active_for_authentication?,
+           "Pendant la période de grâce de 7 jours, le compte non confirmé reste actif"
+  end
+
+  # Vérifie qu'au-delà de la période de grâce, un compte non confirmé est bloqué.
+  # Pourquoi : passé 7 jours sans confirmation, Devise refuse la connexion.
+  test "un compte non confirmé est bloqué après la période de grâce" do
+    # Arrange — compte créé il y a plus de 7 jours, jamais confirmé
+    user = User.create!(
+      first_name: "Vieux",
+      last_name: "Compte",
+      email: "vieux@example.com",
+      password: "motdepasse123",
+      password_confirmation: "motdepasse123"
+    )
+    # On simule un email de confirmation envoyé il y a 8 jours (hors grâce)
+    user.update_columns(confirmation_sent_at: 8.days.ago)
+
+    # Assert — la connexion n'est plus permise
+    assert_not user.active_for_authentication?,
+               "Passé les 7 jours de grâce, un compte non confirmé doit être bloqué"
+  end
+
+  # --- Lockable : verrouillage après 10 échecs (maximum_attempts = 10) ---
+
+  # Vérifie que le compte se verrouille après 10 tentatives de connexion ratées.
+  # Pourquoi : protection contre les attaques par force brute (chantier D).
+  test "le compte se verrouille après 10 tentatives de connexion échouées" do
+    # Arrange
+    user = users(:marie)
+
+    # Act — on simule 10 authentifications ratées (le bloc renvoie false = échec)
+    10.times { user.valid_for_authentication? { false } }
+
+    # Assert — le compte est désormais verrouillé
+    assert user.reload.access_locked?,
+           "Après 10 échecs, le compte doit être verrouillé (lockable)"
+  end
+
+  # Vérifie qu'avant d'atteindre le seuil, le compte reste déverrouillé.
+  # Pourquoi : on ne verrouille qu'au 10e échec, pas avant.
+  test "le compte reste déverrouillé en dessous de 10 tentatives échouées" do
+    # Arrange
+    user = users(:marie)
+
+    # Act — 9 échecs seulement
+    9.times { user.valid_for_authentication? { false } }
+
+    # Assert — toujours accessible
+    assert_not user.reload.access_locked?,
+               "En dessous de 10 échecs, le compte ne doit pas être verrouillé"
+  end
+
+  # --- OmniAuth : confirmation automatique via Google ---
+
+  # Vérifie qu'un nouvel utilisateur créé via Google est confirmé d'office.
+  # Pourquoi : Google a déjà vérifié l'email, inutile de redemander une confirmation
+  # (skip_confirmation! dans from_omniauth).
+  test "from_omniauth crée un utilisateur Google déjà confirmé" do
+    # Arrange — on simule le hash renvoyé par OmniAuth/Google
+    auth = mock_google_auth(uid: "google-123", email: "google@example.com")
+
+    # Act
+    user = User.from_omniauth(auth)
+
+    # Assert — compte créé ET confirmé sans email de confirmation
+    assert user.persisted?, "from_omniauth doit créer et sauvegarder l'utilisateur"
+    assert user.confirmed?, "Un compte créé via Google doit être confirmé d'office"
+  end
+
+  # Vérifie qu'un compte email existant NON confirmé est confirmé quand
+  # l'utilisateur se connecte ensuite via Google avec le même email.
+  # Pourquoi : Google prouve la possession de l'email, on le confirme (line 307).
+  test "from_omniauth confirme un compte email existant non confirmé" do
+    # Arrange — compte email non confirmé
+    user = User.create!(
+      first_name: "Lien",
+      last_name: "Google",
+      email: "lien@example.com",
+      password: "motdepasse123",
+      password_confirmation: "motdepasse123"
+    )
+    assert_not user.confirmed?, "Préalable : le compte ne doit pas être confirmé"
+
+    # Act — connexion via Google avec le MÊME email
+    auth = mock_google_auth(uid: "google-456", email: "lien@example.com")
+    returned = User.from_omniauth(auth)
+
+    # Assert — c'est bien le même compte, désormais confirmé et lié à Google
+    assert_equal user.id, returned.id, "from_omniauth doit retrouver le compte par email"
+    assert returned.confirmed?, "Le compte doit être confirmé après connexion Google"
+    assert_equal "google_oauth2", returned.provider, "Le compte doit être lié à Google"
+  end
+
+  private
+
+  # Construit un faux objet `auth` OmniAuth (style Google) pour les tests.
+  # OpenStruct permet d'accéder aux attributs en notation pointée (auth.info.email).
+  def mock_google_auth(uid:, email:, first_name: "Prénom", last_name: "Nom")
+    require "ostruct"
+    OpenStruct.new(
+      provider: "google_oauth2",
+      uid: uid,
+      info: OpenStruct.new(email: email, first_name: first_name, last_name: last_name)
+    )
+  end
 end

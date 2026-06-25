@@ -5,6 +5,10 @@
 # dans le contexte ERB des fixtures Rails (BCrypt n'est pas disponible dans ce contexte).
 # Pour la regénérer : bundle exec rails runner "require 'bcrypt'; puts BCrypt::Password.create('password')"
 # Hash correspondant au mot de passe : "password"
+#
+# confirmed_at : depuis l'ajout du module :confirmable, un compte non confirmé
+# est bloqué après la période de grâce. On marque donc les comptes de test comme
+# confirmés (date dans le passé) pour qu'ils puissent se connecter sans souci.
 
 # Utilisateur standard — pas admin, pas premium
 marie:
@@ -13,6 +17,7 @@ marie:
   first_name: Marie
   last_name: Dupont
   admin: false
+  confirmed_at: <%= 1.month.ago.to_fs(:db) %>
 
 # Deuxième utilisateur — pour tester les autorisations croisées
 # (ex. : Marie ne doit pas voir les histoires de Paul)
@@ -22,6 +27,7 @@ paul:
   first_name: Paul
   last_name: Martin
   admin: false
+  confirmed_at: <%= 1.month.ago.to_fs(:db) %>
 
 # Utilisateur admin — premium? retourne true automatiquement
 admin_user:
@@ -30,3 +36,4 @@ admin_user:
   first_name: Admin
   last_name: Noctilio
   admin: true
+  confirmed_at: <%= 1.month.ago.to_fs(:db) %>

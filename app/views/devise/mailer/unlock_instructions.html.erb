@@ -1,7 +1,82 @@
-<p>Hello <%= @resource.email %>!</p>
+<!DOCTYPE html>
+<%# Mail de déverrouillage de compte (Devise :lockable).
+    Envoyé après 10 tentatives de connexion échouées. Même charte cosmique. %>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Débloque ton compte — Noctilio</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0f1021; font-family:'Georgia', serif;">
 
-<p>Your account has been locked due to an excessive number of unsuccessful sign in attempts.</p>
+  <%# Wrapper principal — centré, largeur max 600px %>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0f1021;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
 
-<p>Click the link below to unlock your account:</p>
+        <%# Carte email %>
+        <table width="600" cellpadding="0" cellspacing="0" border="0"
+               style="background-color:#151728; border-radius:16px; border:1px solid rgba(240,201,122,0.2); max-width:600px; width:100%;">
 
-<p><%= link_to 'Unlock my account', unlock_url(@resource, unlock_token: @token) %></p>
+          <%# Header %>
+          <tr>
+            <td align="center" style="padding: 40px 40px 20px;">
+              <div style="width:60px; height:1px; background:linear-gradient(to right, transparent, #f0c97a, transparent); margin:0 auto 24px;"></div>
+              <p style="margin:0; font-family:'Georgia',serif; font-size:2rem; font-weight:400; letter-spacing:0.2em; color:#f0c97a; text-transform:uppercase;">
+                Noctilio
+              </p>
+              <p style="margin:8px 0 0; font-size:0.78rem; color:rgba(240,201,122,0.5); letter-spacing:0.15em; text-transform:uppercase;">
+                Sécurité du compte ✦
+              </p>
+            </td>
+          </tr>
+
+          <%# Corps du message %>
+          <tr>
+            <td style="padding: 10px 40px 30px;">
+
+              <h1 style="margin:0 0 20px; font-family:'Georgia',serif; font-size:1.6rem; font-weight:400; font-style:italic; color:#f6ebcd; text-align:center; line-height:1.4;">
+                Compte temporairement verrouillé
+              </h1>
+
+              <div style="width:40px; height:1px; background:rgba(240,201,122,0.3); margin:0 auto 24px;"></div>
+
+              <%# Explication — verrouillage après trop d'échecs de connexion %>
+              <p style="margin:0 0 28px; font-size:1rem; color:#d4cfc4; line-height:1.8; text-align:center;">
+                Ton compte a été verrouillé après un trop grand nombre de tentatives de
+                connexion échouées. Clique sur le bouton ci-dessous pour le débloquer.
+              </p>
+
+              <%# CTA — unlock_url + token fournis par Devise %>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding-bottom:16px;">
+                    <a href="<%= unlock_url(@resource, unlock_token: @token) %>"
+                       style="display:inline-block; background:#f0c97a; color:#0f1021; font-family:'Georgia',serif; font-size:0.95rem; font-weight:600; letter-spacing:0.08em; text-decoration:none; padding:14px 36px; border-radius:30px;">
+                      ✦ Débloquer mon compte
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <%# Footer %>
+          <tr>
+            <td style="padding: 20px 40px 40px; border-top:1px solid rgba(255,255,255,0.05);">
+              <p style="margin:0; font-size:0.78rem; color:rgba(138,133,120,0.6); text-align:center; line-height:1.8;">
+                Si tu n'es pas à l'origine de ces tentatives, change ton mot de passe par précaution sur
+                <a href="https://www.noctilio-app.fr" style="color:rgba(240,201,122,0.5); text-decoration:none;">www.noctilio-app.fr</a>.<br>
+                © <%= Date.today.year %> Noctilio · Fait avec ✦ pour les familles
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

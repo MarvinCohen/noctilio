@@ -4,6 +4,10 @@ class User < ApplicationRecord
   # ============================================================
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
+         # :trackable   → enregistre l'activité de connexion (nb de connexions, dates, IP)
+         # :lockable    → verrouille le compte après 10 échecs (seuil défini dans devise.rb)
+         # :confirmable → l'email doit être confirmé via un lien (7 jours de grâce, devise.rb)
+         :trackable, :lockable, :confirmable,
          # omniauthable permet à Devise de gérer les connexions via fournisseurs externes
          # providers: liste des fournisseurs autorisés (on peut en ajouter d'autres plus tard)
          :omniauthable, omniauth_providers: [:google_oauth2]
@@ -28,6 +32,10 @@ class User < ApplicationRecord
   # Badges gagnés par l'utilisateur
   has_many :user_badges, dependent: :destroy
   has_many :badges, through: :user_badges
+
+  # Abonnements aux notifications push (un par appareil/navigateur).
+  # dependent: :destroy → on nettoie les abonnements si le compte est supprimé.
+  has_many :push_subscriptions, dependent: :destroy
 
   # ============================================================
   # Callbacks
@@ -294,6 +302,9 @@ class User < ApplicationRecord
     user = find_by(email: auth.info.email)
     if user
       user.update(provider: auth.provider, uid: auth.uid)
+      # Google a vérifié cet email → on confirme le compte s'il ne l'était pas encore
+      # (évite de lui réclamer une confirmation par mail qu'il a déjà prouvée via Google).
+      user.confirm unless user.confirmed?
       return user
     end
 
@@ -307,6 +318,9 @@ class User < ApplicationRecord
       new_user.last_name  = auth.info.last_name.presence  || "-"
       # On génère un mot de passe aléatoire fort — l'utilisateur Google n'en aura jamais besoin
       new_user.password   = Devise.friendly_token[0, 20]
+      # Email déjà vérifié par Google → on confirme directement (skip l'email de confirmation).
+      # skip_confirmation! doit être appelé AVANT la sauvegarde (donc dans ce bloc create).
+      new_user.skip_confirmation!
     end
   end
 

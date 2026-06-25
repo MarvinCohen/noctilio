@@ -114,6 +114,14 @@ STRIPE_PREMIUM_PRICE_ID=price_... # ID du PRIX (price_, PAS prod_) de l'abonneme
 UMAMI_WEBSITE_ID=...           # ID du site Umami Cloud (analytics) — défini sur Railway uniquement.
                                # Absent en dev/test → le script de tracking est automatiquement désactivé.
                                # Voir AnalyticsHelper#umami_enabled? (off aussi pour les comptes admin).
+
+# --- Notifications push web ("histoire du soir") ---
+# Clés VAPID : authentifient le serveur auprès des services de push des navigateurs.
+# Générer UNE paire (à faire une seule fois) puis la coller dans les ENV Railway :
+#   bin/rails runner "require 'web-push'; k = WebPush.generate_key; puts \"PUBLIC=#{k.public_key}\"; puts \"PRIVATE=#{k.private_key}\""
+# Sans ces deux clés, PushNotificationService#deliver renvoie false (push désactivé en dev/test).
+VAPID_PUBLIC_KEY=...           # Clé publique VAPID — aussi exposée côté client (Stimulus push_controller)
+VAPID_PRIVATE_KEY=...          # Clé privée VAPID — SECRÈTE, jamais commitée, Railway uniquement
 ```
 
 ## Flux de génération d'une histoire

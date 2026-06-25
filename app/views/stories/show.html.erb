@@ -77,8 +77,11 @@
           <h1 class="story-error-title"><%= t("story_show.error_title") %></h1>
           <p class="story-error-hint"><%= t("story_show.error_hint") %></p>
           <div class="d-flex gap-3 justify-content-center">
-            <%# "Réessayer" partagé avec la bibliothèque (library.retry) %>
-            <%= link_to t("library.retry"), new_story_path, class: "story-btn-primary" %>
+            <%# "Réessayer" relance la MÊME histoire via l'action retry (POST) :
+                on conserve le profil enfant + l'univers choisis par le parent,
+                au lieu de le renvoyer vers un formulaire vierge (new_story_path).
+                button_to génère un <form> POST ; on garde le style story-btn-primary. %>
+            <%= button_to t("library.retry"), retry_story_path(@story), method: :post, class: "story-btn-primary" %>
             <%= link_to t("story_show.my_stories"), stories_path, class: "story-btn-secondary" %>
           </div>
         </div>

@@ -118,3 +118,54 @@ self.addEventListener("fetch", function(event) {
       })
   );
 });
+
+// ============================================================
+// Événement "push" — réception d'une notification push du serveur
+// ============================================================
+// Déclenché même app fermée (le service worker tourne en arrière-plan).
+// Le serveur envoie un payload JSON { title, body, url } via web-push ;
+// on l'affiche sous forme de notification système.
+self.addEventListener("push", function(event) {
+  // Payload par défaut si jamais le message arrive vide ou illisible
+  let data = { title: "Noctilio", body: "Une histoire t'attend ✦", url: "/" };
+  try {
+    if (event.data) data = event.data.json();
+  } catch (e) {
+    // Payload non-JSON : on garde les valeurs par défaut
+  }
+
+  const options = {
+    body: data.body,
+    icon: "/icon-192.png",   // icône PWA déjà servie (voir manifest)
+    badge: "/icon-192.png",  // petite icône monochrome (Android)
+    // data.url est relu dans "notificationclick" pour ouvrir la bonne page
+    data: { url: data.url || "/" }
+  };
+
+  // waitUntil garde le service worker en vie le temps d'afficher la notif
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Noctilio", options)
+  );
+});
+
+// ============================================================
+// Événement "notificationclick" — clic sur la notification
+// ============================================================
+// Ferme la notif puis ouvre (ou met au premier plan) l'app sur l'URL fournie.
+self.addEventListener("notificationclick", function(event) {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || "/";
+
+  event.waitUntil(
+    // Si un onglet de l'app est déjà ouvert, on le réutilise ; sinon on en ouvre un.
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function(clientList) {
+      for (const client of clientList) {
+        if ("focus" in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+    })
+  );
+});
