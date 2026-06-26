@@ -56,10 +56,15 @@
 
         <%# Menu utilisateur (dropdown) %>
         <ul class="navbar-nav ms-auto">
-          <%# Badge Premium si abonné %>
+          <%# Badge du niveau d'abonnement — on affiche le bon libellé selon le
+              palier (Essentiel ou Premium). Rien pour un compte gratuit. %>
           <% if current_user.premium? %>
             <li class="nav-item d-flex align-items-center me-2">
               <span class="badge bg-primary px-2 py-1">✦ Premium</span>
+            </li>
+          <% elsif current_user.essentiel? %>
+            <li class="nav-item d-flex align-items-center me-2">
+              <span class="badge bg-primary px-2 py-1">✦ Essentiel</span>
             </li>
           <% end %>
 

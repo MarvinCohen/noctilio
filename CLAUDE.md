@@ -108,8 +108,12 @@ STRIPE_PUBLIC_KEY=pk_...        # Clé publique (publishable) — utilisée côt
 STRIPE_PRIVATE_KEY=sk_...       # Clé secrète — appels serveur à l'API Stripe
 STRIPE_SIGNING_SECRET=whsec_... # Secret de signature du webhook (vérifie l'authenticité des events)
                                # Webhook monté automatiquement par Pay sur /pay/webhooks/stripe
-STRIPE_PREMIUM_PRICE_ID=price_... # ID du PRIX (price_, PAS prod_) de l'abonnement Premium
-                               # Utilisé dans SubscriptionsController#checkout (line_items)
+STRIPE_PREMIUM_PRICE_ID=price_... # ID du PRIX (price_, PAS prod_) de l'abonnement Premium (9,99€)
+                               # Utilisé dans SubscriptionsController#checkout (plan "premium")
+STRIPE_ESSENTIEL_PRICE_ID=price_... # ID du PRIX de l'abonnement Essentiel (4,99€)
+                               # Lu par User#subscription_tier pour distinguer Essentiel de Premium,
+                               # et par SubscriptionsController#checkout (plan "essentiel").
+                               # ⚠️ Sans cette variable, un abonné Essentiel serait vu comme Premium.
 
 UMAMI_WEBSITE_ID=...           # ID du site Umami Cloud (analytics) — défini sur Railway uniquement.
                                # Absent en dev/test → le script de tracking est automatiquement désactivé.
@@ -220,7 +224,7 @@ Quand `/` sera protégé par Devise et redirigera vers `/users/sign_in`, il faud
 
 ## Tests (Minitest)
 
-Suite complète : 186 tests, 0 failures, 0 errors
+Suite complète : 310 tests, 0 failures, 0 errors
 
 Fichiers de test :
 - `test/models/badge_test.rb` — 31 tests sur les 37 badges
@@ -236,20 +240,46 @@ Fichiers de test :
 
 ## Abonnement (Stripe configuré — mode TEST)
 
-- **Gratuit** : 3 histoires/semaine (réinitialisé chaque lundi), TEXTE SEUL
-  (ni illustration ni audio). Quota appliqué par `check_story_limit!`
-  (before_action sur new/create dans StoriesController).
-- **Premium** (9,99€/mois) : histoires illimitées + illustration IA + lecture audio
-  + mode interactif.
+Modèle à **3 niveaux** (le palier Essentiel est mis en avant sur la page abonnement) :
+
+| Niveau    | Prix     | Histoires        | Illustration IA | Audio | Mode interactif | Dashboard avancé |
+|-----------|----------|------------------|-----------------|-------|-----------------|------------------|
+| Gratuit   | 0€       | 3/semaine        | non*            | non*  | non*            | non              |
+| Essentiel | 4,99€/mois | illimité       | oui             | non   | non             | non              |
+| Premium   | 9,99€/mois | illimité       | oui             | oui   | oui             | oui              |
+
+(*sauf la TOUTE PREMIÈRE histoire offerte en accès complet, voir Offre découverte)
+
+- **Gratuit** : 3 histoires/semaine (réinitialisé chaque lundi), TEXTE SEUL.
+  Quota appliqué par `check_story_limit!` (before_action sur new/create dans StoriesController).
+- **Essentiel** (4,99€/mois) : histoires illimitées + illustration IA. Pas d'audio,
+  pas de mode interactif, pas de dashboard parental avancé.
+- **Premium** (9,99€/mois) : tout l'Essentiel + lecture audio + mode interactif
+  + dashboard parental avancé.
 - **Offre découverte** : la TOUTE PREMIÈRE histoire d'un compte gratuit est en accès
   complet (image + audio + interactif) pour donner envie de s'abonner.
-  Voir `User#welcome_story?`, `User#full_experience_for?`, `User#first_story_pending?`.
-- `User#premium?` : `true` si admin OU abonnement Pay/Stripe actif (`subscribed?`).
-- Flux Stripe : `SubscriptionsController#checkout` → Stripe Checkout (hébergé) →
-  `success`/`cancel`. Résiliation = période de grâce (`on_grace_period?`),
-  réactivation possible via `#resume` tant que l'abonnement n'est pas terminé.
+  Voir `User#welcome_story?`, `User#first_story_pending?`.
+
+### Modèle de gating (app/models/user.rb)
+
+- `User#subscription_tier` → `:free` / `:essentiel` / `:premium`. Logique :
+  admin → `:premium` ; pas d'abonnement actif → `:free` ; sinon on compare
+  `payment_processor.subscription.processor_plan` à `ENV["STRIPE_ESSENTIEL_PRICE_ID"]`
+  (→ `:essentiel`), tout autre plan payant → `:premium` (jamais rétrograder un payeur).
+- Prédicats dérivés : `premium?`, `essentiel?`, `unlimited_stories?` (Essentiel + Premium).
+- Verrous de fonctionnalités :
+  - `illustrations_for?(story)` = `unlimited_stories? || welcome_story?(story)` (dès l'Essentiel)
+  - `audio_for?(story)` = `premium? || welcome_story?(story)` (Premium uniquement)
+  - le mode interactif reste gardé par `premium?`.
+
+- Flux Stripe : `SubscriptionsController#checkout` reçoit `params[:plan]`
+  (`"essentiel"` ou `"premium"`), résout le bon price ID via `checkout_price_id`,
+  puis Stripe Checkout (hébergé) → `success`/`cancel`. Résiliation = période de grâce
+  (`on_grace_period?`), réactivation via `#resume` tant que l'abonnement n'est pas terminé.
+  ⚠️ Pas de flux d'upgrade Essentiel→Premium implémenté (éviterait un double abonnement).
 - ⚠️ Encore en mode TEST (carte 4242…). Pour facturer pour de vrai : passer en
-  clés "live", configurer le webhook prod et les variables `STRIPE_*` sur Railway.
+  clés "live", configurer le webhook prod et les variables `STRIPE_*` sur Railway
+  (dont **STRIPE_ESSENTIEL_PRICE_ID**, à créer comme produit/prix 4,99€ dans Stripe).
 
 ## Commandes utiles
 

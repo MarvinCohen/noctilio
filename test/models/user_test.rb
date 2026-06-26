@@ -189,43 +189,161 @@ class UserTest < ActiveSupport::TestCase
                "Une histoire sans id ne devrait jamais être la 1re histoire"
   end
 
-  # Vérifie que full_experience_for? est true pour la 1re histoire d'un gratuit
-  # Cas : Paul (gratuit) + sa 1re histoire (paul_story)
-  # Pourquoi : règle métier de l'offre découverte — la 1re histoire est en accès complet
-  test "full_experience_for? retourne true pour la 1re histoire d'un gratuit" do
-    # Arrange
-    user = users(:paul)
-    assert_not user.premium?, "Pré-condition : Paul ne doit pas être premium"
+  # === Palier d'abonnement (subscription_tier) ===
 
-    # Act + Assert — gratuit mais 1re histoire → expérience complète
-    assert user.full_experience_for?(stories(:paul_story)),
-           "La 1re histoire d'un gratuit devrait avoir l'expérience complète"
+  # Vérifie qu'un admin est toujours considéré comme Premium
+  # Cas : admin_user (admin? == true)
+  # Pourquoi : subscription_tier court-circuite et renvoie :premium pour les admins
+  test "subscription_tier retourne :premium pour un admin" do
+    # Act + Assert — l'admin n'a pas besoin d'abonnement Stripe pour être Premium
+    assert_equal :premium, users(:admin_user).subscription_tier
   end
 
-  # Vérifie que full_experience_for? est false pour la 2e histoire d'un gratuit
-  # Cas : Paul (gratuit) + une 2e histoire
-  # Pourquoi : dès la 2e histoire, le gratuit repasse en texte seul
-  test "full_experience_for? retourne false pour la 2e histoire d'un gratuit" do
+  # Vérifie qu'un utilisateur sans abonnement actif est :free
+  # Cas : Paul (pas admin, pas d'abonnement Pay)
+  # Pourquoi : aucun payment_processor abonné → palier gratuit
+  test "subscription_tier retourne :free sans abonnement actif" do
+    # Act + Assert — Paul n'a aucun abonnement → gratuit
+    assert_equal :free, users(:paul).subscription_tier
+  end
+
+  # Vérifie que subscription_tier renvoie :essentiel quand le plan == l'ID Essentiel
+  # Cas : on simule un payment_processor abonné dont le plan == STRIPE_ESSENTIEL_PRICE_ID
+  # Pourquoi : c'est exactement ce qui distingue Essentiel de Premium
+  test "subscription_tier retourne :essentiel quand le plan correspond à l'ID Essentiel" do
+    # Arrange — un prix factice et le double d'abonnement qui le porte
+    user = users(:paul)
+    prix_essentiel = "price_essentiel_test"
+    # Double minimal d'un abonnement Pay : seul processor_plan est lu
+    abonnement = Object.new
+    abonnement.define_singleton_method(:processor_plan) { prix_essentiel }
+    # Double minimal d'un payment_processor abonné
+    faux_processor = Object.new
+    faux_processor.define_singleton_method(:subscribed?) { true }
+    faux_processor.define_singleton_method(:subscription) { abonnement }
+
+    # On force l'ENV lue par subscription_tier le temps du test, puis on restaure
+    ancien_id = ENV["STRIPE_ESSENTIEL_PRICE_ID"]
+    begin
+      ENV["STRIPE_ESSENTIEL_PRICE_ID"] = prix_essentiel
+      # On remplace payment_processor par notre double
+      stub_method(user, :payment_processor, -> { faux_processor }) do
+        # Act + Assert — plan == ID Essentiel → palier Essentiel
+        assert_equal :essentiel, user.subscription_tier
+      end
+    ensure
+      ENV["STRIPE_ESSENTIEL_PRICE_ID"] = ancien_id
+    end
+  end
+
+  # Vérifie que tout abonnement payant inconnu retombe sur :premium (jamais rétrograder un payeur)
+  # Cas : payment_processor abonné dont le plan != ID Essentiel
+  # Pourquoi : règle de sécurité — un client qui paie ne doit jamais perdre l'accès Premium
+  test "subscription_tier retourne :premium pour un plan payant non Essentiel" do
+    # Arrange — abonnement avec un plan qui ne correspond pas à l'Essentiel
+    user = users(:paul)
+    abonnement = Object.new
+    abonnement.define_singleton_method(:processor_plan) { "price_inconnu" }
+    faux_processor = Object.new
+    faux_processor.define_singleton_method(:subscribed?) { true }
+    faux_processor.define_singleton_method(:subscription) { abonnement }
+
+    ancien_id = ENV["STRIPE_ESSENTIEL_PRICE_ID"]
+    begin
+      ENV["STRIPE_ESSENTIEL_PRICE_ID"] = "price_essentiel_test"
+      stub_method(user, :payment_processor, -> { faux_processor }) do
+        # Act + Assert — plan inconnu → on suppose Premium
+        assert_equal :premium, user.subscription_tier
+      end
+    ensure
+      ENV["STRIPE_ESSENTIEL_PRICE_ID"] = ancien_id
+    end
+  end
+
+  # Vérifie les prédicats dérivés du palier Essentiel
+  # Cas : on force subscription_tier à :essentiel
+  # Pourquoi : essentiel? et unlimited_stories? vrais, mais premium? faux
+  test "predicats du palier Essentiel : essentiel? et unlimited_stories? vrais, premium? faux" do
+    # Arrange — on stub directement le palier pour isoler les prédicats
+    user = users(:paul)
+    stub_method(user, :subscription_tier, -> { :essentiel }) do
+      # Act + Assert
+      assert user.essentiel?, "Essentiel doit répondre essentiel? == true"
+      assert_not user.premium?, "Essentiel ne doit PAS être premium?"
+      assert user.unlimited_stories?, "Essentiel doit avoir les histoires illimitées"
+    end
+  end
+
+  # === Verrous de fonctionnalités par palier (illustrations_for? / audio_for?) ===
+
+  # Vérifie qu'un Essentiel a les illustrations mais PAS l'audio (hors offre découverte)
+  # Cas : admin_user sans histoire (welcome_story? toujours false) forcé à :essentiel
+  # Pourquoi : l'audio est réservé au Premium, l'illustration est incluse dès l'Essentiel
+  test "Essentiel : illustrations oui, audio non, pour une histoire hors offre decouverte" do
+    # Arrange — admin n'a aucune histoire → welcome_story? renverra false
+    user = users(:admin_user)
+    histoire = stories(:completed_saved)
+    stub_method(user, :subscription_tier, -> { :essentiel }) do
+      # Act + Assert
+      assert user.illustrations_for?(histoire), "Essentiel doit avoir les illustrations"
+      assert_not user.audio_for?(histoire), "Essentiel ne doit PAS avoir l'audio"
+    end
+  end
+
+  # Vérifie qu'un Premium a illustrations ET audio sur n'importe quelle histoire
+  # Cas : admin_user (Premium) + une histoire quelconque
+  # Pourquoi : le Premium débloque tout, sans condition d'ordre
+  test "Premium : illustrations et audio pour toute histoire" do
+    # Arrange — admin est Premium via subscription_tier
+    user = users(:admin_user)
+    histoire = stories(:completed_saved)
+
+    # Act + Assert
+    assert user.illustrations_for?(histoire), "Premium doit avoir les illustrations"
+    assert user.audio_for?(histoire), "Premium doit avoir l'audio"
+  end
+
+  # Vérifie l'offre découverte : la 1re histoire d'un gratuit a tout (image + audio)
+  # Cas : Paul (gratuit) + sa 1re histoire (paul_story)
+  # Pourquoi : la 1re histoire est en accès complet pour donner envie de s'abonner
+  test "Gratuit : illustrations et audio pour la 1re histoire (offre decouverte)" do
+    # Arrange
+    user = users(:paul)
+    assert_not user.unlimited_stories?, "Pré-condition : Paul est gratuit"
+
+    # Act + Assert — 1re histoire → expérience complète malgré le palier gratuit
+    assert user.illustrations_for?(stories(:paul_story)),
+           "La 1re histoire d'un gratuit doit avoir les illustrations"
+    assert user.audio_for?(stories(:paul_story)),
+           "La 1re histoire d'un gratuit doit avoir l'audio"
+  end
+
+  # Vérifie que dès la 2e histoire, le gratuit repasse en texte seul
+  # Cas : Paul (gratuit) + une 2e histoire créée à la volée
+  # Pourquoi : l'offre découverte ne couvre que la toute première histoire
+  test "Gratuit : ni illustrations ni audio des la 2e histoire" do
     # Arrange — on crée une 2e histoire pour Paul
     user = users(:paul)
     seconde_histoire = children(:theo).stories.create!(status: :pending)
 
     # Act + Assert — gratuit et pas la 1re → texte seul
-    assert_not user.full_experience_for?(seconde_histoire),
-               "La 2e histoire d'un gratuit ne devrait PAS avoir l'expérience complète"
+    assert_not user.illustrations_for?(seconde_histoire),
+               "La 2e histoire d'un gratuit ne doit PAS avoir d'illustrations"
+    assert_not user.audio_for?(seconde_histoire),
+               "La 2e histoire d'un gratuit ne doit PAS avoir d'audio"
   end
 
-  # Vérifie que full_experience_for? est toujours true pour un premium (admin)
-  # Cas : admin_user (premium) + une histoire qui n'est pas la sienne
-  # Pourquoi : un premium a l'expérience complète sur TOUTES ses histoires, peu importe l'ordre
-  test "full_experience_for? retourne true pour un premium quelle que soit l'histoire" do
-    # Arrange — admin est premium ; on passe une histoire quelconque
-    user = users(:admin_user)
-    assert user.premium?, "Pré-condition : admin_user doit être premium"
-
-    # Act + Assert — premium → expérience complète sans vérifier si c'est la 1re
-    assert user.full_experience_for?(stories(:completed_saved)),
-           "Un premium devrait toujours avoir l'expérience complète"
+  # Vérifie que can_create_story? est vrai pour tout palier à histoires illimitées
+  # Cas : on force subscription_tier à :essentiel
+  # Pourquoi : Essentiel comme Premium doivent contourner le quota hebdomadaire
+  test "can_create_story? est vrai pour un palier illimite" do
+    # Arrange
+    user = users(:paul)
+    stub_method(user, :subscription_tier, -> { :essentiel }) do
+      # Act + Assert — pas de limite hebdo pour un palier illimité
+      assert user.can_create_story?,
+             "Un palier illimité doit pouvoir créer une histoire sans quota"
+    end
   end
 
   # Vérifie que first_story_pending? est true quand l'utilisateur n'a aucune histoire

@@ -145,6 +145,110 @@
   /* Note sous le bouton */
   .sub-note { text-align: center; color: #8a8578; font-size: 0.82rem; }
 
+  /* ── Grille des 3 paliers (Gratuit / Essentiel / Premium) ── */
+  /* Affichée aux comptes gratuits pour comparer et choisir une offre. */
+  .sub-tiers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    max-width: 920px;
+    margin: 0 auto;
+    align-items: stretch; /* toutes les cartes à la même hauteur */
+  }
+  /* Carte d'un palier — flex column pour coller le bouton en bas */
+  .sub-tier {
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.15);
+    border-radius: 20px;
+    padding: 1.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  /* Palier MIS EN AVANT (Essentiel) — bordure dorée + halo + léger zoom */
+  .sub-tier--featured {
+    border-color: rgba(240, 201, 122, 0.5);
+    box-shadow: 0 0 50px rgba(240, 201, 122, 0.1);
+    transform: scale(1.03);
+  }
+  /* Pastille "Le plus populaire" posée sur le bord haut de la carte Essentiel */
+  .sub-tier-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f0c97a;
+    color: #0b0e1a;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.3rem 0.85rem;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  /* Nom du palier */
+  .sub-tier-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 1.5rem;
+    color: #fdf6e3;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+  /* Prix du palier */
+  .sub-tier-price { text-align: center; margin-bottom: 1.25rem; }
+  .sub-tier-price-amount {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 2.8rem;
+    color: #f0c97a;
+    line-height: 1;
+  }
+  .sub-tier-price-period { color: #8a8578; font-size: 0.8rem; }
+  /* Liste des features du palier — flex-grow pousse le bouton en bas */
+  .sub-tier-features { list-style: none; padding: 0; margin: 0 0 1.5rem; flex-grow: 1; }
+  .sub-tier-feature {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    color: #d4cfc4;
+    font-size: 0.88rem;
+  }
+  .sub-tier-feature-icon { color: #f0c97a; flex-shrink: 0; }
+  /* Feature ABSENTE du palier — grisée avec un tiret */
+  .sub-tier-feature--off { color: rgba(138, 133, 120, 0.55); }
+  .sub-tier-feature--off .sub-tier-feature-icon { color: rgba(138, 133, 120, 0.4); }
+  /* Bouton CTA dans une carte de palier — collé en bas */
+  .sub-tier .sub-btn-cta { margin-top: auto; margin-bottom: 0; }
+  /* Bouton CTA secondaire (Premium) — contour doré, moins appuyé que l'Essentiel plein */
+  .sub-btn-cta-outline {
+    display: block;
+    width: 100%;
+    padding: 0.85rem;
+    background: transparent;
+    color: #f0c97a;
+    border: 1px solid rgba(240, 201, 122, 0.5);
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    text-decoration: none;
+    margin-top: auto;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .sub-btn-cta-outline:hover { background: rgba(240, 201, 122, 0.1); color: #f0c97a; text-decoration: none; }
+  /* Encart "Ton offre actuelle" (carte Gratuit, à la place du bouton) */
+  .sub-tier-current {
+    text-align: center;
+    color: #8a8578;
+    font-size: 0.85rem;
+    padding: 0.85rem;
+    border: 1px solid rgba(138, 133, 120, 0.25);
+    border-radius: 50px;
+    margin-top: auto;
+  }
+
   /* ── Tableau comparatif Gratuit vs Premium ── */
   .sub-compare { max-width: 640px; margin: 3.5rem auto 0; }
   /* Titre de section — même style éditorial que le hero */
@@ -178,8 +282,9 @@
   .sub-compare-table td:not(:first-child) { text-align: center; }
   /* En-têtes de colonnes — Gratuit gris, Premium doré */
   .sub-compare-table thead th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
-  .sub-col-free    { color: #8a8578; }
-  .sub-col-premium { color: #f0c97a; }
+  .sub-col-free      { color: #8a8578; }
+  .sub-col-essentiel { color: #f0c97a; }
+  .sub-col-premium   { color: #f0c97a; }
   /* Valeurs — check doré pour inclus, tiret gris pour absent */
   .sub-check { color: #f0c97a; }
   .sub-dash  { color: rgba(138, 133, 120, 0.5); }
@@ -229,6 +334,12 @@
   /* ── Responsive mobile (≤ 576px, cible iPhone SE 375px) ── */
   /* La page n'avait aucun breakpoint : sur petit écran la carte et le tableau */
   /* comparatif étaient trop serrés. On réduit paddings et tailles de police. */
+  /* Les 3 cartes de palier s'empilent dès qu'on passe sous 768px (tablette/mobile) */
+  @media (max-width: 768px) {
+    .sub-tiers { grid-template-columns: 1fr; max-width: 420px; }
+    .sub-tier--featured { transform: none; } /* pas de zoom une fois empilé */
+  }
+
   @media (max-width: 576px) {
     .sub-page { padding: 2rem 0 4rem; }
     .sub-hero { margin-bottom: 2rem; }
@@ -258,59 +369,54 @@
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
     </span>
     <h1 class="sub-hero-title"><%= t("subscription.title") %></h1>
-    <% if @is_premium %>
+    <% if @subscribed %>
       <p class="sub-hero-subtitle"><%= t("subscription.subtitle_active") %></p>
     <% else %>
       <p class="sub-hero-subtitle"><%= t("subscription.subtitle_free") %></p>
     <% end %>
   </div>
 
-  <%# ── Carte principale ── %>
-  <div class="sub-card">
+  <%# ============================================================ %>
+  <%# CAS 1 — l'utilisateur a déjà un palier payant : carte de GESTION %>
+  <%# ============================================================ %>
+  <% if @subscribed %>
+    <div class="sub-card">
 
-    <%# ── Cas 1 : l'utilisateur est déjà premium ── %>
-    <% if @is_premium %>
-
-      <%# Badge d'état — distingue "Premium actif" d'une résiliation programmée %>
+      <%# Badge d'état — distingue "abonnement actif" d'une résiliation programmée %>
       <%# on_grace_period? : abonnement résilié mais encore valable jusqu'à l'échéance %>
       <div class="text-center mb-3">
         <% if @subscription&.on_grace_period? %>
-          <%# Résiliation programmée : on reste premium jusqu'à la date de fin (badge doré) %>
+          <%# Résiliation programmée : accès maintenu jusqu'à la date de fin (badge doré) %>
           <span class="sub-badge-active" style="background: rgba(240, 201, 122, 0.12); color: #f0c97a; border-color: rgba(240, 201, 122, 0.45);">
             <%= t("subscription.cancel_scheduled") %>
           </span>
         <% else %>
-          <%# Abonnement pleinement actif (badge vert) %>
+          <%# Abonnement pleinement actif — libellé selon le palier réel (badge vert) %>
           <span class="sub-badge-active">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <%= t("subscription.premium_active") %>
+            <%= @tier == :premium ? t("subscription.premium_active") : t("subscription.essentiel_active") %>
           </span>
         <% end %>
       </div>
 
-      <%# Liste des avantages inclus %>
+      <%# Liste des avantages inclus — dépend du palier (Premium a tout, Essentiel a moins) %>
       <ul class="sub-features">
-        <li class="sub-feature-item">
-          <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label"><%= t("subscription.feature_unlimited_html") %></span>
-        </li>
-        <li class="sub-feature-item">
-          <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label"><%= t("subscription.feature_interactive_html") %></span>
-        </li>
-        <li class="sub-feature-item">
-          <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label"><%= t("subscription.feature_dashboard_html") %></span>
-        </li>
-        <li class="sub-feature-item">
-          <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label"><%= t("subscription.feature_priority_html") %></span>
-        </li>
+        <% if @tier == :premium %>
+          <%# Premium : toutes les fonctionnalités %>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_unlimited") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_illustrations") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_audio") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_interactive") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_dashboard") %></span></li>
+        <% else %>
+          <%# Essentiel : histoires illimitées + illustrations (pas d'audio ni interactif) %>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_unlimited") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_illustrations") %></span></li>
+        <% end %>
       </ul>
 
       <% if @subscription&.on_grace_period? %>
-        <%# Résiliation déjà programmée : on rappelle la date de fin d'accès %>
-        <%# et on propose de FAIRE MARCHE ARRIÈRE (réactiver) plutôt que de re-résilier. %>
+        <%# Résiliation déjà programmée : rappel de la date de fin + proposition de réactiver %>
         <p class="sub-note" style="text-align: center;">
           <%= t("subscription.grace_until_html", date: @subscription.ends_at.strftime("%d/%m/%Y")) %>
         </p>
@@ -327,63 +433,91 @@
               data: { confirm: t("subscription.cancel_confirm") } %>
       <% end %>
 
-    <%# ── Cas 2 : utilisateur gratuit — afficher le CTA ── %>
-    <% else %>
+    </div>
 
-      <%# Prix — 9,99€/mois %>
-      <div class="sub-price">
-        <div class="sub-price-amount"><%= t("subscription.price_amount") %></div>
-        <div class="sub-price-period"><%= t("subscription.price_period") %></div>
-      </div>
+  <%# ============================================================ %>
+  <%# CAS 2 — compte gratuit : grille des 3 paliers (Essentiel en avant) %>
+  <%# ============================================================ %>
+  <% else %>
+    <div class="sub-tiers">
 
-      <%# Jauge histoires gratuites (max 3/semaine) %>
-      <div class="sub-quota">
-        <div class="sub-quota-label"><%= t("subscription.quota_label") %></div>
-        <div class="sub-quota-bar">
-          <%# Calcul du pourcentage utilisé sur 3 histoires max %>
-          <% pct = [(@stories_this_week.to_f / 3 * 100).round, 100].min %>
-          <div class="sub-quota-fill" style="width: <%= pct %>%"></div>
+      <%# ── Carte 1 : Gratuit (palier actuel de l'utilisateur) ── %>
+      <div class="sub-tier">
+        <div class="sub-tier-name"><%= t("subscription.tier_free_name") %></div>
+        <div class="sub-tier-price">
+          <div class="sub-tier-price-amount"><%= t("subscription.price_free") %></div>
+          <div class="sub-tier-price-period"><%= t("subscription.price_free_period") %></div>
         </div>
-        <div class="sub-quota-count"><%= t("subscription.quota_count", count: @stories_this_week) %></div>
+        <ul class="sub-tier-features">
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_stories_limited") %></li>
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_text_only") %></li>
+          <li class="sub-tier-feature sub-tier-feature--off"><span class="sub-tier-feature-icon">—</span><%= t("subscription.card_illustrations") %></li>
+          <li class="sub-tier-feature sub-tier-feature--off"><span class="sub-tier-feature-icon">—</span><%= t("subscription.card_audio") %></li>
+        </ul>
+        <%# Jauge du quota hebdo — montre où en est l'utilisateur (max 3/semaine) %>
+        <div class="sub-quota">
+          <div class="sub-quota-label"><%= t("subscription.quota_label") %></div>
+          <div class="sub-quota-bar">
+            <% pct = [(@stories_this_week.to_f / 3 * 100).round, 100].min %>
+            <div class="sub-quota-fill" style="width: <%= pct %>%"></div>
+          </div>
+          <div class="sub-quota-count"><%= t("subscription.quota_count", count: @stories_this_week) %></div>
+        </div>
+        <%# Pas de bouton : c'est déjà l'offre en cours de l'utilisateur %>
+        <div class="sub-tier-current"><%= t("subscription.current_plan") %></div>
       </div>
 
-      <%# Liste des features incluses en premium %>
-      <ul class="sub-features">
-        <li class="sub-feature-item">
-          <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label"><%= t("subscription.feature_unlimited_html") %></span>
-        </li>
-        <li class="sub-feature-item">
-          <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label"><%= t("subscription.feature_interactive_html") %></span>
-        </li>
-        <li class="sub-feature-item">
-          <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label"><%= t("subscription.feature_dashboard_html") %></span>
-        </li>
-        <li class="sub-feature-item">
-          <span class="sub-feature-icon">✦</span>
-          <span class="sub-feature-label"><%= t("subscription.feature_priority_html") %></span>
-        </li>
-      </ul>
+      <%# ── Carte 2 : Essentiel — MISE EN AVANT (le plus populaire) ── %>
+      <div class="sub-tier sub-tier--featured">
+        <span class="sub-tier-badge"><%= t("subscription.popular_badge") %></span>
+        <div class="sub-tier-name"><%= t("subscription.tier_essentiel_name") %></div>
+        <div class="sub-tier-price">
+          <div class="sub-tier-price-amount"><%= t("subscription.price_essentiel") %></div>
+          <div class="sub-tier-price-period"><%= t("subscription.price_period") %></div>
+        </div>
+        <ul class="sub-tier-features">
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_unlimited") %></li>
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_illustrations") %></li>
+          <li class="sub-tier-feature sub-tier-feature--off"><span class="sub-tier-feature-icon">—</span><%= t("subscription.card_audio") %></li>
+          <li class="sub-tier-feature sub-tier-feature--off"><span class="sub-tier-feature-icon">—</span><%= t("subscription.card_interactive") %></li>
+        </ul>
+        <%# Bouton CTA — checkout Stripe avec le plan "essentiel".
+            data-turbo:false obligatoire : le checkout redirige vers Stripe (domaine externe),
+            Turbo (fetch) ne sait pas suivre une redirection cross-origin. %>
+        <%= button_to t("subscription.subscribe_essentiel"),
+              subscription_checkout_path(plan: "essentiel"),
+              method: :post,
+              form: { data: { turbo: false } },
+              class: "sub-btn-cta" %>
+      </div>
 
-      <%# Bouton CTA — soumet le formulaire de checkout Stripe %>
-      <%# button_to génère un formulaire POST directement %>
-      <%# data-turbo: false → désactive Turbo sur CE formulaire. %>
-      <%# Indispensable : le checkout redirige vers un domaine EXTERNE (Stripe). %>
-      <%# Turbo soumet en fetch() et ne sait pas suivre une redirection cross-origin %>
-      <%# → sans ça, le clic ne fait "rien". On force donc une soumission navigateur classique. %>
-      <%= button_to t("subscription.subscribe"),
-            subscription_checkout_path,
-            method: :post,
-            form: { data: { turbo: false } },
-            class: "sub-btn-cta" %>
+      <%# ── Carte 3 : Premium (tout inclus) ── %>
+      <div class="sub-tier">
+        <div class="sub-tier-name"><%= t("subscription.tier_premium_name") %></div>
+        <div class="sub-tier-price">
+          <div class="sub-tier-price-amount"><%= t("subscription.price_premium") %></div>
+          <div class="sub-tier-price-period"><%= t("subscription.price_period") %></div>
+        </div>
+        <ul class="sub-tier-features">
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_unlimited") %></li>
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_illustrations") %></li>
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_audio") %></li>
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_interactive") %></li>
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_dashboard") %></li>
+        </ul>
+        <%# Bouton CTA secondaire (contour) — checkout Stripe avec le plan "premium" %>
+        <%= button_to t("subscription.subscribe_premium"),
+              subscription_checkout_path(plan: "premium"),
+              method: :post,
+              form: { data: { turbo: false } },
+              class: "sub-btn-cta-outline" %>
+      </div>
 
-      <p class="sub-note"><%= t("subscription.secure_note") %></p>
+    </div>
 
-    <% end %>
+    <p class="sub-note" style="margin-top: 1.5rem;"><%= t("subscription.secure_note") %></p>
 
-  </div>
+  <% end %>
 
   <%# ── Tableau comparatif Gratuit vs Premium ── %>
   <%# Visible par tous : aide les gratuits à se décider, rappelle aux premium ce qu'ils ont %>
@@ -394,42 +528,57 @@
         <tr>
           <th><%= t("subscription.col_feature") %></th>
           <th class="sub-col-free"><%= t("subscription.col_free") %></th>
+          <th class="sub-col-essentiel"><%= t("subscription.col_essentiel") %></th>
           <th class="sub-col-premium"><%= t("subscription.col_premium") %></th>
         </tr>
       </thead>
       <tbody>
+        <%# Histoires : 3/sem en gratuit, illimité dès Essentiel %>
         <tr>
           <td><%= t("subscription.row_stories") %></td>
           <td class="sub-col-free">3</td>
           <td class="sub-check"><%= t("subscription.unlimited") %></td>
+          <td class="sub-check"><%= t("subscription.unlimited") %></td>
         </tr>
+        <%# Profils enfants : illimités dans tous les paliers %>
         <tr>
           <td><%= t("subscription.row_profiles") %></td>
           <td class="sub-check">✓</td>
           <td class="sub-check">✓</td>
+          <td class="sub-check">✓</td>
         </tr>
+        <%# Illustrations IA : débloquées dès Essentiel %>
         <tr>
           <td><%= t("subscription.row_illustrations") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
+          <td class="sub-check">✓</td>
         </tr>
+        <%# Mode interactif : Premium uniquement %>
         <tr>
           <td><%= t("subscription.row_interactive") %></td>
           <td class="sub-dash">—</td>
+          <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
+        <%# Lecture audio : Premium uniquement %>
         <tr>
           <td><%= t("subscription.row_audio") %></td>
           <td class="sub-dash">—</td>
-          <td class="sub-check">✓</td>
-        </tr>
-        <tr>
-          <td><%= t("subscription.row_dashboard") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>
+        <%# Dashboard parental avancé : Premium uniquement %>
+        <tr>
+          <td><%= t("subscription.row_dashboard") %></td>
+          <td class="sub-dash">—</td>
+          <td class="sub-dash">—</td>
+          <td class="sub-check">✓</td>
+        </tr>
+        <%# Nouveaux univers : Premium uniquement %>
         <tr>
           <td><%= t("subscription.row_new_worlds") %></td>
+          <td class="sub-dash">—</td>
           <td class="sub-dash">—</td>
           <td class="sub-check">✓</td>
         </tr>

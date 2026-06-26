@@ -250,9 +250,10 @@ class StoriesController < ApplicationController
     # à chaque appel. Réservée aux abonnés Premium, vérifiée CÔTÉ SERVEUR
     # (cacher le bouton dans la vue ne suffirait pas : l'URL resterait appelable).
     # Exception : la 1re histoire du compte (offre découverte) a aussi accès à
-    # l'audio — full_experience_for?(@story) couvre Premium ET 1re histoire offerte.
+    # l'audio — audio_for?(@story) couvre Premium ET 1re histoire offerte.
+    # NB : l'audio est réservé au Premium (un compte Essentiel ne l'a PAS).
     # 403 Forbidden — le JS du lecteur audio l'interprète comme un refus.
-    unless current_user.full_experience_for?(@story)
+    unless current_user.audio_for?(@story)
       head :forbidden and return
     end
 
@@ -295,11 +296,12 @@ class StoriesController < ApplicationController
   # Répond en JSON pour être consommé par story-alternative-controller.js
   def explore_alternative
     # SÉCURITÉ BUSINESS — comme l'audio, l'exploration alternative déclenche un
-    # appel IA payant (Groq) à chaque première génération. On la réserve donc aux
-    # comptes qui ont droit à l'expérience complète (Premium OU 1re histoire offerte),
-    # vérifié CÔTÉ SERVEUR : masquer le bouton dans la vue ne suffirait pas, l'URL
-    # resterait appelable. 403 Forbidden — interprété comme un refus par le JS.
-    unless current_user.full_experience_for?(@story)
+    # appel IA payant (Groq) à chaque première génération. L'exploration alternative
+    # fait partie du mode interactif, lui-même réservé au Premium : on la verrouille
+    # donc sur audio_for? (Premium OU 1re histoire offerte), vérifié CÔTÉ SERVEUR :
+    # masquer le bouton dans la vue ne suffirait pas, l'URL resterait appelable.
+    # 403 Forbidden — interprété comme un refus par le JS.
+    unless current_user.audio_for?(@story)
       render json: { success: false, error: "Fonctionnalité réservée au Premium." }, status: :forbidden
       return
     end

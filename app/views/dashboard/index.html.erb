@@ -87,8 +87,10 @@
       <span class="spin-star--hover">✦</span> <%= t("dashboard.cta") %>
     <% end %>
 
-    <%# Limite gratuite — discrète %>
-    <% unless current_user.premium? %>
+    <%# Limite hebdo — affichée uniquement aux comptes qui ont ENCORE un quota,
+        c.-à-d. les gratuits. Essentiel et Premium ont les histoires illimitées
+        (unlimited_stories?), on ne leur montre donc pas cet upsell. %>
+    <% unless current_user.unlimited_stories? %>
       <p class="db-limit-text">
         <%= t("dashboard.weekly_limit", count: @stories_this_week) %>
         <%= link_to t("dashboard.go_premium"), subscription_path, class: "db-limit-link" %>

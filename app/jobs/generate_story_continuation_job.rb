@@ -40,10 +40,11 @@ class GenerateStoryContinuationJob < ApplicationJob
       # On lance le TTS dès que le texte de la continuation est écrit : ainsi, quand
       # l'enfant finit d'écouter le passage en cours, l'audio de la suite est déjà
       # prêt (ou presque) et la lecture s'enchaîne sans coupure ni retour au début.
-      # Réservé à l'accès complet (Premium ou 1re histoire offerte) car le TTS coûte.
+      # Audio réservé au Premium (ou 1re histoire offerte) car le TTS coûte.
+      # Le mode interactif est lui-même Premium-only, donc audio_for? est cohérent.
       # source: "continuation" + choice_id → GenerateAudioJob lit choice.context_chosen
       # et attache le MP3 à choice.audio_file (pas à story.audio_file).
-      if story.child.user.full_experience_for?(story)
+      if story.child.user.audio_for?(story)
         GenerateAudioJob.perform_later(story.id, source: "continuation", choice_id: story_choice.id)
         Rails.logger.info("GenerateStoryContinuationJob — audio de la suite lancé pour le choix ##{story_choice.id}")
       end

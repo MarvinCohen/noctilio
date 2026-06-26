@@ -569,7 +569,7 @@ class StoriesControllerTest < ActionDispatch::IntegrationTest
   test "POST /stories/:id/audio source=continuation retourne 403 pour un compte gratuit" do
     # Arrange — Marie est gratuite. On réutilise completed_saved : le test 403 existant
     # confirme que ce n'est PAS sa 1re histoire (sinon l'offre découverte donnerait l'accès).
-    # La garde full_experience_for? s'exécute AVANT toute logique de choix, donc un
+    # La garde audio_for? s'exécute AVANT toute logique de choix, donc un
     # choice_id factice suffit : on ne l'atteint jamais.
     sign_in_as(users(:marie))
     story = stories(:completed_saved)

@@ -137,10 +137,10 @@
         <%# ── ILLUSTRATION — image du moment clé, placée sous le titre ── %>
         <%# Remontée ici (au lieu de la fin) pour l'effet "livre illustré" : %>
         <%# le lecteur voit l'image dès le début, avant de lire le texte. %>
-        <%# full_experience_for? : Premium OU 1re histoire offerte → l'illustration
+        <%# illustrations_for? : Essentiel/Premium OU 1re histoire offerte → l'illustration
             est générée. Sinon (gratuit, histoire en texte seul) : aucune image ne
             viendra, on affiche un encart d'upsell à la place (moment de conversion). %>
-        <% if current_user.full_experience_for?(@story) %>
+        <% if current_user.illustrations_for?(@story) %>
         <div class="story-illustration-section">
           <div class="story-illustration-label"><%= t("story_show.illustration_label") %></div>
 
@@ -238,11 +238,11 @@
         <%# Au repos : bouton rond doré + anneau qui se remplit pendant la lecture. %>
         <%# Au clic : il se déplie en barre complète (play/pause + barre + timers). %>
         <%# Les styles .audio-* sont définis dans _stories.scss %>
-        <%# Audio réservé à l'expérience complète (Premium OU 1re histoire offerte) — %>
-        <%# le TTS coûte de l'argent à chaque génération. %>
-        <%# Pour les gratuits hors offre découverte : pastille d'upsell à la place %>
+        <%# Audio réservé au Premium (OU 1re histoire offerte) — le TTS coûte de %>
+        <%# l'argent à chaque génération. Un compte Essentiel n'a PAS l'audio. %>
+        <%# Pour les comptes sans audio : pastille d'upsell à la place %>
         <%# (la vraie garde est côté serveur dans StoriesController#audio — 403) %>
-        <% if current_user.full_experience_for?(@story) %>
+        <% if current_user.audio_for?(@story) %>
         <div class="audio-player"
              data-controller="story-reader"
              data-story-id="<%= @story.id %>">

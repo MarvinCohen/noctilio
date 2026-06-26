@@ -55,15 +55,56 @@ class User < ApplicationRecord
   # Méthodes métier
   # ============================================================
 
-  # Retourne true si l'utilisateur a un abonnement premium actif
-  # subscribed? est fourni par le gem Pay — vérifie en base si l'abonnement Stripe est actif
-  def premium?
-    # Les admins sont toujours premium — accès illimité pour tester l'app
-    return true if admin?
+  # ============================================================
+  # Niveaux d'abonnement — 3 paliers (Gratuit / Essentiel / Premium)
+  # ============================================================
+  # Depuis l'ajout du palier intermédiaire "Essentiel" (4,99€/mois), on ne
+  # raisonne plus en binaire premium/gratuit mais en NIVEAU. Toutes les autres
+  # méthodes de verrouillage (illustrations, audio, quota) s'appuient dessus.
 
-    # Vérifie si l'utilisateur a un abonnement Pay actif (Stripe)
-    # Pay met à jour ce statut automatiquement via les webhooks Stripe
-    payment_processor.present? && payment_processor.subscribed?
+  # Retourne le niveau d'abonnement de l'utilisateur sous forme de symbole :
+  #   :free      → compte gratuit (3 histoires/semaine, texte seul)
+  #   :essentiel → 4,99€/mois (histoires illimitées + illustrations IA)
+  #   :premium   → 9,99€/mois (tout : + audio + interactif + dashboard avancé)
+  # Règles :
+  #   - admin → toujours :premium (accès complet pour tester l'app).
+  #   - aucun abonnement Pay actif → :free.
+  #   - abonnement actif : on compare le price ID Stripe du plan (processor_plan)
+  #     à STRIPE_ESSENTIEL_PRICE_ID. Tout autre plan payant (Premium OU plan
+  #     inconnu) → :premium par sécurité : on ne downgrade JAMAIS un payeur.
+  def subscription_tier
+    # Les admins ont accès à tout — on les traite comme des premium.
+    return :premium if admin?
+
+    # Pas de client de paiement ou pas d'abonnement actif → compte gratuit.
+    return :free unless payment_processor.present? && payment_processor.subscribed?
+
+    # Abonnement actif : on lit le price ID Stripe du plan souscrit.
+    # processor_plan est l'identifiant "price_..." renvoyé par Pay/Stripe.
+    if payment_processor.subscription&.processor_plan == ENV["STRIPE_ESSENTIEL_PRICE_ID"]
+      :essentiel
+    else
+      # Plan Premium OU plan inconnu → premium (ne jamais downgrader un payeur).
+      :premium
+    end
+  end
+
+  # Retourne true si l'utilisateur a le niveau Premium (haut de gamme).
+  # Sémantique externe inchangée : audio + mode interactif + dashboard avancé.
+  # (admin renvoie :premium via subscription_tier, donc admin? est couvert.)
+  def premium?
+    subscription_tier == :premium
+  end
+
+  # Retourne true si l'utilisateur a le niveau Essentiel (palier intermédiaire).
+  def essentiel?
+    subscription_tier == :essentiel
+  end
+
+  # Retourne true si l'utilisateur n'a plus de quota d'histoires (Essentiel OU
+  # Premium) : tout palier payant débloque les histoires illimitées.
+  def unlimited_stories?
+    subscription_tier != :free
   end
 
   # Retourne true si l'utilisateur est administrateur de l'application
@@ -81,10 +122,10 @@ class User < ApplicationRecord
   end
 
   # Retourne true si l'utilisateur peut encore créer une histoire
-  # — Premium : illimité
+  # — Essentiel et Premium : illimité (unlimited_stories?)
   # — Gratuit : limité à 3 histoires par semaine
   def can_create_story?
-    return true if premium?
+    return true if unlimited_stories?
 
     stories_this_week < 3
   end
@@ -104,7 +145,7 @@ class User < ApplicationRecord
   def welcome_story?(story)
     # story.id peut être nil si l'histoire n'est pas encore sauvegardée → false
     # On compare à l'id de la 1re histoire, mémoïsé pour ne pas relancer la requête
-    # `stories.minimum(:id)` à chaque appel (full_experience_for? l'appelle souvent).
+    # `stories.minimum(:id)` à chaque appel (illustrations_for?/audio_for? l'appellent souvent).
     story.id.present? && story.id == first_story_id
   end
 
@@ -118,10 +159,19 @@ class User < ApplicationRecord
     @first_story_id = stories.minimum(:id)
   end
 
-  # Décide si une histoire donnée a droit à l'expérience complète
-  # (illustration + audio + mode interactif) : Premium toujours, sinon
-  # uniquement la 1re histoire offerte. Utilisée par le job et l'endpoint audio.
-  def full_experience_for?(story)
+  # Décide si une histoire donnée a droit à l'ILLUSTRATION IA.
+  # Débloquée dès le palier Essentiel (unlimited_stories?), et toujours pour la
+  # 1re histoire offerte (offre découverte) même sur un compte gratuit.
+  # Utilisée par le job de génération d'image et la vue de lecture.
+  def illustrations_for?(story)
+    unlimited_stories? || welcome_story?(story)
+  end
+
+  # Décide si une histoire donnée a droit à l'AUDIO (lecture à voix haute).
+  # Réservé au Premium (l'audio est une fonctionnalité haut de gamme), et
+  # toujours pour la 1re histoire offerte. Un compte Essentiel n'a PAS l'audio.
+  # Utilisée par l'endpoint audio (controller) et le lecteur dans la vue.
+  def audio_for?(story)
     premium? || welcome_story?(story)
   end
 

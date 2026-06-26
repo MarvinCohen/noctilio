@@ -14,11 +14,16 @@ class SubscriptionsController < ApplicationController
 
   # GET /abonnement — page de tarification
   def index
-    # Indique à la vue si l'utilisateur est déjà premium
-    @is_premium = current_user.premium?
+    # Niveau d'abonnement de l'utilisateur : :free / :essentiel / :premium.
+    # La vue s'en sert pour décider quoi afficher (cartes de prix vs gestion).
+    @tier = current_user.subscription_tier
+
+    # true si l'utilisateur a un palier payant actif (Essentiel OU Premium) :
+    # dans ce cas on affiche la carte de GESTION (résiliation), pas les prix.
+    @subscribed = @tier != :free
 
     # Récupère l'abonnement Stripe en cours (s'il existe) pour afficher son état.
-    # Sert à distinguer "Premium actif" d'une "résiliation programmée"
+    # Sert à distinguer "abonnement actif" d'une "résiliation programmée"
     # (abonnement annulé mais encore valable jusqu'à la fin de la période payée).
     @subscription = current_user.payment_processor&.subscription
 
@@ -32,17 +37,22 @@ class SubscriptionsController < ApplicationController
     # set_payment_processor crée ou récupère le client Stripe pour l'user.
     current_user.set_payment_processor :stripe
 
+    # Choisit le bon prix Stripe selon le palier demandé par le formulaire.
+    # params[:plan] vaut "essentiel" ou "premium". Tout autre valeur (ou absence)
+    # retombe sur Premium par sécurité — checkout_price_id gère le fallback.
+    price_id = checkout_price_id(params[:plan])
+
     # Crée une Stripe Checkout Session hébergée par Stripe.
     # L'utilisateur saisit sa CB directement sur la page Stripe (sécurisé PCI).
     #
     # mode: "subscription" → abonnement récurrent (pas paiement unique)
-    # line_items           → le produit à acheter (price_id depuis l'env)
+    # line_items           → le produit à acheter (price_id choisi ci-dessus)
     # success_url          → où Stripe redirige après paiement réussi
     # cancel_url           → où Stripe redirige si l'utilisateur abandonne
     @checkout_session = current_user.payment_processor.checkout(
       mode: "subscription",
       line_items: [{
-        price: ENV.fetch("STRIPE_PREMIUM_PRICE_ID"),
+        price: price_id,
         quantity: 1
       }],
       success_url: subscription_success_url(session_id: "{CHECKOUT_SESSION_ID}"),
@@ -119,5 +129,21 @@ class SubscriptionsController < ApplicationController
     Rails.logger.error "[Stripe] Erreur réactivation : #{e.message}"
     redirect_to subscription_path,
                 alert: "Impossible de réactiver l'abonnement. Contacte le support."
+  end
+
+  private
+
+  # Retourne le price ID Stripe correspondant au palier demandé.
+  # — "essentiel" → STRIPE_ESSENTIEL_PRICE_ID (4,99€/mois)
+  # — tout le reste ("premium", nil, valeur inconnue) → STRIPE_PREMIUM_PRICE_ID
+  #   (9,99€/mois). On retombe sur Premium par sécurité plutôt que de planter.
+  # ENV.fetch lève KeyError si la variable manque → rattrapé dans checkout
+  # (message "Configuration Stripe manquante").
+  def checkout_price_id(plan)
+    if plan == "essentiel"
+      ENV.fetch("STRIPE_ESSENTIEL_PRICE_ID")
+    else
+      ENV.fetch("STRIPE_PREMIUM_PRICE_ID")
+    end
   end
 end
