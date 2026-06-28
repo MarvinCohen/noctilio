@@ -207,6 +207,7 @@ pt:
     cancel_scheduled: "Cancelamento agendado"
     premium_active: "Premium ativo"
     essentiel_active: "Essentiel ativo"
+    included_title: "Incluído na tua subscrição"
     # %{date} = data de fim do acesso
     grace_until_html: "O teu acesso mantém-se ativo até <strong>%{date}</strong>."
     reactivate: "Reativar a minha subscrição"
@@ -250,7 +251,6 @@ pt:
     row_interactive: "Modo interativo: a criança faz escolhas"
     row_audio: "Leitura em voz alta das histórias"
     row_dashboard: "Painel dos pais avançado"
-    row_new_worlds: "Novos mundos em pré-visualização"
     # ── FAQ ──
     faq_title: "Perguntas frequentes"
     faq_q1: "Como funciona a faturação?"

@@ -207,6 +207,7 @@ en:
     cancel_scheduled: "Cancellation scheduled"
     premium_active: "Premium active"
     essentiel_active: "Essentiel active"
+    included_title: "Included in your subscription"
     # %{date} = access end date
     grace_until_html: "Your access stays active until <strong>%{date}</strong>."
     reactivate: "Reactivate my subscription"
@@ -250,7 +251,6 @@ en:
     row_interactive: "Interactive mode: the child makes choices"
     row_audio: "Voice reading of stories"
     row_dashboard: "Advanced parental dashboard"
-    row_new_worlds: "New worlds in preview"
     # ── FAQ ──
     faq_title: "Frequently asked questions"
     faq_q1: "How does billing work?"

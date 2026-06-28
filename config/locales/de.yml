@@ -207,6 +207,7 @@ de:
     cancel_scheduled: "Kündigung geplant"
     premium_active: "Premium aktiv"
     essentiel_active: "Essentiel aktiv"
+    included_title: "In deinem Abo enthalten"
     # %{date} = Enddatum des Zugangs
     grace_until_html: "Dein Zugang bleibt bis zum <strong>%{date}</strong> aktiv."
     reactivate: "Mein Abonnement reaktivieren"
@@ -250,7 +251,6 @@ de:
     row_interactive: "Interaktiver Modus: Das Kind trifft Entscheidungen"
     row_audio: "Vorlesen der Geschichten"
     row_dashboard: "Erweitertes Eltern-Dashboard"
-    row_new_worlds: "Neue Welten in der Vorschau"
     # ── FAQ ──
     faq_title: "Häufig gestellte Fragen"
     faq_q1: "Wie funktioniert die Abrechnung?"

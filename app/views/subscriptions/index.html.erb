@@ -53,18 +53,38 @@
 
   /* Liste des features */
   .sub-features { list-style: none; padding: 0; margin: 0 0 2rem; }
+  /* Petit intitulé en capitales au-dessus de la liste des avantages */
+  .sub-included-title {
+    color: #8a8578;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+  }
   .sub-feature-item {
     display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.65rem 0;
-    border-bottom: 1px solid rgba(240, 201, 122, 0.05);
-    color: #d4cfc4;
-    font-size: 0.95rem;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.08);
+    color: #e6e1d6;
+    font-size: 0.98rem;
   }
   .sub-feature-item:last-child { border-bottom: none; }
-  /* Symbole ✦ doré devant chaque feature */
-  .sub-feature-icon { color: #f0c97a; font-size: 0.8rem; flex-shrink: 0; margin-top: 3px; }
+  /* Pastille ronde dorée avec un ✓ — même langage visuel que le tableau comparatif */
+  .sub-feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(240, 201, 122, 0.16);
+    color: #f0c97a;
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
   .sub-feature-label strong { color: #fdf6e3; }
 
   /* Bouton CTA principal — doré, pill */
@@ -263,31 +283,67 @@
   }
   .sub-compare-table {
     width: 100%;
-    border-collapse: collapse;
+    /* separate (au lieu de collapse) pour autoriser le fond teinté de colonne
+       + le border-radius arrondi sans bord disgracieux */
+    border-collapse: separate;
+    border-spacing: 0;
     background: #111527;
-    border: 1px solid rgba(240, 201, 122, 0.15);
+    border: 1px solid rgba(240, 201, 122, 0.18);
     border-radius: 16px;
     overflow: hidden;
   }
   .sub-compare-table th,
   .sub-compare-table td {
-    padding: 0.8rem 1.1rem;
-    border-bottom: 1px solid rgba(240, 201, 122, 0.08);
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid rgba(240, 201, 122, 0.07);
     font-size: 0.92rem;
+    vertical-align: middle;
   }
   /* 1re colonne (nom de la feature) alignée à gauche, les autres centrées */
   .sub-compare-table th:first-child,
   .sub-compare-table td:first-child { text-align: left; color: #d4cfc4; }
   .sub-compare-table th:not(:first-child),
   .sub-compare-table td:not(:first-child) { text-align: center; }
-  /* En-têtes de colonnes — Gratuit gris, Premium doré */
-  .sub-compare-table thead th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  /* Ligne d'en-tête sur fond légèrement teinté pour la détacher du corps */
+  .sub-compare-table thead th {
+    background: rgba(240, 201, 122, 0.05);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-top: 1.05rem;
+    padding-bottom: 1.05rem;
+  }
+  /* Colonne Essentiel (3e) mise en avant : fond doré discret sur toute la hauteur,
+     cohérent avec la carte "Le plus populaire" plus haut dans la page */
+  .sub-compare-table th:nth-child(3),
+  .sub-compare-table td:nth-child(3) { background: rgba(240, 201, 122, 0.06); }
+  /* En-tête de la colonne Essentiel encore plus marqué */
+  .sub-compare-table thead th:nth-child(3) { background: rgba(240, 201, 122, 0.13); color: #f5d898; }
+  /* En-têtes de colonnes — Gratuit gris, Essentiel/Premium dorés */
   .sub-col-free      { color: #8a8578; }
   .sub-col-essentiel { color: #f0c97a; }
   .sub-col-premium   { color: #f0c97a; }
-  /* Valeurs — check doré pour inclus, tiret gris pour absent */
-  .sub-check { color: #f0c97a; }
-  .sub-dash  { color: rgba(138, 133, 120, 0.5); }
+  /* Survol de ligne — légère surbrillance pour suivre la lecture à l'œil */
+  .sub-compare-table tbody tr:hover td { background: rgba(255, 255, 255, 0.025); }
+  .sub-compare-table tbody tr:hover td:nth-child(3) { background: rgba(240, 201, 122, 0.1); }
+  /* Valeur "incluse" sous forme de texte (ex : "Illimitées") — doré et gras */
+  .sub-check { color: #f0c97a; font-weight: 600; }
+  /* Le ✓ devient une pastille ronde dorée, bien plus lisible qu'un simple caractère */
+  .sub-tick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(240, 201, 122, 0.16);
+    color: #f0c97a;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  /* Tiret pour une fonctionnalité absente — discret et centré */
+  .sub-dash  { color: rgba(138, 133, 120, 0.45); font-size: 1.1rem; }
   .sub-compare-table tbody tr:last-child td { border-bottom: none; }
 
   /* ── Mini FAQ — details/summary natifs ── */
@@ -399,19 +455,20 @@
         <% end %>
       </div>
 
-      <%# Liste des avantages inclus — dépend du palier (Premium a tout, Essentiel a moins) %>
+      <%# Intitulé puis liste des avantages inclus — dépend du palier (Premium a tout, Essentiel a moins) %>
+      <p class="sub-included-title"><%= t("subscription.included_title") %></p>
       <ul class="sub-features">
         <% if @tier == :premium %>
           <%# Premium : toutes les fonctionnalités %>
-          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_unlimited") %></span></li>
-          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_illustrations") %></span></li>
-          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_audio") %></span></li>
-          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_interactive") %></span></li>
-          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_dashboard") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✓</span><span class="sub-feature-label"><%= t("subscription.card_unlimited") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✓</span><span class="sub-feature-label"><%= t("subscription.card_illustrations") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✓</span><span class="sub-feature-label"><%= t("subscription.card_audio") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✓</span><span class="sub-feature-label"><%= t("subscription.card_interactive") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✓</span><span class="sub-feature-label"><%= t("subscription.card_dashboard") %></span></li>
         <% else %>
           <%# Essentiel : histoires illimitées + illustrations (pas d'audio ni interactif) %>
-          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_unlimited") %></span></li>
-          <li class="sub-feature-item"><span class="sub-feature-icon">✦</span><span class="sub-feature-label"><%= t("subscription.card_illustrations") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✓</span><span class="sub-feature-label"><%= t("subscription.card_unlimited") %></span></li>
+          <li class="sub-feature-item"><span class="sub-feature-icon">✓</span><span class="sub-feature-label"><%= t("subscription.card_illustrations") %></span></li>
         <% end %>
       </ul>
 
@@ -543,44 +600,37 @@
         <%# Profils enfants : illimités dans tous les paliers %>
         <tr>
           <td><%= t("subscription.row_profiles") %></td>
-          <td class="sub-check">✓</td>
-          <td class="sub-check">✓</td>
-          <td class="sub-check">✓</td>
+          <td><span class="sub-tick">✓</span></td>
+          <td><span class="sub-tick">✓</span></td>
+          <td><span class="sub-tick">✓</span></td>
         </tr>
         <%# Illustrations IA : débloquées dès Essentiel %>
         <tr>
           <td><%= t("subscription.row_illustrations") %></td>
           <td class="sub-dash">—</td>
-          <td class="sub-check">✓</td>
-          <td class="sub-check">✓</td>
+          <td><span class="sub-tick">✓</span></td>
+          <td><span class="sub-tick">✓</span></td>
         </tr>
         <%# Mode interactif : Premium uniquement %>
         <tr>
           <td><%= t("subscription.row_interactive") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-dash">—</td>
-          <td class="sub-check">✓</td>
+          <td><span class="sub-tick">✓</span></td>
         </tr>
         <%# Lecture audio : Premium uniquement %>
         <tr>
           <td><%= t("subscription.row_audio") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-dash">—</td>
-          <td class="sub-check">✓</td>
+          <td><span class="sub-tick">✓</span></td>
         </tr>
         <%# Dashboard parental avancé : Premium uniquement %>
         <tr>
           <td><%= t("subscription.row_dashboard") %></td>
           <td class="sub-dash">—</td>
           <td class="sub-dash">—</td>
-          <td class="sub-check">✓</td>
-        </tr>
-        <%# Nouveaux univers : Premium uniquement %>
-        <tr>
-          <td><%= t("subscription.row_new_worlds") %></td>
-          <td class="sub-dash">—</td>
-          <td class="sub-dash">—</td>
-          <td class="sub-check">✓</td>
+          <td><span class="sub-tick">✓</span></td>
         </tr>
       </tbody>
     </table>

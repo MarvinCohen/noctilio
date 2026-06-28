@@ -207,6 +207,7 @@ es:
     cancel_scheduled: "Cancelación programada"
     premium_active: "Premium activo"
     essentiel_active: "Essentiel activo"
+    included_title: "Incluido en tu suscripción"
     # %{date} = fecha de fin del acceso
     grace_until_html: "Tu acceso sigue activo hasta el <strong>%{date}</strong>."
     reactivate: "Reactivar mi suscripción"
@@ -250,7 +251,6 @@ es:
     row_interactive: "Modo interactivo: el niño toma decisiones"
     row_audio: "Lectura en voz alta de las historias"
     row_dashboard: "Panel de padres avanzado"
-    row_new_worlds: "Nuevos mundos en avance"
     # ── FAQ ──
     faq_title: "Preguntas frecuentes"
     faq_q1: "¿Cómo funciona la facturación?"

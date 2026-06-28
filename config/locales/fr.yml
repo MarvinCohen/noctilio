@@ -209,6 +209,7 @@ fr:
     cancel_scheduled: "Résiliation programmée"
     premium_active: "Premium actif"
     essentiel_active: "Essentiel actif"
+    included_title: "Inclus dans ton abonnement"
     # %{date} = date de fin d'accès
     grace_until_html: "Ton accès reste actif jusqu'au <strong>%{date}</strong>."
     reactivate: "Réactiver mon abonnement"
@@ -252,7 +253,6 @@ fr:
     row_interactive: "Mode interactif : l'enfant fait des choix"
     row_audio: "Lecture vocale des histoires"
     row_dashboard: "Dashboard parental avancé"
-    row_new_worlds: "Nouveaux univers en avant-première"
     # ── FAQ ──
     faq_title: "Questions fréquentes"
     faq_q1: "Comment fonctionne la facturation ?"
