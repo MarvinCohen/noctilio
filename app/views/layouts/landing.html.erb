@@ -3,7 +3,8 @@
 <html lang="<%= I18n.locale %>">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <%# viewport-fit=cover : gère les encoches iPhone (safe-area-inset) %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
     <title><%= content_for(:title) || "Noctilio — Des histoires magiques pour ton enfant" %></title>
 
     <%# Polices Google — design élégant de la landing page %>

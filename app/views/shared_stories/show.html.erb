@@ -7,7 +7,7 @@
 
 <%# ── Métadonnées SEO / réseaux sociaux (consommées par le layout landing) ── %>
 <%# Titre de l'onglet + aperçu de partage %>
-<% content_for :title, "#{@story.title} — une histoire Noctilio" %>
+<% content_for :title, t("shared_story.page_title", title: @story.title) %>
 
 <%# Description : extrait du début de l'histoire, nettoyé du markdown (#, *) %>
 <%# squish compacte les espaces multiples, truncate limite à ~155 caractères %>
@@ -37,18 +37,19 @@
     <%# Méta : univers + prénom de l'enfant %>
     <div class="shared-story__meta">
       <span class="shared-story__pill"><%= @story.world_emoji %> <%= @story.world_label %></span>
-      <span class="shared-story__pill">Pour <%= @story.child.name %></span>
+      <%# "Pour Léa" : on interpole le prénom dans la clé traduite %>
+      <span class="shared-story__pill"><%= t("shared_story.for_child", name: @story.child.name) %></span>
     </div>
 
-    <%# Titre de l'histoire %>
-    <h1 class="shared-story__title"><%= @story.title || "Une histoire magique" %></h1>
+    <%# Titre de l'histoire — fallback traduit si l'histoire n'a pas encore de titre %>
+    <h1 class="shared-story__title"><%= @story.title || t("shared_story.title_fallback") %></h1>
 
     <%# Illustration — affichée seulement si elle est disponible %>
     <% if @story.cover_image.attached? || @story.cover_image_url.present? %>
       <% image_src = @story.cover_image.attached? ? url_for(@story.cover_image) : @story.cover_image_url %>
       <div class="shared-story__illustration">
         <%= image_tag image_src,
-              alt: "Illustration de #{@story.title}",
+              alt: t("shared_story.illustration_alt", title: @story.title),
               loading: "lazy",
               class: "shared-story__illustration-img" %>
       </div>
@@ -63,13 +64,12 @@
 
   <%# ── CTA d'acquisition — convertir le lecteur en utilisateur ── %>
   <aside class="shared-story__cta">
-    <p class="shared-story__cta-eyebrow">✦ Créé avec Noctilio</p>
-    <h2 class="shared-story__cta-title">Envie d'une histoire comme celle-ci pour votre enfant ?</h2>
+    <p class="shared-story__cta-eyebrow"><%= t("shared_story.cta_eyebrow") %></p>
+    <h2 class="shared-story__cta-title"><%= t("shared_story.cta_title") %></h2>
     <p class="shared-story__cta-text">
-      Noctilio génère des histoires du soir personnalisées en quelques secondes,
-      avec le prénom, les personnages et l'univers préférés de votre enfant.
+      <%= t("shared_story.cta_text") %>
     </p>
-    <%= link_to "Créer une histoire gratuitement", root_path, class: "shared-story__cta-btn" %>
+    <%= link_to t("shared_story.cta_btn"), root_path, class: "shared-story__cta-btn" %>
   </aside>
 
 </main>

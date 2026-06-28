@@ -130,7 +130,9 @@
 
       <%# L'avatar mène directement à la page Mon compte %>
       <%= link_to account_path, class: "sidebar-user-avatar", title: t("nav.account") do %>
-        <%= current_user.first_name[0].upcase %><%= current_user.last_name[0].upcase %>
+        <%# nil-safe : un compte Google OAuth peut ne pas avoir de prénom/nom.
+            first_name[0] planterait (nil[0]) ; to_s.first.to_s renvoie "" sans erreur. %>
+        <%= current_user.first_name.to_s.first.to_s.upcase %><%= current_user.last_name.to_s.first.to_s.upcase %>
       <% end %>
     </div>
 

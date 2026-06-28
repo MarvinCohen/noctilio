@@ -5,12 +5,16 @@
 // - Noto Serif : police dédiée au contenu des histoires (lecture)
 // ============================================================
 
-// Import Google Fonts — chargement de toutes les familles utilisées dans l'app
-// Cormorant Garamond : titres h1/h2, italic, poids 300/400/600 — style éditorial luxueux
-// DM Sans : corps de texte moderne et léger, poids 300/400/500
-// Plus Jakarta Sans : ancienne police UI — conservée pour les composants Bootstrap existants
-// Lora : contenu des histoires — serif chaleureuse, conçue pour la lecture, style "livre de contes"
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+// ⚠️ Plus d'@import Google Fonts ici.
+// Les polices sont désormais chargées UNE seule fois, de façon non-bloquante,
+// directement dans le <head> du layout (app/views/layouts/application.html.erb,
+// balise <link id="async-fonts">). Avantages :
+//   - on supprime le doublon (Cormorant + DM Sans étaient chargées deux fois) ;
+//   - un @import dans le CSS est "render-blocking" (bloque l'affichage) : le <link>
+//     async media="print" du layout, lui, ne bloque pas le rendu (meilleur CWV).
+// Les familles chargées par le layout : Cormorant Garamond, DM Sans, Lora,
+// Plus Jakarta Sans, Cinzel Decorative. (Kalam, jamais utilisée, a été retirée.)
+// Les variables ci-dessous référencent simplement ces familles déjà chargées.
 
 // ============================================================
 // Variables de polices — utilisées dans _bootstrap_variables.scss

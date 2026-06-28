@@ -24,8 +24,16 @@
              data-story-status-msg3-value="<%= t("story_show.gen_msg_3") %>"
              data-story-status-msg4-value="<%= t("story_show.gen_msg_4") %>">
 
+          <%# Hibou mascotte de Noctilio pendant l'attente : il "flotte" doucement %>
+          <%# (animation CSS .story-generating-owl dans _story_show.scss) pour rendre %>
+          <%# l'attente vivante et rassurante. aria-hidden : purement décoratif. %>
+          <%# L'animation est désactivée si prefers-reduced-motion (voir le SCSS). %>
           <span class="story-generating-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+            <%= image_tag "mascot.png",
+                          class: "story-generating-owl",
+                          alt: "",
+                          "aria-hidden": true,
+                          loading: "eager" %>
           </span>
           <h1 class="story-generating-title"><%= t("story_show.generating_title") %></h1>
 

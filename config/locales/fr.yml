@@ -24,6 +24,108 @@ fr:
     level: "Niv. %{level}"         # pastille de niveau (ex: "Niv. 13")
     level_title: "Niveau %{level}" # infobulle de la pastille
     mobile_aria: "Navigation principale mobile"
+    login: "Se connecter"               # navbar visiteur (non connecté)
+    start_free: "Commencer gratuitement" # CTA navbar visiteur
+
+  # Footer global (app/views/shared/_footer.html.erb)
+  footer:
+    tagline: "Fait avec ✦ pour les familles"
+    cgu: "CGU"
+    privacy: "Confidentialité"
+    legal_notice: "Mentions légales"
+    blog: "Blog"
+    about: "À propos"
+    feedback: "Donner mon avis"
+
+  # Pages d'authentification Devise (app/views/devise/**)
+  auth:
+    email_label: "Adresse e-mail"
+    email_placeholder: "votre@email.com"
+    password_label: "Mot de passe"
+    or: "ou"
+    google: "Continuer avec Google"
+    login: "Se connecter"
+    password_forgot: "Mot de passe oublié ?"
+    login_title: "Bon retour"
+    login_subtitle: "Retrouve tes histoires magiques"
+    remember_me: "Se souvenir de moi"
+    no_account: "Pas encore de compte ?"
+    create_account_free: "Créer un compte gratuitement"
+    signup_title: "Créer un compte"
+    signup_subtitle: "Rejoignez Noctilio et commencez à créer des histoires magiques"
+    first_name: "Prénom"
+    first_name_placeholder: "Ex : Marie"
+    last_name: "Nom"
+    last_name_placeholder: "Ex : Dupont"
+    password_min: "%{count} caractères minimum"
+    password_confirm: "Confirmer le mot de passe"
+    signup_submit: "Créer mon compte ✨"
+    has_account: "Déjà un compte ?"
+    create_account: "Créer un compte"
+    account_title: "Mon compte"
+    account_subtitle: "Gérez vos informations personnelles"
+    personal_info: "Informations personnelles"
+    password_change_note: "Laissez vide si vous ne souhaitez pas changer le mot de passe."
+    new_password: "Nouveau mot de passe"
+    new_password_confirm: "Confirmer le nouveau mot de passe"
+    current_password: "Mot de passe actuel (requis pour confirmer)"
+    account_submit: "Mettre à jour mon compte"
+    danger_zone: "⚠️ Zone de danger"
+    danger_note: "La suppression de votre compte est irréversible. Toutes vos histoires et profils seront supprimés."
+    delete_account: "Supprimer mon compte"
+    delete_confirm: "Êtes-vous sûr ? Cette action est irréversible."
+    back_to_dashboard: "Retour au dashboard"
+    forgot_title: "Mot de passe oublié ?"
+    forgot_subtitle: "Saisis ton email et on t'envoie un lien de réinitialisation."
+    forgot_submit: "Envoyer le lien de réinitialisation"
+    reset_title: "Nouveau mot de passe"
+    reset_subtitle: "Choisis un nouveau mot de passe sécurisé."
+    reset_submit: "Enregistrer le nouveau mot de passe"
+    confirm_title: "Email non reçu ?"
+    confirm_subtitle: "Saisis ton email et on te renvoie le lien de confirmation."
+    confirm_submit: "Renvoyer les instructions"
+    unlock_title: "Compte verrouillé"
+    unlock_subtitle: "Saisis ton email pour recevoir les instructions de déverrouillage."
+    unlock_submit: "Renvoyer les instructions de déverrouillage"
+
+  # Page publique d'une histoire partagée (app/views/shared_stories/show.html.erb)
+  shared_story:
+    page_title: "%{title} — une histoire Noctilio"
+    for_child: "Pour %{name}"
+    title_fallback: "Une histoire magique"
+    illustration_alt: "Illustration de %{title}"
+    cta_eyebrow: "✦ Créé avec Noctilio"
+    cta_title: "Envie d'une histoire comme celle-ci pour votre enfant ?"
+    cta_text: "Noctilio génère des histoires du soir personnalisées en quelques secondes, avec le prénom, les personnages et l'univers préférés de votre enfant."
+    cta_btn: "Créer une histoire gratuitement"
+
+  # Messages flash des controllers (children_controller, stories_controller)
+  flash:
+    children:
+      created: "Le profil de %{name} a été créé ! 🎉"
+      updated: "Le profil de %{name} a été mis à jour !"
+      deleted: "Le profil de %{name} a été supprimé."
+      not_found: "Profil introuvable."
+    stories:
+      need_child: "Créez d'abord le profil d'un enfant pour générer une histoire !"
+      creating: "La magie opère... votre histoire est en cours de création ! ✨"
+      child_not_found: "Profil enfant introuvable."
+      no_interactive: "Cette histoire n'a pas de choix interactif."
+      no_more_choices: "Il n'y a plus de choix à effectuer."
+      invalid_choice: "Choix invalide."
+      choice_saved: "Excellent choix ! La suite de l'aventure se prépare... ✨"
+      replay_started: "L'aventure recommence avec de nouveaux choix... ✨"
+      replay_failed: "Impossible de recommencer : %{errors}"
+      sequel_need_complete: "L'histoire doit être terminée avant de créer une suite."
+      sequel_exists: "La suite de cette histoire existe déjà !"
+      sequel_started: "La suite de l'aventure se prépare... ✨"
+      sequel_failed: "Impossible de créer la suite : %{errors}"
+      saved: "Histoire sauvegardée dans ta bibliothèque ! 📚"
+      not_failed: "Cette histoire n'est pas en échec."
+      retry_started: "Génération relancée ! L'histoire sera prête dans quelques instants."
+      deleted: "L'histoire a été supprimée."
+      not_found: "Histoire introuvable."
+      limit_reached: "Tu as atteint ta limite de 3 histoires cette semaine. Passe en Premium pour des histoires illimitées !"
 
   # Page Mon compte (app/views/account/show.html.erb)
   account:

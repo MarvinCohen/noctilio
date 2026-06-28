@@ -1,0 +1,44 @@
+// ============================================================
+// Accessibilité globale
+// ============================================================
+// Deux garde-fous transverses, valables sur toute l'application :
+//   1. Un anneau de focus doré, visible UNIQUEMENT au clavier (:focus-visible).
+//   2. Un filet de sécurité "réduire les animations" (prefers-reduced-motion)
+//      qui neutralise toute animation/transition oubliée ailleurs.
+// ============================================================
+
+// ------------------------------------------------------------
+// 1) Focus clavier visible — anneau doré cohérent avec la marque
+// ------------------------------------------------------------
+// :focus-visible ne s'active qu'au focus CLAVIER (Tab), jamais au clic souris :
+// on garde donc une UI propre à la souris tout en restant navigable au clavier
+// (exigence d'accessibilité). On utilise le token --gold pour la cohérence DA.
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 3px; // adoucit l'angle de l'anneau sur les éléments carrés
+}
+
+// On retire l'ancien contour par défaut du navigateur quand :focus-visible gère déjà
+// (évite le double anneau). Le focus souris classique reste sans contour disgracieux.
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+// ------------------------------------------------------------
+// 2) Filet global "réduire les animations"
+// ------------------------------------------------------------
+// Si l'utilisateur a activé "réduire les animations" au niveau système, on ramène
+// la durée de TOUTES les animations et transitions à quasi zéro. C'est un filet de
+// sécurité global : les blocs locaux (transitions, story_show, confetti…) restent,
+// mais ceci couvre tout ce qui aurait pu être oublié. Pattern d'accessibilité standard.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;   // pas de boucle infinie
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;           // pas de défilement animé
+  }
+}

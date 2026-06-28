@@ -72,7 +72,7 @@ class StoriesController < ApplicationController
     # Si l'utilisateur n'a pas encore créé de profil enfant, on le redirige
     return unless @children.empty?
 
-    redirect_to new_child_path, alert: "Créez d'abord le profil d'un enfant pour générer une histoire !"
+    redirect_to new_child_path, alert: t("flash.stories.need_child")
   end
 
   # POST /stories — crée l'histoire et lance la génération en arrière-plan
@@ -118,34 +118,34 @@ class StoriesController < ApplicationController
       GenerateStoryJob.perform_later(@story.id)
 
       # Redirige vers la page de l'histoire (qui affichera le spinner)
-      redirect_to story_path(@story), notice: "La magie opère... votre histoire est en cours de création ! ✨"
+      redirect_to story_path(@story), notice: t("flash.stories.creating")
     else
       @children = current_user.children.ordered
       render :new, status: :unprocessable_entity
     end
   rescue ActiveRecord::RecordNotFound
-    redirect_to new_story_path, alert: "Profil enfant introuvable."
+    redirect_to new_story_path, alert: t("flash.stories.child_not_found")
   end
 
   # POST /stories/:id/choose — enregistre le choix interactif de l'enfant
   def choose
     # Vérification : l'histoire doit être terminée et interactive
     unless @story.completed? && @story.interactive?
-      redirect_to story_path(@story), alert: "Cette histoire n'a pas de choix interactif."
+      redirect_to story_path(@story), alert: t("flash.stories.no_interactive")
       return
     end
 
     # Récupère le choix en attente
     pending_choice = @story.next_choice
     unless pending_choice
-      redirect_to story_path(@story), alert: "Il n'y a plus de choix à effectuer."
+      redirect_to story_path(@story), alert: t("flash.stories.no_more_choices")
       return
     end
 
     # Valide que le choix est 'a' ou 'b'
     chosen = params[:chosen_option]
     unless %w[a b].include?(chosen)
-      redirect_to story_path(@story), alert: "Choix invalide."
+      redirect_to story_path(@story), alert: t("flash.stories.invalid_choice")
       return
     end
 
@@ -184,7 +184,7 @@ class StoriesController < ApplicationController
     # ou en HTML (fallback si JavaScript désactivé)
     respond_to do |format|
       format.json { render json: { success: true } }
-      format.html { redirect_to story_path(@story), notice: "Excellent choix ! La suite de l'aventure se prépare... ✨" }
+      format.html { redirect_to story_path(@story), notice: t("flash.stories.choice_saved") }
     end
   end
 
@@ -355,10 +355,10 @@ class StoriesController < ApplicationController
     if replay_story.save
       # Lance la génération complète — tout sera différent (aléatoire côté IA)
       GenerateStoryJob.perform_later(replay_story.id)
-      redirect_to story_path(replay_story), notice: "L'aventure recommence avec de nouveaux choix... ✨"
+      redirect_to story_path(replay_story), notice: t("flash.stories.replay_started")
     else
       redirect_to story_path(@story),
-                  alert: "Impossible de recommencer : #{replay_story.errors.full_messages.to_sentence}"
+                  alert: t("flash.stories.replay_failed", errors: replay_story.errors.full_messages.to_sentence)
     end
   end
 
@@ -369,14 +369,14 @@ class StoriesController < ApplicationController
   def continue
     # Vérifie que l'histoire parente est bien terminée avant de créer une suite
     unless @story.completed?
-      redirect_to story_path(@story), alert: "L'histoire doit être terminée avant de créer une suite."
+      redirect_to story_path(@story), alert: t("flash.stories.sequel_need_complete")
       return
     end
 
     # Empêche de créer plusieurs suites pour la même histoire
     if @story.has_sequel?
       existing_sequel = @story.sequel_stories.order(:created_at).first
-      redirect_to story_path(existing_sequel), notice: "La suite de cette histoire existe déjà !"
+      redirect_to story_path(existing_sequel), notice: t("flash.stories.sequel_exists")
       return
     end
 
@@ -387,9 +387,9 @@ class StoriesController < ApplicationController
       # Lance la génération — le job appellera StoryGeneratorService
       # qui détectera parent_story_id et injectera le contexte narratif
       GenerateStoryJob.perform_later(sequel.id)
-      redirect_to story_path(sequel), notice: "La suite de l'aventure se prépare... ✨"
+      redirect_to story_path(sequel), notice: t("flash.stories.sequel_started")
     else
-      redirect_to story_path(@story), alert: "Impossible de créer la suite : #{sequel.errors.full_messages.to_sentence}"
+      redirect_to story_path(@story), alert: t("flash.stories.sequel_failed", errors: sequel.errors.full_messages.to_sentence)
     end
   end
 
@@ -399,14 +399,14 @@ class StoriesController < ApplicationController
     # Met à jour le flag saved en base — update! lève une exception si ça échoue
     @story.update!(saved: true)
     # Redirige vers la page de l'histoire avec un message de confirmation
-    redirect_to story_path(@story), notice: "Histoire sauvegardée dans ta bibliothèque ! 📚"
+    redirect_to story_path(@story), notice: t("flash.stories.saved")
   end
 
   # POST /stories/:id/retry — relance la génération d'une histoire échouée
   # Réinitialise le contenu et remet l'histoire en pending avant de relancer le job
   def retry
     # Vérifie que l'histoire est bien en échec — on ne relance pas une histoire déjà complétée
-    return redirect_to stories_path, alert: "Cette histoire n'est pas en échec." unless @story.failed?
+    return redirect_to stories_path, alert: t("flash.stories.not_failed") unless @story.failed?
 
     # Nettoie l'état précédent avant de relancer pour partir d'une ardoise propre
     @story.cover_image.purge if @story.cover_image.attached?
@@ -422,13 +422,13 @@ class StoriesController < ApplicationController
     GenerateStoryJob.perform_later(@story.id)
 
     # Redirige vers la page de l'histoire — le spinner de génération s'affiche
-    redirect_to story_path(@story), notice: "Génération relancée ! L'histoire sera prête dans quelques instants."
+    redirect_to story_path(@story), notice: t("flash.stories.retry_started")
   end
 
   # DELETE /stories/:id — supprime l'histoire
   def destroy
     @story.destroy
-    redirect_to stories_path, notice: "L'histoire a été supprimée."
+    redirect_to stories_path, notice: t("flash.stories.deleted")
   end
 
   private
@@ -454,7 +454,7 @@ class StoriesController < ApplicationController
                          .includes(:story_choices, :parent_story, :sequel_stories, child: :user)
                          .find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    redirect_to stories_path, alert: "Histoire introuvable."
+    redirect_to stories_path, alert: t("flash.stories.not_found")
   end
 
   # Paramètres autorisés pour la création d'une histoire
@@ -468,7 +468,7 @@ class StoriesController < ApplicationController
     return if current_user.can_create_story?
 
     redirect_to subscription_path,
-                alert: "Tu as atteint ta limite de 3 histoires cette semaine. Passe en Premium pour des histoires illimitées !"
+                alert: t("flash.stories.limit_reached")
   end
 
   def story_params

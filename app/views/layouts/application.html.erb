@@ -23,7 +23,9 @@
       <link rel="canonical" href="https://www.noctilio-app.fr<%= request.path %>">
     <% end %>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <%# viewport-fit=cover : indispensable pour que les env(safe-area-inset-*) %>
+    <%# fonctionnent sur iPhone à encoche (sinon la bottom-nav chevauche la barre home) %>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
     <%# theme-color — colore la barre du navigateur sur mobile avec le fond nuit de Noctilio %>
     <meta name="theme-color" content="#0b0e1a">
     <%# view-transition — active les transitions de page Turbo (fondu doux entre pages). %>
@@ -60,8 +62,11 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
 
     <%# ---------------------------------------------------------------- %>
-    <%# Google Fonts — Cormorant Garamond (titres serif italiques) + DM Sans (corps) %>
-    <%# Les mêmes polices que la landing page pour cohérence totale de la DA %>
+    <%# Google Fonts — SOURCE UNIQUE de chargement des polices de l'app (déduplique %>
+    <%# l'ancien doublon avec le @import du SCSS, désormais supprimé). %>
+    <%# Familles : Cormorant Garamond (titres), DM Sans (corps), Lora (texte des %>
+    <%# histoires), Plus Jakarta Sans (UI Bootstrap), Cinzel Decorative (titre histoire). %>
+    <%# Kalam (jamais utilisée) a été retirée. %>
     <%# preconnect réduit la latence de connexion initiale à Google Fonts %>
     <%# ---------------------------------------------------------------- %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -72,7 +77,7 @@
     <link id="async-fonts"
           rel="stylesheet"
           media="print"
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Kalam:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap"/>
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;700&display=swap"/>
     <%# Bascule la feuille de polices de media="print" à "all" une fois chargée %>
     <%# Équivalent JS de l'attribut onload, autorisé par la CSP grâce au nonce %>
     <script nonce="<%= content_security_policy_nonce %>">
@@ -86,7 +91,7 @@
       })();
     </script>
     <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet"/>
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet"/>
     </noscript>
 
     <%# ---------------------------------------------------------------- %>

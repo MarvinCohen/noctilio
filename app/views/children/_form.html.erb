@@ -47,13 +47,43 @@
 
   <%# ── Section 2 : Apparence (optionnel) ── %>
   <%# Les options sont des radio buttons stylisés en pills (badge-check) avec un point coloré %>
-  <%# Approche pure CSS — :has(input:checked) gère la sélection, pas de Stimulus %>
-  <%# display:inline-flex !important sur .color-badge override la règle globale label{display:block} %>
-  <div class="ch-form-section mb-0">
+  <%# La sélection visuelle reste en pur CSS (:has(input:checked)). %>
+  <%# data-controller="child-avatar" : en plus, met à jour un visage SVG en direct %>
+  <%# quand on choisit cheveux / yeux / peau (prévisualisation live, esprit app). %>
+  <div class="ch-form-section mb-0" data-controller="child-avatar">
     <h2 class="ch-form-section-title">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17 10.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8.5"/><path d="m3 15 4-4 4 4 4-4"/></svg><%= t("children.form.section_appearance") %>
     </h2>
     <p class="ch-form-hint"><%= t("children.form.appearance_hint") %></p>
+
+    <%# ── Aperçu live de l'avatar ── %>
+    <%# Petit visage SVG dont les couleurs sont pilotées par child_avatar_controller. %>
+    <%# data-child-avatar-target marque les parties colorables (peau, cheveux, yeux). %>
+    <%# aria-hidden : décoratif (l'info utile reste dans les libellés des options). %>
+    <div class="ch-avatar-preview" aria-hidden="true">
+      <svg viewBox="0 0 120 120" width="96" height="96" role="img">
+        <%# Chevelure (derrière le visage) — couleur par défaut châtain %>
+        <path data-child-avatar-target="hair"
+              d="M28 58 C26 30 48 18 60 18 C72 18 94 30 92 58 C92 46 80 40 60 40 C40 40 28 46 28 58 Z"
+              style="fill:#6b3a22"/>
+        <%# Oreilles (teinte de peau) %>
+        <circle data-child-avatar-target="skin" cx="26" cy="66" r="8" style="fill:#e8c99a"/>
+        <circle data-child-avatar-target="skin" cx="94" cy="66" r="8" style="fill:#e8c99a"/>
+        <%# Visage (teinte de peau) %>
+        <ellipse data-child-avatar-target="skin" cx="60" cy="66" rx="32" ry="34" style="fill:#e8c99a"/>
+        <%# Frange / cheveux du dessus (même couleur que la chevelure) %>
+        <path data-child-avatar-target="hair"
+              d="M30 56 C30 34 46 26 60 26 C74 26 90 34 90 56 C84 44 74 42 60 42 C46 42 36 44 30 56 Z"
+              style="fill:#6b3a22"/>
+        <%# Yeux — blanc fixe + iris piloté (couleur des yeux) %>
+        <circle cx="48" cy="64" r="6" fill="#ffffff"/>
+        <circle cx="72" cy="64" r="6" fill="#ffffff"/>
+        <circle data-child-avatar-target="eyes" cx="48" cy="64" r="3" style="fill:#6b3a2a"/>
+        <circle data-child-avatar-target="eyes" cx="72" cy="64" r="3" style="fill:#6b3a2a"/>
+        <%# Sourire simple %>
+        <path d="M50 80 Q60 88 70 80" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
 
     <%# ── Cheveux ── %>
     <%# Chaque label.color-badge contient un radio caché + un point coloré + le nom %>
@@ -63,7 +93,10 @@
         <%# [clé stable stockée en base, couleur du point] — le libellé est traduit via i18n %>
         <% [["black","#1a1108"],["dark_brown","#3d2314"],["brown","#6b3a22"],["dark_blonde","#9c6f2a"],["blonde","#c9a84c"],["light_blonde","#e8d5a3"],["red","#8b3a0f"],["white","#e8e4d8"]].each do |key, col| %>
           <label class="color-badge">
-            <input type="radio" name="child[hair_color]" value="<%= key %>" <% if child.hair_color == key %>checked<% end %>>
+            <%# data-avatar-* : pilotent la couleur des cheveux du visage SVG (aperçu live) %>
+            <input type="radio" name="child[hair_color]" value="<%= key %>" <% if child.hair_color == key %>checked<% end %>
+                   data-action="change->child-avatar#update"
+                   data-avatar-part="hair" data-avatar-color="<%= col %>">
             <span class="color-badge-dot" style="background:<%= col %>;<%= col == '#e8e4d8' ? 'border:1px solid rgba(0,0,0,0.2)' : '' %>"></span>
             <%= t("children.appearance.hair.#{key}") %>
           </label>
@@ -78,7 +111,10 @@
         <%# [clé stable stockée en base, couleur du point] — le libellé est traduit via i18n %>
         <% [["dark_brown","#2d1200"],["brown","#6b3a2a"],["hazel","#8b6520"],["dark_green","#2d5a27"],["green","#3a8c4a"],["light_green","#52b788"],["dark_blue","#1a3a6b"],["blue","#2d6aab"],["light_blue","#74b3ce"],["grey","#7a7a8a"]].each do |key, col| %>
           <label class="color-badge">
-            <input type="radio" name="child[eye_color]" value="<%= key %>" <% if child.eye_color == key %>checked<% end %>>
+            <%# data-avatar-* : pilotent la couleur des yeux du visage SVG (aperçu live) %>
+            <input type="radio" name="child[eye_color]" value="<%= key %>" <% if child.eye_color == key %>checked<% end %>
+                   data-action="change->child-avatar#update"
+                   data-avatar-part="eyes" data-avatar-color="<%= col %>">
             <span class="color-badge-dot" style="background:<%= col %>"></span>
             <%= t("children.appearance.eyes.#{key}") %>
           </label>
@@ -93,7 +129,10 @@
         <%# [clé stable stockée en base, couleur du point] — le libellé est traduit via i18n %>
         <% [["ebony","#2d1b0e"],["dark_brown","#4a2c12"],["brown","#7c4a1e"],["caramel","#c68a4a"],["golden","#d4a853"],["olive","#c4a882"],["beige","#e8c99a"],["light","#f5deb3"],["very_light","#fef0e7"]].each do |key, col| %>
           <label class="color-badge">
-            <input type="radio" name="child[skin_tone]" value="<%= key %>" <% if child.skin_tone == key %>checked<% end %>>
+            <%# data-avatar-* : pilotent la teinte de peau du visage SVG (aperçu live) %>
+            <input type="radio" name="child[skin_tone]" value="<%= key %>" <% if child.skin_tone == key %>checked<% end %>
+                   data-action="change->child-avatar#update"
+                   data-avatar-part="skin" data-avatar-color="<%= col %>">
             <span class="color-badge-dot" style="background:<%= col %>;<%= ['#e8c99a','#f5deb3','#fef0e7'].include?(col) ? 'border:1px solid rgba(0,0,0,0.15)' : '' %>"></span>
             <%= t("children.appearance.skin.#{key}") %>
           </label>

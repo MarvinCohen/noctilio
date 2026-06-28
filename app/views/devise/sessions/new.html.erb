@@ -282,8 +282,8 @@
     </div>
 
     <%# ── Titre et sous-titre de la page ── %>
-    <h1 class="auth-title">Bon retour</h1>
-    <p class="auth-subtitle">Retrouve tes histoires magiques</p>
+    <h1 class="auth-title"><%= t("auth.login_title") %></h1>
+    <p class="auth-subtitle"><%= t("auth.login_subtitle") %></p>
 
     <%# ── Message d'erreur Devise (mauvais email/mot de passe) ── %>
     <%# On affiche le flash[:alert] ici, dans la card, plutôt que dans le layout %>
@@ -307,10 +307,10 @@
       <%# Champ email avec autocomplete pour les navigateurs %>
       <div class="auth-field">
         <%= f.input :email,
-              label: "Adresse e-mail",
+              label: t("auth.email_label"),
               required: false,
               autofocus: true,
-              placeholder: "votre@email.com",
+              placeholder: t("auth.email_placeholder"),
               input_html: {
                 autocomplete: "email",
                 class: "auth-input"
@@ -320,7 +320,7 @@
       <%# Champ mot de passe %>
       <div class="auth-field">
         <%= f.input :password,
-              label: "Mot de passe",
+              label: t("auth.password_label"),
               required: false,
               input_html: {
                 autocomplete: "current-password",
@@ -333,21 +333,21 @@
         <div class="auth-remember">
           <%= f.input :remember_me,
                 as: :boolean,
-                label: "Se souvenir de moi",
+                label: t("auth.remember_me"),
                 wrapper: false,
                 label_html: { style: "color: #8a8578; font-size: 0.88rem;" } %>
         </div>
       <% end %>
 
       <%# Bouton de connexion — pill doré pleine largeur %>
-      <%= f.button :submit, "Se connecter", class: "auth-btn" %>
+      <%= f.button :submit, t("auth.login"), class: "auth-btn" %>
 
     <% end %>
 
     <%# ── Séparateur "ou" entre le formulaire et le bouton Google ── %>
     <div style="display:flex; align-items:center; gap:0.75rem; margin: 1.5rem 0 1rem;">
       <span style="flex:1; height:1px; background:rgba(240,201,122,0.12);"></span>
-      <span style="color:#8a8578; font-size:0.8rem; white-space:nowrap;">ou</span>
+      <span style="color:#8a8578; font-size:0.8rem; white-space:nowrap;"><%= t("auth.or") %></span>
       <span style="flex:1; height:1px; background:rgba(240,201,122,0.12);"></span>
     </div>
 
@@ -371,7 +371,7 @@
           <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
           <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
         </svg>
-        Continuer avec Google
+        <%= t("auth.google") %>
       </button>
     <% end %>
 
@@ -379,14 +379,14 @@
     <div class="auth-links">
 
       <%# Lien mot de passe oublié %>
-      <%= link_to "Mot de passe oublié ?", new_user_password_path %>
+      <%= link_to t("auth.password_forgot"), new_user_password_path %>
 
       <%# Séparateur visuel %>
       <span class="auth-links-divider"></span>
 
-      <%# Lien vers l'inscription %>
-      Pas encore de compte ?
-      <%= link_to "Créer un compte gratuitement →", new_user_registration_path %>
+      <%# Lien vers l'inscription — la flèche reste hors traduction pour réutiliser la clé %>
+      <%= t("auth.no_account") %>
+      <%= link_to "#{t('auth.create_account_free')} →", new_user_registration_path %>
 
     </div>
 

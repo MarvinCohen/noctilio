@@ -10,7 +10,12 @@
 <%# current_page?, qui ne matche pas les pages de détail comme /stories/:id). %>
 <%# ============================================================ %>
 
-<nav class="bottom-nav" aria-label="<%= t('nav.mobile_aria') %>">
+<%# data-controller="haptic" : active le retour haptique (micro-vibration) sur cette nav.    %>
+<%# data-action="click->haptic#tap" : tout clic sur un onglet remonte ici par bouillonnement %>
+<%# et déclenche une vibration de 10 ms (sensation "app native" sur mobile, ignorée ailleurs). %>
+<nav class="bottom-nav" aria-label="<%= t('nav.mobile_aria') %>"
+     data-controller="haptic"
+     data-action="click->haptic#tap">
 
   <%# --- Onglet Accueil (dashboard) --- %>
   <%= link_to dashboard_path, class: "bottom-nav-item #{'active' if controller_name == 'dashboard'}" do %>

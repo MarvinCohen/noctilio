@@ -35,8 +35,8 @@
     </div>
 
     <%# Titre et sous-titre %>
-    <h1 class="auth-title">Mot de passe oublié ?</h1>
-    <p class="auth-subtitle">Saisis ton email et on t'envoie un lien de réinitialisation.</p>
+    <h1 class="auth-title"><%= t("auth.forgot_title") %></h1>
+    <p class="auth-subtitle"><%= t("auth.forgot_subtitle") %></p>
 
     <%# Formulaire Devise — envoi du lien de réinitialisation %>
     <%= simple_form_for(resource, as: resource_name,
@@ -48,23 +48,23 @@
 
       <%# Email %>
       <%= f.input :email,
-            label: "Adresse e-mail",
+            label: t("auth.email_label"),
             required: true,
             autofocus: true,
-            placeholder: "votre@email.com",
+            placeholder: t("auth.email_placeholder"),
             input_html: { autocomplete: "email" } %>
 
       <%# Bouton d'envoi — pill doré %>
-      <%= f.button :submit, "Envoyer le lien de réinitialisation", class: "auth-btn" %>
+      <%= f.button :submit, t("auth.forgot_submit"), class: "auth-btn" %>
 
     <% end %>
 
-    <%# Liens alternatifs %>
+    <%# Liens alternatifs — les flèches restent hors traduction pour réutiliser les clés %>
     <div class="auth-links">
-      <%= link_to "← Se connecter", new_user_session_path %>
+      <%= link_to "← #{t('auth.login')}", new_user_session_path %>
       <span class="auth-links-divider"></span>
-      Pas encore de compte ?
-      <%= link_to "Créer un compte →", new_user_registration_path %>
+      <%= t("auth.no_account") %>
+      <%= link_to "#{t('auth.create_account')} →", new_user_registration_path %>
     </div>
 
   </div>

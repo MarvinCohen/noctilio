@@ -236,7 +236,13 @@ $footer-dim:   rgba(#fdf6e3, 0.35);
 // ============================================================
 
 @media (max-width: 768px) {
-  .app-footer { padding: 0 1.5rem; }
+  // Footer allégé sur mobile : moins de padding latéral, et surtout un espace
+  // réservé EN BAS pour que la bottom-nav fixe (62px + safe-area iOS) ne recouvre
+  // pas le copyright. Sans ça, la dernière ligne du footer passait sous les onglets.
+  .app-footer {
+    padding: 0 1.5rem;
+    padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 8px);
+  }
   .app-footer__row { gap: 16px; }
 }
 

@@ -35,8 +35,8 @@
     </div>
 
     <%# Titre et sous-titre %>
-    <h1 class="auth-title">Nouveau mot de passe</h1>
-    <p class="auth-subtitle">Choisis un nouveau mot de passe sécurisé.</p>
+    <h1 class="auth-title"><%= t("auth.reset_title") %></h1>
+    <p class="auth-subtitle"><%= t("auth.reset_subtitle") %></p>
 
     <%# Formulaire Devise — changement de mot de passe via token %>
     <%= simple_form_for(resource, as: resource_name,
@@ -50,28 +50,28 @@
       <%= f.input :reset_password_token, as: :hidden %>
       <%= f.full_error :reset_password_token %>
 
-      <%# Nouveau mot de passe %>
+      <%# Nouveau mot de passe — le hint affiche la longueur minimale via %{count} %>
       <%= f.input :password,
-            label: "Nouveau mot de passe",
+            label: t("auth.new_password"),
             required: true,
             autofocus: true,
-            hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
+            hint: (t("auth.password_min", count: @minimum_password_length) if @minimum_password_length),
             input_html: { autocomplete: "new-password" } %>
 
       <%# Confirmation du nouveau mot de passe %>
       <%= f.input :password_confirmation,
-            label: "Confirmer le nouveau mot de passe",
+            label: t("auth.new_password_confirm"),
             required: true,
             input_html: { autocomplete: "new-password" } %>
 
       <%# Bouton de validation — pill doré %>
-      <%= f.button :submit, "Enregistrer le nouveau mot de passe", class: "auth-btn" %>
+      <%= f.button :submit, t("auth.reset_submit"), class: "auth-btn" %>
 
     <% end %>
 
-    <%# Lien retour connexion %>
+    <%# Lien retour connexion — la flèche reste hors traduction pour réutiliser la clé %>
     <div class="auth-links">
-      <%= link_to "← Se connecter", new_user_session_path %>
+      <%= link_to "← #{t('auth.login')}", new_user_session_path %>
     </div>
 
   </div>

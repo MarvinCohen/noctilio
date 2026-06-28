@@ -20,7 +20,9 @@
     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
       <%# Pastille dorée avec les initiales prénom + nom %>
       <div style="width: 56px; height: 56px; border-radius: 50%; background: #f0c97a; color: #0b0e1a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; flex-shrink: 0;">
-        <%= @user.first_name[0].upcase %><%= @user.last_name[0].upcase %>
+<%# nil-safe : un compte Google OAuth peut ne pas avoir prénom/nom renseignés.
+            to_s évite le NoMethodError sur nil, first récupère la 1re lettre (ou nil → "") %>
+        <%= @user.first_name.to_s.first.to_s.upcase %><%= @user.last_name.to_s.first.to_s.upcase %>
       </div>
       <div>
         <div style="color: #d4cfc4; font-size: 1.1rem; font-weight: 600;">

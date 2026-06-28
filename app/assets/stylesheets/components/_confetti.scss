@@ -1,0 +1,57 @@
+// ============================================================
+// Composant : confettis dorés (déblocage de badge)
+// ============================================================
+// Petite pluie de confettis dorés lancée quand un nouveau badge est obtenu,
+// pour célébrer la réussite (esprit "récompense de jeu").
+// Les éléments .confetti-piece sont créés en JS par badge_check_controller,
+// ajoutés au <body>, puis retirés à la fin de l'animation.
+//
+// Accessibilité : si l'utilisateur a demandé "réduire les animations"
+// (prefers-reduced-motion), le controller JS ne lance PAS les confettis du tout
+// (voir badge_check_controller.js). Le bloc media ci-dessous est une sécurité
+// supplémentaire au cas où des éléments existeraient déjà.
+// ============================================================
+
+// Conteneur plein écran qui héberge les confettis — au-dessus de tout, non cliquable
+.confetti-layer {
+  position: fixed;
+  inset: 0;                 // top/right/bottom/left = 0 (plein écran)
+  pointer-events: none;     // ne bloque jamais les clics de l'utilisateur
+  overflow: hidden;
+  z-index: 1080;            // au-dessus des toasts Bootstrap (1056)
+}
+
+// Un confetti = un petit rectangle doré qui tombe en tournoyant
+.confetti-piece {
+  position: absolute;
+  top: -5%;                 // démarre juste au-dessus de l'écran
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  // Dégradé doré (palette Noctilio) pour rester cohérent avec la marque
+  background: linear-gradient(135deg, #f0c97a 0%, #e8b95a 100%);
+  opacity: 0;
+  // La durée, le délai et la position horizontale sont fixés en JS (variables CSS)
+  animation: confetti-fall var(--fall-duration, 2.4s) linear var(--fall-delay, 0s) forwards;
+}
+
+// Chute verticale + rotation continue, avec un léger fondu en fin de course
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    // Descend jusqu'en bas de l'écran en tournoyant
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+// Sécurité accessibilité : aucune animation si réduction des animations demandée
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece { animation: none; opacity: 0; }
+}

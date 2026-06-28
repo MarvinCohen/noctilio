@@ -37,7 +37,7 @@ class ChildrenController < ApplicationController
     @child = current_user.children.build(child_params)
 
     if @child.save
-      redirect_to children_path, notice: "Le profil de #{@child.name} a été créé ! 🎉"
+      redirect_to children_path, notice: t("flash.children.created", name: @child.name)
     else
       # En cas d'erreur de validation, réaffiche le formulaire avec les erreurs
       render :new, status: :unprocessable_entity
@@ -52,7 +52,7 @@ class ChildrenController < ApplicationController
   # PATCH /children/:id — met à jour le profil en base
   def update
     if @child.update(child_params)
-      redirect_to child_path(@child), notice: "Le profil de #{@child.name} a été mis à jour !"
+      redirect_to child_path(@child), notice: t("flash.children.updated", name: @child.name)
     else
       render :edit, status: :unprocessable_entity
     end
@@ -62,7 +62,7 @@ class ChildrenController < ApplicationController
   def destroy
     name = @child.name
     @child.destroy
-    redirect_to children_path, notice: "Le profil de #{name} a été supprimé."
+    redirect_to children_path, notice: t("flash.children.deleted", name: name)
   end
 
   private
@@ -72,7 +72,7 @@ class ChildrenController < ApplicationController
   def set_child
     @child = current_user.children.find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    redirect_to children_path, alert: "Profil introuvable."
+    redirect_to children_path, alert: t("flash.children.not_found")
   end
 
   # Liste des paramètres autorisés pour le formulaire

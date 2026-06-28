@@ -64,23 +64,24 @@
   <%# --- Barre de copyright + liens légaux — centrée, en bas --- %>
   <div class="app-footer__bottom">
     <span class="app-footer__copyright">
-      © <%= Date.today.year %> Noctilio · Fait avec ✦ pour les familles
+      <%# Le © + année + nom restent fixes ; seule la tagline est traduite (clé footer.tagline). %>
+      © <%= Date.today.year %> Noctilio · <%= t("footer.tagline") %>
     </span>
-    <%# Liens légaux — discrets, pas d'uppercase ni de soulignement %>
+    <%# Liens légaux — discrets, pas d'uppercase ni de soulignement. Libellés traduits. %>
     <div class="app-footer__legal">
-      <%= link_to "CGU", cgu_path, class: "footer-legal-link" %>
+      <%= link_to t("footer.cgu"), cgu_path, class: "footer-legal-link" %>
       <span class="footer-legal-sep">·</span>
-      <%= link_to "Confidentialité", privacy_path, class: "footer-legal-link" %>
+      <%= link_to t("footer.privacy"), privacy_path, class: "footer-legal-link" %>
       <span class="footer-legal-sep">·</span>
-      <%= link_to "Mentions légales", legal_notice_path, class: "footer-legal-link" %>
+      <%= link_to t("footer.legal_notice"), legal_notice_path, class: "footer-legal-link" %>
       <span class="footer-legal-sep">·</span>
-      <%= link_to "Blog", blog_path, class: "footer-legal-link" %>
+      <%= link_to t("footer.blog"), blog_path, class: "footer-legal-link" %>
       <span class="footer-legal-sep">·</span>
       <%# À propos — lien vers la page fondateur, renforce le E-E-A-T sur tout le site %>
-      <%= link_to "À propos", a_propos_path, class: "footer-legal-link" %>
+      <%= link_to t("footer.about"), a_propos_path, class: "footer-legal-link" %>
       <span class="footer-legal-sep">·</span>
       <%# Donner mon avis — page publique de retours utilisateurs %>
-      <%= link_to "Donner mon avis", feedback_path, class: "footer-legal-link" %>
+      <%= link_to t("footer.feedback"), feedback_path, class: "footer-legal-link" %>
     </div>
   </div>
 
@@ -98,6 +99,11 @@
 
     const ctx  = canvas.getContext('2d');
     let stars  = [];
+    let rafId  = null;   // identifiant de l'animation en cours (pour pouvoir l'arrêter)
+
+    // Accessibilité : si l'utilisateur a demandé "réduire les animations", on dessine
+    // les étoiles UNE seule fois (champ étoilé fixe, sans scintillement) et on s'arrête.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Redimensionne le canvas à la taille réelle du footer
     function resize() {
@@ -121,21 +127,49 @@
       }
     }
 
-    // Scintillement doré — même couleur que le dashboard (240, 201, 122)
-    function draw(t) {
+    // Dessine les étoiles à un instant t. Si "réduire les animations" est actif,
+    // alpha est figé (0.3) → champ étoilé fixe, sans scintillement.
+    function paint(t) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       stars.forEach(function(s) {
-        const alpha = 0.15 + 0.35 * Math.sin(s.phase + t * s.speed);
+        const alpha = reduceMotion ? 0.3 : 0.15 + 0.35 * Math.sin(s.phase + t * s.speed);
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(240, 201, 122, ' + alpha + ')';
         ctx.fill();
       });
-      requestAnimationFrame(draw);
+    }
+
+    // Boucle d'animation — ne tourne que si le scintillement est demandé
+    function draw(t) {
+      paint(t);
+      rafId = requestAnimationFrame(draw);
+    }
+
+    // Démarre l'animation (en évitant de lancer deux boucles en parallèle)
+    function start() {
+      if (rafId === null) rafId = requestAnimationFrame(draw);
+    }
+
+    // Arrête l'animation et libère le requestAnimationFrame
+    function stop() {
+      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
     }
 
     resize();
-    requestAnimationFrame(draw);
+
+    if (reduceMotion) {
+      // Pas d'animation : on peint le ciel étoilé une seule fois
+      paint(0);
+    } else {
+      start();
+      // Économie de batterie/CPU : on met l'animation en pause quand l'onglet
+      // n'est plus visible (changement d'onglet, app en arrière-plan sur mobile),
+      // et on la relance au retour. Sans ça, requestAnimationFrame tournait à vide.
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden) { stop(); } else { start(); }
+      });
+    }
 
     // Recalcule si la fenêtre change de taille
     window.addEventListener('resize', resize);

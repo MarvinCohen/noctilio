@@ -778,8 +778,10 @@
               <%= t("parental.weekly_quota", count: @stories_this_week) %>
             </p>
             <div class="par-quota-bar">
+              <%# On borne la largeur à 100 % : si l'enfant a dépassé le quota (cas limite,
+                  ex. histoire offerte hors quota), la barre ne déborde pas du conteneur. %>
               <div class="par-quota-fill"
-                   style="width: <%= (@stories_this_week / 3.0 * 100).round %>%"></div>
+                   style="width: <%= [(@stories_this_week / 3.0 * 100).round, 100].min %>%"></div>
             </div>
             <%= link_to t("parental.go_premium"), subscription_path, class: "par-btn-primary" %>
           </div>

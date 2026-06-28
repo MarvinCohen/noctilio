@@ -30,6 +30,14 @@ export default class extends Controller {
     // Annule la soumission HTML normale (qui rechargerait la page)
     event.preventDefault()
 
+    // Retour haptique : petite vibration (15 ms) pour confirmer le choix au toucher,
+    // comme un bouton d'app native. On respecte "réduire les animations" (prefers-reduced-motion)
+    // et on vérifie que navigator.vibrate existe (absent sur iOS Safari → ignoré sans erreur).
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+        typeof navigator.vibrate === "function") {
+      navigator.vibrate(15)
+    }
+
     const form = event.currentTarget
 
     // Récupère les données du formulaire (chosen_option = "a" ou "b")
@@ -66,13 +74,15 @@ export default class extends Controller {
   // Spinner — remplace les boutons pendant la génération
   // ============================================================
   showLoadingState() {
+    // Spinner doré .story-spinner (au lieu du spinner Bootstrap bleu) pour rester
+    // dans la palette nocturne de Noctilio (voir _story_show.scss).
     this.element.innerHTML = `
       <div class="text-center py-5">
-        <div class="spinner-border text-primary mb-3" role="status">
+        <div class="story-spinner mb-3" role="status">
           <span class="visually-hidden">${this.loadingSrValue}</span>
         </div>
-        <p class="text-muted fw-semibold">${this.loadingTitleValue}</p>
-        <p class="text-muted small">${this.loadingHintValue}</p>
+        <p class="story-generating-message">${this.loadingTitleValue}</p>
+        <p class="story-generating-hint">${this.loadingHintValue}</p>
       </div>
     `
   }

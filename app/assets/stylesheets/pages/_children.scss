@@ -461,6 +461,33 @@
   margin-top: -0.75rem;             // Rapproché du titre de section
 }
 
+// Aperçu live de l'avatar enfant — petit visage SVG centré, dans une pastille
+// nocturne avec halo doré, qui se met à jour quand on choisit cheveux/yeux/peau.
+.ch-avatar-preview {
+  display: flex;
+  justify-content: center;
+  margin: 0.25rem auto 1.5rem;
+
+  svg {
+    // Disque sombre derrière le visage + léger halo doré (cohérent avec la DA)
+    background: radial-gradient(circle at 50% 40%, #1a2036 0%, #111527 100%);
+    border-radius: 50%;
+    padding: 8px;
+    border: 1px solid rgba(240, 201, 122, 0.25);
+    box-shadow: 0 0 18px rgba(240, 201, 122, 0.15);
+  }
+
+  // Transition douce des couleurs quand l'utilisateur change un choix
+  svg [data-child-avatar-target] {
+    transition: fill 0.25s ease;
+  }
+}
+
+// Accessibilité : pas de transition de couleur si réduction des animations
+@media (prefers-reduced-motion: reduce) {
+  .ch-avatar-preview svg [data-child-avatar-target] { transition: none; }
+}
+
 // Labels des champs — style cosmique uppercase dim
 // Utilisé par simple_form via wrapper_html ou en override
 .ch-form-section {

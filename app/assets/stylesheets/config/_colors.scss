@@ -37,6 +37,26 @@
 
   // Bordure active — focus, sélection, état actif
   --border-active: rgba(240, 201, 122, 0.4);
+
+  // ============================================================
+  // Tokens de design consolidés (Design System v2)
+  // Centralisent des valeurs jusqu'ici répétées en dur un peu partout.
+  // But : une seule source de vérité, réutilisable en CSS comme en inline.
+  // ============================================================
+
+  // Police d'affichage — titres éditoriaux (Cormorant Garamond, italic en usage).
+  // Référence la famille déjà chargée par le layout. Fallback serif sûr.
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+
+  // Doré translucide de base — réutilisé pour halos, lueurs, fonds dorés discrets.
+  // (Même teinte que --gold, mais avec un canal alpha modulable au besoin.)
+  --gold-alpha: rgba(240, 201, 122, 0.15);
+
+  // Fond des cartes / panneaux — identique à --deep, nommé par usage pour la lisibilité.
+  --card-bg: #111527;
+
+  // Rayon d'arrondi standard des cartes (couvertures, panneaux, modales).
+  --radius-card: 14px;
 }
 
 // ============================================================

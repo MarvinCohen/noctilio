@@ -34,8 +34,8 @@
     </div>
 
     <%# Titre et sous-titre %>
-    <h1 class="auth-title">Email non reçu ?</h1>
-    <p class="auth-subtitle">Saisis ton email et on te renvoie le lien de confirmation.</p>
+    <h1 class="auth-title"><%= t("auth.confirm_title") %></h1>
+    <p class="auth-subtitle"><%= t("auth.confirm_subtitle") %></p>
 
     <%# Formulaire Devise — renvoi des instructions de confirmation %>
     <%= simple_form_for(resource, as: resource_name,
@@ -48,23 +48,23 @@
 
       <%# Email — pré-rempli si reconfirmation en attente %>
       <%= f.input :email,
-            label: "Adresse e-mail",
+            label: t("auth.email_label"),
             required: true,
             autofocus: true,
-            placeholder: "votre@email.com",
+            placeholder: t("auth.email_placeholder"),
             value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email),
             input_html: { autocomplete: "email" } %>
 
       <%# Bouton d'envoi — pill doré %>
-      <%= f.button :submit, "Renvoyer les instructions", class: "auth-btn" %>
+      <%= f.button :submit, t("auth.confirm_submit"), class: "auth-btn" %>
 
     <% end %>
 
-    <%# Liens alternatifs %>
+    <%# Liens alternatifs — la flèche reste hors traduction pour réutiliser la clé %>
     <div class="auth-links">
-      <%= link_to "← Se connecter", new_user_session_path %>
+      <%= link_to "← #{t('auth.login')}", new_user_session_path %>
       <span class="auth-links-divider"></span>
-      <%= link_to "Mot de passe oublié ?", new_user_password_path %>
+      <%= link_to t("auth.password_forgot"), new_user_password_path %>
     </div>
 
   </div>

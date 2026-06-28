@@ -12,3 +12,5 @@
 @import "story_show";  // Styles de la page de lecture d'une histoire (extraits du inline)
 @import "story_new";   // Styles du formulaire de création d'histoire (extraits du inline)
 @import "locale_switcher"; // Sélecteur de langue (i18n)
+@import "confetti";    // Confettis dorés au déblocage d'un badge (célébration)
+@import "accessibility"; // Focus clavier doré + filet global prefers-reduced-motion
