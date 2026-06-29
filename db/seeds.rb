@@ -33,7 +33,10 @@ badges_data = [
     condition_key: "night_owl"
   },
   {
-    name: "Cœur Généreux",
+    # Renommé en « Cœur Bienveillant » : ce badge récompense la GENTILLESSE.
+    # « Cœur Généreux » est réservé au badge sharing_heart (le PARTAGE) pour
+    # éviter deux badges au nom identique sur la page des trophées.
+    name: "Cœur Bienveillant",
     description: "Tu as choisi la gentillesse comme valeur 3 fois. Beau choix !",
     icon: "❤️",
     condition_key: "kind_heart"
