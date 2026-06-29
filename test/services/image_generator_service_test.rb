@@ -74,6 +74,28 @@ class ImageGeneratorServiceTest < ActiveSupport::TestCase
     refute_includes prompt, "fights"
   end
 
+  # --- ciblage d'un StoryChoice (illustration par étape) --------------------
+  test "build_image_prompt utilise la scène DU CHOIX quand story_choice est fourni" do
+    # On illustre une SUITE interactive : la scène vient du choix, pas de l'histoire
+    choice = story_choices(:pending_choice)
+    choice.update!(image_scene: "Léo crossing a rope bridge over a ravine")
+
+    service = ImageGeneratorService.new(choice.story, story_choice: choice)
+    prompt  = service.send(:build_image_prompt)
+
+    # La scène du CHOIX doit être injectée, en composition « scène vivante »
+    assert_includes prompt, "Léo crossing a rope bridge over a ravine"
+    assert_includes prompt, "Dynamic three-quarter pose"
+  end
+
+  test "image_attachment cible l'illustration du choix, pas la couverture" do
+    choice  = story_choices(:pending_choice)
+    service = ImageGeneratorService.new(choice.story, story_choice: choice)
+
+    # La cible d'attachement doit être l'illustration du choix (image par étape)
+    assert_equal choice.illustration, service.send(:image_attachment)
+  end
+
   # --- build_image_prompt : insistance sur la peau foncée -------------------
   test "build_image_prompt insiste sur la peau quand le héros est à peau ébène" do
     # On force une peau ébène sur le héros (les fixtures ne la définissent pas)

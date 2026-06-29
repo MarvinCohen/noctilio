@@ -10,6 +10,11 @@ class StoryChoice < ApplicationRecord
   # Stocké séparément de story.audio_file pour ne pas écraser l'audio principal
   has_one_attached :audio_file
 
+  # Illustration du moment fort de CETTE suite (générée après le choix).
+  # Stockée par choix (et non sur story.cover_image) pour que chaque étape de
+  # l'aventure ait sa propre image fidèle, sans écraser la couverture d'intro.
+  has_one_attached :illustration
+
   # ============================================================
   # Validations
   # ============================================================

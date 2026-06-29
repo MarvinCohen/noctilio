@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_29_130535) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_29_133641) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -347,6 +347,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_130535) do
     t.text "context_alternative"
     t.text "context_chosen"
     t.datetime "created_at", null: false
+    t.text "image_scene"
     t.text "option_a", null: false
     t.text "option_b", null: false
     t.text "question", null: false

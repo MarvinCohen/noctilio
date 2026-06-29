@@ -433,6 +433,21 @@
                 <div class="choice-result-answer">→ <%= choice.chosen_text %></div>
               </div>
 
+              <%# ── ILLUSTRATION DE LA SUITE ── %>
+              <%# Image du moment fort de CE passage, générée par étape et attachée
+              <%# au choix (choice.illustration). On l'affiche au-dessus du texte,
+              <%# comme la couverture au-dessus de l'histoire initiale. Si elle n'est
+              <%# pas encore prête (génération asynchrone), on n'affiche rien : un
+              <%# rafraîchissement la fera apparaître (pas de skeleton ici). %>
+              <% if choice.illustration.attached? %>
+                <div class="story-continuation-illustration mb-3">
+                  <%= image_tag url_for(choice.illustration),
+                        alt: t("story_show.illustration_alt", title: @story.title),
+                        loading: "lazy",
+                        style: "width: 100%; border-radius: 14px; display: block;" %>
+                </div>
+              <% end %>
+
               <%# Continuation de l'histoire avec le choix effectué %>
               <% if choice.context_chosen.present? %>
                 <div class="story-content-wrapper mb-3">

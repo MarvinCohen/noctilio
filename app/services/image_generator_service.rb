@@ -36,9 +36,38 @@ class ImageGeneratorService
   POLLINATIONS_BASE_URL = "https://image.pollinations.ai/prompt"
   POLLINATIONS_MODEL    = "flux-schnell"
 
-  def initialize(story)
-    @story = story
-    @child = story.child
+  # story        : l'histoire (toujours requise — fournit les héros, le style, etc.)
+  # story_choice : OPTIONNEL. Si présent, on illustre la SUITE liée à ce choix
+  #   (image PAR ÉTAPE) : la scène vient du choix et l'image est attachée au choix
+  #   (story_choice.illustration), sans toucher à la couverture d'intro de l'histoire.
+  #   Si nil, comportement historique : on illustre l'histoire (story.cover_image).
+  def initialize(story, story_choice: nil)
+    @story        = story
+    @child        = story.child
+    @story_choice = story_choice
+  end
+
+  # Source de la phrase de scène à illustrer :
+  #   - si on cible un choix → la scène de CETTE suite ;
+  #   - sinon → la scène de l'histoire (intro).
+  def scene_source
+    @story_choice ? @story_choice.image_scene : @story.image_scene
+  end
+
+  # Cible d'attachement ActiveStorage :
+  #   - si on cible un choix → son illustration dédiée ;
+  #   - sinon → la couverture de l'histoire.
+  def image_attachment
+    @story_choice ? @story_choice.illustration : @story.cover_image
+  end
+
+  # Nom de fichier de l'image attachée, distinct selon la cible (lisibilité/debug).
+  def attachment_filename(extension)
+    if @story_choice
+      "histoire_#{@story.id}_choix_#{@story_choice.id}.#{extension}"
+    else
+      "histoire_#{@story.id}_couverture.#{extension}"
+    end
   end
 
   # Génère l'image et l'attache à l'histoire via ActiveStorage
@@ -47,8 +76,10 @@ class ImageGeneratorService
     # Construction du prompt en anglais (meilleurs résultats avec tous les services)
     prompt = build_image_prompt
 
-    # Sauvegarde du prompt utilisé (utile pour débuguer ou régénérer)
-    @story.update_column(:image_prompt, prompt)
+    # Sauvegarde du prompt utilisé (utile pour débuguer ou régénérer).
+    # Colonne portée par l'histoire uniquement : on ne l'écrit pas quand on
+    # cible un choix (StoryChoice n'a pas de colonne image_prompt).
+    @story.update_column(:image_prompt, prompt) unless @story_choice
 
     # Tentative 1 : DALL-E 3 en priorité — meilleur suivi des prompts complexes
     # (scènes avec robots/mechs, cockpits, rôles multiples personnages)
@@ -173,8 +204,8 @@ class ImageGeneratorService
     # Récupère l'URL permanente de l'image sur le CDN fal.ai
     image_url = body["images"].first["url"]
 
-    # Sauvegarde l'URL en base et télécharge l'image dans ActiveStorage
-    @story.update_column(:cover_image_url, image_url)
+    # Sauvegarde l'URL en base (colonne story uniquement) et télécharge l'image.
+    @story.update_column(:cover_image_url, image_url) unless @story_choice
     attach_image_from_url(image_url, "png")
 
     Rails.logger.info("ImageGeneratorService — fal.ai OK pour story ##{@story.id} : #{image_url}")
@@ -211,11 +242,11 @@ class ImageGeneratorService
     b64 = response.dig("data", 0, "b64_json")
     return { success: false, error: "gpt-image-1 n'a pas retourné d'image" } unless b64
 
-    # Décode le base64 et attache directement à ActiveStorage (pas besoin de télécharger)
+    # Décode le base64 et attache directement à la bonne cible (histoire ou choix)
     image_data = Base64.decode64(b64)
-    @story.cover_image.attach(
+    image_attachment.attach(
       io: StringIO.new(image_data),
-      filename: "histoire_#{@story.id}_couverture.png",
+      filename: attachment_filename("png"),
       content_type: "image/png"
     )
 
@@ -242,7 +273,8 @@ class ImageGeneratorService
                 "?width=768&height=512&model=#{POLLINATIONS_MODEL}&nologo=true&enhance=false"
 
     # On sauvegarde d'abord l'URL : elle sert de repli si le téléchargement échoue.
-    @story.update_column(:cover_image_url, image_url)
+    # Colonne story uniquement : on l'ignore quand on cible un choix.
+    @story.update_column(:cover_image_url, image_url) unless @story_choice
 
     # Puis on tente de PERSISTER l'image en base via ActiveStorage (comme FLUX).
     # But : ne plus dépendre du service Pollinations à chaque affichage de la carte
@@ -346,11 +378,12 @@ class ImageGeneratorService
     #   2. SCÈNE D'ACTION : thème libre à mots-clés (robot, combat…) → scène épique.
     #   3. PORTRAIT calme : fallback historique (aucune régression).
     # Dans les trois cas l'enfant reste GRAND et reconnaissable (visage net).
-    if @story.image_scene.present?
-      # Le LLM a décrit en anglais le moment le plus visuel de l'histoire.
-      # On adoucit les éventuels verbes violents (même logique que custom_scene)
-      # pour ne pas déclencher la modération gpt-image-1 (sinon fallback FLUX).
-      scene = soften_violence(@story.image_scene)
+    if scene_source.present?
+      # Le LLM a décrit en anglais le moment le plus visuel de l'histoire (ou de
+      # la suite si on cible un choix). On adoucit les éventuels verbes violents
+      # (même logique que custom_scene) pour ne pas déclencher la modération
+      # gpt-image-1 (sinon fallback FLUX).
+      scene = soften_violence(scene_source)
       # Composition "scène vivante" : on impose une pose dynamique trois-quarts et
       # on insiste sur la reconnaissance de l'enfant pour éviter le portrait statique.
       composition = "#{scene}. Dynamic three-quarter pose, full of life, " \
@@ -499,10 +532,10 @@ class ImageGeneratorService
 
     content_type = extension == "png" ? "image/png" : "image/jpeg"
 
-    # Attache l'image téléchargée à l'histoire via ActiveStorage
-    @story.cover_image.attach(
+    # Attache l'image téléchargée à la bonne cible (couverture ou illustration de choix)
+    image_attachment.attach(
       io: downloaded_file,
-      filename: "histoire_#{@story.id}_couverture.#{extension}",
+      filename: attachment_filename(extension),
       content_type: content_type
     )
   rescue StandardError => e

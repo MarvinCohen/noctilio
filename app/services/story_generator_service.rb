@@ -482,11 +482,22 @@ class StoryGeneratorService
              BODY
            end
 
+    # Rappel du bloc [SCENE] : la règle 8 du system_prompt le demande déjà, mais le
+    # body ci-dessus dit "termine par [CHOIX]" / "rien après", ce qui pourrait faire
+    # oublier la scène. On réaffirme donc qu'APRÈS tout le reste (y compris [CHOIX]),
+    # la réponse se termine par le bloc [SCENE] décrivant le moment fort de CETTE suite.
+    scene_reminder = <<~SCENE
+      Tout à la fin de ta réponse, APRÈS l'histoire (et après le bloc [CHOIX] s'il
+      existe), ajoute EXACTEMENT le bloc [SCENE]...[FIN SCENE] : UNE phrase EN ANGLAIS
+      décrivant le moment le plus visuel de CE passage (ce que FAIT le héros, l'action,
+      sa posture, son émotion, le décor), SANS décrire ses traits physiques.
+    SCENE
+
     [
       # Le prompt système garde les règles de style (Pixar, structure narrative, etc.)
       { role: "system", content: system_prompt },
-      # Un seul message utilisateur : contexte récent + choix + instruction
-      { role: "user", content: "#{header}\n#{body}" }
+      # Un seul message utilisateur : contexte récent + choix + instruction + rappel scène
+      { role: "user", content: "#{header}\n#{body}\n#{scene_reminder}" }
     ]
   end
 

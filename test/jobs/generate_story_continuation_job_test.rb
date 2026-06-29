@@ -64,20 +64,59 @@ class GenerateStoryContinuationJobTest < ActiveJob::TestCase
     assert_includes @choice.context_chosen, "victorieux"
   end
 
+  test "extrait la phrase de scène et nettoie le bloc SCENE du texte" do
+    # Continuation finale (pas de [CHOIX]) qui se termine par un bloc [SCENE].
+    fake_content = <<~TEXT
+      Léo traversa le pont de lianes, le cœur battant mais déterminé.
+
+      [SCENE]
+      Léo crossing a swaying rope bridge over a deep ravine, arms outstretched
+      [FIN SCENE]
+    TEXT
+
+    with_fake_service(fake_content) do
+      GenerateStoryContinuationJob.perform_now(@story.id, @choice.id)
+    end
+
+    @choice.reload
+    # La scène est extraite et stockée sur le choix (servira à l'illustration)
+    assert_equal "Léo crossing a swaying rope bridge over a deep ravine, arms outstretched",
+                 @choice.image_scene
+    # Le bloc [SCENE] ne doit PAS rester dans le texte lu
+    refute_includes @choice.context_chosen, "[SCENE]"
+    refute_includes @choice.context_chosen, "rope bridge"
+    assert_includes @choice.context_chosen, "pont de lianes"
+  end
+
+  test "extract_scene retourne nil sans bloc SCENE" do
+    # Méthode privée testée directement (pas de bloc → nil → pas d'illustration)
+    job = GenerateStoryContinuationJob.new
+    assert_nil job.send(:extract_scene, "Une suite sans scène.")
+  end
+
   private
 
   # Remplace temporairement StoryGeneratorService.new par un faux service qui
   # renvoie le contenu fourni, puis restaure le comportement d'origine.
   # On surcharge .new (et pas une instance) pour éviter le constructeur réel,
   # qui exige la clé API GROQ_API_KEY.
+  #
+  # On stube AUSSI ImageGeneratorService.new par un faux no-op : si la
+  # continuation contient un bloc [SCENE], le job tente sinon une vraie
+  # génération d'image (appel réseau) — interdit en test.
   def with_fake_service(content)
     fake = Object.new
     fake.define_singleton_method(:continue_with_choice) { |_| { success: true, content: content } }
 
+    fake_image = Object.new
+    fake_image.define_singleton_method(:call) { { success: true } }
+
     StoryGeneratorService.define_singleton_method(:new) { |*| fake }
+    ImageGeneratorService.define_singleton_method(:new) { |*, **| fake_image }
     yield
   ensure
-    # Retire notre surcharge → StoryGeneratorService.new redevient le Class#new par défaut
+    # Retire nos surcharges → les .new redeviennent le Class#new par défaut
     StoryGeneratorService.singleton_class.send(:remove_method, :new)
+    ImageGeneratorService.singleton_class.send(:remove_method, :new)
   end
 end

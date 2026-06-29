@@ -22,13 +22,20 @@ class GenerateStoryContinuationJob < ApplicationJob
       # intermédiaire) qui devient le choix suivant de l'aventure.
       next_choice_attrs = extract_choice(content)
 
-      # On retire le bloc [CHOIX] du texte affiché : la vue rend context_chosen
-      # via simple_format (qui ne nettoie pas le markdown), donc sans ce gsub le
-      # bloc brut "[CHOIX] Question : ..." s'afficherait dans l'histoire.
-      clean_text = content.gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "").strip
+      # Extraire la phrase de scène [SCENE] (moment fort de CETTE suite) AVANT
+      # de nettoyer : elle servira à générer une illustration fidèle à la suite.
+      image_scene = extract_scene(content)
 
-      # Sauvegarder la suite (nettoyée) dans le choix résolu
-      story_choice.update!(context_chosen: clean_text)
+      # On retire les blocs techniques ([CHOIX] ET [SCENE]) du texte affiché : la
+      # vue rend context_chosen via simple_format (qui ne nettoie pas le markdown),
+      # donc sans ce gsub les blocs bruts s'afficheraient dans l'histoire lue.
+      clean_text = content
+                   .gsub(/\[CHOIX\].*?\[FIN CHOIX\]/m, "")
+                   .gsub(/\[SCENE\].*?\[FIN SCENE\]/m, "")
+                   .strip
+
+      # Sauvegarder la suite (nettoyée) + la scène dans le choix résolu
+      story_choice.update!(context_chosen: clean_text, image_scene: image_scene)
 
       # Créer le choix suivant si la continuation en proposait un.
       # Idempotence : on recherche d'abord un choix existant pour cette étape
@@ -67,6 +74,21 @@ class GenerateStoryContinuationJob < ApplicationJob
 
       # Vérifier les badges
       Badge.check_and_award(story.child.user)
+
+      # ILLUSTRATION DE LA SUITE — image fidèle au moment fort de CE passage.
+      # On la génère seulement si le LLM a fourni une scène ET que l'utilisateur
+      # a droit aux illustrations (Essentiel/Premium ou 1re histoire offerte).
+      # L'image est attachée AU CHOIX (story_choice.illustration), sans toucher
+      # à la couverture d'intro de l'histoire. On capture les erreurs : un échec
+      # d'image ne doit pas casser la continuation déjà sauvegardée.
+      if image_scene.present? && story.child.user.illustrations_for?(story)
+        begin
+          ImageGeneratorService.new(story, story_choice: story_choice).call
+          Rails.logger.info("GenerateStoryContinuationJob — illustration générée pour le choix ##{story_choice.id}")
+        rescue StandardError => e
+          Rails.logger.error("GenerateStoryContinuationJob — échec illustration choix ##{story_choice.id} : #{e.message}")
+        end
+      end
     else
       story.update!(status: :completed)
       Rails.logger.error("GenerateStoryContinuationJob — échec : #{result[:error]}")
@@ -76,6 +98,14 @@ class GenerateStoryContinuationJob < ApplicationJob
   end
 
   private
+
+  # Extrait la phrase du bloc [SCENE]...[FIN SCENE] de la continuation (moment fort
+  # de CETTE suite, en anglais). Retourne la phrase nettoyée ou nil si absente
+  # (→ pas d'illustration de suite générée, aucune régression).
+  def extract_scene(content)
+    scene = content.match(/\[SCENE\](.*?)\[FIN SCENE\]/m)&.captures&.first
+    scene&.strip.presence
+  end
 
   # Extrait le 1er bloc [CHOIX] d'un texte et retourne un hash d'attributs
   # (question, option_a, option_b) prêt pour StoryChoice, ou nil si pas de bloc
