@@ -65,9 +65,19 @@ class GenerateStoryJob < ApplicationJob
     content        = text_result[:content]
     title          = extract_title(content)
 
+    # 4bis. Extraire le bloc [SCENE] (phrase visuelle EN ANGLAIS du moment fort)
+    # AVANT de nettoyer le contenu. Ce bloc est rédigé par le LLM dans la même
+    # réponse Groq (zéro latence ajoutée) et servira à composer le prompt image.
+    image_scene = extract_scene(content)
+
+    # Puis on RETIRE le bloc [SCENE] du texte affiché : il ne doit JAMAIS
+    # apparaître dans l'histoire lue par le parent (même logique que [CHOIX]).
+    content = strip_scene_block(content)
+
     story.update!(
       content: content,
-      title: title
+      title: title,
+      image_scene: image_scene
     )
 
     # 5. En mode interactif : extraire et créer le choix depuis le texte
@@ -154,6 +164,33 @@ class GenerateStoryJob < ApplicationJob
 
     # Nettoyage : enlève les caractères spéciaux de titre (#, *, **, etc.)
     first_line.gsub(/^[#*\s]+/, "").gsub(/[*#]+$/, "").strip
+  end
+
+  # Extrait la phrase de scène du bloc [SCENE]...[FIN SCENE] généré par le LLM.
+  #
+  # Le LLM termine sa réponse par un bloc dédié contenant UNE phrase en anglais
+  # qui décrit le moment le plus visuel de l'histoire (action, posture, décor),
+  # SANS décrire les traits physiques de l'enfant (gérés en Ruby).
+  #
+  # Format attendu :
+  #   [SCENE]
+  #   Léa reaching toward a glowing crystal planet in zero gravity...
+  #   [FIN SCENE]
+  #
+  # Retourne la phrase nettoyée (strip) ou nil si le bloc est absent
+  # (→ fallback automatique sur le système de prompt actuel, aucune régression).
+  def extract_scene(content)
+    # match (et pas scan) : un seul bloc [SCENE] est attendu en fin de réponse
+    scene = content.match(/\[SCENE\](.*?)\[FIN SCENE\]/m)&.captures&.first
+    scene&.strip.presence
+  end
+
+  # Retire le bloc [SCENE]...[FIN SCENE] (et ses marqueurs) du contenu affiché.
+  #
+  # On supprime le bloc entier puis on nettoie les éventuels sauts de ligne
+  # surnuméraires laissés en fin de texte, pour que l'histoire lue reste propre.
+  def strip_scene_block(content)
+    content.gsub(/\[SCENE\].*?\[FIN SCENE\]/m, "").rstrip
   end
 
   # Parse le PREMIER bloc [CHOIX] du texte généré et crée le choix d'étape 1.

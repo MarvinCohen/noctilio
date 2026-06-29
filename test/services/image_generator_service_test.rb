@@ -34,6 +34,46 @@ class ImageGeneratorServiceTest < ActiveSupport::TestCase
     assert_includes prompt, "children's book illustration"
   end
 
+  # --- build_image_prompt : composition "scène narrative" -------------------
+  test "build_image_prompt illustre la scène du récit si image_scene est présent" do
+    # Le LLM a fourni une phrase de scène fidèle au récit → on illustre CE moment
+    @story.update!(image_scene: "Léo reaching toward a glowing crystal planet")
+
+    service = ImageGeneratorService.new(@story)
+    prompt  = service.send(:build_image_prompt)
+
+    # La phrase de scène doit être injectée, avec pose dynamique (pas un portrait)
+    assert_includes prompt, "Léo reaching toward a glowing crystal planet"
+    assert_includes prompt, "Dynamic three-quarter pose"
+    assert_includes prompt, "NOT a static portrait"
+    # On ne retombe PAS sur le portrait calme ni sur la scène d'action
+    refute_includes prompt, "Warm character portrait"
+    refute_includes prompt, "Epic cinematic action scene"
+  end
+
+  # --- build_image_prompt : fallback portrait si pas de scène ---------------
+  test "build_image_prompt retombe sur le portrait si image_scene est absent" do
+    # Aucune scène fournie → comportement historique inchangé (aucune régression)
+    @story.update!(image_scene: nil)
+
+    service = ImageGeneratorService.new(@story)
+    prompt  = service.send(:build_image_prompt)
+
+    assert_includes prompt, "A portrait of"
+  end
+
+  # --- build_image_prompt : adoucissement de la scène violente --------------
+  test "build_image_prompt adoucit les verbes violents de la scène narrative" do
+    # "fight" est un verbe violent → remplacé pour ne pas déclencher la modération
+    @story.update!(image_scene: "Léo fights a giant dragon")
+
+    service = ImageGeneratorService.new(@story)
+    prompt  = service.send(:build_image_prompt)
+
+    assert_includes prompt, "bravely faces"
+    refute_includes prompt, "fights"
+  end
+
   # --- build_image_prompt : insistance sur la peau foncée -------------------
   test "build_image_prompt insiste sur la peau quand le héros est à peau ébène" do
     # On force une peau ébène sur le héros (les fixtures ne la définissent pas)

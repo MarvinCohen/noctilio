@@ -223,6 +223,17 @@ class StoryGeneratorService
          Garde le récit beau et immersif : adapter le niveau ne veut pas dire l'appauvrir.
 
       #{closing_rule}
+
+      8. ILLUSTRATION — BLOC [SCENE] OBLIGATOIRE : tout à la fin de ta réponse,
+         APRÈS l'histoire (et après le bloc [CHOIX] s'il existe), ajoute EXACTEMENT
+         ce bloc, chaque marqueur sur sa propre ligne :
+         [SCENE]
+         une SEULE phrase EN ANGLAIS décrivant le moment le plus visuel et fort de
+         l'histoire : ce que FAIT le héros, l'action clé, sa posture et son émotion,
+         et le décor autour. NE DÉCRIS PAS les traits physiques de l'enfant
+         (ni cheveux, ni yeux, ni peau) — uniquement l'action et la scène.
+         [FIN SCENE]
+         Ce bloc sert à générer l'illustration ; il ne fait PAS partie du récit lu.
     PROMPT
   end
 

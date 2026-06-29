@@ -340,9 +340,25 @@ class ImageGeneratorService
     # Style visuel choisi par le parent (aquarelle par défaut — doux pour le coucher)
     style = STYLE_REFS[@story.image_style.presence || "watercolor"] || STYLE_REFS["watercolor"]
 
-    # Cadrage HYBRIDE : scène héroïque si thème d'action, portrait calme sinon.
-    # Dans les deux cas l'enfant reste GRAND et reconnaissable (visage net).
-    if action_theme?
+    # Cadrage HYBRIDE à TROIS branches, par ordre de priorité :
+    #   1. SCÈNE NARRATIVE : si le LLM a fourni une phrase [SCENE] fidèle au récit,
+    #      on illustre CE moment précis (le QUOI vient du récit, le QUI reste Ruby).
+    #   2. SCÈNE D'ACTION : thème libre à mots-clés (robot, combat…) → scène épique.
+    #   3. PORTRAIT calme : fallback historique (aucune régression).
+    # Dans les trois cas l'enfant reste GRAND et reconnaissable (visage net).
+    if @story.image_scene.present?
+      # Le LLM a décrit en anglais le moment le plus visuel de l'histoire.
+      # On adoucit les éventuels verbes violents (même logique que custom_scene)
+      # pour ne pas déclencher la modération gpt-image-1 (sinon fallback FLUX).
+      scene = soften_violence(@story.image_scene)
+      # Composition "scène vivante" : on impose une pose dynamique trois-quarts et
+      # on insiste sur la reconnaissance de l'enfant pour éviter le portrait statique.
+      composition = "#{scene}. Dynamic three-quarter pose, full of life, " \
+                    "the child clearly recognizable with face clearly visible, " \
+                    "NOT a static portrait. Warm storybook lighting, " \
+                    "cozy magical atmosphere, child-safe."
+      prompt = "A storybook illustration of #{heroes}. #{composition} Art style: #{style}."
+    elsif action_theme?
       # Scène d'ACTION épique : l'enfant vit la scène (pilote son mecha, combat...).
       # On veut le spectacle (bataille de robots, énergie) MAIS le visage de l'enfant
       # doit rester net et reconnaissable — pas un perso minuscule comme avant.
@@ -441,8 +457,18 @@ class ImageGeneratorService
       text = text.sub(/\A#{Regexp.escape(n)}\s+(est|était|es|c'est)\s+/i, "")
     end
     # Adoucit les verbes violents pour passer la modération OpenAI
-    VIOLENCE_SOFTENERS.each { |pattern, replacement| text = text.gsub(pattern, replacement) }
+    text = soften_violence(text)
     text.sub(/[.…]+\z/, "").strip
+  end
+
+  # Adoucit les verbes violents d'un texte (FR ou EN) en remplaçant les motifs
+  # de VIOLENCE_SOFTENERS par des équivalents héroïques non violents.
+  # Utilisé pour le thème libre (custom_scene) ET pour la phrase [SCENE] du LLM,
+  # afin de ne pas déclencher la modération gpt-image-1 (qui ferait basculer
+  # sur FLUX, moins bon sur les mains et les armes).
+  def soften_violence(text)
+    VIOLENCE_SOFTENERS.each { |pattern, replacement| text = text.gsub(pattern, replacement) }
+    text
   end
 
   # ============================================================
