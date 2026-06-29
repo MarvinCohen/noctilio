@@ -17,6 +17,13 @@ class GenerateAudioJob < ApplicationJob
   def perform(story_id, source: "story", choice_id: nil)
     story = Story.find(story_id)
 
+    # Garde de sécurité : l'audio est une fonctionnalité Premium (ou réservée à la
+    # toute première histoire offerte). On vérifie le droit AVANT tout appel OpenAI
+    # TTS, qui est facturé. Sans cette garde, un job lancé par erreur (ou via une
+    # requête forgée) consommerait du quota TTS pour un compte non autorisé.
+    # audio_for?(story) couvre les deux cas : abonné Premium OU welcome_story.
+    return unless story.child.user.audio_for?(story)
+
     # Détermine le texte à lire selon la source
     text = case source
            when "continuation"

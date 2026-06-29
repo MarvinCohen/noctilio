@@ -19,6 +19,25 @@ class GenerateStoryJob < ApplicationJob
   # File de priorité normale (définie dans config/queue.yml)
   queue_as :default
 
+  # ============================================================
+  # Retry automatique des erreurs IA transitoires
+  # ============================================================
+  # Erreur dédiée levée quand la génération du TEXTE échoue (réseau, surcharge
+  # Groq, timeout…). On la distingue de StandardError pour ne rejouer QUE ce cas
+  # précis, et pas, par exemple, un bug de programmation.
+  class TransientGenerationError < StandardError; end
+
+  # retry_on : Solid Queue replanifie le job en cas de TransientGenerationError.
+  #   - attempts: 3 → trois tentatives au total avant d'abandonner.
+  #   - wait: :polynomially_longer → délai croissant entre les essais (anti-rafale).
+  # Le bloc est exécuté UNE FOIS les tentatives épuisées : on marque alors
+  # l'histoire en :failed pour sortir l'utilisateur de l'écran de génération.
+  retry_on TransientGenerationError, wait: :polynomially_longer, attempts: 3 do |job, error|
+    story_id = job.arguments.first
+    Story.find_by(id: story_id)&.update(status: :failed)
+    Rails.logger.error("GenerateStoryJob — échec définitif après #{job.executions} tentatives : #{error.message}")
+  end
+
   def perform(story_id)
     # 1. Récupérer l'histoire depuis la base de données
     story = Story.find(story_id)
@@ -33,10 +52,13 @@ class GenerateStoryJob < ApplicationJob
     text_result = StoryGeneratorService.new(story).call
 
     unless text_result[:success]
-      # En cas d'échec, on enregistre l'erreur et on arrête
-      story.update!(status: :failed)
-      Rails.logger.error("GenerateStoryJob — échec texte pour story ##{story_id} : #{text_result[:error]}")
-      return
+      # Échec de la génération de texte : on le traite comme transitoire et on
+      # lève TransientGenerationError. Solid Queue rejouera alors le job (jusqu'à
+      # 3 fois via retry_on). On NE passe PAS en :failed ici : l'histoire reste
+      # en :generating pendant les tentatives, et ne bascule en :failed qu'après
+      # épuisement (bloc retry_on ci-dessus). L'utilisateur garde le spinner.
+      Rails.logger.warn("GenerateStoryJob — échec texte pour story ##{story_id} : #{text_result[:error]} — nouvelle tentative")
+      raise TransientGenerationError, text_result[:error]
     end
 
     # 4. Parser et sauvegarder le contenu généré
@@ -109,6 +131,12 @@ class GenerateStoryJob < ApplicationJob
   rescue ActiveRecord::RecordNotFound
     # L'histoire a été supprimée avant la fin du job — on ignore
     Rails.logger.warn("GenerateStoryJob — story ##{story_id} introuvable, job annulé")
+  rescue TransientGenerationError
+    # Erreur transitoire de génération de texte : on la laisse remonter telle quelle
+    # pour que retry_on (déclaré plus haut) la capte et replanifie le job.
+    # On NE passe surtout PAS en :failed ici (sinon l'histoire serait marquée échouée
+    # dès la 1re tentative, alors qu'on veut la rejouer).
+    raise
   rescue StandardError => e
     # Toute autre erreur : on marque comme échoué
     story&.update(status: :failed)

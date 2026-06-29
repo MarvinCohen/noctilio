@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_25_120200) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_29_120100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -352,13 +352,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_25_120200) do
     t.integer "step_number", default: 1, null: false
     t.bigint "story_id", null: false
     t.datetime "updated_at", null: false
-    t.index ["story_id"], name: "index_story_choices_on_story_id"
+    t.index ["story_id", "step_number"], name: "index_story_choices_on_story_id_and_step_number", unique: true
   end
 
   create_table "user_badges", force: :cascade do |t|
     t.bigint "badge_id", null: false
     t.datetime "created_at", null: false
     t.datetime "earned_at", null: false
+    t.boolean "notified", default: false, null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["badge_id"], name: "index_user_badges_on_badge_id"

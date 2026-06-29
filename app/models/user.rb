@@ -207,6 +207,22 @@ class User < ApplicationRecord
   end
 
   # ============================================================
+  # Notifications de badges (célébration en temps réel)
+  # ============================================================
+  # Badges gagnés mais pas encore "fêtés" à l'écran (notif + confettis).
+  # includes(:badge) : précharge le badge pour lire icône/nom sans N+1 dans la vue.
+  def pending_badge_notifications
+    user_badges.unnotified.includes(:badge)
+  end
+
+  # Marque tous les badges en attente comme notifiés (après affichage côté front).
+  # update_all : une seule requête UPDATE, sans charger les objets ni lancer de
+  # callbacks (on ne fait que basculer un drapeau, aucune logique métier requise).
+  def mark_badges_notified!
+    user_badges.unnotified.update_all(notified: true)
+  end
+
+  # ============================================================
   # Progression — données pour la carte "rituel du soir" du dashboard
   # ============================================================
   # Palier d'XP par niveau — constante centrale pour rester cohérent avec level.

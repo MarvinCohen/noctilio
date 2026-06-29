@@ -141,6 +141,8 @@
         <%= render "shared/sidebar" %>
         <main class="app-main">
           <%= render "shared/flashes" %>
+          <%# Notification + confettis des badges fraîchement gagnés (si présents) %>
+          <%= render "shared/badge_notifications" %>
           <%# full_bleed : le dashboard gère son propre fond, pas de wrapper supplémentaire %>
           <%# Les autres pages (formulaires, lecture) sont enveloppées dans .page-card %>
           <%# .page-card est transparent — le fond sombre #0b0e1a vient du body %>

@@ -40,9 +40,26 @@ class StoriesController < ApplicationController
                                  cover_image_attachment: :blob)
 
     # Filtre selon l'onglet actif
-    @stories = @tab == "all" ? base : base.saved_stories
+    scoped = @tab == "all" ? base : base.saved_stories
 
-    # Compteurs pour les badges des onglets — deux requêtes COUNT légères
+    # Mémorise les valeurs de filtre saisies pour les ré-afficher dans le formulaire
+    # (champ recherche pré-rempli, options sélectionnées) après soumission.
+    @q            = params[:q]
+    @world_filter = params[:world]
+    @child_filter = params[:child_id]
+
+    # Applique recherche + filtres en chaînant les scopes du modèle.
+    # Chaque scope est neutre si son paramètre est vide (voir Story).
+    @stories = scoped.search_title(@q)
+                     .for_world(@world_filter)
+                     .for_child(@child_filter)
+
+    # Enfants de l'utilisateur — alimente la liste déroulante du filtre "héros".
+    @children = current_user.children.ordered
+
+    # Compteurs pour les badges des onglets — deux requêtes COUNT légères.
+    # NB : ils reflètent les TOTAUX (hors filtres) : ils servent à indiquer la
+    # taille de chaque onglet, pas le nombre de résultats filtrés affichés.
     @saved_count = current_user.stories.completed.saved_stories.count
     @all_count   = current_user.stories.completed.count
 

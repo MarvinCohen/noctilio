@@ -135,6 +135,13 @@ Rails.application.routes.draw do
   get "/trophees",    to: "trophy_room#index",   as: :trophy_room
 
   # ============================================================
+  # Badges — accusé de notification (célébration affichée)
+  # ============================================================
+  # POST /badges/vus — appelé par le Stimulus badge_check une fois la notification
+  # + les confettis affichés, pour que ces badges ne soient plus re-notifiés.
+  post "/badges/vus", to: "badges#mark_seen", as: :mark_badges_seen
+
+  # ============================================================
   # Pay::Engine — PAS besoin de monter manuellement !
   # Pay 7 se monte automatiquement via son initializer.
   # Les webhooks Stripe arrivent sur : /pay/webhooks/stripe
@@ -148,6 +155,9 @@ Rails.application.routes.draw do
   get  "/abonnement/success",  to: "subscriptions#success",  as: :subscription_success
   post "/abonnement/cancel",   to: "subscriptions#cancel",   as: :subscription_cancel
   post "/abonnement/reactiver", to: "subscriptions#resume",   as: :subscription_resume
+  # Upgrade Essentiel → Premium : change le plan de l'abonnement EXISTANT
+  # (Stripe swap, pas de second abonnement créé). Voir SubscriptionsController#swap_plan.
+  post "/abonnement/changer-offre", to: "subscriptions#swap_plan", as: :subscription_swap
 
   # ============================================================
   # Admin — pages privées accessibles uniquement par marvincohen95@gmail.com

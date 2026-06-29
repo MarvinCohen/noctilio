@@ -519,4 +519,66 @@ class StoryTest < ActiveSupport::TestCase
     # Assert — non terminée → pas accessible publiquement
     assert_nil found, "Une histoire non terminée ne doit pas être partageable"
   end
+
+  # ===========================================================
+  # SECTION — RECHERCHE ET FILTRES DE LA BIBLIOTHÈQUE
+  # ===========================================================
+  # Ces scopes alimentent le formulaire de filtres de /stories.
+  # Convention Rails : un scope qui retourne nil (query vide) se
+  # comporte comme un no-op et n'altère pas la relation chaînée.
+
+  # Vérifie que search_title filtre les histoires par titre (insensible à la casse)
+  # Cas : recherche "voyage" → doit retrouver "Le voyage de Léo dans l'espace"
+  # Pourquoi : c'est la recherche texte principale de la bibliothèque
+  test "search_title retrouve les histoires dont le titre contient la requête" do
+    # Arrange — la fixture completed_saved a "voyage" dans son titre
+    cible = stories(:completed_saved)
+
+    # Act — recherche en minuscules pour vérifier l'insensibilité à la casse (ILIKE)
+    resultats = Story.search_title("voyage")
+
+    # Assert — l'histoire cible doit être présente
+    assert_includes resultats, cible,
+                    "search_title doit retrouver une histoire dont le titre contient 'voyage'"
+  end
+
+  # Vérifie que search_title est un no-op quand la requête est vide
+  # Cas : query nil ou chaîne vide → le scope ne doit rien filtrer
+  # Pourquoi : un champ de recherche vide ne doit pas masquer toutes les histoires
+  test "search_title ne filtre rien quand la requête est vide" do
+    # Act — query vide → le scope retourne nil → relation inchangée
+    resultats = Story.all.search_title("")
+
+    # Assert — on retrouve bien toutes les histoires
+    assert_equal Story.count, resultats.count,
+                 "Une recherche vide ne doit filtrer aucune histoire"
+  end
+
+  # Vérifie que for_world filtre les histoires par univers
+  # Cas : aucune fixture n'a de world_theme → for_world("space") doit être vide
+  # Pourquoi : le filtre par univers ne doit retourner que les histoires correspondantes
+  test "for_world ne retourne que les histoires de l'univers demandé" do
+    # Act — aucune fixture n'a world_theme renseigné
+    resultats = Story.for_world("space")
+
+    # Assert — donc aucun résultat pour l'espace
+    assert_empty resultats,
+                 "for_world doit ne retourner que les histoires de l'univers demandé (aucune ici)"
+  end
+
+  # Vérifie que for_child filtre les histoires par enfant
+  # Cas : filtre sur Léo → ne doit jamais inclure l'histoire de Théo (paul_story)
+  # Pourquoi : le filtre par héros isole les histoires d'un enfant précis
+  test "for_child ne retourne que les histoires de l'enfant demandé" do
+    # Arrange — Léo et l'histoire de Théo (autre enfant)
+    leo = children(:leo)
+    histoire_theo = stories(:paul_story)
+
+    # Act — on filtre sur Léo uniquement
+    resultats = Story.for_child(leo.id)
+
+    # Assert — l'histoire de Théo ne doit pas apparaître
+    assert_not_includes resultats, histoire_theo,
+                        "for_child ne doit pas retourner les histoires d'un autre enfant"
+  end
 end

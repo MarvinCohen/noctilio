@@ -79,7 +79,7 @@
 .alert-warning,
 .alert-danger {
   // Trait coloré à gauche — rouge doux pour ne pas agresser sur fond sombre
-  border-left: 3px solid rgba(220, 80, 80, 0.7);
+  border-left: 3px solid rgba(var(--danger-rgb), 0.7);
 
   // Couleur du texte légèrement rosée pour accentuer le type "danger"
   color: rgba(220, 160, 160, 0.95);

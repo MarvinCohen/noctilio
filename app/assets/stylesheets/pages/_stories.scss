@@ -678,6 +678,97 @@
   padding-bottom: 0;
 }
 
+// ============================================================
+// Barre de recherche + filtres de la bibliothèque
+// ============================================================
+// Ligne flexible : champ recherche + deux sélecteurs + bouton. Passe à la ligne
+// sur mobile (flex-wrap). Style cohérent avec la DA cosmique (fond carte sombre,
+// bordures dorées translucides via les tokens --border / --gold).
+.lib-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+// Conteneur du champ recherche — icône loupe + input
+.lib-filter-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 220px; // s'étire mais garde une largeur mini lisible
+  padding: 0 0.75rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  color: var(--text-dim);
+
+  // Focus visible quand l'input interne est ciblé (cohérent avec --border-active)
+  &:focus-within {
+    border-color: var(--border-active);
+  }
+}
+
+// Input de recherche — transparent, hérite du fond du conteneur.
+// font-size: 16px = anti-zoom automatique iOS au focus (voir Lot design).
+.lib-filter-input {
+  flex: 1;
+  padding: 0.55rem 0;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+
+  &::placeholder { color: var(--text-dim); }
+  &:focus { outline: none; } // le focus est porté par .lib-filter-search
+}
+
+// Sélecteurs de filtre (univers, enfant) — pills sombres
+.lib-filter-select {
+  padding: 0.55rem 0.85rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px; // anti-zoom iOS
+  cursor: pointer;
+
+  &:focus { border-color: var(--border-active); }
+}
+
+// Bouton "Filtrer" — pill doré compact
+.lib-filter-btn {
+  padding: 0.55rem 1.25rem;
+  background: var(--gold);
+  color: var(--night);
+  border: none;
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  // Le survol ne s'active que sur les dispositifs à vrai pointeur (pas tactile)
+  @media (hover: hover) {
+    &:hover { background: var(--gold-soft); }
+  }
+}
+
+// Lien "Réinitialiser" — discret, à côté du bouton
+.lib-filter-reset {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-decoration: underline;
+
+  @media (hover: hover) {
+    &:hover { color: var(--text); }
+  }
+}
+
 // Chaque onglet — pill sobre, devient doré quand actif
 .lib-tab {
   display: flex;
@@ -788,7 +879,7 @@
   padding: 0.4rem 1rem;
   background: transparent;
   color: rgba(220, 100, 100, 0.9);
-  border: 1px solid rgba(220, 80, 80, 0.4);
+  border: 1px solid rgba(var(--danger-rgb), 0.4);
   border-radius: 50px;
   font-size: 0.82rem;
   font-weight: 500;
@@ -796,7 +887,7 @@
   transition: background 0.2s ease;
 }
 .lib-btn-danger:hover {
-  background: rgba(220, 80, 80, 0.1);
+  background: rgba(var(--danger-rgb), 0.1);
   color: rgba(220, 100, 100, 1);
 }
 .lib-btn-danger[type="submit"] { appearance: none; -webkit-appearance: none; }
@@ -808,8 +899,8 @@
 // Conteneur de la section — fond légèrement rouge, bordure gauche d'alerte
 .lib-failed-section {
   background: rgba(180, 50, 50, 0.06);
-  border: 1px solid rgba(220, 80, 80, 0.2);
-  border-left: 3px solid rgba(220, 80, 80, 0.6);
+  border: 1px solid rgba(var(--danger-rgb), 0.2);
+  border-left: 3px solid rgba(var(--danger-rgb), 0.6);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 2rem;
@@ -842,7 +933,7 @@
   gap: 1rem;
   padding: 0.65rem 0.85rem;
   background: rgba(180, 50, 50, 0.05);
-  border: 1px solid rgba(220, 80, 80, 0.12);
+  border: 1px solid rgba(var(--danger-rgb), 0.12);
   border-radius: 8px;
 
   // Sur mobile : empile infos + boutons

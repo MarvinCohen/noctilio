@@ -15,4 +15,13 @@ class UserBadge < ApplicationRecord
   # (l'index unique en base de données renforce aussi cette règle)
   validates :user_id, uniqueness: { scope: :badge_id, message: "a déjà ce badge" }
   validates :earned_at, presence: true
+
+  # ============================================================
+  # Scopes
+  # ============================================================
+
+  # Badges gagnés mais pas encore notifiés à l'utilisateur.
+  # Utilisé pour déclencher la notification + confettis UNE SEULE FOIS,
+  # au prochain chargement de page après l'obtention du badge.
+  scope :unnotified, -> { where(notified: false) }
 end

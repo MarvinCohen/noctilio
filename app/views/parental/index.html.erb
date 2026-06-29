@@ -534,14 +534,14 @@
 
     <div class="col-md-4">
       <div class="par-stat-card">
-        <div class="par-stat-number"><%= current_user.stories.completed.count %></div>
+        <div class="par-stat-number"><%= @completed_stories_count %></div>
         <div class="par-stat-label"><%= t("parental.stat_stories") %></div>
       </div>
     </div>
 
     <div class="col-md-4">
       <div class="par-stat-card">
-        <div class="par-stat-number"><%= @children.count %></div>
+        <div class="par-stat-number"><%= @children_count %></div>
         <div class="par-stat-label"><%= t("parental.stat_children") %></div>
       </div>
     </div>

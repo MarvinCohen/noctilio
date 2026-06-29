@@ -232,6 +232,14 @@ es:
     empty_title: "Tu biblioteca está vacía"
     empty_desc: "¡Genera tu primera historia mágica en solo unos segundos!"
     create_story: "Crear una historia"
+    # ── Búsqueda y filtros de la biblioteca ──
+    search_placeholder: "Buscar un título…"
+    filter_world_all: "Todos los mundos"
+    filter_child_all: "Todos los héroes"
+    filter_apply: "Filtrar"
+    filter_reset: "Restablecer"
+    no_results_title: "Sin resultados"
+    no_results_desc: "Ninguna historia coincide con tu búsqueda. Prueba otros filtros."
 
   # Espacio para padres (app/views/parental/index.html.erb)
   parental:
@@ -315,6 +323,9 @@ es:
     reactivate: "Reactivar mi suscripción"
     cancel: "Cancelar la suscripción"
     cancel_confirm: "Tu acceso se mantendrá hasta el final del período actual. ¿Lo confirmas?"
+    # Upgrade Essentiel → Premium (botón para suscriptores Esencial activos)
+    upgrade_to_premium: "Pasar a Premium"
+    upgrade_confirm: "Vas a pasar a Premium (9,99 €/mes). El precio se ajustará a prorrateo. ¿Lo confirmas?"
     price_period: "al mes · sin compromiso"
     quota_label: "Historias gratuitas esta semana"
     # %{count} = historias creadas esta semana

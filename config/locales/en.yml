@@ -232,6 +232,14 @@ en:
     empty_title: "Your library is empty"
     empty_desc: "Generate your first magical story in just a few seconds!"
     create_story: "Create a story"
+    # ── Library search and filters ──
+    search_placeholder: "Search a title…"
+    filter_world_all: "All worlds"
+    filter_child_all: "All heroes"
+    filter_apply: "Filter"
+    filter_reset: "Reset"
+    no_results_title: "No results"
+    no_results_desc: "No story matches your search. Try other filters."
 
   # Parental area (app/views/parental/index.html.erb)
   parental:
@@ -315,6 +323,9 @@ en:
     reactivate: "Reactivate my subscription"
     cancel: "Cancel subscription"
     cancel_confirm: "Your access will remain until the end of the current period. Do you confirm?"
+    # Upgrade Essentiel → Premium (button shown to active Essentiel subscribers)
+    upgrade_to_premium: "Upgrade to Premium"
+    upgrade_confirm: "You are switching to Premium (€9.99/month). The price will be prorated. Do you confirm?"
     price_period: "per month · no commitment"
     quota_label: "Free stories this week"
     # %{count} = stories created this week

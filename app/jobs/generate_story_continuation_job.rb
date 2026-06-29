@@ -30,10 +30,23 @@ class GenerateStoryContinuationJob < ApplicationJob
       # Sauvegarder la suite (nettoyée) dans le choix résolu
       story_choice.update!(context_chosen: clean_text)
 
-      # Créer le choix suivant si la continuation en proposait un
+      # Créer le choix suivant si la continuation en proposait un.
+      # Idempotence : on recherche d'abord un choix existant pour cette étape
+      # (story_id + step_number), et on ne le crée QUE s'il n'existe pas encore.
+      # Cela évite un doublon si le job est rejoué (retry, double soumission).
+      # L'index unique composite (story_id, step_number) ajouté en migration sert
+      # de filet de sécurité ultime côté base.
       if next_choice_attrs
-        story.story_choices.create!(next_choice_attrs.merge(step_number: story_choice.step_number + 1))
-        Rails.logger.info("GenerateStoryContinuationJob — choix #{story_choice.step_number + 1} créé pour story ##{story_id}")
+        next_step = story_choice.step_number + 1
+        # find_or_create_by sur la clé (story_id, step_number) : si le choix de
+        # cette étape existe déjà, on ne recrée rien. Les autres attributs (question,
+        # options) ne sont renseignés qu'à la création, via le bloc.
+        story.story_choices.find_or_create_by!(step_number: next_step) do |choice|
+          choice.question = next_choice_attrs[:question]
+          choice.option_a = next_choice_attrs[:option_a]
+          choice.option_b = next_choice_attrs[:option_b]
+        end
+        Rails.logger.info("GenerateStoryContinuationJob — choix #{next_step} assuré pour story ##{story_id}")
       end
 
       # Pré-génère l'audio de la SUITE pour un enchaînement fluide (Partie B).

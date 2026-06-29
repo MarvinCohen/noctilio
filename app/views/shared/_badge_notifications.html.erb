@@ -1,0 +1,21 @@
+<%# ============================================================ %>
+<%# Notification temps réel des badges fraîchement gagnés %>
+<%# ============================================================ %>
+<%# Affiché sur la 1re page chargée après l'obtention d'un badge (souvent la %>
+<%# page de lecture de l'histoire ou le dashboard). Le Stimulus badge_check lit %>
+<%# data-badges (JSON), affiche un toast + des confettis, puis appelle %>
+<%# POST /badges/vus pour que ces badges ne soient plus re-notifiés. %>
+<%# On ne rend l'élément QUE s'il y a au moins un badge en attente : sinon le %>
+<%# controller Stimulus n'a rien à faire. %>
+<% pending = current_user.pending_badge_notifications %>
+<% if pending.any? %>
+  <%#
+    data-badges : tableau JSON des badges à fêter (icône + nom traduit).
+    badge.name est déjà la chaîne affichable du badge (voir modèle Badge).
+    data-badge-check-seen-url-value : URL de l'accusé de notification.
+  %>
+  <div data-controller="badge-check"
+       data-badge-check-seen-url-value="<%= mark_badges_seen_path %>"
+       data-badges="<%= pending.map { |ub| { icon: ub.badge.icon, name: ub.badge.name } }.to_json %>">
+  </div>
+<% end %>

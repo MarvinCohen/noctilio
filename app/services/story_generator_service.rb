@@ -125,6 +125,13 @@ class StoryGeneratorService
     end
   rescue OpenAI::Error => e
     { success: false, error: "Erreur OpenAI : #{e.message}" }
+  rescue StandardError => e
+    # Filet de sécurité : toute autre erreur (réseau, parsing, timeout…) est
+    # capturée et renvoyée sous forme de résultat d'échec, comme le fait déjà
+    # generate_alternative_timeline plus haut. Sans ce rescue, une erreur non
+    # OpenAI faisait planter GenerateStoryContinuationJob sans repasser l'histoire
+    # en :completed, laissant l'enfant bloqué sur l'écran de génération.
+    { success: false, error: "Erreur inattendue : #{e.message}" }
   end
 
   private

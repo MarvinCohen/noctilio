@@ -109,4 +109,31 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to subscription_path
     assert_equal "Aucune résiliation à annuler.", flash[:alert]
   end
+
+  # ===========================================================
+  # SECTION 5 — Upgrade Essentiel → Premium (swap_plan)
+  # ===========================================================
+
+  # Vérifie que le changement d'offre est protégé pour les visiteurs non connectés
+  # Cas : POST /abonnement/changer-offre sans session
+  # Pourquoi : on ne doit jamais modifier un abonnement pour un visiteur anonyme
+  test "POST /abonnement/changer-offre redirige vers la connexion si non connecté" do
+    post subscription_swap_path
+
+    assert_redirected_to new_user_session_path,
+                         "Le changement d'offre devrait être inaccessible sans connexion"
+  end
+
+  # Vérifie que l'upgrade gère l'absence d'abonnement Essentiel sans planter
+  # Cas : un compte gratuit (aucun abonnement Stripe) tente de passer Premium
+  # Pourquoi : la garde anti double-abonnement doit bloquer avant tout appel Stripe
+  test "POST /abonnement/changer-offre sans abonnement Essentiel affiche le bon message" do
+    sign_in_as(users(:marie))
+
+    post subscription_swap_path
+
+    assert_redirected_to subscription_path,
+                         "L'upgrade sans abonnement Essentiel devrait revenir sur /abonnement"
+    assert_equal "Aucun abonnement Essentiel à faire évoluer.", flash[:alert]
+  end
 end

@@ -47,6 +47,47 @@
     <% end %>
   </div>
 
+  <%# ── Barre de recherche + filtres ── %>
+  <%# Formulaire GET : la recherche/filtre se reflète dans l'URL (partageable, %>
+  <%# rechargeable). On conserve l'onglet actif via un champ caché tab. %>
+  <%= form_with url: stories_path, method: :get, data: { turbo_frame: "_top" }, class: "lib-filters" do |f| %>
+    <%# Préserve l'onglet courant (saved/all) à travers la soumission du filtre %>
+    <%= hidden_field_tag :tab, @tab %>
+
+    <%# Champ de recherche par titre %>
+    <div class="lib-filter-search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <%= text_field_tag :q, @q,
+            placeholder: t("library.search_placeholder"),
+            class: "lib-filter-input",
+            aria: { label: t("library.search_placeholder") } %>
+    </div>
+
+    <%# Filtre par univers — options = univers reconnus, libellés traduits %>
+    <%= select_tag :world,
+          options_for_select(
+            [[t("library.filter_world_all"), ""]] +
+            Story::VALID_WORLD_THEMES.map { |w| [t("worlds.#{w}"), w] },
+            @world_filter),
+          class: "lib-filter-select",
+          aria: { label: t("library.filter_world_all") } %>
+
+    <%# Filtre par enfant héros %>
+    <%= select_tag :child_id,
+          options_for_select(
+            [[t("library.filter_child_all"), ""]] +
+            @children.map { |c| [c.name, c.id] },
+            @child_filter),
+          class: "lib-filter-select",
+          aria: { label: t("library.filter_child_all") } %>
+
+    <%# Bouton filtrer + lien réinitialiser (visible si un filtre est actif) %>
+    <button type="submit" class="lib-filter-btn"><%= t("library.filter_apply") %></button>
+    <% if @q.present? || @world_filter.present? || @child_filter.present? %>
+      <%= link_to t("library.filter_reset"), stories_path(tab: @tab), class: "lib-filter-reset" %>
+    <% end %>
+  <% end %>
+
   <%# ── Section histoires échouées — affichée uniquement si certaines ont planté ── %>
   <% if @failed_stories.any? %>
     <div class="lib-failed-section">
@@ -157,6 +198,17 @@
 
         </div>
       <% end %>
+    </div>
+
+  <% elsif @q.present? || @world_filter.present? || @child_filter.present? %>
+    <%# Aucun résultat AVEC un filtre actif — message distinct de la bibliothèque vide %>
+    <div class="lib-empty">
+      <span class="lib-empty-emoji">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <h2><%= t("library.no_results_title") %></h2>
+      <p><%= t("library.no_results_desc") %></p>
+      <%= link_to t("library.filter_reset"), stories_path(tab: @tab), class: "lib-btn-primary" %>
     </div>
 
   <% else %>

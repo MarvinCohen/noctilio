@@ -2,33 +2,6 @@
   /* padding horizontal pour que le breadcrumb et le titre ne collent pas au bord */
   .story-page { padding: 2rem 1rem 5rem; }
 
-  /* ── Curseur plume — barre verticale dorée qui clignote ── */
-  /* Injecté par story-quill-controller pendant l'animation */
-  .story-quill-cursor {
-    display: inline;
-    color: #f0c97a;
-    font-weight: 300;
-    font-size: 1em;
-    line-height: 1;
-    animation: quillBlink 0.7s step-end infinite;
-    margin-left: 1px;
-  }
-
-  /* Clignotement — s'arrête net, pas de transition douce */
-  @keyframes quillBlink {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0; }
-  }
-
-  /* Fin d'animation — le curseur disparaît en fondu */
-  .story-quill-cursor--done {
-    animation: quillFadeOut 0.6s ease forwards;
-  }
-  @keyframes quillFadeOut {
-    from { opacity: 1; }
-    to   { opacity: 0; }
-  }
-
   /* ── État "en génération" ── */
   .story-generating { text-align: center; padding: 5rem 1rem; }
   .story-generating-icon { font-size: 5rem; display: block; margin-bottom: 1.5rem; }

@@ -63,6 +63,16 @@ class ParentalController < ApplicationController
     # héros (1 requête SQL par enfant = N+1). On récupère un hash
     # { child_id => count } d'un coup, et la vue lit @completed_counts[child.id].
     @completed_counts = current_user.stories.completed.group(:child_id).count
+
+    # Total d'histoires terminées — pour la carte de stats globale.
+    # On le DÉRIVE de @completed_counts (somme des valeurs) plutôt que de relancer
+    # un current_user.stories.completed.count dans la vue : zéro requête SQL en plus,
+    # et la logique sort enfin du template (skinny controller).
+    @completed_stories_count = @completed_counts.values.sum
+
+    # Nombre d'enfants — réutilise child_ids déjà chargé (aucune requête COUNT
+    # supplémentaire, contrairement à @children.count appelé dans la vue).
+    @children_count = child_ids.size
   end
 
   private

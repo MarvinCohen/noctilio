@@ -232,6 +232,14 @@ de:
     empty_title: "Deine Bibliothek ist leer"
     empty_desc: "Erstelle deine erste magische Geschichte in nur wenigen Sekunden!"
     create_story: "Geschichte erstellen"
+    # ── Suche und Filter der Bibliothek ──
+    search_placeholder: "Titel suchen…"
+    filter_world_all: "Alle Welten"
+    filter_child_all: "Alle Helden"
+    filter_apply: "Filtern"
+    filter_reset: "Zurücksetzen"
+    no_results_title: "Keine Ergebnisse"
+    no_results_desc: "Keine Geschichte entspricht deiner Suche. Versuche andere Filter."
 
   # Elternbereich (app/views/parental/index.html.erb)
   parental:
@@ -315,6 +323,9 @@ de:
     reactivate: "Mein Abonnement reaktivieren"
     cancel: "Abonnement kündigen"
     cancel_confirm: "Dein Zugang bleibt bis zum Ende des aktuellen Zeitraums bestehen. Bestätigst du das?"
+    # Upgrade Essentiel → Premium (Button für aktive Essentiel-Abonnenten)
+    upgrade_to_premium: "Auf Premium upgraden"
+    upgrade_confirm: "Du wechselst zu Premium (9,99 €/Monat). Der Preis wird anteilig berechnet. Bestätigst du das?"
     price_period: "pro Monat · ohne Bindung"
     quota_label: "Kostenlose Geschichten diese Woche"
     # %{count} = diese Woche erstellte Geschichten

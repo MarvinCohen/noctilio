@@ -131,6 +131,38 @@ class SubscriptionsController < ApplicationController
                 alert: "Impossible de réactiver l'abonnement. Contacte le support."
   end
 
+  # POST /abonnement/changer-offre — fait évoluer un abonné Essentiel vers Premium
+  def swap_plan
+    # Récupère l'abonnement Stripe actif de l'utilisateur via Pay.
+    # &. car un compte gratuit n'a pas de payment_processor configuré.
+    subscription = current_user.payment_processor&.subscription
+
+    # Garde anti double-abonnement : on ne propose l'upgrade qu'à un abonné
+    # Essentiel disposant d'un abonnement actif. Sans abonnement OU déjà Premium,
+    # il n'y a rien à faire évoluer — on revient avec un message clair.
+    unless subscription.present? && current_user.essentiel?
+      redirect_to subscription_path,
+                  alert: "Aucun abonnement Essentiel à faire évoluer."
+      return
+    end
+
+    # swap change le PLAN de l'abonnement EXISTANT (aucun second abonnement créé).
+    # Stripe calcule automatiquement le prorata entre Essentiel et Premium.
+    subscription.swap(ENV.fetch("STRIPE_PREMIUM_PRICE_ID"))
+
+    redirect_to subscription_path,
+                notice: "Te voilà Premium ! Profite de l'audio et du mode interactif. ✨"
+  rescue KeyError
+    # STRIPE_PREMIUM_PRICE_ID absent des variables d'environnement
+    redirect_to subscription_path,
+                alert: "Configuration Stripe manquante. Contacte l'administrateur."
+  rescue StandardError => e
+    # Erreur inattendue côté Stripe (API down, plan invalide, etc.)
+    Rails.logger.error "[Stripe] Erreur changement d'offre : #{e.message}"
+    redirect_to subscription_path,
+                alert: "Impossible de changer d'offre. Réessaie dans quelques instants."
+  end
+
   private
 
   # Retourne le price ID Stripe correspondant au palier demandé.

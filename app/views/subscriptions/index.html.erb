@@ -482,6 +482,15 @@
               method: :post,
               class: "sub-btn-cta" %>
       <% else %>
+        <%# Abonné Essentiel actif : on lui propose de passer à Premium.
+            swap_plan change le plan de l'abonnement existant (pas de second abonnement). %>
+        <% if @tier == :essentiel %>
+          <%= button_to t("subscription.upgrade_to_premium"),
+                subscription_swap_path,
+                method: :post,
+                class: "sub-btn-cta",
+                data: { confirm: t("subscription.upgrade_confirm") } %>
+        <% end %>
         <%# Abonnement actif : bouton de résiliation discret en bas de carte %>
         <%= button_to t("subscription.cancel"),
               subscription_cancel_path,

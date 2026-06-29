@@ -103,7 +103,7 @@
   padding: 0.45rem 1.1rem;
   background: transparent;
   color: rgba(220, 100, 100, 0.9);
-  border: 1px solid rgba(220, 80, 80, 0.4);
+  border: 1px solid rgba(var(--danger-rgb), 0.4);
   border-radius: 50px;
   font-family: 'DM Sans', sans-serif;
   font-size: 0.82rem;
@@ -119,8 +119,8 @@
   }
 
   &:hover {
-    background: rgba(220, 80, 80, 0.1);
-    border-color: rgba(220, 80, 80, 0.7);
+    background: rgba(var(--danger-rgb), 0.1);
+    border-color: rgba(var(--danger-rgb), 0.7);
     color: rgba(220, 100, 100, 1);
   }
 }
@@ -533,6 +533,22 @@
       border-color: #f0c97a !important;    // Gold
       background: rgba(240, 201, 122, 0.04) !important;
     }
+
+    // Focus CLAVIER (Tab) — on restaure un anneau net pour l'accessibilité.
+    // :focus retirait l'outline, ce qui privait les utilisateurs au clavier
+    // d'un repère visible. :focus-visible ne cible QUE la navigation clavier,
+    // donc le focus à la souris garde le rendu discret ci-dessus.
+    &:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    // Anti-zoom iOS : sous 16px, Safari mobile zoome automatiquement le champ
+    // au focus (comportement gênant). On force 16px sur petit écran pour
+    // empêcher ce zoom, sans changer le rendu desktop (0.95rem au-dessus).
+    @media (max-width: 576px) {
+      font-size: 16px;
+    }
   }
 
   // Textarea — hauteur minimale
@@ -795,7 +811,7 @@
   .field_with_errors select,
   .field_with_errors textarea,
   .is-invalid {
-    border-color: rgba(220, 80, 80, 0.5) !important;
+    border-color: rgba(var(--danger-rgb), 0.5) !important;
   }
 }
 

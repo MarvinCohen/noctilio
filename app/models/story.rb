@@ -99,6 +99,12 @@ class Story < ApplicationRecord
   # url_safe: true → le token ne contient que des caractères valides dans une URL
   SHARE_PURPOSE = "story_share".freeze
 
+  # Durée de validité d'un lien de partage public.
+  # Au-delà, le token expire et find_by_share_token renvoie nil : le destinataire
+  # voit la page "lien invalide". On limite ainsi la fenêtre pendant laquelle un
+  # lien fuité (partagé puis re-partagé) reste exploitable.
+  SHARE_TOKEN_TTL = 30.days
+
   # Construit (ou réutilise) le vérificateur de signature dédié au partage
   # Mémoïsé au niveau de la classe pour ne pas le recréer à chaque appel
   def self.share_verifier
@@ -122,9 +128,11 @@ class Story < ApplicationRecord
     nil                                            # token trafiqué → on renvoie nil
   end
 
-  # Génère le token signé de CETTE histoire (utilisé pour construire l'URL de partage)
+  # Génère le token signé de CETTE histoire (utilisé pour construire l'URL de partage).
+  # expires_in : le token embarque sa date d'expiration (signée). Passé ce délai,
+  # verify lèvera InvalidSignature et find_by_share_token renverra nil.
   def share_token
-    self.class.share_verifier.generate(id)
+    self.class.share_verifier.generate(id, expires_in: SHARE_TOKEN_TTL)
   end
 
   # ============================================================
@@ -176,9 +184,45 @@ class Story < ApplicationRecord
   # Histoires complétées et triées par date
   scope :completed_recent, -> { completed.recent }
 
+  # ============================================================
+  # Scopes de recherche / filtrage de la bibliothèque
+  # ============================================================
+  # Convention Rails : si le lambda renvoie nil (filtre vide), Rails retombe sur
+  # la relation courante (= aucun filtre appliqué). On peut donc chaîner ces
+  # scopes en toute sécurité, même avec des paramètres absents.
+
+  # Recherche par titre, insensible à la casse (ILIKE PostgreSQL).
+  # sanitize_sql_like échappe les caractères spéciaux LIKE (% et _) saisis par
+  # l'utilisateur, pour qu'ils soient traités littéralement (pas de wildcard injecté).
+  scope :search_title, lambda { |query|
+    where("title ILIKE ?", "%#{sanitize_sql_like(query)}%") if query.present?
+  }
+
+  # Filtre par univers (world_theme). Vide → pas de filtre.
+  scope :for_world, ->(world) { where(world_theme: world) if world.present? }
+
+  # Filtre par enfant héros de l'histoire. Vide → pas de filtre.
+  scope :for_child, ->(child_id) { where(child_id: child_id) if child_id.present? }
+
   # Histoires sauvegardées par l'utilisateur dans sa bibliothèque
   # Utilisé dans StoriesController#index pour n'afficher que les histoires gardées
   scope :saved_stories, -> { where(saved: true) }
+
+  # Histoires possédant une illustration, peu importe la source.
+  # ⚠️ Une image peut exister de DEUX façons :
+  #   - cover_image_url renseigné (chemins fallback FLUX / Pollinations), OU
+  #   - une pièce jointe ActiveStorage cover_image (chemin principal gpt-image-1,
+  #     qui n'écrit PAS cover_image_url).
+  # Un simple where.not(cover_image_url: nil) excluait donc à tort toutes les
+  # images générées par gpt-image-1. On joint la table des pièces jointes
+  # ActiveStorage (left_joins → garde aussi les histoires avec seulement l'URL)
+  # et on garde les histoires qui ont l'une OU l'autre source.
+  # distinct : une histoire ne doit apparaître qu'une fois malgré la jointure.
+  scope :with_illustration, lambda {
+    left_joins(:cover_image_attachment)
+      .where("stories.cover_image_url IS NOT NULL OR active_storage_attachments.id IS NOT NULL")
+      .distinct
+  }
 
   # ============================================================
   # Méthodes métier
@@ -264,9 +308,14 @@ class Story < ApplicationRecord
     root_story.all_sequels_in_order
   end
 
-  # Retourne true si une suite a déjà été créée pour cette histoire
+  # Retourne true si une suite a déjà été créée pour cette histoire.
+  # On utilise any? (et NON exists?) volontairement : dans la bibliothèque,
+  # le controller précharge sequel_stories via includes. exists? déclenchait une
+  # requête COUNT à CHAQUE carte (N+1), alors que any? réutilise la collection
+  # déjà préchargée en mémoire — zéro requête supplémentaire. Hors préchargement,
+  # any? reste correct (SELECT 1 LIMIT 1).
   def has_sequel?
-    sequel_stories.exists?
+    sequel_stories.any?
   end
 
   # Retourne le premier épisode suivant dans la saga (nil si aucun)

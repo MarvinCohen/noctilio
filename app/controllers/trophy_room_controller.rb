@@ -22,13 +22,19 @@ class TrophyRoomController < ApplicationController
     # Progression vers le prochain niveau (pourcentage)
     @level_progress = ((@xp_points % 500) / 500.0 * 100).round
 
-    # Galerie des illustrations générées (dernières histoires avec image)
-    # includes :child pour éviter le N+1 sur story.child.name dans la vue
+    # Galerie des illustrations générées (dernières histoires avec image).
+    # with_illustration : inclut AUSSI les images gpt-image-1 attachées via
+    # ActiveStorage (qui n'écrivent pas cover_image_url) — l'ancien filtre
+    # where.not(cover_image_url: nil) les excluait à tort.
+    # includes(:child) : évite le N+1 sur story.child.name dans la vue.
+    # with_attached_cover_image : précharge les blobs ActiveStorage en une requête
+    # pour éviter un N+1 sur chaque image_tag story.cover_image de la galerie.
     @illustrated_stories = current_user.stories
                                        .completed
-                                       .where.not(cover_image_url: nil)
+                                       .with_illustration
                                        .recent
                                        .limit(9)
                                        .includes(:child)
+                                       .with_attached_cover_image
   end
 end
