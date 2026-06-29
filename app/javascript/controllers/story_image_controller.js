@@ -73,9 +73,15 @@ export default class extends Controller {
   }
 
   // ============================================================
-  // displayImage(url) — insère et affiche l'image dans le DOM
+  // displayImage(url, retry) — insère et affiche l'image dans le DOM
   // ============================================================
-  displayImage(url) {
+  // retry : compteur de re-tentatives en cas d'échec de chargement.
+  //   L'image vient d'être uploadée sur Cloudinary, qui met parfois quelques
+  //   secondes à la rendre livrable. Le tout premier chargement peut donc
+  //   renvoyer un 404 transitoire alors que le blob est déjà attaché côté serveur.
+  //   Sans re-tentative, on afficherait "Illustration non disponible" à tort et
+  //   l'utilisateur devrait recharger la page à la main pour voir l'image.
+  displayImage(url, retry = 0) {
     // Récupère le skeleton (indicateur de chargement) pour le masquer après
     const skeleton = this.element.querySelector(".story-illustration-skeleton")
 
@@ -95,9 +101,19 @@ export default class extends Controller {
       if (skeleton) skeleton.style.display = "none"
     }
 
-    // En cas d'erreur de chargement (URL cassée, 404, etc.) — affiche un message
+    // En cas d'erreur de chargement : on réessaie quelques fois (404 transitoire
+    // Cloudinary) avant d'abandonner. On retire l'<img> échouée et on relance
+    // displayImage après 2s — le skeleton "chargement" reste visible entre-temps.
     img.onerror = () => {
-      if (skeleton) skeleton.innerHTML = `<p style="color:#777;font-size:0.8rem;">${this.unavailableValue}</p>`
+      img.remove()
+      if (retry < 5) {
+        // Nouvelle tentative — l'image est probablement encore en cours de
+        // traitement côté Cloudinary, elle sera livrable dans quelques secondes.
+        setTimeout(() => this.displayImage(url, retry + 1), 2000)
+      } else if (skeleton) {
+        // 5 échecs (~10s) : on abandonne et on affiche le message discret.
+        skeleton.innerHTML = `<p style="color:#777;font-size:0.8rem;">${this.unavailableValue}</p>`
+      }
     }
 
     // Ajoute l'image dans le wrapper (ce controller)
