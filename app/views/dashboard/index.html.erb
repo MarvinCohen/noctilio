@@ -176,8 +176,13 @@
       <%= link_to story_path(@suggested_story), class: "db-suggestion" do %>
         <%# Vignette de couverture (ou emoji d'univers en repli) %>
         <% if @suggested_story.cover_image_source.present? %>
+          <%# data-controller image-fallback : si l'image casse (URL Pollinations lente/morte), %>
+          <%# le Stimulus remplace l'<img> par l'emoji de l'univers (voir image_fallback_controller.js) %>
           <%= image_tag @suggested_story.cover_image_source, alt: @suggested_story.title,
-                class: "db-suggestion-cover" %>
+                class: "db-suggestion-cover",
+                data: { controller: "image-fallback",
+                        action: "error->image-fallback#error",
+                        "image-fallback-emoji-value": @suggested_story.world_emoji } %>
         <% else %>
           <span class="db-suggestion-cover db-suggestion-cover--emoji">
             <%= @suggested_story.world_emoji %>
@@ -224,8 +229,12 @@
 
           <%# Couverture — version ActiveStorage si attachée, sinon URL OpenAI %>
           <% if story.cover_image_source.present? %>
+            <%# data-controller image-fallback : repli emoji si la couverture casse au chargement %>
             <%= image_tag story.cover_image_source, alt: story.title,
-                  style: "width: 100%; height: 150px; object-fit: cover; display: block;" %>
+                  style: "width: 100%; height: 150px; object-fit: cover; display: block;",
+                  data: { controller: "image-fallback",
+                          action: "error->image-fallback#error",
+                          "image-fallback-emoji-value": story.world_emoji } %>
           <% else %>
             <%# Pas d'image — placeholder avec l'emoji de l'univers %>
             <div style="width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; background: rgba(240, 201, 122, 0.05);">

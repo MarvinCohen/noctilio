@@ -463,9 +463,13 @@
                       class: "tr-gallery-img",
                       alt: story.title %>
               <% elsif story.cover_image_url.present? %>
+                <%# URL externe (souvent Pollinations) : peut casser, d'où le repli emoji via Stimulus %>
                 <%= image_tag story.cover_image_url,
                       class: "tr-gallery-img",
-                      alt: story.title %>
+                      alt: story.title,
+                      data: { controller: "image-fallback",
+                              action: "error->image-fallback#error",
+                              "image-fallback-emoji-value": story.world_emoji } %>
               <% end %>
 
               <%# Corps de la carte : titre tronqué + enfant associé %>

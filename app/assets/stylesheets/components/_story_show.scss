@@ -593,6 +593,11 @@
        breadcrumb et le titre collent au bord de l'écran */
     .story-page { padding: 1.5rem 1rem 5rem; }
 
+    /* État "en génération" — sur mobile on réduit fortement le padding vertical.
+       En desktop il vaut 5rem ; cumulé au padding de .story-page, ça repoussait
+       le hibou trop bas et coupait le bas de l'écran (spinner sous la barre fixe). */
+    .story-generating { padding: 1.5rem 1rem; }
+
     /* Titre de l'histoire — réduit la taille min du clamp */
     .story-title {
       font-size: clamp(1.6rem, 6vw, 3.2rem);

@@ -241,10 +241,22 @@ class ImageGeneratorService
     image_url = "#{POLLINATIONS_BASE_URL}/#{encoded_prompt}" \
                 "?width=768&height=512&model=#{POLLINATIONS_MODEL}&nologo=true&enhance=false"
 
-    # On sauvegarde uniquement l'URL — pas de téléchargement côté serveur
+    # On sauvegarde d'abord l'URL : elle sert de repli si le téléchargement échoue.
     @story.update_column(:cover_image_url, image_url)
 
-    Rails.logger.info("ImageGeneratorService — URL Pollinations sauvegardée pour story ##{@story.id}")
+    # Puis on tente de PERSISTER l'image en base via ActiveStorage (comme FLUX).
+    # But : ne plus dépendre du service Pollinations à chaque affichage de la carte
+    # (sinon l'image "saute" quand leur service est lent ou indisponible).
+    # Pollinations renvoie du JPEG par défaut.
+    begin
+      attach_image_from_url(image_url, "jpeg")
+      Rails.logger.info("ImageGeneratorService — image Pollinations persistée pour story ##{@story.id}")
+    rescue StandardError => e
+      # Échec du téléchargement (Pollinations lent/indisponible) : pas grave,
+      # l'URL reste en base comme repli et le client gère l'image manquante.
+      Rails.logger.warn("ImageGeneratorService — persistance Pollinations échouée (URL conservée) : #{e.message}")
+    end
+
     { success: true, url: image_url }
   rescue StandardError => e
     Rails.logger.error("ImageGeneratorService — échec Pollinations : #{e.message}")
@@ -437,7 +449,8 @@ class ImageGeneratorService
   # Téléchargement et attachement à ActiveStorage
   # ============================================================
   # Télécharge l'image depuis une URL distante et l'attache à l'histoire.
-  # Utilisé par fal.ai et DALL-E (pas Pollinations qui bloque les requêtes serveur)
+  # Utilisé par fal.ai, DALL-E ET Pollinations : on persiste l'image en base
+  # plutôt que de dépendre d'une URL externe qui peut expirer ou tomber.
   def attach_image_from_url(url, extension = "png")
     # Sécurité : on vérifie que l'URL est bien HTTPS avant de l'ouvrir
     # URI.open peut lire des fichiers locaux si l'URL commence par file:// (SSRF)
@@ -447,8 +460,16 @@ class ImageGeneratorService
             "URL invalide : seules les URLs HTTPS sont autorisées (reçu : #{url})"
     end
 
-    # Ouvre l'URL avec un timeout pour éviter de bloquer le job trop longtemps
-    downloaded_file = URI.open(url, read_timeout: 60, open_timeout: 30)
+    # Ouvre l'URL avec un timeout pour éviter de bloquer le job trop longtemps.
+    # User-Agent navigateur : Pollinations bloque les requêtes sans User-Agent
+    # (réponse 403). Read timeout généreux car Pollinations génère l'image à la
+    # volée au premier accès, ce qui peut prendre plusieurs dizaines de secondes.
+    downloaded_file = URI.open(
+      url,
+      "User-Agent" => "Mozilla/5.0 (compatible; NoctilioBot/1.0)",
+      read_timeout: 90,
+      open_timeout: 30
+    )
 
     content_type = extension == "png" ? "image/png" : "image/jpeg"
 
