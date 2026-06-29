@@ -44,7 +44,9 @@ export default class extends Controller {
       // Le visage et les oreilles partagent la même teinte de peau
       this.skinTargets.forEach((el) => { el.style.fill = color })
     } else if (part === "hair" && this.hasHairTarget) {
-      this.hairTarget.style.fill = color
+      // La chevelure (arrière) et la frange (dessus) sont DEUX cibles "hair" :
+      // on peint les DEUX, sinon une seule couche change → cheveux bicolores.
+      this.hairTargets.forEach((el) => { el.style.fill = color })
     } else if (part === "eyes") {
       // Deux yeux → on colore chaque cible "eyes"
       this.eyesTargets.forEach((el) => { el.style.fill = color })

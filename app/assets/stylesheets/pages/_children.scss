@@ -543,6 +543,21 @@
       outline-offset: 2px;
     }
 
+    // Autocomplétion Chrome/Safari : par défaut le navigateur force un fond
+    // blanc/jaune (champ "Marvin" tout blanc quand une suggestion est proposée).
+    // Le `background` est ignoré sur ce pseudo-état : seul un box-shadow interne
+    // (inset) de la couleur de la carte permet de masquer ce fond imposé.
+    // -webkit-text-fill-color garde le texte en crème, et la transition longue
+    // empêche le flash blanc au moment où le navigateur applique l'autofill.
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #111527 inset !important; // Fond sombre de la carte
+      -webkit-text-fill-color: #d4cfc4 !important;               // Texte crème conservé
+      caret-color: #d4cfc4;                                      // Curseur visible sur fond sombre
+      transition: background-color 9999s ease-in-out 0s;         // Neutralise le flash blanc
+    }
+
     // Anti-zoom iOS : sous 16px, Safari mobile zoome automatiquement le champ
     // au focus (comportement gênant). On force 16px sur petit écran pour
     // empêcher ce zoom, sans changer le rendu desktop (0.95rem au-dessus).
