@@ -338,11 +338,24 @@
           </div>
         </div>
         <% else %>
-          <%# Compte gratuit — pastille discrète qui présente la lecture vocale Premium %>
+          <%# Fonctionnalité audio verrouillée — le CTA dépend du palier de l'utilisateur. %>
           <div class="audio-upsell">
-            <%= link_to subscription_path, style: "display: inline-flex; align-items: center; gap: 0.5rem; color: #f0c97a; text-decoration: none; font-size: 0.85rem;" do %>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <%= t("story_show.audio_premium_only") %>
+            <% if current_user.essentiel? %>
+              <%# Abonné Essentiel : il paie déjà, on lui propose un UPGRADE en un clic
+                  vers Premium (subscription_swap → swap_plan, prorata Stripe géré côté serveur).
+                  button_to car le swap est un POST. Style aligné sur la pastille dorée. %>
+              <%= button_to subscription_swap_path, method: :post,
+                    style: "display: inline-flex; align-items: center; gap: 0.5rem; color: #f0c97a; background: none; border: none; padding: 0; cursor: pointer; font-size: 0.85rem;" do %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <%= t("story_show.audio_upgrade_essentiel") %>
+              <% end %>
+            <% else %>
+              <%# Compte gratuit : pas d'abonnement à faire évoluer → on l'envoie sur la
+                  page de tarifs pour qu'il choisisse une offre. %>
+              <%= link_to subscription_path, style: "display: inline-flex; align-items: center; gap: 0.5rem; color: #f0c97a; text-decoration: none; font-size: 0.85rem;" do %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <%= t("story_show.audio_premium_only") %>
+              <% end %>
             <% end %>
           </div>
         <% end %>

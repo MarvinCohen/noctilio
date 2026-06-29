@@ -346,6 +346,7 @@ en:
     # Short feature labels shown inside the plan cards
     card_stories_limited: "3 stories per week"
     card_text_only: "Story text"
+    card_free_trial: "7-day free trial"
     card_unlimited: "Unlimited stories"
     card_illustrations: "AI illustrations"
     card_audio: "Audio reading"
@@ -480,6 +481,8 @@ en:
     interactive_hint_first: "Included in your free 1st story ✨"
     interactive_hint_link: "Go Premium"
     interactive_hint_locked: "to unlock"
+    # Upgrade CTA shown to an Essentiel subscriber on the locked interactive toggle
+    interactive_upgrade_essentiel: "Go Premium for interactive mode ✦"
     summary_heroes: "Heroes"
     summary_adventure: "Adventure"
     summary_value: "Value"
@@ -670,6 +673,8 @@ en:
     audio_label: "Voice narration"
     audio_preparing: "Preparing"
     audio_premium_only: "Voice narration reserved for Premium subscribers"
+    # Upgrade CTA shown to an Essentiel subscriber (one-click swap to Premium)
+    audio_upgrade_essentiel: "Go Premium for voice narration ✦"
     # ── Gentle Premium note (first free story) ──
     premium_hint_before: "Illustration and audio narration are included in every story with"
     premium_hint_link: "Premium"

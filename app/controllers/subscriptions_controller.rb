@@ -42,14 +42,14 @@ class SubscriptionsController < ApplicationController
     # retombe sur Premium par sécurité — checkout_price_id gère le fallback.
     price_id = checkout_price_id(params[:plan])
 
-    # Crée une Stripe Checkout Session hébergée par Stripe.
+    # Options de la Stripe Checkout Session hébergée par Stripe.
     # L'utilisateur saisit sa CB directement sur la page Stripe (sécurisé PCI).
     #
     # mode: "subscription" → abonnement récurrent (pas paiement unique)
     # line_items           → le produit à acheter (price_id choisi ci-dessus)
     # success_url          → où Stripe redirige après paiement réussi
     # cancel_url           → où Stripe redirige si l'utilisateur abandonne
-    @checkout_session = current_user.payment_processor.checkout(
+    checkout_options = {
       mode: "subscription",
       line_items: [{
         price: price_id,
@@ -57,7 +57,20 @@ class SubscriptionsController < ApplicationController
       }],
       success_url: subscription_success_url(session_id: "{CHECKOUT_SESSION_ID}"),
       cancel_url: subscription_url
-    )
+    }
+
+    # Essai gratuit de 7 jours — UNIQUEMENT sur le palier Essentiel (palier d'entrée,
+    # pour lever la friction). Pendant l'essai, l'abonnement Stripe est en statut
+    # "trialing" (compté comme actif par Pay → l'utilisateur a les fonctions Essentiel
+    # sans être débité). La carte est collectée au checkout puis facturée à la fin de
+    # l'essai. Premium (intention d'achat plus forte) reste sans essai.
+    # subscription_data.trial_period_days : nombre de jours offerts avant facturation.
+    if params[:plan] == "essentiel"
+      checkout_options[:subscription_data] = { trial_period_days: 7 }
+    end
+
+    # Crée la session de paiement Stripe avec les options assemblées ci-dessus.
+    @checkout_session = current_user.payment_processor.checkout(**checkout_options)
 
     # Redirige vers la page de paiement Stripe (domaine externe)
     # allow_other_host: true est obligatoire pour les redirections vers Stripe

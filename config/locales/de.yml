@@ -346,6 +346,7 @@ de:
     # Kurze Feature-Bezeichnungen in den Tarifkarten
     card_stories_limited: "3 Geschichten pro Woche"
     card_text_only: "Geschichtentext"
+    card_free_trial: "7 Tage kostenlos testen"
     card_unlimited: "Unbegrenzte Geschichten"
     card_illustrations: "KI-Illustrationen"
     card_audio: "Audio-Vorlesen"
@@ -480,6 +481,8 @@ de:
     interactive_hint_first: "In deiner kostenlosen 1. Geschichte enthalten ✨"
     interactive_hint_link: "Zu Premium wechseln"
     interactive_hint_locked: "zum Freischalten"
+    # Upgrade-CTA für einen Essentiel-Abonnenten beim gesperrten interaktiven Modus
+    interactive_upgrade_essentiel: "Wechsle zu Premium für den interaktiven Modus ✦"
     summary_heroes: "Helden"
     summary_adventure: "Abenteuer"
     summary_value: "Wert"
@@ -671,6 +674,8 @@ de:
     audio_label: "Sprachausgabe"
     audio_preparing: "Wird vorbereitet"
     audio_premium_only: "Sprachausgabe nur für Premium-Abonnenten"
+    # Upgrade-CTA für einen Essentiel-Abonnenten (mit einem Klick zu Premium wechseln)
+    audio_upgrade_essentiel: "Wechsle zu Premium für die Sprachausgabe ✦"
     # ── Sanfter Premium-Hinweis (erste kostenlose Geschichte) ──
     premium_hint_before: "Illustration und Audio-Erzählung sind in jeder Geschichte enthalten mit"
     premium_hint_link: "Premium"

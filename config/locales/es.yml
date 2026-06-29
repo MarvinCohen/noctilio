@@ -346,6 +346,7 @@ es:
     # Etiquetas cortas de las funciones en las tarjetas de plan
     card_stories_limited: "3 historias por semana"
     card_text_only: "Texto de la historia"
+    card_free_trial: "7 días de prueba gratis"
     card_unlimited: "Historias ilimitadas"
     card_illustrations: "Ilustraciones IA"
     card_audio: "Lectura en audio"
@@ -480,6 +481,8 @@ es:
     interactive_hint_first: "Incluido en tu 1.ª historia gratis ✨"
     interactive_hint_link: "Pasar a Premium"
     interactive_hint_locked: "para desbloquear"
+    # CTA de mejora para un suscriptor Essentiel en el modo interactivo bloqueado
+    interactive_upgrade_essentiel: "Pasa a Premium para el modo interactivo ✦"
     summary_heroes: "Héroes"
     summary_adventure: "Aventura"
     summary_value: "Valor"
@@ -670,6 +673,8 @@ es:
     audio_label: "Narración por voz"
     audio_preparing: "Preparando"
     audio_premium_only: "Narración por voz reservada a los suscriptores Premium"
+    # CTA de mejora para un suscriptor Essentiel (pasa a Premium con un clic)
+    audio_upgrade_essentiel: "Pasa a Premium para la narración por voz ✦"
     # ── Nota suave de Premium (primera historia gratis) ──
     premium_hint_before: "La ilustración y la narración en audio se incluyen en cada historia con"
     premium_hint_link: "Premium"

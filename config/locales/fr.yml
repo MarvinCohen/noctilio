@@ -348,6 +348,7 @@ fr:
     # Libellés courts des features affichées dans les cartes de palier
     card_stories_limited: "3 histoires par semaine"
     card_text_only: "Texte de l'histoire"
+    card_free_trial: "7 jours d'essai gratuit"
     card_unlimited: "Histoires illimitées"
     card_illustrations: "Illustrations IA"
     card_audio: "Lecture audio"
@@ -482,6 +483,8 @@ fr:
     interactive_hint_first: "Inclus dans ta 1re histoire offerte ✨"
     interactive_hint_link: "Passer en Premium"
     interactive_hint_locked: "pour débloquer"
+    # CTA d'upgrade affiché à un abonné Essentiel sur le toggle interactif verrouillé
+    interactive_upgrade_essentiel: "Passe Premium pour le mode interactif ✦"
     summary_heroes: "Héros"
     summary_adventure: "Aventure"
     summary_value: "Valeur"
@@ -672,6 +675,8 @@ fr:
     audio_label: "Lecture vocale"
     audio_preparing: "En préparation"
     audio_premium_only: "Lecture vocale réservée aux abonnés Premium"
+    # CTA d'upgrade affiché à un abonné Essentiel (passe Premium en un clic via swap_plan)
+    audio_upgrade_essentiel: "Passe Premium pour la lecture audio ✦"
     # ── Note douce Premium (1re histoire offerte) ──
     premium_hint_before: "L'illustration et la lecture audio sont incluses dans chaque histoire avec"
     premium_hint_link: "Premium"

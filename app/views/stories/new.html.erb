@@ -419,7 +419,13 @@
                     <%= t("wizard.interactive_hint_premium") %>
                   <% elsif current_user.first_story_pending? %>
                     <%= t("wizard.interactive_hint_first") %>
+                  <% elsif current_user.essentiel? %>
+                    <%# Abonné Essentiel : upgrade direct vers Premium en un clic (POST swap_plan).
+                        button_to rendu en ligne (display:inline) pour rester dans le texte du hint. %>
+                    <%= button_to t("wizard.interactive_upgrade_essentiel"), subscription_swap_path, method: :post,
+                          style: "display:inline; background:none; border:none; padding:0; color:rgba(240,201,122,0.65); cursor:pointer; font:inherit;" %>
                   <% else %>
+                    <%# Compte gratuit : lien vers la page de tarifs (il doit choisir une offre). %>
                     <%= link_to t("wizard.interactive_hint_link"), subscription_path, style: "color:rgba(240,201,122,0.65);" %> <%= t("wizard.interactive_hint_locked") %>
                   <% end %>
                 </div>

@@ -217,11 +217,49 @@ class StoryGeneratorService
       5. VALEUR ÉDUCATIVE SUBTILE : La leçon morale se vit dans l'histoire —
          jamais expliquée, jamais moralisatrice. L'enfant la ressent, pas la subit.
 
-      6. VOCABULAIRE ADAPTÉ : Adapté à l'âge, mais jamais simplet.
-         Les enfants aiment les grands mots quand le contexte les rend compréhensibles.
+      6. NIVEAU DE LECTURE ADAPTÉ À L'ÂGE (#{@child.age} ans) — calibre précisément
+         la longueur des phrases et la richesse du vocabulaire selon ces consignes :
+      #{reading_level_guidance}
+         Garde le récit beau et immersif : adapter le niveau ne veut pas dire l'appauvrir.
 
       #{closing_rule}
     PROMPT
+  end
+
+  # ============================================================
+  # reading_level_guidance — consignes de niveau de lecture par tranche d'âge
+  # ============================================================
+  # Pourquoi : la simple mention "adapté à l'âge" est trop vague pour le modèle.
+  # On donne ici des règles CONCRÈTES (longueur de phrase, vocabulaire, structure)
+  # calées sur l'âge réel de l'enfant (@child.age), pour aider un apprenti lecteur
+  # à suivre le texte tout en gardant un récit immersif.
+  # Renvoie un bloc de texte injecté dans la règle 6 du system_prompt.
+  def reading_level_guidance
+    case @child.age
+    when 0..5
+      # Tout-petits : on privilégie la clarté absolue.
+      <<~LEVEL.strip
+        - Phrases TRÈS courtes (5 à 10 mots), une seule idée par phrase.
+           - Vocabulaire concret du quotidien ; évite les mots abstraits ou rares.
+           - Répétitions douces (mots, structures) qui rassurent et rythment le récit.
+           - Évite les subordonnées : préfère des phrases simples enchaînées.
+      LEVEL
+    when 6..8
+      # Lecteurs débutants/intermédiaires : on enrichit progressivement.
+      <<~LEVEL.strip
+        - Phrases de longueur moyenne, avec quelques subordonnées simples.
+           - Vocabulaire plus riche : tu peux introduire des mots nouveaux,
+             mais rends-les compréhensibles par le contexte immédiat.
+           - Des dialogues vivants pour porter l'action et le caractère.
+      LEVEL
+    else
+      # Lecteurs confirmés (9 ans et +) : on vise la richesse littéraire.
+      <<~LEVEL.strip
+        - Phrases plus longues et variées dans leur rythme.
+           - Vocabulaire soutenu, métaphores et images, sans jamais devenir abscons.
+           - Structures narratives plus complexes et nuances émotionnelles assumées.
+      LEVEL
+    end
   end
 
   # Prompt utilisateur — aiguille vers la version interactive ou classique.

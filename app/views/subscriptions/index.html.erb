@@ -542,6 +542,8 @@
           <div class="sub-tier-price-period"><%= t("subscription.price_period") %></div>
         </div>
         <ul class="sub-tier-features">
+          <%# Mise en avant de l'essai gratuit 7 jours (appliqué au checkout Essentiel) %>
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><strong><%= t("subscription.card_free_trial") %></strong></li>
           <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_unlimited") %></li>
           <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_illustrations") %></li>
           <li class="sub-tier-feature sub-tier-feature--off"><span class="sub-tier-feature-icon">—</span><%= t("subscription.card_audio") %></li>
