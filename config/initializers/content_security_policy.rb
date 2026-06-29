@@ -28,12 +28,22 @@ Rails.application.configure do
     # On autorise tout HTTPS car les URLs Cloudinary et fal.ai peuvent varier
     policy.img_src :self, :https, :data
 
+    # Médias (audio/vidéo) : ce domaine + HTTPS
+    # L'audio des histoires (OpenAI TTS) est stocké via ActiveStorage sur Cloudinary
+    # et lu côté client avec `new Audio(url)`. Sans cette directive, media-src retombe
+    # sur default-src :self et le navigateur BLOQUE l'audio servi depuis res.cloudinary.com
+    # (l'image, elle, passait déjà grâce à img_src :https — d'où "image OK, audio KO").
+    policy.media_src :self, :https
+
     # Requêtes fetch() / XHR : ce domaine (appels Stimulus → Rails)
     # + cloud.umami.is : domaine d'où le script Umami est chargé
     # + gateway.umami.is : domaine RÉEL vers lequel Umami envoie les events (POST /api/send)
     #   Vérifié en prod via l'onglet Réseau : le script est servi par cloud.umami.is
     #   mais le beacon de tracking part vers gateway.umami.is (les deux sont donc nécessaires)
-    policy.connect_src :self, "https://cloud.umami.is", "https://gateway.umami.is"
+    # + res.cloudinary.com : le lecteur audio fait fetch(/stories/:id/audio) qui répond
+    #   par une redirection 302 vers Cloudinary. fetch suit la redirection, et connect-src
+    #   s'applique à CHAQUE cible de redirection — sans Cloudinary ici, le fetch échoue.
+    policy.connect_src :self, "https://cloud.umami.is", "https://gateway.umami.is", "https://res.cloudinary.com"
 
     # Désactiver complètement les plugins Flash/Java (obsolètes et dangereux)
     policy.object_src :none

@@ -63,6 +63,19 @@
   }
   .auth-card .form-group input::placeholder,
   .auth-card .form-control::placeholder { color: #8a8578; }
+  /* Neutralise le fond blanc imposé par Chrome lors de l'autofill (ex: champ "Nom"
+     pré-rempli en blanc cassant le thème sombre). L'inset box-shadow recouvre le
+     blanc avec la couleur effective de l'input (#1d2132), et text-fill-color garde
+     le texte clair. La transition très longue empêche le flash blanc au focus. */
+  .auth-card .form-group input:-webkit-autofill,
+  .auth-card .form-control:-webkit-autofill,
+  .auth-card .form-group input:-webkit-autofill:focus,
+  .auth-card .form-control:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #1d2132 inset;
+    -webkit-text-fill-color: #d4cfc4;
+    caret-color: #d4cfc4;
+    transition: background-color 9999s ease;
+  }
   .auth-card .form-text, .auth-card .hint { color: #8a8578; font-size: 0.78rem; margin-top: 0.3rem; }
   .auth-card .invalid-feedback,
   .auth-card .form-group .error { color: rgba(220, 80, 80, 0.9); font-size: 0.85rem; margin-top: 0.3rem; }

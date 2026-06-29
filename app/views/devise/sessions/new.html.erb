@@ -244,6 +244,17 @@
     color: #8a8578;
   }
 
+  /* Neutralise le fond blanc de l'autofill Chrome (mêmes champs e-mail/mot de passe
+     pré-remplis qui cassaient le thème sombre). Inset box-shadow = couleur effective
+     de l'input (#1d2132), text-fill-color garde le texte clair. */
+  .auth-card .form-group input:-webkit-autofill,
+  .auth-card .form-group input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #1d2132 inset;
+    -webkit-text-fill-color: #d4cfc4;
+    caret-color: #d4cfc4;
+    transition: background-color 9999s ease;
+  }
+
   /* Retire la bordure bleue Bootstrap par défaut */
   .auth-card .form-control:focus {
     border-color: #f0c97a;

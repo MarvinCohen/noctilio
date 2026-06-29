@@ -71,7 +71,10 @@
             <div class="story-skeleton-line story-skeleton-line--short"></div>
           </div>
 
-          <p class="story-status-text"><%= t("story_show.status_label", status: @story.status) %></p>
+          <%# Statut brut (pending/generating) : masqué à l'œil (visually-hidden de Bootstrap) %>
+          <%# mais conservé pour les lecteurs d'écran. Inutile et trop technique à afficher : %>
+          <%# le spinner, la barre de progression et le message rotatif suffisent à l'utilisateur. %>
+          <p class="story-status-text visually-hidden"><%= t("story_show.status_label", status: @story.status) %></p>
         </div>
 
       <%# ================================================ %>
