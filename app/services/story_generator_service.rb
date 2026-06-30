@@ -439,10 +439,27 @@ class StoryGeneratorService
     base_text      = prev_choice&.context_chosen.presence || @story.content.to_s
     recent_context = base_text.last(1500)
 
+    # Héros de l'histoire : principal + éventuels enfants supplémentaires.
+    # On les nomme explicitement dans le prompt de continuation car le gabarit de
+    # question était au singulier ("Que va faire [héros] ?") → le LLM oubliait les
+    # héros secondaires (bug histoire 138 : seul Ismaël apparaissait, Isaac ignoré).
+    heroes_names  = @story.all_children.map(&:name).reject(&:blank?)
+    # "Ismaël et Isaac" (ou juste "Ismaël" s'il n'y a qu'un héros) pour la consigne.
+    heroes_phrase = heroes_names.to_sentence(words_connector: ", ", last_word_connector: " et ")
+    # Rappel multi-héros : n'a d'effet que s'il y a 2 héros ou plus (sinon vide).
+    multi_heroes_note = if heroes_names.size > 1
+                          "Les héros de l'histoire sont : #{heroes_phrase}. " \
+                          "Ils vivent l'aventure ENSEMBLE : la suite, la question et " \
+                          "les deux options doivent TOUJOURS les impliquer tous, sans " \
+                          "jamais en oublier un. "
+                        else
+                          ""
+                        end
+
     # En-tête commun : titre, fin du passage précédent, choix de l'enfant
     header = <<~HEAD
       L'histoire s'intitule "#{@story.title}".
-
+      #{multi_heroes_note}
       Voici la fin du dernier passage :
       #{recent_context}
 
@@ -460,9 +477,9 @@ class StoryGeneratorService
 
                Termine par ce bloc, une seule fois, tout à la fin :
                [CHOIX]
-               Question : (question courte — "Que va faire [héros] ?")
-               Option A : (première action possible)
-               Option B : (deuxième action possible, tout aussi tentante)
+               Question : (question courte — "Que vont faire #{heroes_phrase} ?")
+               Option A : (première action possible, vécue par TOUS les héros)
+               Option B : (deuxième action possible, tout aussi tentante, par TOUS les héros)
                [FIN CHOIX]
 
                IMPORTANT — repères techniques : garde les balises [CHOIX], [FIN CHOIX]

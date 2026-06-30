@@ -69,18 +69,19 @@ class GenerateStoryContinuationJob < ApplicationJob
         Rails.logger.info("GenerateStoryContinuationJob — audio de la suite lancé pour le choix ##{story_choice.id}")
       end
 
-      # Marquer l'histoire comme terminée de nouveau
-      story.update!(status: :completed)
-
-      # Vérifier les badges
-      Badge.check_and_award(story.child.user)
-
       # ILLUSTRATION DE LA SUITE — image fidèle au moment fort de CE passage.
       # On la génère seulement si le LLM a fourni une scène ET que l'utilisateur
       # a droit aux illustrations (Essentiel/Premium ou 1re histoire offerte).
       # L'image est attachée AU CHOIX (story_choice.illustration), sans toucher
       # à la couverture d'intro de l'histoire. On capture les erreurs : un échec
       # d'image ne doit pas casser la continuation déjà sauvegardée.
+      #
+      # IMPORTANT — on génère l'illustration AVANT de passer en `completed` : le
+      # front (story_choice_controller) poll /status et n'injecte la suite QUE
+      # lorsqu'il voit `completed`. Si l'image était générée après, elle ne serait
+      # pas encore attachée à ce moment → invisible jusqu'à un rafraîchissement.
+      # En la générant ici, l'image (et le nouveau choix) sont prêts quand le front
+      # détecte la fin → tout s'affiche d'un coup, sans refresh.
       if image_scene.present? && story.child.user.illustrations_for?(story)
         begin
           ImageGeneratorService.new(story, story_choice: story_choice).call
@@ -89,6 +90,12 @@ class GenerateStoryContinuationJob < ApplicationJob
           Rails.logger.error("GenerateStoryContinuationJob — échec illustration choix ##{story_choice.id} : #{e.message}")
         end
       end
+
+      # Marquer l'histoire comme terminée de nouveau (après l'image → tout est prêt)
+      story.update!(status: :completed)
+
+      # Vérifier les badges
+      Badge.check_and_award(story.child.user)
     else
       story.update!(status: :completed)
       Rails.logger.error("GenerateStoryContinuationJob — échec : #{result[:error]}")

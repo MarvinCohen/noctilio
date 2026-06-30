@@ -374,51 +374,9 @@
 
         <%# ── MODE INTERACTIF — affiche le choix si disponible ── %>
         <% if @story.interactive? && @pending_choice %>
-          <%# data-controller="story-choice" gère le choix sans rechargement de page %>
-          <%# data-story-choice-status-url-value : URL de polling jusqu'à fin de génération %>
-          <div class="interactive-choice"
-               data-controller="story-choice"
-               data-story-choice-status-url-value="<%= status_story_path(@story) %>"
-               <%# Textes du spinner pendant la génération de la suite (i18n) %>
-               data-story-choice-loading-sr-value="<%= t("story_show.choice_loading_sr") %>"
-               data-story-choice-loading-title-value="<%= t("story_show.choice_loading_title") %>"
-               data-story-choice-loading-hint-value="<%= t("story_show.choice_loading_hint") %>">
-
-            <div class="text-center mb-4">
-              <span class="interactive-choice-icon">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              </span>
-              <h3 class="interactive-choice-title"><%= t("story_show.decide") %></h3>
-              <p class="interactive-choice-question"><%= @pending_choice.question %></p>
-            </div>
-
-            <div class="row g-3">
-              <%# Option A — formulaire intercepté par story-choice#submit (pas de rechargement) %>
-              <div class="col-md-6">
-                <%= form_tag choose_story_path(@story), method: :post,
-                      data: { action: "submit->story-choice#submit" } do %>
-                  <input type="hidden" name="chosen_option" value="a">
-                  <button type="submit" class="choice-option-btn">
-                    <div class="choice-option-label"><%= t("story_show.option_a_label") %></div>
-                    <div class="choice-option-text"><%= @pending_choice.option_a %></div>
-                  </button>
-                <% end %>
-              </div>
-
-              <%# Option B — même principe %>
-              <div class="col-md-6">
-                <%= form_tag choose_story_path(@story), method: :post,
-                      data: { action: "submit->story-choice#submit" } do %>
-                  <input type="hidden" name="chosen_option" value="b">
-                  <button type="submit" class="choice-option-btn">
-                    <div class="choice-option-label"><%= t("story_show.option_b_label") %></div>
-                    <div class="choice-option-text"><%= @pending_choice.option_b %></div>
-                  </button>
-                <% end %>
-              </div>
-            </div>
-
-          </div>
+          <%# Formulaire de choix extrait dans un partial (réutilisé par le JSON de %>
+          <%# statut pour l'injection sans rechargement après une suite). %>
+          <%= render "interactive_choice", story: @story, choice: @pending_choice %>
 
         <%# Si les choix ont tous été faits — résumé des décisions prises + bouton timeline alternative %>
         <% elsif @story.interactive? && @story.story_choices.resolved.any? %>
@@ -441,10 +399,16 @@
               <%# rafraîchissement la fera apparaître (pas de skeleton ici). %>
               <% if choice.illustration.attached? %>
                 <div class="story-continuation-illustration mb-3">
+                  <%# image-fallback : si l'URL renvoie 404 (blob orphelin Cloudinary),
+                  <%# le controller remplace l'image cassée par l'emoji de l'univers
+                  <%# plutôt que l'icône brisée du navigateur (bug histoire 138). %>
                   <%= image_tag url_for(choice.illustration),
                         alt: t("story_show.illustration_alt", title: @story.title),
                         loading: "lazy",
-                        style: "width: 100%; border-radius: 14px; display: block;" %>
+                        style: "width: 100%; border-radius: 14px; display: block;",
+                        data: { controller: "image-fallback",
+                                action: "error->image-fallback#error",
+                                "image-fallback-emoji-value": @story.world_emoji } %>
                 </div>
               <% end %>
 

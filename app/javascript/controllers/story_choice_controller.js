@@ -109,11 +109,11 @@ export default class extends Controller {
       const data = await response.json()
 
       if (data.completed) {
-        // La suite est prête — on arrête le polling et on met à jour le DOM
-        // On transmet aussi choice_id + continuation_audio_url pour que le lecteur
-        // audio puisse enchaîner sur la suite (Partie B).
+        // La suite est prête — on arrête le polling et on met à jour le DOM.
+        // On transmet : le texte, l'illustration de la suite, le HTML du prochain
+        // choix, et choice_id + audio pour que le lecteur enchaîne (Partie B).
         this.stopPolling()
-        this.appendContinuation(data.continuation, data.choice_id, data.continuation_audio_url)
+        this.appendContinuation(data)
       }
 
       if (data.status === "failed") {
@@ -130,7 +130,18 @@ export default class extends Controller {
   // ============================================================
   // appendContinuation — insère la suite dans la page
   // ============================================================
-  appendContinuation(continuationHtml, choiceId, audioUrl) {
+  // data : payload JSON de stories#status. On en lit :
+  //   - continuation                  : HTML du texte de la suite
+  //   - continuation_illustration_url : image du moment fort de CETTE suite
+  //   - next_choice_html              : formulaire du PROCHAIN choix (ou null si fin)
+  //   - choice_id / continuation_audio_url : pour l'enchaînement audio (Partie B)
+  appendContinuation(data) {
+    const continuationHtml = data.continuation
+    const illustrationUrl  = data.continuation_illustration_url
+    const nextChoiceHtml   = data.next_choice_html
+    const choiceId         = data.choice_id
+    const audioUrl         = data.continuation_audio_url
+
     // Supprime la card de choix (ce composant) du DOM
     this.element.remove()
 
@@ -141,12 +152,37 @@ export default class extends Controller {
     const storyContent = document.querySelector('[data-story-reader-target="text"]')
     if (!storyContent) return
 
-    // Le HTML est déjà généré côté serveur par Redcarpet (stories#status)
-    // On l'insère directement sans parser le markdown en JS
+    // ── Illustration de la suite ──
+    // Si une image est attachée au choix, on l'insère AU-DESSUS du texte de la suite,
+    // comme la couverture au-dessus de l'histoire initiale. onerror → on retire l'image
+    // cassée (404 blob orphelin) au lieu d'afficher l'icône brisée du navigateur.
+    let illustrationBlock = ""
+    if (illustrationUrl) {
+      illustrationBlock = `
+        <div class="story-continuation-illustration mb-3">
+          <img src="${illustrationUrl}" alt=""
+               loading="lazy"
+               style="width:100%;border-radius:14px;display:block;"
+               onerror="this.closest('.story-continuation-illustration').remove()">
+        </div>
+      `
+    }
+
+    // Le HTML du texte est déjà généré côté serveur (render_story_markdown).
+    // On insère : séparateur ✦, illustration (si présente), puis le texte.
     storyContent.insertAdjacentHTML("beforeend", `
       <div class="story-continuation-divider">✦ ✦ ✦</div>
+      ${illustrationBlock}
       ${continuationHtml}
     `)
+
+    // ── Prochain choix ──
+    // Si la suite proposait un nouveau dilemme, le serveur a rendu son formulaire.
+    // On l'insère après le texte : Stimulus reconnecte un story-choice neuf →
+    // boutons cliquables + nouveau polling. Sinon (fin de l'histoire) on n'ajoute rien.
+    if (nextChoiceHtml) {
+      storyContent.insertAdjacentHTML("beforeend", nextChoiceHtml)
+    }
 
     // Déclenche l'événement personnalisé avec le HTML de la continuation.
     // On joint choiceId + audioUrl : le lecteur audio (story_reader_controller)

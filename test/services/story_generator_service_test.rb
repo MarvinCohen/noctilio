@@ -122,4 +122,50 @@ class StoryGeneratorServiceTest < ActiveSupport::TestCase
     interactive_service = StoryGeneratorService.new(stories(:interactive_story))
     assert_equal 4, interactive_service.send(:chapter_count)
   end
+
+  # --- build_continuation_messages : continuation multi-héros ----------------
+  # Bug histoire 138 : la question de choix était au singulier ("Que va faire X ?")
+  # → le LLM oubliait les héros secondaires (Isaac ignoré). On vérifie que le prompt
+  # de continuation nomme TOUS les héros et exige qu'ils soient TOUJOURS impliqués.
+  test "build_continuation_messages cite tous les héros pour une histoire multi-enfants" do
+    # Histoire interactive avec deux héros : Léo (principal) + Emma (supplémentaire)
+    story = stories(:interactive_story)
+    story.update!(extra_child_ids: [children(:emma).id])
+
+    # Le choix sur lequel on enchaîne (étape 1, déjà tranché par l'enfant)
+    choice = story_choices(:pending_choice)
+    choice.update!(chosen_option: "a")
+
+    service  = StoryGeneratorService.new(story)
+    messages = service.send(:build_continuation_messages, choice)
+
+    # Le message utilisateur (le 2e) porte la consigne de continuation
+    user_message = messages.last[:content]
+
+    # Les deux prénoms doivent apparaître dans la consigne
+    assert_includes user_message, "Léo"
+    assert_includes user_message, "Emma"
+    # La consigne multi-héros : tous impliqués, aucun oublié
+    assert_includes user_message, "vivent l'aventure ENSEMBLE"
+    assert_includes user_message, "sans"
+    # La question de choix est au pluriel ("Que vont faire Léo et Emma ?")
+    assert_includes user_message, "Que vont faire Léo et Emma"
+  end
+
+  # --- build_continuation_messages : mono-héros → pas de note multi-héros ----
+  test "build_continuation_messages n'ajoute pas la note multi-héros pour un seul héros" do
+    # interactive_story sans enfant supplémentaire → un seul héros (Léo)
+    story = stories(:interactive_story)
+    story.update!(extra_child_ids: [])
+
+    choice = story_choices(:pending_choice)
+    choice.update!(chosen_option: "a")
+
+    service  = StoryGeneratorService.new(story)
+    messages = service.send(:build_continuation_messages, choice)
+    user_message = messages.last[:content]
+
+    # La note multi-héros (réservée à 2 héros ou plus) ne doit PAS apparaître
+    refute_includes user_message, "vivent l'aventure ENSEMBLE"
+  end
 end

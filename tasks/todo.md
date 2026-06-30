@@ -1,95 +1,86 @@
-# Plan — (1) Nettoyer les couvertures cassées + (2) Illustration fidèle aux suites interactives
+# Plan — Corriger les 5 bugs des suites interactives multi-enfants (histoire 138)
 
-## Objectif global
-1. Supprimer les 404 Cloudinary : des histoires ont une `cover_image` attachée
-   dont le fichier n'existe PAS sur Cloudinary (blobs orphelins). À chaque
-   chargement de page, ActiveStorage régénère leur URL → 404 répétés.
-2. Étendre l'illustration fidèle au récit (bloc [SCENE]) aux SUITES interactives :
-   aujourd'hui seule la 1re partie a une image fidèle ; après un choix, la suite
-   garde l'ancienne image d'intro.
+## Contexte
+Histoire interactive avec PLUSIEURS enfants (Ismaël + Isaac). Cinq problèmes
+constatés, validés avec l'utilisateur. Approche retenue : **B** (injection sans
+rechargement) pour ① + ②, et fix prompt pour ④ et ⑤.
 
 ---
 
-## PARTIE 1 — Nettoyer les couvertures cassées (404 Cloudinary)
+## Diagnostic (confirmé en lisant le code)
 
-### Diagnostic (confirmé)
-- `Story#cover_image_source` renvoie l'attachement si `cover_image.attached?`
-  est vrai. L'enregistrement existe en base mais le fichier est absent de
-  Cloudinary → URL valide vers un objet inexistant → 404.
-- Une poignée d'histoires concernées (mêmes IDs en boucle).
-
-### Fichiers impactés
-- lib/tasks/covers.rake (NOUVEAU) — tâches d'audit et de nettoyage.
-
-### Étapes
-- [x] **Tâche rake `covers:audit`** : parcourt les histoires dont `cover_image`
-      est attachée, fait une requête HEAD sur l'URL Cloudinary, et LISTE celles
-      qui répondent 404 (id, titre). Lecture seule, ne modifie rien.
-- [x] **Tâche rake `covers:purge_broken`** : pour chaque couverture cassée
-      détectée (HEAD 404), `cover_image.purge`. La carte retombera proprement
-      sur le placeholder ✨ (plus de 404). Logguer chaque purge.
-- [x] **Commenter** tout le code (règle CLAUDE.md).
-- [ ] L'utilisateur lance `covers:audit` en prod (via `! bin/rails covers:audit`
-      ou console Railway) pour CONFIRMER la liste avant de lancer `purge_broken`.
-
-### Point à valider (Partie 1)
-- Option choisie = **purge** des attachements orphelins (placeholder ✨ propre).
-  Alternative = régénérer l'image via ImageGeneratorService (plus lourd, relance
-  une génération IA). On part bien sur la purge ?
+- ① Image visible après refresh seulement : dans `GenerateStoryContinuationJob`,
+  l'illustration est générée APRÈS `story.update!(status: :completed)` → quand le
+  front voit « completed », l'image n'est pas encore attachée.
+- ② 2e choix non cliquable : `story_choice_controller#appendContinuation` injecte
+  SEULEMENT le texte. Le formulaire du nouveau choix (rendu serveur via
+  `@pending_choice`) n'est jamais réinjecté → pas de bouton actif.
+- ③ 2e image cassée : l'`image_tag` de `choice.illustration` (show.html.erb ~444)
+  n'a AUCUN fallback `image-fallback` → icône brisée si l'URL renvoie 404.
+- ④ Isaac ignoré dans les choix : `build_continuation_messages` utilise un gabarit
+  SINGULIER (« Que va faire [héros] ? ») et « L'enfant a choisi » → le LLM ne cite
+  qu'un héros, alors que le `system_prompt` connaît bien les 2 enfants.
+- ⑤ Isaac dupliqué (samouraï + enfant normal) : `build_image_prompt` ne BORNE pas
+  les personnages. Il faut garantir « chaque enfant nommé apparaît UNE fois,
+  correctement » SANS supprimer les autres persos/monstres/animaux du récit.
 
 ---
 
-## PARTIE 2 — Illustration fidèle aux suites interactives
+## Fichiers impactés
+- app/jobs/generate_story_continuation_job.rb — générer l'illustration AVANT `completed`.
+- app/views/stories/_interactive_choice.html.erb (NOUVEAU) — extraire le formulaire de choix.
+- app/views/stories/show.html.erb — rendre le partial + fallback sur l'image du choix.
+- app/controllers/stories_controller.rb — `#status` renvoie aussi `illustration_url` + `next_choice_html`.
+- app/javascript/controllers/story_choice_controller.js — injecter image + nouveau choix.
+- app/services/story_generator_service.rb — prompt de continuation : citer TOUS les héros.
+- app/services/image_generator_service.rb — prompt image : tous les enfants présents, garder les autres persos.
+- test/ — job (image avant completed), status JSON, prompts services.
 
-### Diagnostic (confirmé)
-- `GenerateStoryContinuationJob` ne demande PAS de bloc [SCENE] et ne génère
-  aucune image : la suite (stockée dans `story_choice.context_chosen`) garde
-  l'image d'intro de l'histoire.
-- `StoryChoice` a DÉJÀ `has_one_attached :audio_file` (audio par étape) → une
-  illustration par étape est cohérente avec l'archi existante (option A).
+---
 
-### Approche recommandée (option A — illustration PAR ÉTAPE)
-Chaque `StoryChoice` reçoit sa propre illustration du moment fort de SA suite,
-affichée sous le texte de la continuation. Le mode interactif étant Premium-only,
-le surcoût de génération d'images reste borné aux abonnés Premium.
+## Étapes
 
-### Fichiers impactés (option A)
-- db/migrate/xxxx_add_image_scene_to_story_choices.rb (NOUVEAU) + schema.rb
-  → `add_column :story_choices, :image_scene, :text`
-- app/models/story_choice.rb → `has_one_attached :illustration`
-- app/services/story_generator_service.rb → ajouter la consigne [SCENE] aussi
-  dans le prompt de continuation (`continue_with_choice`).
-- app/jobs/generate_story_continuation_job.rb → extraire [SCENE], nettoyer le
-  texte, sauver `image_scene` sur le choix, puis générer l'image attachée au choix
-  (si l'utilisateur a droit aux illustrations).
-- app/services/image_generator_service.rb → permettre de cibler un StoryChoice
-  (sa scène + son illustration) en plus de la Story (refactor léger du constructeur
-  ou nouvelle méthode), en réutilisant la composition « scène » déjà en place.
-- app/views/stories/show.html.erb → afficher `choice.illustration` sous chaque
-  continuation résolue (bloc ligne ~424), avec skeleton comme la cover.
-- test/ → extraction [SCENE] côté continuation + génération image par choix.
+### ① + ② — Injection sans rechargement (approche B)
+- [x] Job : déplacer la génération d'illustration AVANT `story.update!(status: :completed)`
+      (l'image et le nouveau choix sont prêts quand le front voit « completed »).
+- [x] Extraire le formulaire de choix de show.html.erb dans
+      `_interactive_choice.html.erb` (locals: story, choice) — réutilisable côté
+      serveur ET dans le JSON de statut.
+- [x] show.html.erb : remplacer le bloc inline par `render "interactive_choice"`.
+- [x] `#status` : si un NOUVEAU choix en attente existe, renvoyer son HTML
+      (`next_choice_html` via render_to_string du partial) ; renvoyer aussi
+      `illustration_url` (url_for(resolved.illustration) si attachée).
+- [x] `appendContinuation` : insérer l'illustration (img avec onerror → fallback),
+      puis le texte, puis `next_choice_html` (Stimulus reconnecte un story-choice
+      neuf → cliquable + re-poll). Si pas de nouveau choix, ne rien injecter.
 
-### Étapes (option A)
-- [x] Migration `image_scene` sur story_choices + `rails db:migrate`.
-- [x] `StoryChoice` : `has_one_attached :illustration` (commenté).
-- [x] Prompt de continuation : ajouter le bloc [SCENE] (même consigne qu'en
-      génération initiale).
-- [x] `GenerateStoryContinuationJob` : extract_scene + strip + save image_scene
-      + génération image attachée au choix (gardée par illustrations_for?).
-- [x] `ImageGeneratorService` : accepter une cible StoryChoice (scène + attache).
-- [x] Vue : afficher l'illustration de chaque suite (affichée si attachée).
-- [x] Tests verts (`rails test` → 328 runs, 0 failures).
+### ③ — Fallback image cassée
+- [x] show.html.erb : ajouter `image-fallback` (onerror → emoji/placeholder) sur
+      l'`image_tag` de `choice.illustration`.
+- [x] JS : l'img injectée porte aussi un onerror de repli (pas d'icône brisée).
+- [ ] (Hors code) confirmer en prod la cause du 404 sur l'histoire 138.
 
-### Point à valider (Partie 2) — UNE décision
-- **Option A (recommandée)** : une illustration PAR étape (cohérent avec l'audio
-  par étape déjà en place). Plus riche, plus d'appels image (Premium only).
-- **Option B (plus simple)** : régénérer la `cover_image` de l'histoire à chaque
-  suite pour refléter la dernière scène. Moins de code, mais on PERD l'image
-  d'intro et la couverture « bouge » à chaque choix.
-  → On part sur A ou B ?
+### ④ — Tous les héros dans les choix
+- [x] `build_continuation_messages` : construire `heroes_names` (« Ismaël et Isaac »)
+      et l'injecter — rappeler que la question/les options concernent les héros
+      ENSEMBLE (ou préciser qui agit), sans en oublier un. Remplacer le gabarit
+      singulier.
+
+### ⑤ — Image : tous les enfants présents, sans dupliquer, en gardant les autres persos
+- [x] `build_image_prompt` : quand plusieurs enfants, préciser « exactly these N
+      named children (Ismaël and Isaac), each appearing once, each matching their
+      description, not duplicated/merged ; other story characters, creatures or
+      animals from the scene may also appear ».
+
+### Tests
+- [ ] Job : illustration générée avant le passage en `completed`.
+- [ ] `#status` : renvoie `illustration_url` + `next_choice_html` quand pertinent.
+- [x] Service texte : le prompt de continuation cite tous les héros.
+- [x] Service image : le prompt borne les enfants sans exclure les autres persos.
+- [x] `rails test` vert (332 runs, 0 failures).
 
 ---
 
 ## Ordre proposé
-Partie 1 d'abord (rapide, faible risque), puis Partie 2 après validation de
-l'option A/B.
+②/① d'abord (bloquant), puis ③ (fallback), puis ④ (Isaac dans les choix),
+puis ⑤ (image). Commits séparés possibles. Pas de push sans validation.

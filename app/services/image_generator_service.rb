@@ -441,6 +441,20 @@ class ImageGeneratorService
       prompt += " Same character design and art style as the previous episode."
     end
 
+    # CASTING multi-enfants : quand l'histoire a plusieurs héros, le modèle avait
+    # tendance à dupliquer un enfant ou à en inventer un 3e (bug histoire 138 :
+    # Isaac apparaissait à la fois en samouraï et en enfant normal). On exige que
+    # CHAQUE enfant nommé apparaisse UNE seule fois, fidèle à sa description, sans
+    # fusion ni doublon — TOUT en autorisant les autres personnages, monstres ou
+    # animaux du récit (on ne veut surtout pas les supprimer de la scène).
+    child_names = @story.all_children.map(&:name).reject(&:blank?)
+    if child_names.size > 1
+      names = child_names.to_sentence(words_connector: ", ", last_word_connector: " and ")
+      prompt += " Show exactly these #{child_names.size} named children together: #{names}. " \
+                "Each child appears only once, matching their own description, never duplicated or merged. " \
+                "Other story characters, creatures or animals from the scene may also appear alongside them."
+    end
+
     prompt
   end
 

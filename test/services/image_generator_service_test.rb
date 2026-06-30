@@ -155,4 +155,39 @@ class ImageGeneratorServiceTest < ActiveSupport::TestCase
 
     assert_equal "un chevalier valeureux", scene
   end
+
+  # --- build_image_prompt : casting multi-enfants ---------------------------
+  # Bug histoire 138 : avec plusieurs héros, le modèle dupliquait un enfant ou en
+  # inventait un 3e (Isaac vu à la fois en samouraï et en enfant normal). On vérifie
+  # ici que le prompt BORNE chaque enfant nommé à UNE seule apparition, MAIS qu'il
+  # autorise toujours les autres personnages/monstres/animaux du récit (demande de
+  # l'utilisateur : "faut pas les oublié").
+  test "build_image_prompt borne les enfants multiples sans exclure les autres persos" do
+    # Léo + Emma : tous deux héros de l'histoire (deux enfants de Marie)
+    @story.update!(extra_child_ids: [children(:emma).id])
+
+    service = ImageGeneratorService.new(@story)
+    prompt  = service.send(:build_image_prompt)
+
+    # Le prompt doit exiger EXACTEMENT 2 enfants nommés, ensemble
+    assert_includes prompt, "Show exactly these 2 named children together"
+    # Les deux prénoms doivent apparaître
+    assert_includes prompt, "Léo"
+    assert_includes prompt, "Emma"
+    # Chaque enfant n'apparaît qu'une fois (anti-doublon / anti-fusion)
+    assert_includes prompt, "appears only once"
+    # MAIS les autres personnages/créatures/animaux ne sont PAS exclus
+    assert_includes prompt, "Other story characters, creatures or animals"
+  end
+
+  # --- build_image_prompt : un seul enfant → pas de contrainte de casting ----
+  test "build_image_prompt n'ajoute pas la contrainte de casting pour un seul héros" do
+    # Histoire mono-héros (Léo seul) → la contrainte multi-enfants ne s'applique pas
+    @story.update!(extra_child_ids: [])
+
+    service = ImageGeneratorService.new(@story)
+    prompt  = service.send(:build_image_prompt)
+
+    refute_includes prompt, "Show exactly these"
+  end
 end

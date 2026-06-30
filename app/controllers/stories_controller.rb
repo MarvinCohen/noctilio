@@ -209,9 +209,11 @@ class StoriesController < ApplicationController
   def status
     # Récupère la continuation interactive si disponible (mode interactif terminé)
     # Utilisé par story_choice_controller.js pour mettre à jour le texte sans recharger
-    continuation_html      = nil  # HTML de la suite à afficher
-    last_choice_id         = nil  # ID du dernier choix résolu (pour l'audio de la suite)
-    continuation_audio_url = nil  # URL de l'audio de la suite (nil si pas encore prêt)
+    continuation_html        = nil  # HTML de la suite à afficher
+    last_choice_id           = nil  # ID du dernier choix résolu (pour l'audio de la suite)
+    continuation_audio_url   = nil  # URL de l'audio de la suite (nil si pas encore prêt)
+    continuation_illustration_url = nil  # URL de l'illustration de la suite (nil si absente)
+    next_choice_html         = nil  # HTML du PROCHAIN choix en attente (injection sans refresh)
 
     if @story.completed? && @story.interactive?
       # Dernier choix résolu = celui dont on vient de générer la suite
@@ -226,9 +228,26 @@ class StoriesController < ApplicationController
           continuation_html = helpers.render_story_markdown(resolved.context_chosen)
         end
 
+        # Illustration de la suite : générée AVANT le passage en `completed`, donc
+        # déjà attachée quand le front détecte la fin. Le JS l'injecte au-dessus du
+        # texte de la suite (avec fallback si l'URL casse).
+        continuation_illustration_url = url_for(resolved.illustration) if resolved.illustration.attached?
+
         # Audio de la suite : prêt seulement si GenerateAudioJob a terminé (Partie B)
         # Le JS du lecteur l'enchaîne après le passage en cours s'il est disponible.
         continuation_audio_url = url_for(resolved.audio_file) if resolved.audio_file.attached?
+      end
+
+      # PROCHAIN choix en attente : si la suite proposait un NOUVEAU dilemme, un
+      # StoryChoice non résolu existe. On rend son formulaire (même partial que la
+      # vue) pour que le JS l'injecte → boutons cliquables sans rechargement.
+      pending = @story.next_choice
+      if pending
+        next_choice_html = render_to_string(
+          partial: "interactive_choice",
+          locals: { story: @story, choice: pending },
+          formats: [:html]
+        )
       end
     end
 
@@ -252,7 +271,9 @@ class StoriesController < ApplicationController
       image_url: image_url,
       audio_url: audio_url, # nil si l'audio principal n'est pas encore généré
       choice_id: last_choice_id, # dernier choix résolu (pour cibler l'audio de la suite)
-      continuation_audio_url: continuation_audio_url # nil si l'audio de la suite n'est pas prêt
+      continuation_audio_url: continuation_audio_url, # nil si l'audio de la suite n'est pas prêt
+      continuation_illustration_url: continuation_illustration_url, # nil si la suite n'a pas d'image
+      next_choice_html: next_choice_html # HTML du prochain choix à injecter (nil si l'histoire est finie)
     }
   end
 
