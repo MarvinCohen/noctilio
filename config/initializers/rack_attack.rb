@@ -10,9 +10,11 @@
 #   1. Brute-force connexion       → 10 tentatives / 20 secondes par IP
 #   2. Brute-force mot de passe    → 5 tentatives / 20 secondes par IP
 #   3. Spam inscription            → 5 inscriptions / heure par IP
-#   4. Spam génération d'histoires → 10 créations / heure par IP
-#   5. Spam waitlist               → 5 soumissions / heure par IP
-#   6. Throttle global             → 300 requêtes / 5 minutes par IP
+#   4. Spam génération d'histoires → 10 créations / heure par IP (+ replay/continue…)
+#   5. Spam endpoints IA (audio + alternative) → par IP
+#   5 bis. Mêmes endpoints IA coûteux → aussi limités PAR UTILISATEUR connecté
+#   6. Spam waitlist               → 5 soumissions / heure par IP
+#   7. Throttle global             → 300 requêtes / 5 minutes par IP
 # ============================================================
 
 class Rack::Attack
@@ -97,6 +99,56 @@ class Rack::Attack
 
   throttle("explore_alternative/ip", limit: 15, period: 1.hour) do |req|
     req.ip if req.path.end_with?("/explore_alternative") && req.post?
+  end
+
+  # ──────────────────────────────────────────────────────────
+  # 5 bis. Rate limiting PAR UTILISATEUR (pas seulement par IP)
+  # ──────────────────────────────────────────────────────────
+  # Les throttles ci-dessus comptent par adresse IP. C'est insuffisant :
+  #   - Plusieurs personnes peuvent partager une même IP (réseau familial,
+  #     entreprise, NAT mobile) → elles se pénaliseraient mutuellement.
+  #   - À l'inverse, un même compte peut spammer les endpoints IA coûteux
+  #     en changeant d'IP (VPN, 4G/wifi) et passer sous le radar du filtre IP.
+  # On ajoute donc un SECOND garde-fou, indexé sur l'identifiant de l'utilisateur
+  # connecté. Les deux filtres (IP + user) cohabitent : une requête est bloquée
+  # dès que l'UN des deux quotas est dépassé (défense en profondeur).
+  #
+  # Comment récupérer l'utilisateur connecté dans Rack::Attack :
+  #   Devise s'appuie sur Warden, exposé dans l'environnement Rack sous la clé
+  #   "warden". `warden.user` renvoie l'utilisateur authentifié, ou nil pour un
+  #   visiteur anonyme. On l'appelle avec `&.` (safe navigation) pour ne jamais
+  #   planter si warden est absent (ex : requête hors session). Si le résultat
+  #   est nil (visiteur non connecté), le bloc renvoie nil → Rack::Attack
+  #   n'applique PAS ce throttle-là (le filtre par IP prend alors le relais).
+  #
+  # La clé de comptage renvoyée est l'id de l'utilisateur : chaque compte a donc
+  # son propre compteur, indépendant des autres.
+
+  # Création d'histoire par utilisateur : 10 / heure (aligné sur le quota IP).
+  throttle("stories/user", limit: 10, period: 1.hour) do |req|
+    # Seulement le POST de création ; on renvoie l'id du user connecté (ou nil).
+    req.env["warden"]&.user&.id if req.path == "/stories" && req.post?
+  end
+
+  # Actions de génération (replay/continue/retry/choose) par utilisateur : 15 / heure.
+  # Même regex que le throttle IP correspondant, mais indexée sur le compte.
+  throttle("story-generate/user", limit: 15, period: 1.hour) do |req|
+    if req.post? && req.path.match?(%r{\A/stories/\d+/(replay|continue|retry|choose)\z})
+      req.env["warden"]&.user&.id
+    end
+  end
+
+  # Génération audio par utilisateur : 20 / heure.
+  # L'audio (TTS OpenAI) est le poste le plus cher (~0,18€/histoire) : c'est la
+  # cible d'abus la plus rentable pour un attaquant, donc un quota par compte est
+  # ici particulièrement important.
+  throttle("audio/user", limit: 20, period: 1.hour) do |req|
+    req.env["warden"]&.user&.id if req.path.end_with?("/audio") && req.post?
+  end
+
+  # Exploration d'alternative par utilisateur : 15 / heure.
+  throttle("explore_alternative/user", limit: 15, period: 1.hour) do |req|
+    req.env["warden"]&.user&.id if req.path.end_with?("/explore_alternative") && req.post?
   end
 
   # ──────────────────────────────────────────────────────────

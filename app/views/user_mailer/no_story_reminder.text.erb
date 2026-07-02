@@ -1,0 +1,14 @@
+<% if @stage == 30 %>
+On ne s'est pas quittés, <%= @first_name %> ?
+
+Ça fait un mois que ton compte Noctilio est ouvert, mais aucune histoire n'a encore vu le jour. C'est le moment idéal : en 30 secondes, ton enfant devient le héros de sa propre aventure du soir.
+<% else %>
+Prêt à écrire sa première histoire, <%= @first_name %> ?
+
+Ton compte Noctilio est prêt depuis quelques jours. Il ne manque qu'une chose : la première histoire de ton enfant. En 30 secondes, l'IA en génère une, rien que pour lui, avec son prénom et son univers préféré.
+<% end %>
+Crée d'abord son profil de héros :
+<%= @hero_url %>
+
+---
+© <%= Date.today.year %> Noctilio · noctilio-app.fr

@@ -131,11 +131,20 @@ class User < ApplicationRecord
   end
 
   # ============================================================
-  # Offre découverte — la 1re histoire du compte est en accès complet
+  # Offre découverte — les premières histoires du compte sont enrichies
   # ============================================================
-  # But : montrer toute la valeur (illustration + audio + mode interactif)
-  # dès la 1re histoire pour donner envie de s'abonner. Dès la 2e histoire,
-  # un compte gratuit repasse en "texte seul".
+  # But : montrer la valeur du produit dès les premières histoires pour donner
+  # envie de s'abonner. Deux paliers d'offre distincts :
+  #   - AUDIO + mode interactif (fonctions Premium, coûteuses) : uniquement la
+  #     TOUTE PREMIÈRE histoire (welcome_story?).
+  #   - ILLUSTRATIONS (peu coûteuses, ~0,03€) : les 3 PREMIÈRES histoires, pour
+  #     adoucir le retour au "texte seul" et prolonger l'effet découverte
+  #     (welcome_illustration? ci-dessous).
+  # Dès la 4e histoire, un compte gratuit repasse entièrement en "texte seul".
+
+  # Nombre d'histoires offrant l'illustration gratuite au lancement.
+  # Constante centrale : on évite de disperser le "3" dans plusieurs méthodes.
+  WELCOME_ILLUSTRATION_COUNT = 3
 
   # Retourne true si `story` est la TOUTE PREMIÈRE histoire du compte.
   # On compare son id à la plus petite clé primaire des histoires de l'utilisateur :
@@ -159,12 +168,30 @@ class User < ApplicationRecord
     @first_story_id = stories.minimum(:id)
   end
 
+  # Ids des WELCOME_ILLUSTRATION_COUNT (3) PREMIÈRES histoires du compte, c.-à-d.
+  # les 3 plus petites clés primaires (order(:id)). Retourne un tableau, éventuellement
+  # vide si le compte n'a aucune histoire. Mémoïsé via `defined?` (et non `||=`)
+  # pour mettre aussi en cache un tableau vide : sans ça, un compte sans histoire
+  # relancerait la requête à chaque appel de welcome_illustration?/illustrations_for?.
+  def first_story_ids
+    return @first_story_ids if defined?(@first_story_ids)
+
+    @first_story_ids = stories.order(:id).limit(WELCOME_ILLUSTRATION_COUNT).pluck(:id)
+  end
+
+  # Retourne true si `story` fait partie des 3 premières histoires du compte,
+  # donc éligible à l'illustration offerte même sur un compte gratuit.
+  # story.id peut être nil (histoire non sauvegardée) → include?(nil) est false.
+  def welcome_illustration?(story)
+    story.id.present? && first_story_ids.include?(story.id)
+  end
+
   # Décide si une histoire donnée a droit à l'ILLUSTRATION IA.
-  # Débloquée dès le palier Essentiel (unlimited_stories?), et toujours pour la
-  # 1re histoire offerte (offre découverte) même sur un compte gratuit.
+  # Débloquée dès le palier Essentiel (unlimited_stories?), et pour les 3 premières
+  # histoires offertes (offre découverte) même sur un compte gratuit.
   # Utilisée par le job de génération d'image et la vue de lecture.
   def illustrations_for?(story)
-    unlimited_stories? || welcome_story?(story)
+    unlimited_stories? || welcome_illustration?(story)
   end
 
   # Décide si une histoire donnée a droit à l'AUDIO (lecture à voix haute).

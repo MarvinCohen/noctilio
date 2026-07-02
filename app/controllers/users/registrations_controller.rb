@@ -14,6 +14,21 @@ module Users
     before_action :configure_account_update_params, only: [:update]
 
     # ============================================================
+    # Inscription — surcharge pour tracker l'événement "signup"
+    # ============================================================
+    # On délègue tout le travail à Devise via super, mais on lui passe un bloc :
+    # Devise yield la ressource (le User) une fois construite/sauvegardée.
+    # Si resource.persisted? (compte réellement créé en base), on pose
+    # flash[:umami_event] = "signup". Le layout lira ce flash après la redirection
+    # et émettra l'événement Umami (via umami_event_tag). En cas d'échec de
+    # validation, resource.persisted? est false → aucun événement.
+    def create
+      super do |resource|
+        flash[:umami_event] = "signup" if resource.persisted?
+      end
+    end
+
+    # ============================================================
     # Redirection après inscription réussie
     # ============================================================
     # Par défaut Devise redirige vers root_path.

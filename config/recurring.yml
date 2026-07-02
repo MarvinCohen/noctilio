@@ -21,3 +21,10 @@ production:
   evening_story_reminder:
     class: EveningStoryReminderJob
     schedule: "30 19 * * * Europe/Paris"
+
+  # Relance des comptes inactifs — tous les jours à 10h00 (fuseau Europe/Paris).
+  # Le job cible lui-même les comptes créés il y a exactement 7 puis 30 jours et
+  # n'ayant créé aucune histoire (relance J+7 puis J+30, une seule fois chacune).
+  inactive_user_reminder:
+    class: InactiveUserReminderJob
+    schedule: "0 10 * * * Europe/Paris"

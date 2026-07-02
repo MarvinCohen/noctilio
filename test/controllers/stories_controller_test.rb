@@ -201,6 +201,30 @@ class StoriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Vérifie que POST /stories pose l'événement de funnel "story_created"
+  # Cas : Paul crée une histoire valide pour Théo
+  # Pourquoi : cet événement (porté par flash[:umami_event]) alimente le suivi
+  # Umami du funnel. Le layout le lit après la redirection pour émettre le track.
+  test "POST /stories pose flash[:umami_event] à story_created" do
+    # Arrange
+    sign_in_as(users(:paul))
+
+    # Act — création d'une histoire valide (le job est enfilé, pas exécuté)
+    post stories_path, params: {
+      story: {
+        child_ids: [children(:theo).id],
+        world_theme: "space",
+        educational_value: "courage",
+        duration_minutes: 5,
+        interactive: false
+      }
+    }
+
+    # Assert — l'événement de funnel est posé pour la requête suivante
+    assert_equal "story_created", flash[:umami_event],
+                 "La création d'histoire doit poser l'événement funnel story_created"
+  end
+
   # Vérifie que POST /stories fige la langue d'interface sur l'histoire créée
   # Cas : Paul crée une histoire en passant ?locale=en (switch_locale lit params[:locale])
   # Pourquoi : le texte est généré dans un job où I18n.locale retombe à :fr — la langue
@@ -625,5 +649,47 @@ class StoriesControllerTest < ActionDispatch::IntegrationTest
     # Assert 2 — l'histoire de Paul existe toujours
     assert Story.find_by(id: paul_story_id),
            "L'histoire de Paul ne devrait pas être supprimée par Marie"
+  end
+
+  # ===========================================================
+  # SECTION — GET /stories/:id/pdf (export PDF)
+  # ===========================================================
+
+  # Vérifie que le propriétaire d'une histoire terminée peut télécharger le PDF
+  # Cas : Marie télécharge sa propre histoire terminée (completed_saved)
+  # Pourquoi : c'est la feature d'archivage — elle doit renvoyer un vrai PDF
+  test "GET /stories/:id/pdf renvoie un PDF pour une histoire terminée" do
+    sign_in_as(users(:marie))
+
+    get pdf_story_path(stories(:completed_saved))
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type,
+                 "La réponse doit être un fichier PDF"
+    assert response.body.start_with?("%PDF"),
+           "Le corps de la réponse doit être un vrai PDF (signature %PDF)"
+  end
+
+  # Vérifie qu'on ne peut pas exporter une histoire encore en génération
+  # Cas : Marie tente le PDF d'une histoire au statut pending
+  # Pourquoi : une histoire sans contenu n'a rien à exporter
+  test "GET /stories/:id/pdf refuse une histoire non terminée" do
+    sign_in_as(users(:marie))
+
+    get pdf_story_path(stories(:pending_story))
+
+    assert_redirected_to story_path(stories(:pending_story))
+    assert_equal I18n.t("flash.stories.pdf_not_ready"), flash[:alert]
+  end
+
+  # Vérifie qu'un utilisateur ne peut pas exporter l'histoire d'un autre
+  # Cas : Marie tente le PDF de l'histoire de Paul
+  # Pourquoi : set_story filtre par current_user.stories → introuvable pour Marie
+  test "GET /stories/:id/pdf ne peut pas exporter l'histoire d'un autre utilisateur" do
+    sign_in_as(users(:marie))
+
+    get pdf_story_path(stories(:paul_story))
+
+    assert_redirected_to stories_path
   end
 end

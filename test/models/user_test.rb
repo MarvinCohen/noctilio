@@ -318,19 +318,38 @@ class UserTest < ActiveSupport::TestCase
            "La 1re histoire d'un gratuit doit avoir l'audio"
   end
 
-  # Vérifie que dès la 2e histoire, le gratuit repasse en texte seul
-  # Cas : Paul (gratuit) + une 2e histoire créée à la volée
-  # Pourquoi : l'offre découverte ne couvre que la toute première histoire
-  test "Gratuit : ni illustrations ni audio des la 2e histoire" do
-    # Arrange — on crée une 2e histoire pour Paul
+  # Vérifie que l'illustration est offerte sur les 3 premières histoires, mais
+  # que l'audio reste réservé à la TOUTE PREMIÈRE (offre découverte à deux paliers).
+  # Cas : Paul (gratuit) avec paul_story (#1) + 3 histoires créées à la volée (#2 #3 #4)
+  # Pourquoi : incrément 1 — on élargit l'illustration aux 3 premières pour adoucir
+  # le retour au texte seul, sans offrir l'audio (coûteux) au-delà de la 1re.
+  test "Gratuit : illustrations sur les 3 premieres histoires, bloquees a la 4e" do
+    # Arrange — Paul a déjà paul_story (#1) ; on ajoute #2, #3 et #4 (ids croissantes)
     user = users(:paul)
-    seconde_histoire = children(:theo).stories.create!(status: :pending)
+    assert_not user.unlimited_stories?, "Pré-condition : Paul est gratuit"
+    histoire_2 = children(:theo).stories.create!(status: :pending)
+    histoire_3 = children(:theo).stories.create!(status: :pending)
+    histoire_4 = children(:theo).stories.create!(status: :pending)
 
-    # Act + Assert — gratuit et pas la 1re → texte seul
-    assert_not user.illustrations_for?(seconde_histoire),
-               "La 2e histoire d'un gratuit ne doit PAS avoir d'illustrations"
-    assert_not user.audio_for?(seconde_histoire),
-               "La 2e histoire d'un gratuit ne doit PAS avoir d'audio"
+    # Act + Assert — illustrations OUI pour #1 #2 #3 (offre découverte élargie)
+    assert user.illustrations_for?(stories(:paul_story)),
+           "La 1re histoire d'un gratuit doit avoir les illustrations"
+    assert user.illustrations_for?(histoire_2),
+           "La 2e histoire d'un gratuit doit avoir les illustrations (offre découverte)"
+    assert user.illustrations_for?(histoire_3),
+           "La 3e histoire d'un gratuit doit avoir les illustrations (offre découverte)"
+
+    # Act + Assert — illustrations NON dès la 4e histoire
+    assert_not user.illustrations_for?(histoire_4),
+               "La 4e histoire d'un gratuit ne doit PAS avoir d'illustrations"
+
+    # Act + Assert — audio réservé à la 1re histoire uniquement
+    assert user.audio_for?(stories(:paul_story)),
+           "L'audio reste offert sur la 1re histoire"
+    assert_not user.audio_for?(histoire_2),
+               "La 2e histoire d'un gratuit ne doit PAS avoir d'audio (Premium only)"
+    assert_not user.audio_for?(histoire_3),
+               "La 3e histoire d'un gratuit ne doit PAS avoir d'audio (Premium only)"
   end
 
   # Vérifie que can_create_story? est vrai pour tout palier à histoires illimitées

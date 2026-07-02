@@ -95,6 +95,11 @@
     <%# Script analytics Umami — rendu seulement en prod (visiteurs anonymes trackés) %>
     <%= render "shared/analytics" %>
 
+    <%# Événement de funnel posé par un controller via flash[:umami_event]
+        (signup, story_created, subscription_activated). Rend vide si analytics
+        coupé ou événement absent/inconnu — voir AnalyticsHelper#umami_event_tag. %>
+    <%= umami_event_tag(flash[:umami_event]) %>
+
     <%# Favicon — mascotte hibou Noctilio %>
     <%= favicon_link_tag image_path('mascot.svg'), type: 'image/svg+xml' %>
     <%= favicon_link_tag image_path('mascot.png'), type: 'image/png', sizes: '32x32' %>

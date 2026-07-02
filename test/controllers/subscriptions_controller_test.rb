@@ -57,6 +57,34 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
                     "La page de tarification devrait s'afficher pour un connecté"
   end
 
+  # Vérifie que les boutons de checkout portent l'attribut de tracking Umami
+  # Cas : GET /abonnement avec un compte gratuit (les cartes de prix sont affichées)
+  # Pourquoi : Umami suit le clic via data-umami-event="checkout_started" — c'est
+  # notre seul moyen de capturer l'intention d'achat avant la redirection Stripe.
+  test "GET /abonnement rend les boutons avec data-umami-event checkout_started" do
+    sign_in_as(users(:marie))
+
+    get subscription_path
+
+    assert_select "button[data-umami-event=?]", "checkout_started",
+                  { count: 2 },
+                  "Les deux boutons de checkout doivent porter l'événement checkout_started"
+  end
+
+  # Vérifie que le retour de paiement pose l'événement funnel "subscription_activated"
+  # Cas : Marie revient de Stripe sur /abonnement/success
+  # Pourquoi : c'est la conversion finale du funnel — le layout lira ce flash
+  # après la redirection vers le dashboard pour émettre le track Umami.
+  test "GET /abonnement/success pose flash[:umami_event] à subscription_activated" do
+    sign_in_as(users(:marie))
+
+    get subscription_success_path
+
+    assert_redirected_to dashboard_path
+    assert_equal "subscription_activated", flash[:umami_event],
+                 "Le retour de paiement doit poser l'événement funnel subscription_activated"
+  end
+
   # ===========================================================
   # SECTION 3 — Checkout : configuration Stripe manquante
   # ===========================================================
@@ -80,6 +108,84 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
   ensure
     # Restaure l'éventuelle valeur d'origine pour ne pas polluer les autres tests
     ENV["STRIPE_PREMIUM_PRICE_ID"] = ancienne_valeur if ancienne_valeur
+  end
+
+  # ===========================================================
+  # SECTION 3bis — Toggle Mensuel/Annuel + routage des price IDs
+  # ===========================================================
+
+  # Vérifie que la page affiche bien le toggle Mensuel/Annuel (2 onglets)
+  # Cas : GET /abonnement avec un compte gratuit (les cartes de prix sont affichées)
+  # Pourquoi : le toggle est le point d'entrée de l'offre annuelle (-25% de LTV) ;
+  # sans lui, l'utilisateur ne peut pas choisir la période.
+  test "GET /abonnement affiche le toggle Mensuel/Annuel" do
+    sign_in_as(users(:marie))
+
+    get subscription_path
+
+    # Le conteneur porte le controller Stimulus qui pilote la bascule.
+    assert_select "[data-controller=?]", "pricing-toggle"
+    # Deux onglets exactement : Mensuel et Annuel.
+    assert_select "button[data-pricing-toggle-target=?]", "tab",
+                  { count: 2 },
+                  "Le toggle doit proposer deux onglets (Mensuel et Annuel)"
+  end
+
+  # Vérifie qu'un checkout Essentiel ANNUEL lit bien STRIPE_ESSENTIEL_ANNUAL_PRICE_ID
+  # Cas : POST /abonnement/checkout plan=essentiel period=annual, variable annuelle absente
+  # Pourquoi : on prouve que la combinaison (essentiel + annual) route vers la
+  # bonne variable — si elle manque, ENV.fetch lève KeyError AVANT tout appel réseau.
+  test "POST checkout essentiel annuel lit la variable annuelle Essentiel" do
+    sign_in_as(users(:marie))
+
+    ancienne_valeur = ENV.delete("STRIPE_ESSENTIEL_ANNUAL_PRICE_ID")
+
+    post subscription_checkout_path, params: { plan: "essentiel", period: "annual" }
+
+    assert_redirected_to subscription_path
+    assert_equal "Configuration Stripe manquante. Contacte l'administrateur.",
+                 flash[:alert],
+                 "Le checkout Essentiel annuel doit lire STRIPE_ESSENTIEL_ANNUAL_PRICE_ID"
+  ensure
+    ENV["STRIPE_ESSENTIEL_ANNUAL_PRICE_ID"] = ancienne_valeur if ancienne_valeur
+  end
+
+  # Vérifie qu'un checkout Premium ANNUEL lit bien STRIPE_PREMIUM_ANNUAL_PRICE_ID
+  # Cas : POST /abonnement/checkout plan=premium period=annual, variable annuelle absente
+  # Pourquoi : même logique que ci-dessus pour la combinaison (premium + annual).
+  test "POST checkout premium annuel lit la variable annuelle Premium" do
+    sign_in_as(users(:marie))
+
+    ancienne_valeur = ENV.delete("STRIPE_PREMIUM_ANNUAL_PRICE_ID")
+
+    post subscription_checkout_path, params: { plan: "premium", period: "annual" }
+
+    assert_redirected_to subscription_path
+    assert_equal "Configuration Stripe manquante. Contacte l'administrateur.",
+                 flash[:alert],
+                 "Le checkout Premium annuel doit lire STRIPE_PREMIUM_ANNUAL_PRICE_ID"
+  ensure
+    ENV["STRIPE_PREMIUM_ANNUAL_PRICE_ID"] = ancienne_valeur if ancienne_valeur
+  end
+
+  # Vérifie qu'une période invalide retombe sur le tarif MENSUEL (jamais annuel)
+  # Cas : POST plan=essentiel period="n_importe_quoi", variable MENSUELLE absente
+  # Pourquoi : checkout_period n'accepte que "monthly"/"annual" ; toute autre valeur
+  # doit retomber sur "monthly" (anti-injection). On le prouve : la variable mensuelle
+  # manquante lève KeyError, donc c'est bien elle qui a été lue (pas l'annuelle).
+  test "POST checkout avec période invalide retombe sur le tarif mensuel" do
+    sign_in_as(users(:marie))
+
+    ancienne_valeur = ENV.delete("STRIPE_ESSENTIEL_PRICE_ID")
+
+    post subscription_checkout_path, params: { plan: "essentiel", period: "n_importe_quoi" }
+
+    assert_redirected_to subscription_path
+    assert_equal "Configuration Stripe manquante. Contacte l'administrateur.",
+                 flash[:alert],
+                 "Une période invalide doit retomber sur le prix mensuel (STRIPE_ESSENTIEL_PRICE_ID)"
+  ensure
+    ENV["STRIPE_ESSENTIEL_PRICE_ID"] = ancienne_valeur if ancienne_valeur
   end
 
   # ===========================================================

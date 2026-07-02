@@ -82,6 +82,11 @@ gem "rack-attack", "~> 6.8"
 gem "sentry-ruby"
 gem "sentry-rails"
 
+# Génération de PDF 100% Ruby (aucun binaire système à installer, contrairement
+# à wkhtmltopdf) — sert à exporter une histoire en PDF téléchargeable pour que
+# les parents puissent archiver/imprimer les histoires. Voir StoryPdfService.
+gem "prawn", "~> 2.5"
+
 # Notifications push web (PWA) — envoi de rappels "histoire du soir" via le
 # Web Push Protocol (chiffré, authentifié par une paire de clés VAPID).
 # Clés à fournir en ENV : VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY

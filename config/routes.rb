@@ -84,6 +84,9 @@ Rails.application.routes.draw do
 
       # POST /stories/:id/retry — relance la génération d'une histoire échouée
       post :retry
+
+      # GET /stories/:id/pdf — télécharge l'histoire au format PDF (archivage)
+      get :pdf
     end
   end
 

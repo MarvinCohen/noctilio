@@ -556,6 +556,15 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><%= t("story_show.my_stories") %>
           <% end %>
 
+          <%# ── Ligne 3 bis : Télécharger en PDF (archivage) — histoires terminées ── %>
+          <%# data-turbo: false : c'est un téléchargement de fichier, Turbo (fetch)
+              ne sait pas gérer une réponse binaire → on force une navigation classique. %>
+          <% if @story.completed? %>
+            <%= link_to pdf_story_path(@story), class: "story-btn-secondary", data: { turbo: false } do %>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><%= t("story_show.download_pdf") %>
+            <% end %>
+          <% end %>
+
           <%# ── Ligne 4 : Recommencer — seulement pour les histoires interactives avec choix ── %>
           <%# Inutile pour une histoire standard sans choix : l'utilisateur relit la même chose %>
           <% if @story.completed? && @story.interactive? %>

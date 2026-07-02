@@ -37,10 +37,11 @@ class SubscriptionsController < ApplicationController
     # set_payment_processor crée ou récupère le client Stripe pour l'user.
     current_user.set_payment_processor :stripe
 
-    # Choisit le bon prix Stripe selon le palier demandé par le formulaire.
-    # params[:plan] vaut "essentiel" ou "premium". Tout autre valeur (ou absence)
-    # retombe sur Premium par sécurité — checkout_price_id gère le fallback.
-    price_id = checkout_price_id(params[:plan])
+    # Choisit le bon prix Stripe selon le palier ET la période demandés par le formulaire.
+    # params[:plan]   vaut "essentiel" ou "premium" (fallback Premium si inconnu).
+    # params[:period] vaut "monthly" ou "annual" (fallback "monthly", voir checkout_period).
+    # → 4 combinaisons possibles = 4 price IDs Stripe distincts.
+    price_id = checkout_price_id(params[:plan], checkout_period(params[:period]))
 
     # Options de la Stripe Checkout Session hébergée par Stripe.
     # L'utilisateur saisit sa CB directement sur la page Stripe (sécurisé PCI).
@@ -59,15 +60,13 @@ class SubscriptionsController < ApplicationController
       cancel_url: subscription_url
     }
 
-    # Essai gratuit de 7 jours — UNIQUEMENT sur le palier Essentiel (palier d'entrée,
-    # pour lever la friction). Pendant l'essai, l'abonnement Stripe est en statut
-    # "trialing" (compté comme actif par Pay → l'utilisateur a les fonctions Essentiel
-    # sans être débité). La carte est collectée au checkout puis facturée à la fin de
-    # l'essai. Premium (intention d'achat plus forte) reste sans essai.
+    # Essai gratuit de 7 jours — offert sur les DEUX paliers payants (Essentiel ET
+    # Premium) pour lever la friction à l'inscription. Pendant l'essai, l'abonnement
+    # Stripe est en statut "trialing" (compté comme actif par Pay → l'utilisateur a
+    # toutes les fonctions de son palier sans être débité). La carte est collectée au
+    # checkout puis facturée à la fin de l'essai (mensuel ou annuel selon la période).
     # subscription_data.trial_period_days : nombre de jours offerts avant facturation.
-    if params[:plan] == "essentiel"
-      checkout_options[:subscription_data] = { trial_period_days: 7 }
-    end
+    checkout_options[:subscription_data] = { trial_period_days: 7 }
 
     # Crée la session de paiement Stripe avec les options assemblées ci-dessus.
     @checkout_session = current_user.payment_processor.checkout(**checkout_options)
@@ -92,6 +91,11 @@ class SubscriptionsController < ApplicationController
     # Cette page confirme simplement à l'utilisateur que tout s'est bien passé.
     # On recharge l'état premium depuis la base (le webhook a pu arriver entre-temps).
     @is_premium = current_user.premium?
+
+    # Événement funnel "subscription_activated" — posé en flash pour survivre à
+    # la redirection ; le layout l'émettra via umami_event_tag. C'est la
+    # conversion finale du funnel (paiement Stripe réussi).
+    flash[:umami_event] = "subscription_activated"
 
     # Redirige vers le dashboard avec un message de confirmation
     redirect_to dashboard_path,
@@ -178,17 +182,29 @@ class SubscriptionsController < ApplicationController
 
   private
 
-  # Retourne le price ID Stripe correspondant au palier demandé.
-  # — "essentiel" → STRIPE_ESSENTIEL_PRICE_ID (4,99€/mois)
-  # — tout le reste ("premium", nil, valeur inconnue) → STRIPE_PREMIUM_PRICE_ID
-  #   (9,99€/mois). On retombe sur Premium par sécurité plutôt que de planter.
+  # Normalise la période reçue du formulaire pour éviter toute injection ou faute.
+  # On n'accepte QUE "monthly" et "annual" ; toute autre valeur (nil, "mensuel",
+  # texte arbitraire) retombe sur "monthly" par sécurité (option la moins engageante).
+  def checkout_period(period)
+    %w[monthly annual].include?(period) ? period : "monthly"
+  end
+
+  # Retourne le price ID Stripe correspondant au palier ET à la période.
+  # 4 combinaisons → 4 variables d'environnement (posées sur Railway) :
+  #   essentiel + monthly → STRIPE_ESSENTIEL_PRICE_ID          (4,99€/mois)
+  #   essentiel + annual  → STRIPE_ESSENTIEL_ANNUAL_PRICE_ID   (44,99€/an, -25%)
+  #   premium   + monthly → STRIPE_PREMIUM_PRICE_ID            (9,99€/mois)
+  #   premium   + annual  → STRIPE_PREMIUM_ANNUAL_PRICE_ID     (89,90€/an, -25%)
+  # Le palier retombe sur Premium par sécurité si "plan" est inconnu (comme avant).
   # ENV.fetch lève KeyError si la variable manque → rattrapé dans checkout
   # (message "Configuration Stripe manquante").
-  def checkout_price_id(plan)
+  def checkout_price_id(plan, period)
     if plan == "essentiel"
-      ENV.fetch("STRIPE_ESSENTIEL_PRICE_ID")
+      # Palier Essentiel : variable annuelle si période annuelle, sinon mensuelle.
+      period == "annual" ? ENV.fetch("STRIPE_ESSENTIEL_ANNUAL_PRICE_ID") : ENV.fetch("STRIPE_ESSENTIEL_PRICE_ID")
     else
-      ENV.fetch("STRIPE_PREMIUM_PRICE_ID")
+      # Palier Premium (ou fallback) : même logique sur les variables Premium.
+      period == "annual" ? ENV.fetch("STRIPE_PREMIUM_ANNUAL_PRICE_ID") : ENV.fetch("STRIPE_PREMIUM_PRICE_ID")
     end
   end
 end

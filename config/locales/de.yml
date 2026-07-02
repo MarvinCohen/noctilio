@@ -121,6 +121,7 @@ de:
       saved: "Geschichte in deiner Bibliothek gespeichert! 📚"
       not_failed: "Diese Geschichte ist nicht fehlgeschlagen."
       retry_started: "Generierung neu gestartet! Die Geschichte ist gleich fertig."
+      pdf_not_ready: "Diese Geschichte kann noch nicht als PDF exportiert werden."
       deleted: "Die Geschichte wurde gelöscht."
       not_found: "Geschichte nicht gefunden."
       limit_reached: "Du hast dein Limit von 3 Geschichten diese Woche erreicht. Wechsle zu Premium für unbegrenzte Geschichten!"
@@ -339,6 +340,14 @@ de:
     price_free_period: "für immer"
     price_essentiel: "4,99 €"
     price_premium: "9,99 €"
+    # Jahrespreise (-25%) — angezeigt, wenn der Umschalter auf "Jährlich" steht
+    price_essentiel_annual: "44,99 €"
+    price_premium_annual: "89,90 €"
+    price_period_annual: "pro Jahr · -25%"
+    # Beschriftungen des Umschalters Monatlich / Jährlich
+    billing_monthly: "Monatlich"
+    billing_annual: "Jährlich"
+    billing_save: "-25%"
     popular_badge: "Am beliebtesten"
     current_plan: "Dein aktueller Tarif"
     subscribe_essentiel: "Essentiel wählen"
@@ -642,6 +651,7 @@ de:
     error_title: "Ups, etwas ist schiefgelaufen"
     error_hint: "Die Generierung der Geschichte ist fehlgeschlagen. Bitte versuche es erneut."
     my_stories: "Meine Geschichten"
+    download_pdf: "Als PDF herunterladen"
     back_to_stories: "← Meine Geschichten"
     # %{number} = Episodennummer innerhalb der Saga
     episode: "Episode %{number}"

@@ -7,7 +7,7 @@ class StoriesController < ApplicationController
   # save_story est inclus pour récupérer @story via set_story avant de la sauvegarder
   # audio est inclus pour vérifier que l'utilisateur est bien le propriétaire avant de générer l'audio
   before_action :set_story,
-                only: %i[show destroy choose status save_story audio continue replay explore_alternative retry]
+                only: %i[show destroy choose status save_story audio continue replay explore_alternative retry pdf]
 
   # Vérifie que l'utilisateur n'a pas dépassé sa limite hebdomadaire avant de créer
   # — Gratuit : 3 histoires/semaine (réinitialisé chaque lundi)
@@ -133,6 +133,10 @@ class StoriesController < ApplicationController
       # Lance le job de génération en arrière-plan via Solid Queue
       # L'histoire aura le statut "pending" jusqu'à ce que le job commence
       GenerateStoryJob.perform_later(@story.id)
+
+      # Événement funnel "story_created" — posé en flash pour survivre à la
+      # redirection ci-dessous ; le layout l'émettra via umami_event_tag.
+      flash[:umami_event] = "story_created"
 
       # Redirige vers la page de l'histoire (qui affichera le spinner)
       redirect_to story_path(@story), notice: t("flash.stories.creating")
@@ -461,6 +465,33 @@ class StoriesController < ApplicationController
 
     # Redirige vers la page de l'histoire — le spinner de génération s'affiche
     redirect_to story_path(@story), notice: t("flash.stories.retry_started")
+  end
+
+  # GET /stories/:id/pdf — télécharge l'histoire au format PDF
+  # Ouvert à tout propriétaire d'une histoire terminée (feature d'archivage,
+  # pas de restriction Premium). set_story garantit déjà que l'histoire
+  # appartient à l'utilisateur connecté (impossible d'exporter celle d'un autre).
+  def pdf
+    # On ne génère un PDF que pour une histoire terminée : une histoire en cours
+    # de génération n'a pas encore de contenu à exporter.
+    unless @story.completed?
+      redirect_to story_path(@story), alert: t("flash.stories.pdf_not_ready")
+      return
+    end
+
+    # Délègue toute la construction du document au service dédié (skinny controller).
+    pdf_data = StoryPdfService.new(@story).render
+
+    # Nom de fichier lisible et sûr : le titre "parametrisé" (accents retirés,
+    # espaces → tirets) avec un repli si le titre est vide.
+    nom_fichier = "#{@story.title.to_s.parameterize.presence || 'histoire'}.pdf"
+
+    # send_data envoie le binaire au navigateur.
+    # disposition: "attachment" force le téléchargement plutôt que l'affichage.
+    send_data pdf_data,
+              filename: nom_fichier,
+              type: "application/pdf",
+              disposition: "attachment"
   end
 
   # DELETE /stories/:id — supprime l'histoire

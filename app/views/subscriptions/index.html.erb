@@ -269,6 +269,46 @@
     margin-top: auto;
   }
 
+  /* ── Toggle Mensuel / Annuel (au-dessus des 3 paliers) ── */
+  /* Conteneur centré : le toggle est un petit "pill" segmenté à 2 options. */
+  .sub-billing { display: flex; justify-content: center; margin-bottom: 2rem; }
+  .sub-billing-toggle {
+    display: inline-flex;
+    gap: 0.3rem;
+    background: #111527;
+    border: 1px solid rgba(240, 201, 122, 0.2);
+    border-radius: 50px;
+    padding: 0.3rem;
+  }
+  /* Une option du toggle (Mensuel / Annuel) — bouton texte arrondi */
+  .sub-toggle-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    color: #8a8578;
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  /* Option active — pastille dorée pleine (même langage que le CTA principal) */
+  .sub-toggle-option.is-active { background: #f0c97a; color: #0b0e1a; }
+  /* Petit badge "-25%" collé à l'option Annuel — vert doux pour l'économie */
+  .sub-toggle-save {
+    background: rgba(80, 200, 120, 0.18);
+    color: #50c878;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 50px;
+  }
+  /* Sur l'option active (fond doré), on assombrit le badge pour rester lisible */
+  .sub-toggle-option.is-active .sub-toggle-save { background: rgba(11, 14, 26, 0.15); color: #0a5c2c; }
+
   /* ── Tableau comparatif Gratuit vs Premium ── */
   .sub-compare { max-width: 640px; margin: 3.5rem auto 0; }
   /* Titre de section — même style éditorial que le hero */
@@ -505,6 +545,34 @@
   <%# CAS 2 — compte gratuit : grille des 3 paliers (Essentiel en avant) %>
   <%# ============================================================ %>
   <% else %>
+    <%# data-controller="pricing-toggle" enveloppe le toggle ET la grille :
+        le controller doit retrouver à la fois les onglets, les prix, les libellés
+        de période et les champs cachés "period" des formulaires de checkout. %>
+    <div data-controller="pricing-toggle">
+
+      <%# ── Toggle Mensuel / Annuel ── %>
+      <%# L'onglet Mensuel est actif par défaut (is-active) ; data-period porte la
+          période transmise au controller Stimulus au clic (select). %>
+      <div class="sub-billing">
+        <div class="sub-billing-toggle">
+          <button type="button"
+                  class="sub-toggle-option is-active"
+                  data-pricing-toggle-target="tab"
+                  data-period="monthly"
+                  data-action="pricing-toggle#select">
+            <%= t("subscription.billing_monthly") %>
+          </button>
+          <button type="button"
+                  class="sub-toggle-option"
+                  data-pricing-toggle-target="tab"
+                  data-period="annual"
+                  data-action="pricing-toggle#select">
+            <%= t("subscription.billing_annual") %>
+            <span class="sub-toggle-save"><%= t("subscription.billing_save") %></span>
+          </button>
+        </div>
+      </div>
+
     <div class="sub-tiers">
 
       <%# ── Carte 1 : Gratuit (palier actuel de l'utilisateur) ── %>
@@ -537,9 +605,17 @@
       <div class="sub-tier sub-tier--featured">
         <span class="sub-tier-badge"><%= t("subscription.popular_badge") %></span>
         <div class="sub-tier-name"><%= t("subscription.tier_essentiel_name") %></div>
+        <%# Prix dynamiques : le texte affiché est le mensuel par défaut ;
+            data-monthly / data-annual permettent au Stimulus de basculer sans recharger. %>
         <div class="sub-tier-price">
-          <div class="sub-tier-price-amount"><%= t("subscription.price_essentiel") %></div>
-          <div class="sub-tier-price-period"><%= t("subscription.price_period") %></div>
+          <div class="sub-tier-price-amount"
+               data-pricing-toggle-target="price"
+               data-monthly="<%= t("subscription.price_essentiel") %>"
+               data-annual="<%= t("subscription.price_essentiel_annual") %>"><%= t("subscription.price_essentiel") %></div>
+          <div class="sub-tier-price-period"
+               data-pricing-toggle-target="period"
+               data-monthly="<%= t("subscription.price_period") %>"
+               data-annual="<%= t("subscription.price_period_annual") %>"><%= t("subscription.price_period") %></div>
         </div>
         <ul class="sub-tier-features">
           <%# Mise en avant de l'essai gratuit 7 jours (appliqué au checkout Essentiel) %>
@@ -552,21 +628,39 @@
         <%# Bouton CTA — checkout Stripe avec le plan "essentiel".
             data-turbo:false obligatoire : le checkout redirige vers Stripe (domaine externe),
             Turbo (fetch) ne sait pas suivre une redirection cross-origin. %>
+        <%# data-umami-event : Umami suit automatiquement le CLIC sur ce bouton
+            (événement "checkout_started"). On capture le clic car le checkout
+            redirige vers Stripe (domaine externe) : impossible d'émettre l'event
+            après la redirection. Inerte si le script Umami n'est pas chargé. %>
+        <%# params: { period: "monthly" } génère un champ caché name="period" dans le
+            formulaire ; le Stimulus met à jour sa valeur ("annual") si l'utilisateur
+            bascule le toggle, pour que le controller reçoive la bonne période. %>
         <%= button_to t("subscription.subscribe_essentiel"),
               subscription_checkout_path(plan: "essentiel"),
               method: :post,
+              params: { period: "monthly" },
               form: { data: { turbo: false } },
+              data: { umami_event: "checkout_started" },
               class: "sub-btn-cta" %>
       </div>
 
       <%# ── Carte 3 : Premium (tout inclus) ── %>
       <div class="sub-tier">
         <div class="sub-tier-name"><%= t("subscription.tier_premium_name") %></div>
+        <%# Prix dynamiques (mêmes data-attributes que la carte Essentiel) %>
         <div class="sub-tier-price">
-          <div class="sub-tier-price-amount"><%= t("subscription.price_premium") %></div>
-          <div class="sub-tier-price-period"><%= t("subscription.price_period") %></div>
+          <div class="sub-tier-price-amount"
+               data-pricing-toggle-target="price"
+               data-monthly="<%= t("subscription.price_premium") %>"
+               data-annual="<%= t("subscription.price_premium_annual") %>"><%= t("subscription.price_premium") %></div>
+          <div class="sub-tier-price-period"
+               data-pricing-toggle-target="period"
+               data-monthly="<%= t("subscription.price_period") %>"
+               data-annual="<%= t("subscription.price_period_annual") %>"><%= t("subscription.price_period") %></div>
         </div>
         <ul class="sub-tier-features">
+          <%# Essai gratuit 7 jours désormais offert aussi sur Premium (option A) %>
+          <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><strong><%= t("subscription.card_free_trial") %></strong></li>
           <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_unlimited") %></li>
           <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_illustrations") %></li>
           <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_audio") %></li>
@@ -574,13 +668,19 @@
           <li class="sub-tier-feature"><span class="sub-tier-feature-icon">✦</span><%= t("subscription.card_dashboard") %></li>
         </ul>
         <%# Bouton CTA secondaire (contour) — checkout Stripe avec le plan "premium" %>
+        <%# data-umami-event : suit le clic (voir bouton Essentiel ci-dessus). %>
+        <%# Champ caché "period" (voir carte Essentiel) mis à jour par le Stimulus %>
         <%= button_to t("subscription.subscribe_premium"),
               subscription_checkout_path(plan: "premium"),
               method: :post,
+              params: { period: "monthly" },
               form: { data: { turbo: false } },
+              data: { umami_event: "checkout_started" },
               class: "sub-btn-cta-outline" %>
       </div>
 
+    </div>
+    <%# fin de la grille .sub-tiers ; on ferme le conteneur data-controller="pricing-toggle" %>
     </div>
 
     <p class="sub-note" style="margin-top: 1.5rem;"><%= t("subscription.secure_note") %></p>

@@ -46,6 +46,11 @@
     <%# Script analytics Umami — rendu seulement en prod et pour les non-admins %>
     <%= render "shared/analytics" %>
 
+    <%# Événement de funnel posé par un controller via flash[:umami_event]
+        (signup, story_created, subscription_activated). Rend vide si analytics
+        coupé ou événement absent/inconnu — voir AnalyticsHelper#umami_event_tag. %>
+    <%= umami_event_tag(flash[:umami_event]) %>
+
     <%= yield :head %>
 
     <%# ---------------------------------------------------------------- %>
